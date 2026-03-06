@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - NEXA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #ffffff; --bg-secondary: #f7f7f7; --text-primary: #37352f; --text-secondary: #787774; --text-tertiary: #9b9a97; --border: #e1e1e0; --accent: #37352f; --accent-hover: #000000; --sidebar-width: 240px; --header-height: 45px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text-primary); background-color: var(--bg-secondary); min-height: 100vh; }
+        .app-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background-color: var(--bg-primary); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 0.75rem 0.875rem; border-bottom: 1px solid var(--border); }
+        .sidebar-brand { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-decoration: none; }
+        .sidebar-nav { flex: 1; padding: 0.5rem; overflow-y: auto; }
+        .nav-item { margin-bottom: 2px; }
+        .nav-link { display: flex; align-items: center; gap: 0.625rem; padding: 0.375rem 0.625rem; color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; border-radius: 4px; }
+        .nav-link:hover { background-color: var(--bg-secondary); color: var(--text-primary); }
+        .nav-link.active { background-color: var(--bg-secondary); color: var(--text-primary); font-weight: 500; }
+        .nav-link-icon { font-size: 1rem; font-weight: 600; width: 1.25rem; text-align: center; }
+        .nav-divider { height: 1px; background-color: var(--border); margin: 0.5rem 0; }
+        .main-content { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; }
+        .header { height: var(--header-height); background-color: var(--bg-primary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; }
+        .header-title { font-size: 0.875rem; font-weight: 500; color: var(--text-primary); }
+        .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .search-input { padding: 0.25rem 0.625rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 4px; background-color: var(--bg-secondary); color: var(--text-primary); width: 180px; }
+        .user-avatar { width: 1.5rem; height: 1.5rem; background-color: var(--accent); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; }
+        .user-name { font-size: 0.8125rem; color: var(--text-primary); }
+        .page-content { padding: 1.5rem; max-width: 700px; margin: 0 auto; }
+        .page-header { margin-bottom: 1.5rem; }
+        .page-title { font-size: 1.5rem; font-weight: 600; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; border-radius: 4px; text-decoration: none; cursor: pointer; border: none; transition: all 0.15s ease; }
+        .btn-primary { background-color: var(--accent); color: #fff; }
+        .btn-primary:hover { background-color: #525251; }
+        .btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background-color: #e8e8e8; }
+        .btn-back { background: transparent; color: var(--text-secondary); padding: 0.5rem 0; margin-bottom: 1rem; }
+        .btn-back:hover { color: var(--text-primary); }
+        .form-card { background-color: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .form-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .form-header h2 { font-size: 1.125rem; font-weight: 600; }
+        .form-body { padding: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .form-label-hint { font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 400; margin-left: 0.5rem; }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 0.625rem 0.75rem; font-size: 0.9375rem; border: 1px solid var(--border); border-radius: 4px; background-color: var(--bg-primary); color: var(--text-primary); font-family: inherit; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(55, 53, 47, 0.1); }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23787774' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; }
+        .file-upload { border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .file-upload:hover { border-color: var(--accent); background-color: var(--bg-secondary); }
+        .file-upload-icon { font-size: 2rem; color: var(--text-tertiary); margin-bottom: 0.5rem; }
+        .file-upload-text { font-size: 0.9375rem; color: var(--text-secondary); }
+        .file-upload-hint { font-size: 0.8125rem; color: var(--text-tertiary); margin-top: 0.25rem; }
+        .section-divider { height: 1px; background-color: var(--border); margin: 1.5rem 0; }
+        .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+        .error-list { list-style: none; padding: 0; margin: 0.5rem 0; }
+        .error-list li { color: #dc2626; font-size: 0.875rem; }
+        .help-text { font-size: 0.8125rem; color: var(--text-tertiary); margin-top: 0.375rem; }
+        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header"><a href="{% url 'dashboard' %}" class="sidebar-brand">NEXA</a></div>
+            <nav class="sidebar-nav">
+                <div class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link"><span class="nav-link-icon">D</span>Dashboard</a></div>
+                <div class="nav-item"><a href="{% url 'list_materials' %}" class="nav-link"><span class="nav-link-icon">M</span>My Materials</a></div>
+                <div class="nav-item"><a href="{% url 'ai_chat' %}" class="nav-link"><span class="nav-link-icon">A</span>AI Tutor</a></div>
+                <div class="nav-divider"></div>
+                <div class="nav-item"><a href="{% url 'essay_request' %}" class="nav-link"><span class="nav-link-icon">E</span>Essay Generator</a></div>
+                <div class="nav-item"><a href="{% url 'assignment_list' %}" class="nav-link active"><span class="nav-link-icon">S</span>Assignment</a></div>
+                <div class="nav-divider"></div>
+                <div class="nav-item"><a href="{% url 'logout' %}" class="nav-link" style="color: var(--text-tertiary);"><span class="nav-link-icon">L</span>Log out</a></div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">New Assignment</div>
+                <div class="header-actions">
+                    <input type="text" class="search-input" placeholder="Search...">
+                    <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                    <span class="user-name">{{ user.username }}</span>
+                </div>
+            </header>
+            <div class="page-content">
+                <a href="{% url 'assignment_list' %}" class="btn btn-back">Back to Assignments</a>
+                
+                <div class="form-card">
+                    <div class="form-header">
+                        <h2>Upload Assignment</h2>
+                    </div>
+                    <div class="form-body">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_title">Title</label>
+                                <input type="text" name="title" id="id_title" class="form-input" placeholder="Enter assignment title" required>
+                                {% if form.title.errors %}
+                                <ul class="error-list">
+                                    {% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_file">Upload File <span class="form-label-hint">(PDF, Word, PowerPoint)</span></label>
+                                <input type="file" name="file" id="id_file" class="form-input" accept=".pdf,.docx,.pptx,.ppt">
+                                <div class="help-text">Or enter content manually below</div>
+                                {% if form.file.errors %}
+                                <ul class="error-list">
+                                    {% for error in form.file.errors %}<li>{{ error }}</li>{% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_text_content">Or Enter Assignment Content</label>
+                                <textarea name="text_content" id="id_text_content" class="form-textarea" placeholder="Paste assignment instructions or content here..."></textarea>
+                                {% if form.text_content.errors %}
+                                <ul class="error-list">
+                                    {% for error in form.text_content.errors %}<li>{{ error }}</li>{% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="section-divider"></div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_task_type">Task Type</label>
+                                <select name="task_type" id="id_task_type" class="form-select">
+                                    <option value="essay">Write an Essay</option>
+                                    <option value="summarize">Summarize</option>
+                                    <option value="answer">Answer Questions</option>
+                                    <option value="slides">Generate Slides</option>
+                                    <option value="structured">Provide Structured Answers</option>
+                                </select>
+                                <div class="help-text">What would you like the AI to do with this assignment?</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_instructions">Additional Instructions</label>
+                                <textarea name="instructions" id="id_instructions" class="form-textarea" placeholder="Any specific requirements or instructions for the AI..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_output_format">Output Format</label>
+                                <select name="output_format" id="id_output_format" class="form-select">
+                                    <option value="word">Microsoft Word (.docx)</option>
+                                    <option value="powerpoint">PowerPoint (.pptx)</option>
+                                    <option value="pdf">PDF Document (.pdf)</option>
+                                    <option value="text">Plain Text</option>
+                                </select>
+                            </div>
+                            
+                            {% if form.non_field_errors %}
+                            <ul class="error-list">
+                                {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                            {% endif %}
+                            
+                            <div class="form-actions">
+                                <a href="{% url 'assignment_list' %}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Create & Process</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

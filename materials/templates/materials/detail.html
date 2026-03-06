@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - NEXA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f7;
+            --bg-tertiary: #f1f1f1;
+            --text-primary: #37352f;
+            --text-secondary: #787774;
+            --text-tertiary: #9b9a97;
+            --border: #e1e1e0;
+            --accent: #37352f;
+            --accent-hover: #525251;
+            --sidebar-width: 240px;
+            --header-height: 45px;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+            line-height: 1.5;
+            font-size: 16px;
+        }
+        
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 0.75rem 0.875rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .sidebar-brand {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 0.5rem;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            margin-bottom: 2px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.375rem 0.625rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 4px;
+            transition: all 0.1s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .nav-link.active {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .nav-link-icon {
+            font-size: 1rem;
+            font-weight: 600;
+            width: 1.25rem;
+            text-align: center;
+        }
+        
+        .nav height: 1-divider {
+           px;
+            background-color: var(--border);
+            margin: 0.5rem 0;
+        }
+        
+        .nav-link.logout {
+            color: var(--text-tertiary);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+        
+        .header {
+            height: var(--header-height);
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .header-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .search-input {
+            padding: 0.25rem 0.625rem;
+            font-size: 0.8125rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            width: 180px;
+        }
+        
+        .user-avatar {
+            width: 1.5rem;
+            height: 1.5rem;
+            background-color: var(--accent);
+            color: #fff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .user-name {
+            font-size: 0.8125rem;
+            color: var(--text-primary);
+        }
+        
+        .page-content {
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .btn-back {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-back:hover {
+            color: var(--text-primary);
+        }
+        
+        .card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .meta-label {
+            font-size: 0.6875rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .meta-value {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+        
+        .text-content {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        
+        .empty-text {
+            color: var(--text-tertiary);
+            font-style: italic;
+            font-size: 0.875rem;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .meta-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="sidebar-brand">NEXA</a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="{% url 'dashboard' %}" class="nav-link">
+                        <span class="nav-link-icon">D</span>
+                        Dashboard
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'list_materials' %}" class="nav-link active">
+                        <span class="nav-link-icon">M</span>
+                        My Materials
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'ai_chat' %}" class="nav-link">
+                        <span class="nav-link-icon">A</span>
+                        AI Tutor
+                    </a>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'essay_request' %}" class="nav-link">
+                        <span class="nav-link-icon">E</span>
+                        Essay Generator
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'assignment_list' %}" class="nav-link">
+                        <span class="nav-link-icon">S</span>
+                        Assignment
+                    </a>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-link-icon">*</span>
+                        Settings
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link logout">
+                        <span class="nav-link-icon">L</span>
+                        Log out
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">Material Details</div>
+                <div class="header-actions">
+                    <input type="text" class="search-input" placeholder="Search...">
+                    <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                    <span class="user-name">{{ user.username }}</span>
+                </div>
+            </header>
+            
+            <div class="page-content">
+                <a href="{% url 'list_materials' %}" class="btn btn-back">Back to Materials</a>
+                
+                <div class="page-header">
+                    <h1 class="page-title">{{ material.title }}</h1>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">{{ material.title }}</h2>
+                        <a href="{{ material.file.url }}" class="btn btn-primary" target="_blank">Download</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-label">Type</span>
+                                <span class="meta-value">{{ material.get_material_type_display }}</span>
+                            </div>
+                            {% if material.subject %}
+                            <div class="meta-item">
+                                <span class="meta-label">Subject</span>
+                                <span class="meta-value">{{ material.subject }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="meta-item">
+                                <span class="meta-label">Uploaded</span>
+                                <span class="meta-value">{{ material.uploaded_at|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">File Size</span>
+                                <span class="meta-value">{{ material.file.size|filesizeformat }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="section-title">Extracted Text</div>
+                        {% if material.extracted_text %}
+                            <div class="text-content">{{ material.extracted_text }}</div>
+                        {% else %}
+                            <p class="empty-text">No text has been extracted from this file yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

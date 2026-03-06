@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - NEXA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f7;
+            --bg-tertiary: #f1f1f1;
+            --text-primary: #37352f;
+            --text-secondary: #787774;
+            --text-tertiary: #9b9a97;
+            --border: #e1e1e0;
+            --accent: #37352f;
+            --accent-hover: #000000;
+            --sidebar-width: 260px;
+            --header-height: 52px;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text-primary); background-color: var(--bg-secondary); min-height: 100vh; }
+        
+        .app-container { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background-color: var(--bg-primary); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+        .sidebar-header { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        .sidebar-brand { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-decoration: none; }
+        .sidebar-nav { flex: 1; padding: 0.5rem; overflow-y: auto; }
+        .nav-section { margin-bottom: 1rem; }
+        .nav-section-title { font-size: 0.6875rem; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.75rem 0.25rem; }
+        .nav-item { margin-bottom: 2px; }
+        .nav-link { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.75rem; color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; border-radius: 6px; transition: all 0.1s ease; }
+        .nav-link:hover { background-color: var(--bg-secondary); color: var(--text-primary); }
+        .nav-link.active { background-color: var(--bg-secondary); color: var(--text-primary); font-weight: 500; }
+        .nav-link-icon { font-size: 1rem; font-weight: 600; width: 1.25rem; text-align: center; }
+        .nav-link-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nav-divider { height: 1px; background-color: var(--border); margin: 0.5rem 0; }
+        
+        /* Main Content */
+        .main-content { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; }
+        .header { height: var(--header-height); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; background-color: var(--bg-primary); }
+        .header-title { font-size: 1rem; font-weight: 500; }
+        .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .user-avatar { width: 1.75rem; height: 1.75rem; background-color: var(--accent); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; }
+        
+        /* Page Content */
+        .page-content { padding: 2rem; max-width: 900px; margin: 0 auto; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .page-subtitle { font-size: 1.125rem; color: var(--text-secondary); }
+        
+        /* Generator Card */
+        .generator-card { background-color: var(--bg-primary); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+        
+        /* Steps */
+        .steps { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-secondary); }
+        .step.active .step-number { background: var(--accent); color: #fff; }
+        .step.completed .step-number { background: var(--accent); color: #fff; }
+        .step-number { width: 2rem; height: 2rem; border-radius: 50%; background-color: var(--bg-tertiary); color: var(--text-secondary); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .step-title { font-size: 0.8125rem; font-weight: 500; }
+        .step-desc { font-size: 0.6875rem; color: var(--text-tertiary); margin-top: 0.25rem; }
+        
+        /* Form Body */
+        .form-body { padding: 2rem; }
+        
+        /* Topic Input */
+        .topic-section { margin-bottom: 2rem; }
+        .section-label { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-icon { width: 1.5rem; height: 1.5rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #fff; }
+        .topic-input-wrapper { position: relative; }
+        .topic-input { width: 100%; padding: 1rem 1rem 1rem 3rem; font-size: 1.125rem; border: 2px solid var(--border); border-radius: 12px; background-color: var(--bg-primary); color: var(--text-primary); transition: all 0.2s ease; }
+        .topic-input:focus { outline: none; border-color: var(--gradient-1); box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15); }
+        .topic-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.25rem; }
+        
+        /* Suggestions */
+        .suggestions { margin-top: 1rem; }
+        .suggestions-label { font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 0.5rem; }
+        .suggestion-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .suggestion-chip { padding: 0.375rem 0.75rem; background-color: var(--bg-secondary); border: 1px solid var(--border); border-radius: 20px; font-size: 0.8125rem; cursor: pointer; transition: all 0.15s ease; }
+        .suggestion-chip:hover { background: var(--accent); color: #fff; border-color: transparent; }
+        
+        /* Options */
+        .options-section { margin-bottom: 2rem; }
+        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .option-card { padding: 1rem; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+        .option-card:hover { border-color: var(--gradient-1); }
+        .option-card.selected { border-color: var(--accent); background: var(--bg-secondary); }
+        .option-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .option-title { font-size: 0.9375rem; font-weight: 600; }
+        .option-desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        
+        /* Word Count */
+        .word-count-section { margin-bottom: 1.5rem; }
+        .word-count-chip { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border: 2px solid var(--border); border-radius: 20px; cursor: pointer; transition: all 0.2s ease; font-size: 0.8125rem; }
+        .word-count-chip:hover { border-color: #10b981; }
+        .word-count-chip.selected { border-color: #10b981; background-color: #10b981; color: #fff; }
+        
+        /* Research Toggle */
+        .research-toggle { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background-color: var(--bg-secondary); border-radius: 12px; margin-bottom: 1.5rem; }
+        .toggle-switch { position: relative; width: 3rem; height: 1.5rem; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border); border-radius: 20px; transition: 0.3s; }
+        .toggle-slider::before { content: ''; position: absolute; height: 1.125rem; width: 1.125rem; left: 0.1875rem; bottom: 0.1875rem; background-color: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(1.5rem); }
+        .toggle-info h4 { font-size: 0.9375rem; font-weight: 600; }
+        .toggle-info p { font-size: 0.75rem; color: var(--text-secondary); }
+        
+        /* Generate Button */
+        .generate-btn { width: 100%; padding: 1rem; font-size: 1rem; font-weight: 600; border: none; border-radius: 12px; background: var(--accent); color: #fff; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+        .generate-btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        /* Loading */
+        .loading-overlay { display: none; padding: 3rem; text-align: center; }
+        .loading-overlay.active { display: block; }
+        .loading-spinner { width: 3rem; height: 3rem; border: 3px solid var(--border); border-top-color: var(--gradient-1); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 1rem; color: var(--text-secondary); }
+        .loading-progress { font-size: 0.875rem; color: var(--text-tertiary); margin-top: 0.5rem; }
+        
+        /* Previous Essays */
+        .previous-section { margin-top: 2rem; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .section-title { font-size: 1.125rem; font-weight: 600; }
+        .essays-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .essay-card { background-color: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; transition: all 0.2s ease; }
+        .essay-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        .essay-icon { width: 2.5rem; height: 2.5rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 1rem; }
+        .essay-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .essay-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; }
+        .essay-actions { display: flex; gap: 0.5rem; }
+        
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; border-radius: 8px; text-decoration: none; cursor: pointer; border: none; transition: all 0.15s ease; }
+        .btn-primary { background-color: var(--accent); color: #fff; }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background-color: var(--bg-tertiary); }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+        .btn-danger { background-color: #fee2e2; color: #991b1b; }
+        
+        /* Empty State */
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; }
+            .steps { flex-direction: column; }
+            .step:not(:last-child)::after { display: none; }
+            .options-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="sidebar-brand">NEXA</a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-item">
+                        <a href="{% url 'dashboard' %}" class="nav-link">
+                            <span class="nav-link-icon">D</span>
+                            <span class="nav-link-text">Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'list_materials' %}" class="nav-link">
+                            <span class="nav-link-icon">M</span>
+                            <span class="nav-link-text">My Materials</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-divider"></div>
+                <div class="nav-section">
+                    <div class="nav-section-title">AI Features</div>
+                    <div class="nav-item">
+                        <a href="{% url 'ai_chat' %}" class="nav-link">
+                            <span class="nav-link-icon">A</span>
+                            <span class="nav-link-text">AI Chat</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'essay_request' %}" class="nav-link active">
+                            <span class="nav-link-icon">E</span>
+                            <span class="nav-link-text">Essay Generator</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'assignment_list' %}" class="nav-link">
+                            <span class="nav-link-icon">S</span>
+                            <span class="nav-link-text">Assignment</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-divider"></div>
+                <div class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link">
+                        <span class="nav-link-icon">L</span>
+                        <span class="nav-link-text">Log out</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">Essay Generator</div>
+                <div class="header-actions">
+                    <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                </div>
+            </header>
+            
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Essay Generator</h1>
+                    <p class="page-subtitle">Create professional essays with AI-powered research</p>
+                </div>
+                
+                <div class="generator-card">
+                    <!-- Steps -->
+                    <div class="steps">
+                        <div class="step active" id="step1">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Topic</div>
+                            <div class="step-desc">What to write about</div>
+                        </div>
+                        <div class="step" id="step2">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Format</div>
+                            <div class="step-desc">Choose output type</div>
+                        </div>
+                        <div class="step" id="step3">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Generate</div>
+                            <div class="step-desc">Get your essay</div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="{% url 'essay_request' %}" id="essay-form">
+                        {% csrf_token %}
+                        <div class="form-body" id="form-body">
+                            <!-- Topic Section -->
+                            <div class="topic-section">
+                                <div class="section-label">
+                                    <div class="section-icon" style="background: #37352f;">1</div>
+                                    What would you like to write about?
+                                </div>
+                                <div class="topic-input-wrapper">
+                                    <span class="topic-icon">E</span>
+                                    <input type="text" class="topic-input" id="topic" name="topic" placeholder="Enter your essay topic or question..." required>
+                                </div>
+                                <div class="suggestions">
+                                    <div class="suggestions-label">Try these topics:</div>
+                                    <div class="suggestion-chips">
+                                        <span class="suggestion-chip" onclick="setTopic('The impact of artificial intelligence on education')">AI in Education</span>
+                                        <span class="suggestion-chip" onclick="setTopic('Climate change and its effects on biodiversity')">Climate Change</span>
+                                        <span class="suggestion-chip" onclick="setTopic('The history and evolution of the internet')">History of Internet</span>
+                                        <span class="suggestion-chip" onclick="setTopic('The importance of mental health awareness')">Mental Health</span>
+                                        <span class="suggestion-chip" onclick="setTopic('Renewable energy sources and their future')">Renewable Energy</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Options Section -->
+                            <div class="options-section">
+                                <div class="section-label">
+                                    <div class="section-icon" style="background: #37352f;">2</div>
+                                    Choose your output format
+                                </div>
+                                <div class="options-grid">
+                                    <label class="option-card selected" onclick="selectOption(this, 'text')">
+                                        <input type="radio" name="output_format" value="text" checked style="display: none;">
+                                        <div class="option-icon">T</div>
+                                        <div class="option-title">Plain Text</div>
+                                        <div class="option-desc">Simple text format</div>
+                                    </label>
+                                    <label class="option-card" onclick="selectOption(this, 'pdf')">
+                                        <input type="radio" name="output_format" value="pdf" style="display: none;">
+                                        <div class="option-icon" style="color: #dc2626;">P</div>
+                                        <div class="option-title">PDF Document</div>
+                                        <div class="option-desc">Print-ready format</div>
+                                    </label>
+                                    <label class="option-card" onclick="selectOption(this, 'word')">
+                                        <input type="radio" name="output_format" value="word" style="display: none;">
+                                        <div class="option-icon" style="color: #2563eb;">W</div>
+                                        <div class="option-title">Word Document</div>
+                                        <div class="option-desc">Editable format</div>
+                                    </label>
+                                    <label class="option-card" onclick="selectOption(this, 'powerpoint')">
+                                        <input type="radio" name="output_format" value="powerpoint" style="display: none;">
+                                        <div class="option-icon" style="color: #ca8a04;">S</div>
+                                        <div class="option-title">Presentation</div>
+                                        <div class="option-desc">Slide format</div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Word Count Section -->
+                            <div class="word-count-section" style="margin-bottom: 1.5rem;">
+                                <div class="section-label">
+                                    <div class="section-icon" style="background: #37352f;">W</div>
+                                    Essay Length (Optional)
+                                </div>
+                                <div class="word-count-options" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    <label class="word-count-chip" onclick="selectWordCount(this, 250)">
+                                        <input type="radio" name="word_count" value="250" style="display: none;">
+                                        <span>250 words</span>
+                                    </label>
+                                    <label class="word-count-chip" onclick="selectWordCount(this, 500)">
+                                        <input type="radio" name="word_count" value="500" checked style="display: none;">
+                                        <span>500 words</span>
+                                    </label>
+                                    <label class="word-count-chip" onclick="selectWordCount(this, 750)">
+                                        <input type="radio" name="word_count" value="750" style="display: none;">
+                                        <span>750 words</span>
+                                    </label>
+                                    <label class="word-count-chip" onclick="selectWordCount(this, 1000)">
+                                        <input type="radio" name="word_count" value="1000" style="display: none;">
+                                        <span>1000 words</span>
+                                    </label>
+                                    <label class="word-count-chip" onclick="selectWordCount(this, 1500)">
+                                        <input type="radio" name="word_count" value="1500" style="display: none;">
+                                        <span>1500 words</span>
+                                    </label>
+                                    <label class="word-count-chip" onclick="selectWordCount(this, 2000)">
+                                        <input type="radio" name="word_count" value="2000" style="display: none;">
+                                        <span>2000 words</span>
+                                    </label>
+                                    <label class="word-count-chip" onclick="selectWordCount(this, 3000)">
+                                        <input type="radio" name="word_count" value="3000" style="display: none;">
+                                        <span>3000 words</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Research Toggle -->
+                            <div class="research-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="research_done" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <div class="toggle-info">
+                                    <h4>Web Research</h4>
+                                    <p>AI will search the web for relevant sources and citations</p>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="generate-btn" id="generate-btn">
+                                <span>Generate Essay</span>
+                                <span>-&gt;</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Loading -->
+                    <div class="loading-overlay" id="loading">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Generating your essay...</div>
+                        <div class="loading-progress">This may take a moment</div>
+                    </div>
+                </div>
+                
+                <!-- Previous Essays -->
+                {% if essays %}
+                <div class="previous-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Your Essays</h2>
+                    </div>
+                    <div class="essays-grid">
+                        {% for essay in essays %}
+                        <div class="essay-card">
+                            <div class="essay-icon" style="background: #37352f;">E</div>
+                            <h3 class="essay-title">{{ essay.topic|truncatechars:40 }}</h3>
+                            <div class="essay-meta">
+                                <span>{{ essay.created_at|date:"M d, Y" }}</span>
+                                <span>{{ essay.get_output_format_display }}</span>
+                            </div>
+                            <div class="essay-actions">
+                                <a href="{% url 'essay_detail' essay.id %}" class="btn btn-primary btn-sm">View</a>
+                                <a href="{% url 'delete_essay' essay.id %}" class="btn btn-danger btn-sm">Delete</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function setTopic(topic) {
+            document.getElementById('topic').value = topic;
+            document.getElementById('topic').focus();
+        }
+        
+        function selectOption(element, value) {
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+            
+            // Update steps
+            document.getElementById('step2').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('step3').classList.add('active');
+            }, 300);
+        }
+        
+        function selectWordCount(element, value) {
+            document.querySelectorAll('.word-count-chip').forEach(chip => {
+                chip.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+        }
+        
+        // Add animation on input focus
+        document.getElementById('topic').addEventListener('focus', function() {
+            document.getElementById('step1').classList.add('active');
+        });
+        
+        // Show loading on submit
+        document.getElementById('essay-form').addEventListener('submit', function() {
+            const topic = document.getElementById('topic').value.trim();
+            if (topic) {
+                document.getElementById('form-body').style.display = 'none';
+                document.getElementById('loading').classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

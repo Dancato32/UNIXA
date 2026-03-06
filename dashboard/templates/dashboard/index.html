@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NEXA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f7;
+            --bg-tertiary: #f1f1f1;
+            --text-primary: #37352f;
+            --text-secondary: #787774;
+            --text-tertiary: #9b9a97;
+            --border: #e1e1e0;
+            --accent: #37352f;
+            --accent-hover: #000000;
+            --sidebar-width: 240px;
+            --header-height: 45px;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+            line-height: 1.5;
+            font-size: 16px;
+        }
+        
+        /* Layout */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 0.75rem 0.875rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .sidebar-brand {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 0.5rem;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            margin-bottom: 2px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.375rem 0.625rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 4px;
+            transition: all 0.1s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .nav-link.active {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .nav-link-icon {
+            font-size: 1rem;
+            font-weight: 600;
+            width: 1.25rem;
+            text-align: center;
+        }
+        
+        .nav-divider {
+            height: 1px;
+            background-color: var(--border);
+            margin: 0.5rem 0;
+        }
+        
+        .nav-link.logout {
+            color: var(--text-tertiary);
+        }
+        
+        .nav-link.logout:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .header-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .search-input {
+            padding: 0.25rem 0.625rem;
+            font-size: 0.8125rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            width: 180px;
+            transition: all 0.15s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: var(--bg-primary);
+            width: 240px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+        }
+        
+        .user-menu:hover {
+            background-color: var(--bg-secondary);
+        }
+        
+        .user-avatar {
+            width: 1.5rem;
+            height: 1.5rem;
+            background-color: var(--accent);
+            color: #fff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .user-name {
+            font-size: 0.8125rem;
+            color: var(--text-primary);
+        }
+        
+        /* Page Content */
+        .page-content {
+            padding: 1.5rem;
+        }
+        
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+        }
+        
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+        
+        .stat-label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-1px);
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+        
+        .card-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.375rem;
+        }
+        
+        .card-description {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .section-link {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        
+        .section-link:hover {
+            color: var(--text-primary);
+        }
+        
+        /* List Card */
+        .list-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .list-item-icon {
+            width: 2rem;
+            height: 2rem;
+            background-color: var(--bg-secondary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .list-item-content {
+            flex: 1;
+        }
+        
+        .list-item-title {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.125rem;
+        }
+        
+        .list-item-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .btn-list {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+        
+        .btn-list:hover {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .status-badge {
+            padding: 0.0625rem 0.375rem;
+            border-radius: 3px;
+            font-size: 0.6875rem;
+            font-weight: 500;
+        }
+        
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-processing { background-color: #dbeafe; color: #1e40af; }
+        .status-completed { background-color: #d1fae5; color: #065f46; }
+        .status-failed { background-color: #fee2e2; color: #991b1b; }
+        
+        .empty-section {
+            text-align: center;
+            padding: 2rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .empty-section p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid, .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="sidebar-brand">NEXA</a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="{% url 'dashboard' %}" class="nav-link active">
+                        <span class="nav-link-icon">D</span>
+                        Dashboard
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'list_materials' %}" class="nav-link">
+                        <span class="nav-link-icon">M</span>
+                        My Materials
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'ai_chat' %}" class="nav-link">
+                        <span class="nav-link-icon">A</span>
+                        AI Tutor
+                    </a>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'essay_request' %}" class="nav-link">
+                        <span class="nav-link-icon">E</span>
+                        Essay Generator
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'assignment_list' %}" class="nav-link">
+                        <span class="nav-link-icon">S</span>
+                        Assignment
+                    </a>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-link-icon">*</span>
+                        Settings
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link logout">
+                        <span class="nav-link-icon">L</span>
+                        Log out
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-title">Dashboard</div>
+                <div class="header-actions">
+                    <input type="text" class="search-input" placeholder="Search...">
+                    <div class="user-menu">
+                        <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                        <span class="user-name">{{ user.username }}</span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Welcome back, {{ user.username }}</h1>
+                    <p class="page-subtitle">Here's what's happening with your learning journey.</p>
+                </div>
+                
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Total Materials</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">AI Chat Sessions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Essays Generated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Study Hours</div>
+                    </div>
+                </div>
+                
+                <!-- Cards -->
+                <div class="cards-grid">
+                    <a href="{% url 'list_materials' %}" class="card">
+                        <div class="card-icon">M</div>
+                        <h3 class="card-title">My Materials</h3>
+                        <p class="card-description">Organize and manage all your learning materials in one place.</p>
+                    </a>
+                    
+                    <a href="{% url 'ai_chat' %}" class="card">
+                        <div class="card-icon">A</div>
+                        <h3 class="card-title">AI Tutor</h3>
+                        <p class="card-description">Get personalized help from our AI-powered tutor.</p>
+                    </a>
+                    
+                    <a href="{% url 'essay_request' %}" class="card">
+                        <div class="card-icon">E</div>
+                        <h3 class="card-title">Essay Generator</h3>
+                        <p class="card-description">Generate essays with AI using web research.</p>
+                    </a>
+                    
+                    <a href="{% url 'assignment_list' %}" class="card">
+                        <div class="card-icon">S</div>
+                        <h3 class="card-title">AI Assignment</h3>
+                        <p class="card-description">Upload assignments and let AI complete them using your study materials.</p>
+                    </a>
+                </div>
+                
+                <!-- Recent Materials -->
+                <div class="section-header">
+                    <h2 class="section-title">Recent Materials</h2>
+                    <a href="{% url 'list_materials' %}" class="section-link">View All</a>
+                </div>
+                
+                {% if materials %}
+                <div class="list-card">
+                    {% for material in materials %}
+                    <div class="list-item">
+                        <div class="list-item-icon">{{ material.material_type|slice:":1" }}</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title">{{ material.title }}</div>
+                            <div class="list-item-meta">
+                                <span>{{ material.get_material_type_display }}</span>
+                                <span>{{ material.uploaded_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'material_detail' material.id %}" class="btn-list">View</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-section">
+                    <p>No materials uploaded yet.</p>
+                    <a href="{% url 'upload_material' %}" class="btn btn-secondary">Upload Materials</a>
+                </div>
+                {% endif %}
+                
+                <!-- Recent Assignments -->
+                <div class="section-header">
+                    <h2 class="section-title">Recent Assignments</h2>
+                    <a href="{% url 'assignment_list' %}" class="section-link">View All</a>
+                </div>
+                
+                {% if assignments %}
+                <div class="list-card">
+                    {% for assignment in assignments %}
+                    <div class="list-item">
+                        <div class="list-item-icon">A</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title">{{ assignment.title }}</div>
+                            <div class="list-item-meta">
+                                <span>{{ assignment.get_task_type_display }}</span>
+                                <span class="status-badge status-{{ assignment.status }}">{{ assignment.get_status_display }}</span>
+                            </div>
+                        </div>
+                        {% if assignment.status == 'completed' %}
+                        <a href="{% url 'assignment_result' assignment.id %}" class="btn-list">View</a>
+                        {% else %}
+                        <a href="{% url 'assignment_list' %}" class="btn-list">View</a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-section">
+                    <p>No assignments yet.</p>
+                    <a href="{% url 'assignment_create' %}" class="btn btn-secondary">Create Assignment</a>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

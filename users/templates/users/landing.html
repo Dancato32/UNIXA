@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXA - Your Learning Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f7;
+            --bg-tertiary: #f1f1f1;
+            --text-primary: #37352f;
+            --text-secondary: #787774;
+            --text-tertiary: #9b9a97;
+            --border: #e1e1e0;
+            --accent: #37352f;
+            --accent-hover: #525251;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            line-height: 1.5;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 0.875rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--accent);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        
+        .navbar-brand:hover {
+            color: var(--accent-hover);
+        }
+        
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+        
+        .btn-ghost:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 5rem 0;
+            text-align: center;
+            background-color: var(--bg-secondary);
+        }
+        
+        .hero-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .hero-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+        
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        /* Features */
+        .features {
+            padding: 5rem 0;
+            background-color: var(--bg-primary);
+        }
+        
+        .features-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .features-header h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .feature-card {
+            padding: 2rem;
+            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+        
+        .feature-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-primary);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .feature-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        /* CTA Section */
+        .cta {
+            padding: 5rem 0;
+            background-color: var(--bg-secondary);
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .cta p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 2rem 0;
+            background-color: var(--bg-primary);
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="{% url 'landing' %}" class="navbar-brand">NEXA</a>
+            <div class="nav-actions">
+                <a href="{% url 'login' %}" class="nav-link">Log in</a>
+                <a href="{% url 'register' %}" class="btn btn-primary">Sign up</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>Welcome to NEXA</h1>
+            <p>Your all-in-one learning platform with AI-powered tutoring, organized materials, and personalized learning paths.</p>
+            <div class="hero-actions">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get Started</a>
+                <a href="#features" class="btn btn-secondary btn-lg">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="features-header">
+                <h2>Features</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">M</div>
+                    <h3>My Materials</h3>
+                    <p>Organize all your learning materials in one place. Create, manage, and access your study resources easily.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">A</div>
+                    <h3>AI Tutor</h3>
+                    <p>Get personalized help from our AI-powered tutor. Ask questions and receive instant explanations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">S</div>
+                    <h3>Settings</h3>
+                    <p>Customize your learning experience with flexible settings and preferences.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Start Learning?</h2>
+            <p>Join thousands of learners who are already using NEXA to achieve their goals.</p>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Create Free Account</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 NEXA. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

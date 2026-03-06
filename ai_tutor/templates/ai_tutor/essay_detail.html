@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - NEXA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #ffffff; --bg-secondary: #f7f7f7; --text-primary: #37352f; --text-secondary: #787774; --text-tertiary: #9b9a97; --border: #e1e1e0; --accent: #37352f; --sidebar-width: 240px; --header-height: 45px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text-primary); background-color: var(--bg-secondary); min-height: 100vh; }
+        .app-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background-color: var(--bg-primary); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 0.75rem 0.875rem; border-bottom: 1px solid var(--border); }
+        .sidebar-brand { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-decoration: none; }
+        .sidebar-nav { flex: 1; padding: 0.5rem; overflow-y: auto; }
+        .nav-item { margin-bottom: 2px; }
+        .nav-link { display: flex; align-items: center; gap: 0.625rem; padding: 0.375rem 0.625rem; color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; border-radius: 4px; }
+        .nav-link:hover { background-color: var(--bg-secondary); color: var(--text-primary); }
+        .nav-link.active { background-color: var(--bg-secondary); color: var(--text-primary); font-weight: 500; }
+        .nav-link-icon { font-size: 1rem; font-weight: 600; width: 1.25rem; text-align: center; }
+        .nav-divider { height: 1px; background-color: var(--border); margin: 0.5rem 0; }
+        .main-content { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; }
+        .header { height: var(--header-height); background-color: var(--bg-primary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; }
+        .header-title { font-size: 0.875rem; font-weight: 500; color: var(--text-primary); }
+        .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .search-input { padding: 0.25rem 0.625rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 4px; background-color: var(--bg-secondary); color: var(--text-primary); width: 180px; }
+        .user-avatar { width: 1.5rem; height: 1.5rem; background-color: var(--accent); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; }
+        .user-name { font-size: 0.8125rem; color: var(--text-primary); }
+        .page-content { padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; border-radius: 4px; text-decoration: none; cursor: pointer; border: none; transition: all 0.15s ease; }
+        .btn-primary { background-color: var(--accent); color: #fff; }
+        .btn-primary:hover { background-color: #525251; }
+        .btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background-color: #e8e8e8; }
+        .btn-back { background: transparent; color: var(--text-secondary); padding: 0.5rem 0; margin-bottom: 1rem; }
+        .btn-back:hover { color: var(--text-primary); }
+        .essay-card { background-color: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .essay-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .essay-title { font-size: 1.125rem; font-weight: 600; }
+        .essay-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background-color: var(--bg-secondary); }
+        .meta-item { display: flex; flex-direction: column; gap: 0.25rem; }
+        .meta-label { font-size: 0.6875rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta-value { font-size: 0.875rem; font-weight: 500; }
+        .essay-content { padding: 1.5rem; white-space: pre-wrap; line-height: 1.7; font-size: 0.9375rem; }
+        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } .essay-meta { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header"><a href="{% url 'dashboard' %}" class="sidebar-brand">NEXA</a></div>
+            <nav class="sidebar-nav">
+                <div class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link"><span class="nav-link-icon">D</span>Dashboard</a></div>
+                <div class="nav-item"><a href="{% url 'list_materials' %}" class="nav-link"><span class="nav-link-icon">M</span>My Materials</a></div>
+                <div class="nav-item"><a href="{% url 'ai_chat' %}" class="nav-link"><span class="nav-link-icon">A</span>AI Tutor</a></div>
+                <div class="nav-divider"></div>
+                <div class="nav-item"><a href="{% url 'essay_request' %}" class="nav-link"><span class="nav-link-icon">E</span>Essay Generator</a></div>
+                <div class="nav-item"><a href="{% url 'logout' %}" class="nav-link" style="color: var(--text-tertiary);"><span class="nav-link-icon">L</span>Log out</a></div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">Essay Details</div>
+                <div class="header-actions">
+                    <input type="text" class="search-input" placeholder="Search...">
+                    <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                    <span class="user-name">{{ user.username }}</span>
+                </div>
+            </header>
+            <div class="page-content">
+                <a href="{% url 'essay_request' %}" class="btn btn-back">Back to Essays</a>
+                <div class="essay-card">
+                    <div class="essay-header">
+                        <h1 class="essay-title">{{ essay.topic }}</h1>
+                        <a href="{% url 'delete_essay' essay.id %}" class="btn btn-secondary" style="color: #dc2626;">Delete</a>
+                    </div>
+                    <div class="essay-meta">
+                        <div class="meta-item"><span class="meta-label">Created</span><span class="meta-value">{{ essay.created_at|date:"M d, Y" }}</span></div>
+                        <div class="meta-item"><span class="meta-label">Format</span><span class="meta-value">{{ essay.get_output_format_display }}</span></div>
+                        <div class="meta-item"><span class="meta-label">Research</span><span class="meta-value">{% if essay.research_done %}Yes{% else %}No{% endif %}</span></div>
+                    </div>
+                    <div class="essay-content">{{ essay.essay_text }}</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
