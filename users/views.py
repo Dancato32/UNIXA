@@ -11,7 +11,7 @@ def landing_view(request):
     """Landing page view - accessible only to unauthenticated users."""
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return render(request, 'users/landing.html')
+    return render(request, 'users/landing_final.html')
 
 
 @login_not_required
@@ -34,7 +34,7 @@ def login_view(request):
         else:
             messages.error(request, 'Please enter both username and password.')
     
-    return render(request, 'users/login.html')
+    return render(request, 'users/register_split.html')
 
 
 @login_not_required
@@ -72,20 +72,21 @@ def register_view(request):
         if errors:
             for error in errors:
                 messages.error(request, error)
-            return render(request, 'users/register.html')
+            return render(request, 'users/register_split.html')
         
-        # Create user
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password
-        )
-        
-        # Auto-login after registration
-        login(request, user)
-        return redirect('dashboard')
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            login(request, user)
+            return redirect('dashboard')
+        except Exception as e:
+            messages.error(request, f'Error creating account: {str(e)}')
+            return render(request, 'users/register_split.html')
     
-    return render(request, 'users/register.html')
+    return render(request, 'users/register_split.html')
 
 
 def logout_view(request):

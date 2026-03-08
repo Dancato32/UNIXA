@@ -42,6 +42,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -73,7 +74,7 @@ ROOT_URLCONF = 'nexa.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'users' / 'templates', BASE_DIR / 'dashboard' / 'templates', BASE_DIR / 'ai_tutor' / 'templates', BASE_DIR / 'materials' / 'templates', BASE_DIR / 'assignment' / 'templates'],
+        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'users' / 'templates', BASE_DIR / 'dashboard' / 'templates', BASE_DIR / 'ai_tutor' / 'templates', BASE_DIR / 'materials' / 'templates', BASE_DIR / 'assignment' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -162,4 +163,117 @@ LOGGING = {
             'level': 'INFO',
         },
     },
+}
+
+
+# Jazzmin Admin Configuration
+JAZZMIN_SETTINGS = {
+    "site_title": "NEXA Admin",
+    "site_header": "NEXA",
+    "site_brand": "NEXA Learning Platform",
+    "site_logo": None,
+    "welcome_sign": "Welcome to NEXA Admin",
+    "copyright": "NEXA Learning Platform",
+    "search_model": "auth.User",
+    
+    # Top Menu
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Dashboard", "url": "/dashboard/", "new_window": False},
+        {"model": "auth.User"},
+    ],
+    
+    # User Menu
+    "usermenu_links": [
+        {"model": "auth.user"}
+    ],
+    
+    # Side Menu
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "order_with_respect_to": ["auth", "users", "materials", "ai_tutor", "assignment"],
+    
+    # Icons
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "users.CustomUser": "fas fa-user-graduate",
+        "materials.StudyMaterial": "fas fa-book",
+        "ai_tutor.Conversation": "fas fa-comments",
+        "ai_tutor.EssayRequest": "fas fa-file-alt",
+        "assignment.Assignment": "fas fa-tasks",
+    },
+    
+    # UI Tweaks
+    "custom_css": None,
+    "custom_js": None,
+    "show_ui_builder": False,
+    
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "auth.user": "collapsible",
+        "auth.group": "vertical_tabs"
+    },
+    
+    # Theme
+    "theme": "flatly",  # Options: default, cerulean, cosmo, cyborg, darkly, flatly, journal, litera, lumen, lux, materia, minty, pulse, sandstone, simplex, slate, solar, spacelab, superhero, united, yeti
+    
+    # Custom Links
+    "custom_links": {
+        "materials": [{
+            "name": "Upload Material",
+            "url": "/materials/upload/",
+            "icon": "fas fa-upload",
+            "permissions": ["materials.add_studymaterial"]
+        }],
+        "ai_tutor": [{
+            "name": "AI Chat",
+            "url": "/ai-tutor/chat/",
+            "icon": "fas fa-robot",
+        }],
+    },
+    
+    # Related Modal
+    "related_modal_active": False,
+    
+    # UI Customizer
+    "ui_builder": False,
+    
+    # Language Chooser
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-primary",
+    "navbar": "navbar-dark navbar-primary",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "flatly",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
 }

@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+
+{% block title %}NEXA - AI-Powered Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Navigation */
+    .navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .navbar-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+        letter-spacing: -0.02em;
+    }
+    
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .nav-link {
+        color: var(--gray-600);
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+    
+    .nav-link:hover {
+        color: var(--primary);
+        background-color: var(--gray-100);
+    }
+    
+    /* Hero Section */
+    .hero {
+        padding: 6rem 0 8rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+        background-size: cover;
+        opacity: 0.5;
+    }
+    
+    .hero-content {
+        max-width: 900px;
+        margin: 0 auto;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 9999px;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .hero h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: white;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+    }
+    
+    .hero h1 .gradient-text {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .hero p {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-hero-primary {
+        background: white;
+        color: var(--primary);
+        font-weight: 700;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-hero-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn-hero-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        font-weight: 600;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+    }
+    
+    .btn-hero-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Features Section */
+    .features {
+        padding: 6rem 0;
+        background: white;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+    
+    .section-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: var(--gray-100);
+        color: var(--primary);
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 9999px;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .section-header h2 {
+        font-size: 2.75rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+        color: var(--gray-900);
+    }
+    
+    .section-header p {
+        font-size: 1.25rem;
+        color: var(--gray-600);
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.7;
+    }
+    
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+    
+    .feature-card {
+        padding: 2.5rem;
+        border-radius: 1rem;
+        background: white;
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary);
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gradient-primary);
+        border-radius: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    }
+    
+    .feature-icon svg {
+        width: 32px;
+        height: 32px;
+        stroke: white;
+        stroke-width: 2;
+        fill: none;
+    }
+    
+    .feature-card h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--gray-900);
+    }
+    
+    .feature-card p {
+        color: var(--gray-600);
+        line-height: 1.7;
+        font-size: 0.9375rem;
+    }
+    
+    /* Stats Section */
+    .stats {
+        padding: 6rem 0;
+        background: var(--gray-50);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 3rem;
+        text-align: center;
+    }
+    
+    .stat-item h3 {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-item p {
+        color: var(--gray-600);
+        font-size: 1.125rem;
+        font-weight: 500;
+    }
+    
+    /* CTA Section */
+    .cta {
+        padding: 6rem 0;
+        background: var(--gradient-primary);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,154.7C1248,149,1344,171,1392,181.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>') no-repeat top;
+        background-size: cover;
+    }
+    
+    .cta-content {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .cta h2 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: white;
+        letter-spacing: -0.02em;
+    }
+    
+    .cta p {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+    }
+    
+    /* Footer */
+    footer {
+        padding: 3rem 0;
+        background: var(--gray-900);
+        color: var(--gray-400);
+        text-align: center;
+    }
+    
+    footer p {
+        font-size: 0.9375rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+        
+        .hero p {
+            font-size: 1.125rem;
+        }
+        
+        .section-header h2 {
+            font-size: 2rem;
+        }
+        
+        .feature-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .hero-actions {
+            flex-direction: column;
+        }
+        
+        .btn-hero-primary,
+        .btn-hero-secondary {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="container navbar-content">
+        <a href="{% url 'landing' %}" class="navbar-brand">NEXA</a>
+        <div class="nav-actions">
+            <a href="{% url 'login' %}" class="nav-link">Sign in</a>
+            <a href="{% url 'register' %}" class="btn btn-primary">Get Started</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container hero-content fade-in">
+        <div class="hero-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            AI-Powered Learning Platform
+        </div>
+        <h1>
+            Learn Smarter with<br>
+            <span class="gradient-text">AI-Powered</span> Education
+        </h1>
+        <p>
+            Transform your learning experience with our intelligent platform. Get personalized tutoring, 
+            organize study materials, and complete assignments with AI assistance.
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'register' %}" class="btn btn-hero-primary">
+                Start Learning Free
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+            <a href="#features" class="btn btn-hero-secondary">
+                Explore Features
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-badge">Features</span>
+            <h2>Everything you need to succeed</h2>
+            <p>Powerful tools designed to enhance your learning journey and help you achieve your academic goals.</p>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <h3>Study Materials</h3>
+                <p>Organize and manage all your learning materials in one place. Upload PDFs, documents, and presentations.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <h3>AI Tutor</h3>
+                <p>Get instant help from our AI-powered tutor. Ask questions and receive personalized explanations 24/7.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                </div>
+                <h3>Essay Generator</h3>
+                <p>Generate well-researched essays with AI. Get citations, references, and properly formatted content.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                </div>
+                <h3>Assignment Helper</h3>
+                <p>Upload assignments and get AI-powered assistance. Complete tasks faster with intelligent suggestions.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>10K+</h3>
+                <p>Active Students</p>
+            </div>
+            <div class="stat-item">
+                <h3>50K+</h3>
+                <p>Materials Uploaded</p>
+            </div>
+            <div class="stat-item">
+                <h3>100K+</h3>
+                <p>AI Conversations</p>
+            </div>
+            <div class="stat-item">
+                <h3>98%</h3>
+                <p>Satisfaction Rate</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container cta-content">
+        <h2>Ready to transform your learning?</h2>
+        <p>Join thousands of students who are already using NEXA to achieve their academic goals.</p>
+        <a href="{% url 'register' %}" class="btn btn-hero-primary">
+            Create Free Account
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>&copy; 2026 NEXA Learning Platform. All rights reserved.</p>
+    </div>
+</footer>
+{% endblock %}
