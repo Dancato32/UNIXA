@@ -27,6 +27,7 @@ class Assignment(models.Model):
     task_type = models.CharField(max_length=20, choices=TASK_TYPE_CHOICES, default='essay')
     instructions = models.TextField(blank=True, default='', help_text="Additional instructions for the AI")
     output_format = models.CharField(max_length=20, choices=OUTPUT_FORMAT_CHOICES, default='word')
+    use_rag = models.BooleanField(default=True, help_text="Use study materials as reference (RAG)")
     status = models.CharField(max_length=20, default='pending', choices=[
         ('pending', 'Pending'),
         ('processing', 'Processing'),

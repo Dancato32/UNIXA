@@ -42,6 +42,17 @@
         .meta-label { font-size: 0.6875rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
         .meta-value { font-size: 0.875rem; font-weight: 500; }
         .essay-content { padding: 1.5rem; white-space: pre-wrap; line-height: 1.7; font-size: 0.9375rem; }
+        .download-section { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background-color: var(--bg-secondary); }
+        .download-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+        .download-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .download-btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.8125rem; border-radius: 4px; text-decoration: none; cursor: pointer; border: none; transition: all 0.15s ease; }
+        .download-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .download-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-word { background-color: #2563eb; color: #fff; }
+        .btn-pdf { background-color: #dc2626; color: #fff; }
+        .btn-ppt { background-color: #ca8a04; color: #fff; }
+        .btn-text { background-color: #10b981; color: #fff; }
+        .btn-download { background-color: var(--accent); color: #fff; }
         @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } .essay-meta { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -79,10 +90,72 @@
                         <div class="meta-item"><span class="meta-label">Format</span><span class="meta-value">{{ essay.get_output_format_display }}</span></div>
                         <div class="meta-item"><span class="meta-label">Research</span><span class="meta-value">{% if essay.research_done %}Yes{% else %}No{% endif %}</span></div>
                     </div>
+                    
+                    <!-- Download Section -->
+                    <div class="download-section">
+                        <div class="download-label">Download Essay:</div>
+                        <div class="download-buttons">
+                            <button class="download-btn btn-word" onclick="downloadEssay('word')">Word</button>
+                            <button class="download-btn btn-pdf" onclick="downloadEssay('pdf')">PDF</button>
+                            <button class="download-btn btn-ppt" onclick="downloadEssay('powerpoint')">PowerPoint</button>
+                            <button class="download-btn btn-text" onclick="downloadEssay('text')">Plain Text</button>
+                        </div>
+                    </div>
+                    
                     <div class="essay-content">{{ essay.essay_text }}</div>
                 </div>
             </div>
         </main>
     </div>
+    
+    <script>
+        const essayText = `{{ essay.essay_text|escapejs }}`;
+        const essayTopic = `{{ essay.topic|escapejs }}`;
+        
+        async function downloadEssay(format) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Downloading...';
+            
+            try {
+                const response = await fetch('{% url "export_essay" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        essay_text: essayText,
+                        format: format,
+                        topic: essayTopic
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    const extension = format === 'word' ? 'docx' : format === 'powerpoint' ? 'pptx' : format === 'pdf' ? 'pdf' : 'txt';
+                    a.download = `${essayTopic.substring(0, 30)}.${extension}`;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + (data.error || 'Failed to download'));
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Failed to download essay');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = format === 'word' ? 'Word' : format === 'pdf' ? 'PDF' : format === 'powerpoint' ? 'PowerPoint' : 'Plain Text';
+        }
+    </script>
 </body>
 </html>

@@ -37,6 +37,8 @@ def assignment_create(request):
         if form.is_valid():
             assignment = form.save(commit=False)
             assignment.user = request.user
+            # Handle use_rag checkbox
+            assignment.use_rag = request.POST.get('use_rag') == 'on'
             assignment.save()
             
             messages.success(request, 'Assignment created! Processing now...')
@@ -66,7 +68,8 @@ def process_assignment(request, assignment_id):
     assignment.save()
     
     try:
-        content, used_materials = process_assignment_with_ai(assignment, request.user)
+        # Pass use_rag flag to AI processing
+        content, used_materials = process_assignment_with_ai(assignment, request.user, use_rag=assignment.use_rag)
         
         result = AssignmentResult.objects.create(
             assignment=assignment,

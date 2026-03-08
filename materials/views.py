@@ -142,3 +142,12 @@ def delete_material(request, pk):
         'title': 'Delete Material'
     })
 
+
+
+from django.http import JsonResponse
+
+@login_required
+def materials_count_api(request):
+    """API endpoint to get count of user's study materials."""
+    count = StudyMaterial.objects.filter(owner=request.user).count()
+    return JsonResponse({'count': count})

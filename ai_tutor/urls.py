@@ -9,5 +9,6 @@ urlpatterns = [
     path('essay/', views.essay_request, name='essay_request'),
     path('essay/<int:essay_id>/', views.essay_detail, name='essay_detail'),
     path('essay/<int:essay_id>/delete/', views.delete_essay, name='delete_essay'),
+    path('essay/export/', views.export_essay, name='export_essay'),
 ]
 
