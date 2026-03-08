@@ -4,21 +4,27 @@ Integrates with study materials for RAG.
 """
 import os
 import logging
-from django.conf import settings
 from materials.models import StudyMaterial
 
 logger = logging.getLogger(__name__)
 
 
 def get_openai_client():
-    """Get OpenAI client with API key from settings or environment."""
-    api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.environ.get('OPENAI_API_KEY')
+    """Get OpenRouter client with API key from environment."""
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        raise ValueError("OPENAI_API_KEY not configured.")
+        raise ValueError("OPENROUTER_API_KEY not configured.")
     
     try:
         from openai import OpenAI
-        return OpenAI(api_key=api_key)
+        return OpenAI(
+            api_key=api_key,
+            base_url="https://openrouter.ai/api/v1",
+            default_headers={
+                "HTTP-Referer": "http://localhost",
+                "X-Title": "Nexa AI System"
+            }
+        )
     except ImportError:
         raise ImportError("OpenAI package not installed.")
 
@@ -164,7 +170,7 @@ If the study materials are relevant, incorporate them into your response.
             client = get_openai_client()
             
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="openai/gpt-4o-mini",
                 messages=[
                     {
                         "role": "system",
@@ -182,7 +188,7 @@ If the study materials are relevant, incorporate them into your response.
             result_content = response.choices[0].message.content
             
         except Exception as e:
-            logger.error(f"OpenAI API error: {e}")
+            logger.error(f"OpenRouter API error: {e}")
             result_content = _generate_demo_response(assignment, materials)
         
         used_materials_text = "\n".join([m['title'] for m in materials]) or "No materials used"
@@ -219,7 +225,7 @@ Based on the assignment content and available study materials, this section prov
 In summary, this assignment demonstrates understanding of the core concepts. The response has been generated using AI with reference to available study materials.
 
 ---
-*Note: This is a demo response. Configure your OpenAI API key for full AI generation.*""",
+*Note: This is a demo response. Configure your OpenRouter API key for full AI generation.*""",
         
         'summarize': f"""# Summary: {assignment.title}
 
@@ -235,7 +241,7 @@ This summary is based on the assignment content and available study materials.
 {', '.join([m['title'] for m in materials]) if materials else 'No additional materials'}
 
 ---
-*Demo response - Configure OpenAI API key for full generation*""",
+*Demo response - Configure OpenRouter API key for full generation*""",
         
         'answer': f"""# Answers: {assignment.title}
 
@@ -249,7 +255,7 @@ The response incorporates information from study materials when applicable.
 Additional context has been provided based on available reference materials.
 
 ---
-*Demo response - Configure OpenAI API key for full generation*""",
+*Demo response - Configure OpenRouter API key for full generation*""",
         
         'slides': f"""# Slides: {assignment.title}
 
@@ -270,7 +276,7 @@ Additional context has been provided based on available reference materials.
 - Key takeaways
 
 ---
-*Demo response - Configure OpenAI API key for full generation*""",
+*Demo response - Configure OpenRouter API key for full generation*""",
         
         'structured': f"""# Structured Response: {assignment.title}
 
@@ -284,7 +290,7 @@ Information derived from assignment content and study materials.
 Key findings and summary.
 
 ---
-*Demo response - Configure OpenAI API key for full generation*"""
+*Demo response - Configure OpenRouter API key for full generation*"""
     }
     
     return demo_responses.get(assignment.task_type, demo_responses['essay'])

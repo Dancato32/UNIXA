@@ -1,21 +1,27 @@
 """
 AI Utilities for the AI Tutor app.
-Handles OpenAI API calls and RAG (Retrieval-Augmented Generation) integration.
+Handles OpenRouter API calls and RAG (Retrieval-Augmented Generation) integration.
 """
 import os
 import json
-from django.conf import settings
 
 
 def get_openai_client():
-    """Get OpenAI client with API key from settings or environment."""
-    api_key = getattr(settings, 'OPENAI_API_KEY', None) or os.environ.get('OPENAI_API_KEY')
+    """Get OpenRouter client with API key from environment."""
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        raise ValueError("OPENAI_API_KEY not configured. Please set it in .env file.")
+        raise ValueError("OPENROUTER_API_KEY not configured. Please set it in .env file.")
     
     try:
         from openai import OpenAI
-        return OpenAI(api_key=api_key)
+        return OpenAI(
+            api_key=api_key,
+            base_url="https://openrouter.ai/api/v1",
+            default_headers={
+                "HTTP-Referer": "http://localhost",
+                "X-Title": "Nexa AI System"
+            }
+        )
     except ImportError:
         raise ImportError("OpenAI package not installed. Install with: pip install openai")
 
@@ -70,7 +76,7 @@ def ask_ai(message, user=None, use_rag=True):
         
         # Make API call
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="openai/gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": message}
@@ -88,8 +94,8 @@ def ask_ai(message, user=None, use_rag=True):
     except Exception as e:
         import traceback
         logger.error(f"Exception in ask_ai: {type(e).__name__}: {e}\n{traceback.format_exc()}")
-        # For demo purposes, return a simulated response if API fails
-        return f"AI Response: Thank you for your question about '{message}'. This is a demo response. To get real AI responses, please configure your OpenAI API key in the .env file."
+        print(f"DEBUG API Error: {type(e).__name__}: {e}")
+        return f"AI Response: Thank you for your question about '{message}'. This is a demo response. To get real AI responses, please configure your OpenRouter API key in the .env file."
 
 
 def deep_web_essay(topic, user=None, word_count=500):
@@ -131,7 +137,7 @@ def deep_web_essay(topic, user=None, word_count=500):
         
         # Make API call
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="openai/gpt-4o-mini",
             messages=[
                 {
                     "role": "system", 
@@ -172,7 +178,7 @@ Different perspectives exist regarding {topic}. Some experts argue for one appro
 In conclusion, {topic} remains a significant area of study with ongoing research and developments. Further exploration and discussion will continue to advance our knowledge.
 
 ---
-*This is a demo essay. To generate real AI essays, please configure your OpenAI API key in the .env file.*"""
+*This is a demo essay. To generate real AI essays, please configure your OpenRouter API key in the .env file.*"""
 
 
 def text_to_speech(text, voice='alloy'):
@@ -265,7 +271,7 @@ def generate_essay_with_sources(topic, user=None, word_count=500):
         client = get_openai_client()
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="openai/gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
