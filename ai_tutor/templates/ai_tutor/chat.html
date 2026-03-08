@@ -523,6 +523,213 @@
             animation: pulse 1s infinite;
         }
         
+        /* Voice Mode Button */
+        .voice-mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .voice-mode-btn:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent);
+        }
+        
+        /* Full Screen Voice Overlay */
+        .voice-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .voice-overlay.active {
+            display: flex;
+        }
+        
+        .voice-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 3rem;
+            height: 3rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .voice-close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .voice-status {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .voice-bubble {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 0 60px rgba(102, 126, 234, 0.5);
+        }
+        
+        .voice-bubble.speaking {
+            animation: pulse-glow 1.5s ease-in-out infinite;
+        }
+        
+        .voice-bubble.listening {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 0 60px rgba(56, 239, 125, 0.5);
+        }
+        
+        .voice-bubble.thinking {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 0 60px rgba(245, 87, 108, 0.5);
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 60px rgba(102, 126, 234, 0.5);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 80px rgba(102, 126, 234, 0.8);
+            }
+        }
+        
+        .voice-bubble-icon {
+            width: 80px;
+            height: 80px;
+            fill: #fff;
+        }
+        
+        .voice-text-container {
+            max-width: 600px;
+            width: 90%;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .voice-user-text {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            min-height: 2rem;
+        }
+        
+        .voice-ai-text {
+            font-size: 1.5rem;
+            color: #fff;
+            line-height: 1.6;
+            min-height: 3rem;
+            font-weight: 500;
+        }
+        
+        .voice-ai-text.speaking {
+            animation: text-fade 0.3s ease-in-out;
+        }
+        
+        @keyframes text-fade {
+            from { opacity: 0.5; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .voice-waves {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        
+        .voice-wave {
+            width: 4px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 2px;
+            animation: wave 0.5s ease-in-out infinite;
+        }
+        
+        .voice-wave:nth-child(2) { animation-delay: 0.1s; }
+        .voice-wave:nth-child(3) { animation-delay: 0.2s; }
+        .voice-wave:nth-child(4) { animation-delay: 0.3s; }
+        .voice-wave:nth-child(5) { animation-delay: 0.4s; }
+        
+        @keyframes wave {
+            0%, 100% { height: 10px; }
+            50% { height: 30px; }
+        }
+        
+        .voice-controls {
+            position: absolute;
+            bottom: 3rem;
+            display: flex;
+            gap: 1rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .voice-control-btn {
+            padding: 1rem 2rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .voice-control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .voice-control-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .voice-error-info {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -674,6 +881,15 @@
                     <h1 class="header-title">AI Tutor</h1>
                 </div>
                 <div class="header-actions">
+                    <button class="voice-mode-btn" id="voice-mode-btn" title="Voice Mode" onclick="openVoiceMode()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                        <span>Voice Mode</span>
+                    </button>
                     <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
                 </div>
             </header>
@@ -779,6 +995,44 @@
         </main>
     </div>
     
+    <!-- Full Screen Voice Mode Overlay -->
+    <div class="voice-overlay" id="voice-overlay">
+        <button class="voice-close-btn" onclick="closeVoiceMode()">X</button>
+        
+        <div class="voice-status" id="voice-status-text">Initializing...</div>
+        
+        <div class="voice-bubble" id="voice-bubble">
+            <svg class="voice-bubble-icon" viewBox="0 0 24 24">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+        </div>
+        
+        <div class="voice-waves" id="voice-waves">
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+        </div>
+        
+        <div class="voice-text-container">
+            <div class="voice-user-text" id="voice-user-text"></div>
+            <div class="voice-ai-text" id="voice-ai-text"></div>
+        </div>
+        
+        <div class="voice-controls">
+            <button class="voice-control-btn" onclick="stopSpeaking()">Stop Speaking</button>
+            <button class="voice-control-btn primary" onclick="startVoiceListening()">Start Listening</button>
+            <div class="voice-error-info">
+                <strong>Note:</strong> Microphone access requires HTTPS or localhost. 
+                If blocked, click the address bar and allow microphone access.
+            </div>
+        </div>
+    </div>
+    
     <script>
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
@@ -787,6 +1041,7 @@
         const loading = document.getElementById('loading');
         const useRagCheckbox = document.getElementById('use-rag');
         const chatContainer = document.getElementById('chat-container');
+        let isSending = false;
         
         chatInput.addEventListener('input', function() {
             this.style.height = 'auto';
@@ -808,16 +1063,21 @@
         }
         
         async function sendMessage() {
+            if (isSending) return;
+            isSending = true;
+            
             const message = chatInput.value.trim();
-            if (!message) return;
+            if (!message) {
+                isSending = false;
+                return;
+            }
             
             sendBtn.disabled = true;
+            loading.classList.add('active');
             
             if (welcomeScreen) {
                 welcomeScreen.style.display = 'none';
             }
-            
-            loading.classList.add('active');
             
             const userMsgHTML = `
                 <div class="message-wrapper">
@@ -874,15 +1134,12 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to send message.');
+            } finally {
+                loading.classList.remove('active');
+                sendBtn.disabled = false;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                isSending = false;
             }
-            
-            loading.classList.remove('active');
-            sendBtn.disabled = false;
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
         }
         
         function escapeHtml(text) {
@@ -1032,6 +1289,243 @@
             isListening = false;
             voiceBtn.classList.remove('listening');
             chatInput.placeholder = 'Send a message...';
+        }
+        
+        // ============================================
+        // Full Screen Voice Mode
+        // ============================================
+        const voiceOverlay = document.getElementById('voice-overlay');
+        const voiceBubble = document.getElementById('voice-bubble');
+        const voiceStatusText = document.getElementById('voice-status-text');
+        const voiceUserText = document.getElementById('voice-user-text');
+        const voiceAiText = document.getElementById('voice-ai-text');
+        const voiceWaves = document.getElementById('voice-waves');
+        
+        let voiceRecognition = null;
+        let isVoiceModeActive = false;
+        let isProcessingVoice = false;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        
+        function openVoiceMode() {
+            isVoiceModeActive = true;
+            voiceOverlay.classList.add('active');
+            startVoiceListening();
+        }
+        
+        function closeVoiceMode() {
+            isVoiceModeActive = false;
+            if (voiceRecognition && isListening) {
+                voiceRecognition.stop();
+            }
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            voiceOverlay.classList.remove('active');
+        }
+        
+        function startVoiceListening() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                updateVoiceStatus('Voice not supported', 'listening');
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            voiceRecognition = new SpeechRecognition();
+            voiceRecognition.continuous = false;
+            voiceRecognition.interimResults = true;
+            voiceRecognition.lang = 'en-US';
+            
+            voiceRecognition.onstart = function() {
+                isListening = true;
+                updateVoiceStatus('Listening...', 'listening');
+            };
+            
+            voiceRecognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                if (finalTranscript) {
+                    voiceUserText.textContent = finalTranscript;
+                    processVoiceMessage(finalTranscript);
+                } else {
+                    voiceUserText.textContent = interimTranscript;
+                }
+            };
+            
+            voiceRecognition.onerror = function(event) {
+                console.error('Voice recognition error:', event.error);
+                isListening = false;
+                
+                if (event.error === 'not-allowed') {
+                    updateVoiceStatus('Microphone blocked - Click to allow', 'listening');
+                    voiceBubble.onclick = function() {
+                        voiceBubble.onclick = null;
+                        startVoiceListening();
+                    };
+                } else if (event.error === 'no-speech') {
+                    // Auto-restart listening if no speech detected
+                    setTimeout(() => {
+                        if (isVoiceModeActive && !isProcessingVoice) {
+                            startVoiceListening();
+                        }
+                    }, 1000);
+                } else if (event.error === 'network') {
+                    updateVoiceStatus('Network error - Check connection', 'listening');
+                    setTimeout(() => {
+                        if (isVoiceModeActive) startVoiceListening();
+                    }, 2000);
+                } else {
+                    updateVoiceStatus('Error: ' + event.error, 'listening');
+                }
+            };
+            
+            voiceRecognition.onend = function() {
+                isListening = false;
+                if (isVoiceModeActive && !isProcessingVoice) {
+                    // Auto-restart for continuous conversation
+                    setTimeout(() => {
+                        if (isVoiceModeActive && !isProcessingVoice) {
+                            startVoiceListening();
+                        }
+                    }, 500);
+                }
+            };
+            
+            try {
+                voiceRecognition.start();
+            } catch(e) {
+                console.error('Error starting voice recognition:', e);
+            }
+        }
+        
+        function updateVoiceStatus(text, state) {
+            voiceStatusText.textContent = text;
+            voiceBubble.className = 'voice-bubble ' + state;
+            
+            if (state === 'listening') {
+                voiceWaves.style.display = 'flex';
+            } else {
+                voiceWaves.style.display = 'none';
+            }
+        }
+        
+        async function processVoiceMessage(message) {
+            if (isProcessingVoice || !message.trim()) return;
+            isProcessingVoice = true;
+            
+            // Stop listening while processing
+            if (voiceRecognition && isListening) {
+                try { voiceRecognition.stop(); } catch(e) {}
+            }
+            
+            updateVoiceStatus('Thinking...', 'thinking');
+            
+            try {
+                const response = await fetch('{% url "ai_chat_ajax" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        use_rag: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const aiResponse = data.response;
+                    voiceAiText.textContent = aiResponse;
+                    updateVoiceStatus('Speaking...', 'speaking');
+                    
+                    // Speak the response
+                    speakText(aiResponse);
+                } else {
+                    voiceAiText.textContent = 'Error: ' + (data.error || 'Failed to get response');
+                    updateVoiceStatus('Error', 'listening');
+                    isProcessingVoice = false;
+                    startVoiceListening();
+                }
+            } catch (error) {
+                console.error('Error processing voice message:', error);
+                voiceAiText.textContent = 'Error: Failed to connect';
+                updateVoiceStatus('Error', 'listening');
+                isProcessingVoice = false;
+                startVoiceListening();
+            }
+        }
+        
+        function speakText(text) {
+            if (!text) {
+                isProcessingVoice = false;
+                startVoiceListening();
+                return;
+            }
+            
+            // Use browser speech synthesis
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'en-US';
+            currentUtterance.rate = 1.0;
+            currentUtterance.pitch = 1.0;
+            
+            // Try to get a natural voice
+            const voices = speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => 
+                v.name.includes('Google') || 
+                v.name.includes('Microsoft') ||
+                v.name.includes('Samantha')
+            );
+            if (preferredVoice) {
+                currentUtterance.voice = preferredVoice;
+            }
+            
+            currentUtterance.onend = function() {
+                isProcessingVoice = false;
+                updateVoiceStatus('Listening...', 'listening');
+                // Start listening again for continuous conversation
+                setTimeout(() => {
+                    if (isVoiceModeActive) {
+                        startVoiceListening();
+                    }
+                }, 800);
+            };
+            
+            currentUtterance.onerror = function(event) {
+                console.error('Speech synthesis error:', event);
+                isProcessingVoice = false;
+                updateVoiceStatus('Listening...', 'listening');
+                startVoiceListening();
+            };
+            
+            speechSynthesis.speak(currentUtterance);
+        }
+        
+        function stopSpeaking() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            isProcessingVoice = false;
+            startVoiceListening();
+        }
+        
+        // Preload voices
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = function() {
+                const voices = speechSynthesis.getVoices();
+                console.log('Voices loaded:', voices.length);
+            };
         }
     </script>
 </body>
