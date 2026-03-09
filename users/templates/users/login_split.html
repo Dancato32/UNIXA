@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In - NEXA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.split-container { display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 1400px; min-height: 100vh; background: white; box-shadow: 0 0 60px rgba(0, 0, 0, 0.1); }
+.form-side { padding: 4rem 3rem; display: flex; flex-direction: column; justify-content: center; background: white; }
+.logo-section { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 4rem; }
+.logo-icon { width: 40px; height: 40px; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.25rem; }
+.logo-text { font-size: 1.5rem; font-weight: 700; color: #1a1a1a; }
+.form-content { max-width: 440px; margin: 0 auto; width: 100%; }
+.form-header h1 { font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem; }
+.form-header p { color: #6b7280; font-size: 0.9375rem; margin-bottom: 2.5rem; }
+.form-group { margin-bottom: 1.25rem; }
+.form-label { display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+.input-wrapper { position: relative; }
+.input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #9ca3af; width: 20px; height: 20px; }
+.form-input { width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; font-size: 0.9375rem; border: 1px solid #d1d5db; border-radius: 8px; background-color: white; color: #1a1a1a; transition: all 0.2s; }
+.form-input:focus { outline: none; border-color: #1a1a1a; box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1); }
+.form-input::placeholder { color: #9ca3af; }
+.form-options { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+.remember-me { display: flex; align-items: center; gap: 0.5rem; }
+.remember-me input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.remember-me label { font-size: 0.875rem; color: #374151; cursor: pointer; }
+.forgot-password { font-size: 0.875rem; color: #1a1a1a; text-decoration: none; font-weight: 600; }
+.forgot-password:hover { text-decoration: underline; }
+.btn-signin { width: 100%; padding: 0.875rem; background: #1a1a1a; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 1.5rem; }
+.btn-signin:hover { background: #2d2d2d; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26, 26, 26, 0.2); }
+.signup-link { text-align: center; margin-top: 2rem; color: #6b7280; font-size: 0.9375rem; }
+.signup-link a { color: #1a1a1a; text-decoration: none; font-weight: 600; }
+.signup-link a:hover { text-decoration: underline; }
+.alert { padding: 0.875rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.875rem; background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.alert ul { margin: 0; padding-left: 1.25rem; }
+.alert li { margin-bottom: 0.25rem; }
+.testimonial-side { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); padding: 4rem 3rem; display: flex; flex-direction: column; justify-content: center; color: white; position: relative; overflow: hidden; }
+.testimonial-content { max-width: 500px; margin: 0 auto; position: relative; z-index: 1; }
+.testimonial-content h2 { font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 2rem; }
+.quote-icon { font-size: 4rem; opacity: 0.3; margin-bottom: 1rem; }
+.testimonial-text { font-size: 1.125rem; line-height: 1.7; margin-bottom: 2.5rem; opacity: 0.95; }
+.testimonial-author { display: flex; align-items: center; gap: 1rem; }
+.author-avatar { width: 56px; height: 56px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; border: 2px solid rgba(255, 255, 255, 0.3); }
+.author-info h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+.author-info p { font-size: 0.875rem; opacity: 0.8; }
+
+.stats-section { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2); display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; text-align: center; }
+.stat-item h3 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+.stat-item p { font-size: 0.875rem; opacity: 0.8; }
+@media (max-width: 1024px) { .split-container { grid-template-columns: 1fr; } .testimonial-side { display: none; } .form-side { padding: 3rem 2rem; } }
+@media (max-width: 640px) { .form-side { padding: 2rem 1.5rem; } .form-header h1 { font-size: 1.75rem; } .logo-section { margin-bottom: 3rem; } }
+</style>
+</head>
+<body>
+<div class="split-container">
+<div class="form-side">
+<div class="logo-section">
+<div class="logo-icon">N</div>
+<span class="logo-text">NEXA</span>
+</div>
+<div class="form-content">
+<div class="form-header">
+<h1>Welcome back</h1>
+<p>Sign in to your account to continue learning.</p>
+</div>
+{% if messages %}
+<div class="alert">
+<ul>
+{% for message in messages %}
+<li>{{ message }}</li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+<form method="POST" action="{% url 'login' %}">
+{% csrf_token %}
+<div class="form-group">
+<label for="username" class="form-label">Username</label>
+<div class="input-wrapper">
+<svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+<circle cx="12" cy="7" r="4"/>
+</svg>
+<input type="text" class="form-input" id="username" name="username" required autofocus placeholder="Enter your username">
+</div>
+</div>
+<div class="form-group">
+<label for="password" class="form-label">Password</label>
+<div class="input-wrapper">
+<svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+<path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+</svg>
+<input type="password" class="form-input" id="password" name="password" required placeholder="Enter your password">
+</div>
+</div>
+
+<div class="form-options">
+<div class="remember-me">
+<input type="checkbox" id="remember" name="remember">
+<label for="remember">Remember me</label>
+</div>
+<a href="#" class="forgot-password">Forgot password?</a>
+</div>
+<button type="submit" class="btn-signin">Sign In</button>
+</form>
+<div class="signup-link">
+Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+</div>
+</div>
+</div>
+<div class="testimonial-side">
+<div class="testimonial-content">
+<h2>Welcome Back to Your Learning Journey</h2>
+<div class="quote-icon">"</div>
+<p class="testimonial-text">
+"NEXA has completely transformed how I study. The AI tutor is incredibly helpful, and having all my materials organized in one place has made learning so much more efficient."
+</p>
+<div class="testimonial-author">
+<div class="author-avatar">SC</div>
+<div class="author-info">
+<h4>Sarah Chen</h4>
+<p>Computer Science Student</p>
+</div>
+</div>
+<div class="stats-section">
+<div class="stat-item">
+<h3>10K+</h3>
+<p>Active Students</p>
+</div>
+<div class="stat-item">
+<h3>50K+</h3>
+<p>Materials</p>
+</div>
+<div class="stat-item">
+<h3>98%</h3>
+<p>Satisfaction</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+
+</div>
+<div class="form-options">
+<div class="remember-me">
+<input type="checkbox" id="remember" name="remember">
+<label for="remember">Remember me</label>
+</div>
+<a href="#" class="forgot-password">Forgot password?</a>
+</div>
+<button type="submit" class="btn-signin">Sign In</button>
+</form>
+<div class="signup-link">
+Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+</div>
+</div>
+</div>
+<div class="testimonial-side">
+<div class="testimonial-content">
+<h2>Welcome Back to Your Learning Journey</h2>
+<div class="quote-icon">"</div>
+<p class="testimonial-text">"NEXA has completely transformed how I study. The AI tutor is incredibly helpful, and having all my materials organized in one place has made learning so much more efficient."</p>
+<div class="testimonial-author">
+<div class="author-avatar">SC</div>
+<div class="author-info">
+<h4>Sarah Chen</h4>
+<p>Computer Science Student</p>
+</div>
+</div>
+<div class="stats-section">
+<div class="stat-item"><h3>10K+</h3><p>Active Students</p></div>
+<div class="stat-item"><h3>50K+</h3><p>Materials</p></div>
+<div class="stat-item"><h3>98%</h3><p>Satisfaction</p></div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

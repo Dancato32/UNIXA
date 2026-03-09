@@ -1,0 +1,46 @@
+        // Detect and wrap mathematical expressions for KaTeX
+        function detectAndWrapMath(text) {
+            // Don't process if already has dollar sign delimiters
+            if (text.indexOf('$') !== -1) {
+                return text;
+            }
+            
+            // Common math patterns to detect
+            const mathPatterns = [
+                // Fractions: 1/2, x/y
+                /(\b\d+\/\d+\b)/g,
+                /(\b[a-z]\/[a-z]\b)/gi,
+                
+                // Powers: x^2, 2^n
+                /(\b[a-zA-Z0-9]+\^[a-zA-Z0-9]+\b)/g,
+                
+                // Equations with = sign and operators
+                /(\b[a-zA-Z0-9\s\+\-\*\/\^]+\s*=\s*[a-zA-Z0-9\s\+\-\*\/\^]+\b)/g,
+                
+                // Square roots: √x, sqrt(x)
+                /(√[a-zA-Z0-9]+|sqrt\([^)]+\))/gi
+            ];
+            
+            // Wrap detected patterns in dollar signs for inline math
+            mathPatterns.forEach(pattern => {
+                text = text.replace(pattern, (match) => {
+                    // Convert to LaTeX format
+                    let latex = match;
+                    
+                    // Convert fractions
+                    latex = latex.replace(/(\d+)\/(\d+)/g, '\\frac{$1}{$2}');
+                    latex = latex.replace(/([a-z])\/([a-z])/gi, '\\frac{$1}{$2}');
+                    
+                    // Convert powers
+                    latex = latex.replace(/\^/g, '^');
+                    
+                    // Convert sqrt
+                    latex = latex.replace(/sqrt\(([^)]+)\)/gi, '\\sqrt{$1}');
+                    latex = latex.replace(/√([a-zA-Z0-9]+)/g, '\\sqrt{$1}');
+                    
+                    return '$' + latex + '$';
+                });
+            });
+            
+            return text;
+        }

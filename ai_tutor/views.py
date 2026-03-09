@@ -52,12 +52,13 @@ def chat_ajax(request):
             data = json.loads(request.body)
             message = data.get('message', '').strip()
             use_rag = data.get('use_rag', True)
+            learning_mode = data.get('learning_mode', 'explain')  # Get learning mode from request
             
             if not message:
                 return JsonResponse({'error': 'Message cannot be empty'}, status=400)
             
-            # Get AI response
-            response = ask_ai(message, user=request.user, use_rag=use_rag)
+            # Get AI response with learning mode
+            response = ask_ai(message, user=request.user, use_rag=use_rag, learning_mode=learning_mode)
             
             # Save conversation
             conversation = Conversation.objects.create(
@@ -163,7 +164,11 @@ def essay_detail(request, essay_id):
 @login_required
 def delete_essay(request, essay_id):
     """Delete an essay request."""
-    essay = get_object_or_404(EssayRequest, id=essay_id, user=request.user)
+    try:
+        essay = EssayRequest.objects.get(id=essay_id, user=request.user)
+    except EssayRequest.DoesNotExist:
+        messages.error(request, 'Essay not found or already deleted.')
+        return redirect('essay_request')
     
     if request.method == 'POST':
         essay.delete()
