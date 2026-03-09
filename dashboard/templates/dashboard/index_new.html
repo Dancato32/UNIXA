@@ -82,6 +82,95 @@ body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1a1a1a; }
 .btn-premium { padding: 0.75rem 1.5rem; background: #1a1a1a; color: white; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; }
 .premium-icon { width: 100px; height: 100px; }
 .premium-icon svg { width: 100%; height: 100%; }
+
+/* Mobile Menu Toggle */
+.mobile-toggle { display: none; }
+
+/* Bottom Navigation */
+.bottom-nav { display: none; }
+
+/* Responsive */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        position: fixed;
+        z-index: 1000;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1rem; }
+    .mobile-toggle {
+        display: flex;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .mobile-toggle svg { width: 24px; height: 24px; }
+    .header { flex-wrap: wrap; gap: 1rem; }
+    .search { order: 3; width: 100%; }
+    .search input { width: 100%; }
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        padding: 0.5rem;
+        z-index: 100;
+        justify-content: space-around;
+    }
+    .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.625rem;
+        border-radius: 8px;
+    }
+    .bottom-nav-item.active { color: #1a1a1a; }
+    .bottom-nav-item svg { width: 20px; height: 20px; }
+}
+
+@media (max-width: 768px) {
+    .greeting { flex-direction: column; text-align: center; padding: 1.5rem; }
+    .greeting-avatar { width: 80px; height: 80px; }
+    .greeting-text h1 { font-size: 1.5rem; }
+    .stats { flex-direction: column; gap: 1rem; }
+    .stat-box { padding: 1rem; }
+    .stat-box h2 { font-size: 1.75rem; }
+    .content-grid { grid-template-columns: 1fr; }
+    .courses, .statistics { padding: 1.5rem; }
+    .premium { flex-direction: column; text-align: center; padding: 1.5rem; }
+    .premium-icon { width: 80px; height: 80px; }
+    .greeting-avatar { display: none; }
+}
+
+@media (max-width: 480px) {
+    .main { padding: 0.75rem; padding-bottom: 80px; }
+    .header { margin-bottom: 1rem; }
+    .greeting-text h1 { font-size: 1.25rem; }
+    .stat-box h2 { font-size: 1.5rem; }
+    .courses-header h2 { font-size: 1rem; }
+    .tabs { gap: 1rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab { font-size: 0.875rem; white-space: nowrap; }
+    .course-card { padding: 1rem; }
+    .course-icon { width: 40px; height: 40px; }
+    .course-info h3 { font-size: 0.875rem; }
+    .course-meta { flex-wrap: wrap; }
+    .btn-view { padding: 0.5rem 1rem; font-size: 0.8125rem; }
+    .user-menu { display: none; }
+    .notification { width: 36px; height: 36px; }
+}
 </style>
 </head>
 <body>
@@ -97,6 +186,13 @@ body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1a1a1a; }
 <a href="{% url 'dashboard' %}" class="nav-link active">
 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
 <span>Dashboard</span>
+</a>
+</div>
+
+<div class="nav-item">
+<a href="{% url 'explore' %}" class="nav-link">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+<span>Explore</span>
 </a>
 </div>
 
@@ -141,6 +237,9 @@ body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1a1a1a; }
 <!-- Main Content -->
 <main class="main">
 <div class="header">
+<button class="mobile-toggle" onclick="toggleSidebar()">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+</button>
 <div class="search">
 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
 <input type="text" placeholder="Search...">
@@ -291,5 +390,29 @@ body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1a1a1a; }
 </div>
 </main>
 </div>
+<script>
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+}
+</script>
+
+<nav class="bottom-nav">
+<a href="{% url 'dashboard' %}" class="bottom-nav-item active">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+Home
+</a>
+<a href="{% url 'explore' %}" class="bottom-nav-item">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+Explore
+</a>
+<a href="{% url 'ai_chat' %}" class="bottom-nav-item">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+AI Tutor
+</a>
+<a href="{% url 'list_materials' %}" class="bottom-nav-item">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+Materials
+</a>
+</nav>
 </body>
 </html>

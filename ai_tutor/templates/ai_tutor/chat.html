@@ -205,7 +205,7 @@
         .board-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
         .board-content { min-height: 400px; }
         .board-step { background: rgba(255, 255, 255, 0.03); border-left: 4px solid var(--accent-primary); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; opacity: 0; transform: translateY(20px); animation: stepFadeIn 0.5s ease forwards; }
-        .board-step.active { background: rgba(255, 255, 255, 0.08); border-left-color: #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        .board-step.active { background: rgba(255, 255, 255, 0.08); border-left-color: #ffffff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
         @keyframes stepFadeIn { to { opacity: 1; transform: translateY(0); } }
         .board-step-title { font-size: 1.125rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
         .board-step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); color: #1a1a1a; border-radius: 50%; font-size: 0.875rem; font-weight: 700; }
@@ -214,8 +214,8 @@
         .voice-status { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; text-align: center; }
         .voice-bubble { width: 180px; height: 180px; border-radius: 50%; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 60px rgba(255, 255, 255, 0.4); margin-bottom: 2rem; }
         .voice-bubble.speaking { animation: pulse-glow 1.5s ease-in-out infinite; }
-        .voice-bubble.listening { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 0 60px rgba(16, 185, 129, 0.6); }
-        .voice-bubble.thinking { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 0 60px rgba(245, 158, 11, 0.6); }
+        .voice-bubble.listening { background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%); box-shadow: 0 0 60px rgba(255, 255, 255, 0.6); }
+        .voice-bubble.thinking { background: linear-gradient(135deg, #cccccc 0%, #999999 100%); box-shadow: 0 0 60px rgba(200, 200, 200, 0.6); }
         @keyframes pulse-glow { 0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(255, 255, 255, 0.4); } 50% { transform: scale(1.05); box-shadow: 0 0 80px rgba(255, 255, 255, 0.6); } }
         .voice-bubble-icon { width: 70px; height: 70px; fill: #1a1a1a; }
         .voice-text-container { width: 100%; text-align: center; margin-top: 1rem; }
@@ -235,14 +235,353 @@
         .voice-control-btn.primary:hover { transform: translateY(-2px); }
         .voice-error-info { color: var(--text-tertiary); font-size: 0.8125rem; margin-top: 0.75rem; text-align: center; max-width: 280px; line-height: 1.5; }
         
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        .menu-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .menu-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 0.5rem;
+            z-index: 100;
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.625rem;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+        
+        .bottom-nav-item:hover,
+        .bottom-nav-item.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        
+        .bottom-nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* UBER-STYLE MOBILE - Full overrides for mobile */
         @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-content { margin-left: 0; }
-            .menu-btn { display: block; }
-            .suggestion-cards { grid-template-columns: 1fr; }
-            .voice-dual-panel { flex-direction: column; }
-            .voice-panel { width: 100%; height: 50%; border-right: none; border-bottom: 1px solid var(--border); }
-            .board-panel { width: 100%; height: 50%; }
+            * {
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            html, body {
+                height: 100%;
+                overflow: hidden;
+            }
+            
+            /* Hide desktop elements completely */
+            .sidebar, .sidebar-header, .new-chat-btn,
+            .header-actions .mode-selector,
+            .header-actions .voice-mode-btn span,
+            .suggestions-section, .ai-suggestions,
+            .menu-toggle, .breadcrumb,
+            .sidebar-overlay,
+            .header-actions .search-box {
+                display: none !important;
+            }
+            
+            /* Uber-style header */
+            .main-content {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                height: 100vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                background: #000 !important;
+            }
+            
+            .header {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 12px 16px !important;
+                background: #000 !important;
+                border: none !important;
+                flex-shrink: 0 !important;
+                z-index: 100 !important;
+            }
+            
+            .header-left {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+            }
+            
+            .header-title {
+                font-size: 20px !important;
+                font-weight: 700 !important;
+                color: #fff !important;
+            }
+            
+            .user-avatar {
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 50% !important;
+                background: #fff !important;
+                color: #000 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-weight: 600 !important;
+            }
+            
+            /* Chat area */
+            .chat-container {
+                flex: 1 !important;
+                overflow-y: auto !important;
+                padding: 16px !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            
+            .chat-messages {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 16px !important;
+                padding: 0 !important;
+            }
+            
+            .message {
+                max-width: 85% !important;
+                padding: 14px 18px !important;
+                border-radius: 18px !important;
+                font-size: 16px !important;
+                line-height: 1.5 !important;
+            }
+            
+            .message.user {
+                align-self: flex-end !important;
+                background: #fff !important;
+                color: #000 !important;
+                border-bottom-right-radius: 4px !important;
+            }
+            
+            .message.ai {
+                align-self: flex-start !important;
+                background: #333 !important;
+                color: #fff !important;
+                border-bottom-left-radius: 4px !important;
+            }
+            
+            /* Input area - Uber style */
+            .input-area {
+                padding: 12px 16px 20px !important;
+                background: #000 !important;
+                border: none !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .input-wrapper {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                background: #333 !important;
+                border-radius: 28px !important;
+                padding: 4px !important;
+            }
+            
+            .chat-input {
+                flex: 1 !important;
+                background: transparent !important;
+                border: none !important;
+                color: #fff !important;
+                font-size: 16px !important;
+                padding: 12px 16px !important;
+                outline: none !important;
+            }
+            
+            .chat-input::placeholder {
+                color: #888 !important;
+            }
+            
+            .send-btn {
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 50% !important;
+                background: #fff !important;
+                color: #000 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                border: none !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .send-btn svg {
+                width: 20px !important;
+                height: 20px !important;
+            }
+            
+            /* Voice mode button in header */
+            .voice-fab {
+                display: flex !important;
+                position: fixed !important;
+                bottom: 90px !important;
+                right: 20px !important;
+                width: 60px !important;
+                height: 60px !important;
+                border-radius: 50% !important;
+                background: #fff !important;
+                color: #000 !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 4px 20px rgba(255,255,255,0.3) !important;
+                z-index: 99 !important;
+                border: none !important;
+                cursor: pointer !important;
+            }
+            
+            /* Bottom nav - Uber style */
+            .bottom-nav {
+                display: flex !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                height: 70px !important;
+                background: #000 !important;
+                border-top: 1px solid #333 !important;
+                padding: 0 !important;
+                z-index: 1000 !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+            }
+            
+            .bottom-nav-item {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 4px !important;
+                padding: 8px 16px !important;
+                color: #888 !important;
+                text-decoration: none !important;
+                font-size: 10px !important;
+                font-weight: 500 !important;
+                background: transparent !important;
+                border: none !important;
+                cursor: pointer !important;
+                transition: color 0.2s !important;
+            }
+            
+            .bottom-nav-item.active {
+                color: #fff !important;
+            }
+            
+            .bottom-nav-item svg {
+                width: 24px !important;
+                height: 24px !important;
+            }
+            
+            /* Voice overlay */
+            .voice-overlay {
+                display: none !important;
+            }
+            
+            /* Mode buttons hidden on mobile */
+            .mode-toggle-mobile {
+                display: flex !important;
+                gap: 8px;
+                padding: 8px 16px;
+                overflow-x: auto;
+                background: #000;
+                border-bottom: 1px solid #333;
+            }
+            
+            .mode-btn-mobile {
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 500;
+                white-space: nowrap;
+                background: #333;
+                color: #fff;
+                border: none;
+                cursor: pointer;
+            }
+            
+            .mode-btn-mobile.active {
+                background: #fff;
+                color: #000;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .message {
+                max-width: 90% !important;
+                padding: 12px 16px !important;
+                font-size: 15px !important;
+            }
+            
+            .header-title {
+                font-size: 18px !important;
+            }
+            
+            .voice-fab {
+                bottom: 85px !important;
+                right: 16px !important;
+                width: 56px !important;
+                height: 56px !important;
+            }
+        }
+        
+        /* Mode buttons mobile */
+        .mode-toggle-mobile {
+            display: none;
+        }
+        
+        /* Voice FAB */
+        .voice-fab {
+            display: none;
         }
     </style>
 </head>
@@ -264,6 +603,12 @@
                         <a href="{% url 'dashboard' %}" class="nav-link">
                             <span class="nav-link-icon">H</span>
                             <span class="nav-link-text">Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'explore' %}" class="nav-link">
+                            <span class="nav-link-icon">E</span>
+                            <span class="nav-link-text">Explore</span>
                         </a>
                     </div>
                     <div class="nav-item">
@@ -316,7 +661,13 @@
             <!-- Header -->
             <header class="header">
                 <div class="header-left">
-                    <button class="menu-btn" onclick="NexaUI.toggleSidebar()">M</button>
+                    <button class="menu-toggle" onclick="toggleMobileMenu()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
                     <h1 class="header-title">AI Tutor</h1>
                 </div>
                 <div class="header-actions">
@@ -330,7 +681,7 @@
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                         </svg>
-                        <span>Voice Mode</span>
+                        <span class="voice-btn-text">Voice</span>
                     </button>
                     <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
                 </div>
@@ -1003,9 +1354,9 @@ const NexaVoice = {
         const notification = document.createElement('div');
         notification.style.cssText = `
             position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
-            background: #10b981; color: white; padding: 16px 32px;
+            background: #ffffff; color: #000; padding: 16px 32px;
             border-radius: 12px; font-size: 16px; font-weight: 600;
-            z-index: 2000; box-shadow: 0 8px 30px rgba(16,185,129,0.5);
+            z-index: 2000; box-shadow: 0 8px 30px rgba(255,255,255,0.3);
         `;
         notification.textContent = 'Voice Mode Activated!';
         document.body.appendChild(notification);
@@ -1021,7 +1372,7 @@ const NexaVoice = {
         
         let html = `
             <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #10b981;">Question</div>
+                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Question</div>
                 <div style="font-size: 1.125rem;">${this.escapeHtml(question)}</div>
             </div>
         `;
@@ -1075,6 +1426,27 @@ const NexaVoice = {
 };
 
 // =====================================================
+// MOBILE NAVIGATION
+// =====================================================
+
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+}
+
+// Close menu when clicking overlay
+document.addEventListener('click', function(e) {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (overlay && overlay.classList.contains('open') && e.target === overlay) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+    }
+});
+
+// =====================================================
 // INITIALIZATION
 // =====================================================
 
@@ -1085,5 +1457,60 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('[Nexa] Ready!');
 });
     </script>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <!-- Voice FAB Button -->
+    <button class="voice-fab" onclick="NexaVoice.open()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        </svg>
+    </button>
+    
+    <!-- Bottom Navigation - Uber Style -->
+    <nav class="bottom-nav">
+        <a href="{% url 'dashboard' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            Home
+        </a>
+        <a href="{% url 'explore' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            Explore
+        </a>
+        <a href="{% url 'ai_chat' %}" class="bottom-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Chat
+        </a>
+        <a href="{% url 'list_materials' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Files
+        </a>
+        <a href="{% url 'essay_request' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Essays
+        </a>
+    </nav>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Essays
+        </a>
+    </nav>
 </body>
 </html>

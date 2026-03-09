@@ -12,64 +12,84 @@
         }
         
         :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f7f7f7;
-            --bg-tertiary: #f1f1f1;
-            --text-primary: #37352f;
-            --text-secondary: #787774;
-            --text-tertiary: #9b9a97;
-            --border: #e1e1e0;
-            --accent: #37352f;
-            --accent-hover: #525251;
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #161616;
+            --bg-tertiary: #1e1e1e;
+            --bg-elevated: #252525;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #6b6b6b;
+            --border: #2a2a2a;
+            --border-light: #333333;
+            --accent: #ffffff;
+            --accent-hover: #e0e0e0;
+            --accent-glow: rgba(255, 255, 255, 0.1);
             --sidebar-width: 240px;
-            --header-height: 45px;
-            --error: #dc2626;
+            --toolbar-width: 56px;
+            --ai-panel-width: 380px;
+            --header-height: 48px;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-primary);
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-primary);
             line-height: 1.5;
-            font-size: 16px;
+            font-size: 15px;
+            overflow: hidden;
         }
         
         /* Layout */
         .app-layout {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
         }
         
         /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background-color: var(--bg-primary);
+            background-color: var(--bg-secondary);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            z-index: 100;
+            flex-shrink: 0;
         }
         
         .sidebar-header {
-            padding: 0.75rem 0.875rem;
+            padding: 1rem;
             border-bottom: 1px solid var(--border);
         }
         
         .sidebar-brand {
-            font-size: 0.875rem;
-            font-weight: 600;
+            font-size: 1.125rem;
+            font-weight: 700;
             color: var(--text-primary);
             text-decoration: none;
             letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .brand-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #000;
+            font-weight: 700;
         }
         
         .sidebar-nav {
             flex: 1;
-            padding: 0.5rem;
+            padding: 0.75rem 0.5rem;
             overflow-y: auto;
         }
         
@@ -80,24 +100,23 @@
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 0.625rem;
-            padding: 0.375rem 0.625rem;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 0.875rem;
-            border-radius: 4px;
-            transition: all 0.1s ease;
+            border-radius: 6px;
+            transition: all 0.15s ease;
         }
         
         .nav-link:hover {
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-tertiary);
             color: var(--text-primary);
         }
         
         .nav-link.active {
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-            font-weight: 500;
+            background-color: var(--accent-glow);
+            color: var(--accent);
         }
         
         .nav-link-icon {
@@ -105,12 +124,22 @@
             font-weight: 600;
             width: 1.25rem;
             text-align: center;
+            flex-shrink: 0;
         }
         
         .nav-divider {
             height: 1px;
             background-color: var(--border);
-            margin: 0.5rem 0;
+            margin: 0.75rem 0;
+        }
+        
+        .nav-section-title {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.5rem 0.75rem 0.25rem;
         }
         
         .nav-link.logout {
@@ -121,55 +150,93 @@
             color: var(--text-primary);
         }
         
-        /* Main Content */
-        .main-content {
+        /* Main Workspace */
+        .workspace {
             flex: 1;
-            margin-left: var(--sidebar-width);
-            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
         /* Header */
         .header {
             height: var(--header-height);
-            background-color: var(--bg-primary);
+            background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 1.5rem;
-            position: sticky;
-            top: 0;
-            z-index: 50;
+            padding: 0 1rem;
+            flex-shrink: 0;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
         
         .header-title {
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
             font-weight: 500;
             color: var(--text-primary);
         }
         
-        .header-actions {
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.8125rem;
+            color: var(--text-tertiary);
+        }
+        
+        .breadcrumb-sep {
+            color: var(--text-tertiary);
+        }
+        
+        .breadcrumb-item {
+            color: var(--text-secondary);
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--text-primary);
+        }
+        
+        .header-right {
             display: flex;
             align-items: center;
             gap: 0.75rem;
         }
         
+        .search-box {
+            position: relative;
+        }
+        
         .search-input {
-            padding: 0.25rem 0.625rem;
+            padding: 0.375rem 0.75rem 0.375rem 2rem;
             font-size: 0.8125rem;
             border: 1px solid var(--border);
-            border-radius: 4px;
-            background-color: var(--bg-secondary);
+            border-radius: 6px;
+            background-color: var(--bg-tertiary);
             color: var(--text-primary);
-            width: 180px;
-            transition: all 0.15s ease;
+            width: 200px;
+            transition: all 0.2s ease;
         }
         
         .search-input:focus {
             outline: none;
             border-color: var(--accent);
-            background-color: var(--bg-primary);
-            width: 240px;
+            background-color: var(--bg-elevated);
+            width: 280px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.625rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
         }
         
         .user-menu {
@@ -177,26 +244,26 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.25rem 0.5rem;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.1s ease;
+            transition: background-color 0.15s ease;
         }
         
         .user-menu:hover {
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-tertiary);
         }
         
         .user-avatar {
-            width: 1.5rem;
-            height: 1.5rem;
-            background-color: var(--accent);
-            color: #fff;
-            border-radius: 4px;
+            width: 1.75rem;
+            height: 1.75rem;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            color: #000;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 500;
+            font-size: 0.6875rem;
+            font-weight: 600;
         }
         
         .user-name {
@@ -204,23 +271,114 @@
             color: var(--text-primary);
         }
         
-        /* Page Content */
-        .page-content {
-            padding: 1.5rem;
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
         }
         
-        .page-header {
+        /* Toolbar */
+        .toolbar {
+            width: var(--toolbar-width);
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem 0.5rem;
+            gap: 0.25rem;
+            flex-shrink: 0;
+        }
+        
+        .toolbar-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        
+        .toolbar-btn:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .toolbar-btn.active {
+            background-color: var(--accent-glow);
+            color: var(--accent);
+        }
+        
+        .toolbar-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .toolbar-btn[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 52px;
+            background-color: var(--bg-elevated);
+            color: var(--text-primary);
+            padding: 0.375rem 0.625rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 100;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .toolbar-divider {
+            width: 24px;
+            height: 1px;
+            background-color: var(--border);
+            margin: 0.5rem 0;
+        }
+        
+        /* Main Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
+        
+        .editor-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        
+        .editor-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Materials List */
+        .materials-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
         }
         
-        .page-title {
-            font-size: 1.75rem;
+        .materials-title {
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-primary);
             letter-spacing: -0.02em;
+        }
+        
+        .materials-actions {
+            display: flex;
+            gap: 0.5rem;
         }
         
         /* Buttons */
@@ -228,10 +386,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 0.5rem;
             padding: 0.5rem 1rem;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             font-weight: 500;
-            border-radius: 4px;
+            border-radius: 6px;
             text-decoration: none;
             cursor: pointer;
             border: none;
@@ -239,22 +398,23 @@
         }
         
         .btn-primary {
-            background-color: var(--accent);
-            color: #fff;
+            background-color: #ffffff;
+            color: #000;
         }
         
         .btn-primary:hover {
-            background-color: var(--accent-hover);
+            background-color: #e0e0e0;
         }
         
         .btn-secondary {
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-tertiary);
             color: var(--text-primary);
             border: 1px solid var(--border);
         }
         
         .btn-secondary:hover {
-            background-color: var(--bg-tertiary);
+            background-color: var(--bg-elevated);
+            border-color: var(--border-light);
         }
         
         .btn-ghost {
@@ -264,7 +424,7 @@
         }
         
         .btn-ghost:hover {
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-tertiary);
             color: var(--text-primary);
         }
         
@@ -274,12 +434,16 @@
         }
         
         .btn-danger:hover {
-            background-color: #b91c1c;
+            background-color: #dc2626;
         }
         
         .btn-sm {
             padding: 0.375rem 0.75rem;
-            font-size: 0.8125rem;
+            font-size: 0.75rem;
+        }
+        
+        .btn-icon {
+            padding: 0.5rem;
         }
         
         /* Materials Grid */
@@ -290,33 +454,39 @@
         }
         
         .material-card {
-            background-color: var(--bg-primary);
+            background-color: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 1rem 1.25rem;
-            transition: all 0.15s ease;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
         
         .material-card:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-color: var(--accent);
+            background-color: var(--bg-tertiary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
         .material-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.625rem;
         }
         
         .material-title {
-            font-size: 1rem;
+            font-size: 0.9375rem;
             font-weight: 600;
             color: var(--text-primary);
         }
         
         .material-type-badge {
-            display: inline-block;
-            padding: 0.125rem 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
             border-radius: 9999px;
             font-size: 0.6875rem;
             font-weight: 500;
@@ -325,23 +495,23 @@
         }
         
         .badge-pdf {
-            background-color: #fef2f2;
-            color: #dc2626;
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
         }
         
         .badge-word {
-            background-color: #eff6ff;
-            color: #2563eb;
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
         }
         
         .badge-powerpoint {
-            background-color: #fefce8;
-            color: #ca8a04;
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
         }
         
         .badge-slides {
-            background-color: #fdf4ff;
-            color: #a855f7;
+            background-color: rgba(168, 85, 247, 0.15);
+            color: #d8b4fe;
         }
         
         .material-meta {
@@ -349,7 +519,13 @@
             gap: 1rem;
             font-size: 0.8125rem;
             color: var(--text-secondary);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.875rem;
+        }
+        
+        .material-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
         }
         
         .material-actions {
@@ -359,32 +535,242 @@
             border-top: 1px solid var(--border);
         }
         
+        .material-card:hover .material-actions {
+            border-color: var(--border-light);
+        }
+        
         /* Empty State */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
-            background-color: var(--bg-primary);
-            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
             border: 1px solid var(--border);
         }
         
         .empty-state-icon {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-tertiary);
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.25rem;
+            background: linear-gradient(135deg, var(--accent-glow), rgba(6, 182, 212, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+        
+        .empty-state-icon svg {
+            width: 32px;
+            height: 32px;
         }
         
         .empty-state h3 {
             font-size: 1.125rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
+            color: var(--text-primary);
         }
         
         .empty-state p {
             color: var(--text-secondary);
             font-size: 0.875rem;
             margin-bottom: 1.5rem;
+        }
+        
+        /* AI Panel */
+        .ai-panel {
+            width: var(--ai-panel-width);
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        
+        .ai-panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .ai-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .ai-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 0.75rem;
+        }
+        
+        .ai-panel-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 400;
+        }
+        
+        .ai-panel-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .ai-panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .ai-suggestion-card {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .ai-suggestion-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .ai-suggestion-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.625rem;
+        }
+        
+        .ai-suggestion-icon {
+            width: 20px;
+            height: 20px;
+            background-color: #ffffff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 0.625rem;
+        }
+        
+        .ai-suggestion-title {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .ai-suggestion-desc {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .ai-suggestion-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .ai-quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .ai-quick-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.625rem 0.875rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+        }
+        
+        .ai-quick-btn:hover {
+            background-color: var(--bg-elevated);
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        
+        .ai-quick-btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        
+        .ai-input-area {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .ai-input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem;
+        }
+        
+        .ai-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.8125rem;
+            padding: 0.375rem 0.5rem;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .ai-input::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        .ai-send-btn {
+            width: 32px;
+            height: 32px;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            color: #000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        
+        .ai-send-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .ai-send-btn:disabled {
+            background-color: var(--bg-elevated);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
         }
         
         /* Pagination */
@@ -399,15 +785,15 @@
             padding: 0.375rem 0.75rem;
             font-size: 0.8125rem;
             color: var(--text-primary);
-            background-color: var(--bg-primary);
+            background-color: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 4px;
+            border-radius: 6px;
             text-decoration: none;
             transition: all 0.1s ease;
         }
         
         .page-link:hover {
-            background-color: var(--bg-secondary);
+            background-color: var(--bg-tertiary);
         }
         
         .page-link.active {
@@ -416,15 +802,294 @@
             color: #fff;
         }
         
+        /* Loading state */
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Material Detail View */
+        .material-detail-view {
+            display: none;
+        }
+        
+        .material-detail-view.active {
+            display: block;
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .detail-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .detail-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        .detail-content {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .detail-section {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-section-title {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .detail-text {
+            background-color: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
         /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
+        @media (max-width: 1200px) {
+            .ai-panel {
+                width: 320px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .ai-panel {
                 display: none;
             }
             
-            .main-content {
-                margin-left: 0;
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
             }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            
+            .sidebar-overlay.open {
+                display: block;
+            }
+            
+            .menu-toggle {
+                display: flex !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: flex;
+                width: 280px;
+            }
+            
+            .toolbar {
+                display: none;
+            }
+            
+            .editor-scroll {
+                padding: 1rem;
+            }
+            
+            .materials-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .materials-title {
+                font-size: 1.25rem;
+            }
+            
+            .material-card {
+                padding: 0.875rem 1rem;
+            }
+            
+            .material-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .material-meta {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .material-actions {
+                flex-wrap: wrap;
+            }
+            
+            .breadcrumb {
+                display: none;
+            }
+            
+            .header-title {
+                font-size: 0.875rem;
+            }
+            
+            .search-input {
+                display: none;
+            }
+            
+            .user-name {
+                display: none;
+            }
+            
+            .page-link {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .editor-scroll {
+                padding: 0.75rem;
+            }
+            
+            .materials-actions {
+                width: 100%;
+            }
+            
+            .materials-actions .btn {
+                flex: 1;
+            }
+            
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        .menu-toggle:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .menu-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Bottom Navigation for Mobile */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 0.5rem;
+            z-index: 100;
+        }
+        
+        @media (max-width: 992px) {
+            .bottom-nav {
+                display: flex;
+                justify-content: space-around;
+            }
+            
+            .workspace {
+                padding-bottom: 60px;
+            }
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.625rem;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+        
+        .bottom-nav-item:hover,
+        .bottom-nav-item.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        
+        .bottom-nav-item svg {
+            width: 20px;
+            height: 20px;
         }
     </style>
 </head>
@@ -433,44 +1098,89 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <a href="{% url 'dashboard' %}" class="sidebar-brand">NEXA</a>
+                <a href="{% url 'dashboard' %}" class="sidebar-brand">
+                    <span class="brand-icon">N</span>
+                    NEXA
+                </a>
             </div>
             
             <nav class="sidebar-nav">
                 <div class="nav-item">
                     <a href="{% url 'dashboard' %}" class="nav-link">
-                        <span class="nav-link-icon">D</span>
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                        </span>
                         Dashboard
                     </a>
                 </div>
                 
                 <div class="nav-item">
+                    <a href="{% url 'explore' %}" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        Explore
+                    </a>
+                </div>
+                
+                <div class="nav-item">
                     <a href="{% url 'list_materials' %}" class="nav-link active">
-                        <span class="nav-link-icon">M</span>
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                        </span>
                         My Materials
                     </a>
                 </div>
                 
                 <div class="nav-item">
                     <a href="{% url 'ai_chat' %}" class="nav-link">
-                        <span class="nav-link-icon">A</span>
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </span>
                         AI Tutor
                     </a>
                 </div>
                 
                 <div class="nav-divider"></div>
                 
+                <div class="nav-section-title">Tools</div>
+                
                 <div class="nav-item">
                     <a href="{% url 'essay_request' %}" class="nav-link">
-                        <span class="nav-link-icon">E</span>
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                        </span>
                         Essay Generator
                     </a>
                 </div>
                 
                 <div class="nav-item">
                     <a href="{% url 'assignment_list' %}" class="nav-link">
-                        <span class="nav-link-icon">S</span>
-                        Assignment
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                        </span>
+                        Assignments
                     </a>
                 </div>
                 
@@ -478,27 +1188,60 @@
                 
                 <div class="nav-item">
                     <a href="#" class="nav-link">
-                        <span class="nav-link-icon">*</span>
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </span>
                         Settings
                     </a>
                 </div>
                 
                 <div class="nav-item">
                     <a href="{% url 'logout' %}" class="nav-link logout">
-                        <span class="nav-link-icon">L</span>
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                        </span>
                         Log out
                     </a>
                 </div>
             </nav>
         </aside>
         
-        <!-- Main Content -->
-        <main class="main-content">
+        <!-- Workspace -->
+        <div class="workspace">
             <!-- Header -->
             <header class="header">
-                <div class="header-title">My Materials</div>
-                <div class="header-actions">
-                    <input type="text" class="search-input" placeholder="Search...">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">Study Materials</div>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">NEXA</span>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-item active">My Materials</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <span class="search-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                        </span>
+                        <input type="text" class="search-input" placeholder="Search materials..." id="searchInput">
+                    </div>
                     <div class="user-menu">
                         <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
                         <span class="user-name">{{ user.username }}</span>
@@ -506,93 +1249,662 @@
                 </div>
             </header>
             
-            <!-- Page Content -->
-            <div class="page-content">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <h1 class="page-title">Study Materials</h1>
-                    <a href="{% url 'upload_material' %}" class="btn btn-primary">+ Upload Material</a>
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <button class="toolbar-btn" data-tooltip="Upload Material" onclick="window.location.href='{% url 'upload_material' %}'">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="toolbar-btn" data-tooltip="Refresh List" onclick="location.reload()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <button class="toolbar-btn" data-tooltip="Grid View" id="gridViewBtn" onclick="setViewMode('grid')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="toolbar-btn" data-tooltip="List View" id="listViewBtn" onclick="setViewMode('list')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="toolbar-divider"></div>
+                    
+                    <button class="toolbar-btn" data-tooltip="Sort by Date" onclick="sortMaterials('date')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="toolbar-btn" data-tooltip="Sort by Name" onclick="sortMaterials('name')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 7V4h16v3"/>
+                            <path d="M9 20h6"/>
+                            <path d="M12 4v16"/>
+                        </svg>
+                    </button>
                 </div>
                 
-                <!-- Materials List -->
-                {% if materials %}
-                    <div class="materials-grid">
-                        {% for material in materials %}
-                            <div class="material-card">
-                                <div class="material-header">
-                                    <h3 class="material-title">{{ material.title }}</h3>
-                                    <span class="material-type-badge 
-                                        {% if material.material_type == 'PDF' %}badge-pdf
-                                        {% elif material.material_type == 'Word' %}badge-word
-                                        {% elif material.material_type == 'PowerPoint' %}badge-powerpoint
-                                        {% else %}badge-slides{% endif %}">
-                                        {{ material.get_material_type_display }}
-                                    </span>
-                                </div>
-                                
-                                <div class="material-meta">
-                                    {% if material.subject %}
-                                        <span>{{ material.subject }}</span>
-                                    {% endif %}
-                                    <span>{{ material.uploaded_at|date:"M d, Y" }}</span>
-                                    <span>{{ material.file.size|filesizeformat }}</span>
-                                </div>
-                                
-                                <div class="material-actions">
-                                    <a href="{{ material.file.url }}" class="btn btn-secondary btn-sm" target="_blank">
-                                        View
-                                    </a>
-                                    {% if material.extracted_text %}
-                                        <a href="{% url 'material_detail' material.pk %}" class="btn btn-secondary btn-sm">
-                                            Extracted Text
+                <!-- Editor Area -->
+                <div class="editor-area">
+                    <div class="editor-scroll">
+                        <div class="editor-content">
+                            <!-- List View (Default) -->
+                            <div id="materialsListView">
+                                <div class="materials-header">
+                                    <h1 class="materials-title">My Study Materials</h1>
+                                    <div class="materials-actions">
+                                        <a href="{% url 'upload_material' %}" class="btn btn-primary">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                            </svg>
+                                            Upload
                                         </a>
+                                    </div>
+                                </div>
+                                
+                                {% if materials %}
+                                    <div class="materials-grid" id="materialsGrid">
+                                        {% for material in materials %}
+                                            <div class="material-card" data-material-id="{{ material.pk }}" onclick="viewMaterial({{ material.pk }})">
+                                                <div class="material-header">
+                                                    <h3 class="material-title">{{ material.title }}</h3>
+                                                    <span class="material-type-badge 
+                                                        {% if material.material_type == 'PDF' %}badge-pdf
+                                                        {% elif material.material_type == 'Word' %}badge-word
+                                                        {% elif material.material_type == 'PowerPoint' %}badge-powerpoint
+                                                        {% else %}badge-slides{% endif %}">
+                                                        {{ material.get_material_type_display }}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div class="material-meta">
+                                                    {% if material.subject %}
+                                                        <span class="material-meta-item">{{ material.subject }}</span>
+                                                    {% endif %}
+                                                    <span class="material-meta-item">{{ material.uploaded_at|date:"M d, Y" }}</span>
+                                                    <span class="material-meta-item">{{ material.file.size|filesizeformat }}</span>
+                                                </div>
+                                                
+                                                <div class="material-actions" onclick="event.stopPropagation()">
+                                                    <a href="{{ material.file.url }}" class="btn btn-secondary btn-sm" target="_blank">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                                            <polyline points="15 3 21 3 21 9"/>
+                                                            <line x1="10" y1="14" x2="21" y2="3"/>
+                                                        </svg>
+                                                        View
+                                                    </a>
+                                                    {% if material.extracted_text %}
+                                                        <button class="btn btn-secondary btn-sm" onclick="viewMaterial({{ material.pk }})">
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                                <polyline points="14 2 14 8 20 8"/>
+                                                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                                            </svg>
+                                                            Extract
+                                                        </button>
+                                                    {% endif %}
+                                                    <form method="POST" action="{% url 'delete_material' material.pk %}" style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger btn-sm" 
+                                                                onclick="return confirm('Are you sure you want to delete this material?')">
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                <polyline points="3 6 5 6 21 6"/>
+                                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    {% if materials.has_other_pages %}
+                                        <div class="pagination">
+                                            {% if materials.has_previous %}
+                                                <a href="?page={{ materials.previous_page_number }}" class="page-link">Previous</a>
+                                            {% endif %}
+                                            
+                                            {% for num in materials.paginator.page_range %}
+                                                {% if materials.number == num %}
+                                                    <span class="page-link active">{{ num }}</span>
+                                                {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
+                                                    <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if materials.has_next %}
+                                                <a href="?page={{ materials.next_page_number }}" class="page-link">Next</a>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
-                                    <form method="POST" action="{% url 'delete_material' material.pk %}" style="display: inline;">
+                                {% else %}
+                                    <!-- Empty State -->
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                            </svg>
+                                        </div>
+                                        <h3>No materials yet</h3>
+                                        <p>Start by uploading your first study material.</p>
+                                        <a href="{% url 'upload_material' %}" class="btn btn-primary">
+                                            Upload Your First Material
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Detail View (Hidden by default) -->
+                            <div id="materialDetailView" class="material-detail-view">
+                                <div class="detail-header">
+                                    <div>
+                                        <h1 class="detail-title" id="detailTitle">Material Title</h1>
+                                        <div class="detail-meta">
+                                            <span class="detail-meta-item" id="detailType">PDF</span>
+                                            <span class="detail-meta-item" id="detailDate">Jan 1, 2024</span>
+                                            <span class="detail-meta-item" id="detailSize">1.2 MB</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-actions">
+                                        <a href="#" class="btn btn-secondary" id="detailDownloadBtn" target="_blank">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                <polyline points="7 10 12 15 17 10"/>
+                                                <line x1="12" y1="15" x2="12" y2="3"/>
+                                            </svg>
+                                            Download
+                                        </a>
+                                        <button class="btn btn-ghost" onclick="closeDetail()">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                                <line x1="6" y1="6" x2="18" y2="18"/>
+                                            </svg>
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-content">
+                                    <div class="detail-section">
+                                        <h3 class="detail-section-title">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                <polyline points="14 2 14 8 20 8"/>
+                                            </svg>
+                                            Extracted Text
+                                        </h3>
+                                        <div class="detail-text" id="detailText">
+                                            Loading...
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-actions" style="margin-top: 1rem;">
+                                    <form method="POST" id="detailDeleteForm" style="display: inline;">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger btn-sm" 
+                                        <button type="submit" class="btn btn-danger" 
                                                 onclick="return confirm('Are you sure you want to delete this material?')">
-                                            Delete
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            </svg>
+                                            Delete Material
                                         </button>
                                     </form>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
-                    
-                    <!-- Pagination -->
-                    {% if materials.has_other_pages %}
-                        <div class="pagination">
-                            {% if materials.has_previous %}
-                                <a href="?page={{ materials.previous_page_number }}" class="page-link">Previous</a>
-                            {% endif %}
-                            
-                            {% for num in materials.paginator.page_range %}
-                                {% if materials.number == num %}
-                                    <span class="page-link active">{{ num }}</span>
-                                {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
-                                    <a href="?page={{ num }}" class="page-link">{{ num }}</a>
-                                {% endif %}
-                            {% endfor %}
-                            
-                            {% if materials.has_next %}
-                                <a href="?page={{ materials.next_page_number }}" class="page-link">Next</a>
-                            {% endif %}
                         </div>
-                    {% endif %}
-                    
-                {% else %}
-                    <!-- Empty State -->
-                    <div class="empty-state">
-                        <div class="empty-state-icon">M</div>
-                        <h3>No materials yet</h3>
-                        <p>Start by uploading your first study material.</p>
-                        <a href="{% url 'upload_material' %}" class="btn btn-primary">
-                            Upload Your First Material
-                        </a>
                     </div>
-                {% endif %}
+                </div>
+                
+                <!-- AI Panel -->
+                <div class="ai-panel">
+                    <div class="ai-panel-header">
+                        <div class="ai-panel-title">
+                            <div class="ai-icon">AI</div>
+                            <div>
+                                <div>Study Assistant</div>
+                                <div class="ai-panel-subtitle">AI-powered help</div>
+                            </div>
+                        </div>
+                        <div class="ai-panel-actions">
+                            <button class="btn btn-ghost btn-icon" onclick="clearAIChat()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-panel-body" id="aiPanelBody">
+                        <div class="ai-suggestion-card">
+                            <div class="ai-suggestion-header">
+                                <div class="ai-suggestion-icon">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                    </svg>
+                                </div>
+                                <span class="ai-suggestion-title">Quick Actions</span>
+                            </div>
+                            <p class="ai-suggestion-desc">Select a material to get AI-powered insights, summaries, and study help.</p>
+                        </div>
+                        
+                        <div class="ai-quick-actions">
+                            <button class="ai-quick-btn" onclick="aiQuickAction('summarize')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                                Summarize Content
+                            </button>
+                            <button class="ai-quick-btn" onclick="aiQuickAction('quiz')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                                Generate Quiz
+                            </button>
+                            <button class="ai-quick-btn" onclick="aiQuickAction('flashcards')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                    <line x1="2" y1="10" x2="22" y2="10"/>
+                                </svg>
+                                Create Flashcards
+                            </button>
+                            <button class="ai-quick-btn" onclick="aiQuickAction('explain')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                Explain Concept
+                            </button>
+                            <button class="ai-quick-btn" onclick="openPodcast()" style="border-color: var(--accent);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                    <line x1="12" y1="19" x2="12" y2="23"/>
+                                    <line x1="8" y1="23" x2="16" y2="23"/>
+                                </svg>
+                                Generate Podcast
+                            </button>
+                        </div>
+                        
+                        <div id="aiResponseArea" style="display: none;">
+                            <div class="ai-suggestion-card" id="aiResponseCard">
+                                <div class="ai-suggestion-header">
+                                    <div class="ai-suggestion-icon">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                        </svg>
+                                    </div>
+                                    <span class="ai-suggestion-title">AI Response</span>
+                                </div>
+                                <p class="ai-suggestion-desc" id="aiResponseText">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-input-area">
+                        <div class="ai-input-wrapper">
+                            <textarea class="ai-input" placeholder="Ask AI about your materials..." rows="1" id="aiInput"></textarea>
+                            <button class="ai-send-btn" id="aiSendBtn" onclick="sendAIMessage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </main>
+        </div>
+        
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="{% url 'dashboard' %}" class="bottom-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Home
+            </a>
+            <a href="{% url 'explore' %}" class="bottom-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Explore
+            </a>
+            <a href="{% url 'list_materials' %}" class="bottom-nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                Materials
+            </a>
+            <a href="{% url 'ai_chat' %}" class="bottom-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                AI
+            </a>
+        </nav>
     </div>
+    
+    <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+        
+        // Material data storage
+        const materialsData = {};
+        
+        {% for material in materials %}
+            materialsData[{{ material.pk }}] = {
+                id: {{ material.pk }},
+                title: "{{ material.title|escapejs }}",
+                type: "{{ material.get_material_type_display|escapejs }}",
+                date: "{{ material.uploaded_at|date:"M d, Y" }}",
+                size: "{{ material.file.size|filesizeformat }}",
+                fileUrl: "{{ material.file.url }}",
+                extractedText: {% if material.extracted_text %}"{{ material.extracted_text|escapejs }}"{% else %}null{% endif %},
+                {% if material.subject %}subject: "{{ material.subject|escapejs }}",{% endif %}
+                deleteUrl: "{% url 'delete_material' material.pk %}"
+            };
+        {% endfor %}
+        
+        // Current state
+        let currentMaterialId = null;
+        
+        // View Material
+        function viewMaterial(materialId) {
+            const material = materialsData[materialId];
+            if (!material) return;
+            
+            currentMaterialId = materialId;
+            
+            document.getElementById('detailTitle').textContent = material.title;
+            document.getElementById('detailType').textContent = material.type;
+            document.getElementById('detailDate').textContent = material.date;
+            document.getElementById('detailSize').textContent = material.size;
+            document.getElementById('detailDownloadBtn').href = material.fileUrl;
+            document.getElementById('detailDeleteForm').action = material.deleteUrl;
+            
+            if (material.extractedText) {
+                document.getElementById('detailText').textContent = material.extractedText;
+            } else {
+                document.getElementById('detailText').textContent = 'No extracted text available for this material.';
+            }
+            
+            document.getElementById('materialsListView').style.display = 'none';
+            document.getElementById('materialDetailView').classList.add('active');
+            
+            // Update AI panel
+            updateAIContext(material);
+        }
+        
+        // Close Detail View
+        function closeDetail() {
+            currentMaterialId = null;
+            document.getElementById('materialsListView').style.display = 'block';
+            document.getElementById('materialDetailView').classList.remove('active');
+        }
+        
+        // Update AI Context
+        function updateAIContext(material) {
+            const suggestionCard = document.querySelector('.ai-suggestion-card');
+            suggestionCard.innerHTML = `
+                <div class="ai-suggestion-header">
+                    <div class="ai-suggestion-icon">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <span class="ai-suggestion-title">Current Material</span>
+                </div>
+                <p class="ai-suggestion-desc">Selected: <strong>${material.title}</strong><br>${material.type} - ${material.size}</p>
+            `;
+        }
+        
+        // AI Quick Actions
+        function aiQuickAction(action) {
+            if (!currentMaterialId) {
+                alert('Please select a material first by clicking on it.');
+                return;
+            }
+            
+            const material = materialsData[currentMaterialId];
+            
+            if (!material.extractedText) {
+                showAIResponse('No extracted text available for this material. Please upload a document with extractable text.');
+                return;
+            }
+            
+            showLoading(true);
+            
+            fetch('{% url "ai_material_action" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    action: action,
+                    material_id: material.id,
+                    material_title: material.title,
+                    extracted_text: material.extractedText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    showAIResponse(data.response);
+                } else {
+                    showAIResponse(data.error || 'An error occurred. Please try again.');
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showAIResponse('Failed to connect to AI. Please check your connection and try again.');
+                console.error('AI Error:', error);
+            });
+        }
+        
+        // Open Podcast Mode
+        function openPodcast() {
+            if (!currentMaterialId) {
+                alert('Please select a material first by clicking on it.');
+                return;
+            }
+            
+            const material = materialsData[currentMaterialId];
+            if (!material.extractedText) {
+                alert('No extracted text available for this material. Please upload a document with extractable text.');
+                return;
+            }
+            
+            window.location.href = '/materials/podcast/' + currentMaterialId + '/';
+        }
+        
+        // Show AI Response
+        function showAIResponse(text) {
+            document.getElementById('aiResponseArea').style.display = 'block';
+            document.getElementById('aiResponseText').textContent = text;
+        }
+        
+        function showLoading(show) {
+            if (show) {
+                document.getElementById('aiResponseArea').style.display = 'block';
+                document.getElementById('aiResponseText').innerHTML = '<div class="loading-spinner"></div><p style="text-align: center; margin-top: 0.5rem;">Processing...</p>';
+            }
+        }
+        
+        // Send AI Message
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            if (!currentMaterialId) {
+                alert('Please select a material first by clicking on it.');
+                return;
+            }
+            
+            const material = materialsData[currentMaterialId];
+            
+            if (!material.extractedText) {
+                showAIResponse('No extracted text available for this material.');
+                return;
+            }
+            
+            showLoading(true);
+            input.value = '';
+            
+            fetch('{% url "ai_material_action" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    action: 'ask',
+                    message: message,
+                    material_id: material.id,
+                    material_title: material.title,
+                    extracted_text: material.extractedText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    showAIResponse(data.response);
+                } else {
+                    showAIResponse(data.error || 'An error occurred. Please try again.');
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showAIResponse('Failed to connect to AI. Please check your connection and try again.');
+                console.error('AI Error:', error);
+            });
+        }
+        
+        // Clear AI Chat
+        function clearAIChat() {
+            document.getElementById('aiResponseArea').style.display = 'none';
+            document.getElementById('aiInput').value = '';
+            
+            const suggestionCard = document.querySelector('.ai-suggestion-card');
+            suggestionCard.innerHTML = `
+                <div class="ai-suggestion-header">
+                    <div class="ai-suggestion-icon">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <span class="ai-suggestion-title">Quick Actions</span>
+                </div>
+                <p class="ai-suggestion-desc">Select a material to get AI-powered insights, summaries, and study help.</p>
+            `;
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.material-card');
+            
+            cards.forEach(card => {
+                const title = card.querySelector('.material-title').textContent.toLowerCase();
+                const type = card.querySelector('.material-type-badge').textContent.toLowerCase();
+                
+                if (title.includes(query) || type.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // Handle Enter key in AI input
+        document.getElementById('aiInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAIMessage();
+            }
+        });
+        
+        // Set view mode (grid/list) - for future enhancement
+        function setViewMode(mode) {
+            console.log('View mode:', mode);
+        }
+        
+        // Sort materials
+        function sortMaterials(by) {
+            const grid = document.getElementById('materialsGrid');
+            const cards = Array.from(grid.querySelectorAll('.material-card'));
+            
+            cards.sort((a, b) => {
+                if (by === 'name') {
+                    const titleA = a.querySelector('.material-title').textContent;
+                    const titleB = b.querySelector('.material-title').textContent;
+                    return titleA.localeCompare(titleB);
+                } else {
+                    // For date, we need the data attributes or re-parse
+                    const idA = a.dataset.materialId;
+                    const idB = b.dataset.materialId;
+                    return materialsData[idB].date.localeCompare(materialsData[idA].date);
+                }
+            });
+            
+            cards.forEach(card => grid.appendChild(card));
+        }
+    </script>
 </body>
 </html>

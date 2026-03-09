@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - NEXA Podcast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #161616;
+            --bg-tertiary: #1e1e1e;
+            --bg-elevated: #252525;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #6b6b6b;
+            --border: #2a2a2a;
+            --accent: #8b5cf6;
+            --accent-hover: #a78bfa;
+            --accent-pink: #ec4899;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-orange: #f97316;
+            --accent-cyan: #06b6d4;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .back-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent);
+        }
+        
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .header-subtitle {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Main Layout */
+        .podcast-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 73px);
+        }
+        
+        /* Generation View */
+        .generation-panel {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .generation-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .gen-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-pink) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3); }
+            50% { box-shadow: 0 8px 48px rgba(139, 92, 246, 0.6); }
+        }
+        
+        .gen-icon svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+        
+        .gen-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .gen-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Generation Steps */
+        .gen-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex: 1;
+        }
+        
+        .gen-step {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border-left: 3px solid var(--border);
+            transition: all 0.3s;
+        }
+        
+        .gen-step.active {
+            border-left-color: var(--accent);
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .gen-step.completed {
+            border-left-color: var(--accent-green);
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .step-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-elevated);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .step-icon svg {
+            width: 14px;
+            height: 14px;
+            color: var(--text-tertiary);
+        }
+        
+        .gen-step.active .step-icon {
+            background: var(--accent);
+        }
+        
+        .gen-step.active .step-icon svg {
+            color: white;
+        }
+        
+        .gen-step.completed .step-icon {
+            background: var(--accent-green);
+        }
+        
+        .step-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+        }
+        
+        .step-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            padding-left: 2.75rem;
+        }
+        
+        .step-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .step-content li {
+            padding: 0.25rem 0;
+            padding-left: 1rem;
+            position: relative;
+        }
+        
+        .step-content li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+        
+        /* Visual Panel */
+        .visual-panel {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .visual-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .visual-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .visual-title svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent-blue);
+        }
+        
+        /* Visual Display Area */
+        .visual-display {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .visual-bg-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+            z-index: 0;
+        }
+        
+        .visual-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            max-width: 500px;
+        }
+        
+        .visual-icon {
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent) 50%, var(--accent-pink) 100%);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 12px 48px rgba(59, 130, 246, 0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .visual-icon svg {
+            width: 70px;
+            height: 70px;
+            color: white;
+        }
+        
+        .visual-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .visual-desc {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            max-width: 350px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* Image Grid */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+        
+        .image-card {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .image-card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+        }
+        
+        .image-card-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent-blue);
+        }
+        
+        .image-card-text {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Progress */
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-elevated);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-pink));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .progress-text {
+            font-size: 0.8125rem;
+            color: var(--text-tertiary);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        /* Complete State */
+        .complete-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.2s;
+        }
+        
+        .complete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Podcast Player View (Hidden initially) */
+        .podcast-player {
+            display: none;
+        }
+        
+        .podcast-player.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 73px);
+        }
+        
+        /* Audio Player */
+        .audio-player {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+        
+        .podcast-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .podcast-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .podcast-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .audio-controls-main {
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .audio-waveform {
+            height: 60px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 0 1rem;
+        }
+        
+        .wave-bar {
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+        
+        .wave-bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+        .wave-bar:nth-child(2) { height: 35px; animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { height: 25px; animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { height: 40px; animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { height: 30px; animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { height: 45px; animation-delay: 0.5s; }
+        .wave-bar:nth-child(7) { height: 25px; animation-delay: 0.6s; }
+        .wave-bar:nth-child(8) { height: 35px; animation-delay: 0.7s; }
+        
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+        
+        .audio-waveform.playing .wave-bar {
+            animation-play-state: running;
+        }
+        
+        .audio-progress {
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar-clickable {
+            height: 6px;
+            background: var(--bg-elevated);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-fill-clickable {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-pink));
+            border-radius: 3px;
+            width: 0%;
+        }
+        
+        .progress-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 0.5rem;
+        }
+        
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .control-btn {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-elevated);
+            border: none;
+            border-radius: 50%;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            background: var(--accent);
+        }
+        
+        .control-btn.play {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+        }
+        
+        .speed-btns {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .speed-btn {
+            padding: 0.375rem 0.75rem;
+            background: var(--bg-elevated);
+            border: none;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .speed-btn.active, .speed-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+        
+        /* Transcript */
+        .transcript-section {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .transcript-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .transcript-content {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1rem;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .transcript-segment {
+            padding: 0.875rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        
+        .transcript-segment:hover {
+            background: var(--bg-elevated);
+        }
+        
+        .transcript-segment.active {
+            background: rgba(139, 92, 246, 0.1);
+            border-left-color: var(--accent);
+        }
+        
+        .segment-title {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.375rem;
+        }
+        
+        .segment-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* Right Visual Panel */
+        .visual-panel-player {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .visual-display-player {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .podcast-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .podcast-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .podcast-btn:hover {
+            border-color: var(--accent);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 992px) {
+            .podcast-container,
+            .podcast-player.active {
+                grid-template-columns: 1fr;
+            }
+            
+            .generation-panel,
+            .audio-player {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.75rem 1rem;
+            }
+            
+            .gen-icon, .visual-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .gen-icon svg, .visual-icon svg {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="{% url 'material_detail' material.pk %}" class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </a>
+            <div>
+                <div class="header-title">AI Podcast Generator</div>
+                <div class="header-subtitle">{{ material.title }}</div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Generation View -->
+    <div class="podcast-container" id="generationView">
+        <!-- Left: Generation Steps -->
+        <div class="generation-panel">
+            <div class="generation-header">
+                <div class="gen-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </div>
+                <h1 class="gen-title">Creating Your Podcast</h1>
+                <p class="gen-subtitle">AI is analyzing your study material and generating an engaging audio lesson</p>
+            </div>
+            
+            <div class="gen-steps">
+                <!-- Step 1 -->
+                <div class="gen-step active" id="step1">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Analyzing Study Material</span>
+                    </div>
+                    <div class="step-content">
+                        Reading and understanding {{ material.title }}...
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="gen-step" id="step2">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Identifying Key Concepts</span>
+                    </div>
+                    <div class="step-content">
+                        Extracting important topics and知识点...
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="gen-step" id="step3">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Writing Podcast Script</span>
+                    </div>
+                    <div class="step-content">
+                        Creating conversational explanations...
+                    </div>
+                </div>
+                
+                <!-- Step 4 -->
+                <div class="gen-step" id="step4">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Generating Visuals</span>
+                    </div>
+                    <div class="step-content">
+                        Creating diagrams and illustrations...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="genProgress"></div>
+                </div>
+                <p class="progress-text" id="progressText">Generating... Please wait</p>
+            </div>
+        </div>
+        
+        <!-- Right: Visual Display -->
+        <div class="visual-panel">
+            <div class="visual-header">
+                <span class="visual-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    AI Visualization
+                </span>
+            </div>
+            
+            <div class="visual-display" id="visualDisplay">
+                <div class="visual-bg-gradient"></div>
+                <div class="visual-content">
+                    <div class="visual-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </div>
+                    <div class="visual-text" id="visualTitle">Preparing Your Learning Experience</div>
+                    <div class="visual-desc" id="visualDesc">Our AI is analyzing your study material to create an engaging podcast lesson just for you.</div>
+                    
+                    <div class="image-grid">
+                        <div class="image-card">
+                            <div class="image-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </div>
+                            <div class="image-card-text">Reading Content</div>
+                        </div>
+                        <div class="image-card">
+                            <div class="image-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="2" y1="12" x2="22" y2="12"/>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                </svg>
+                            </div>
+                            <div class="image-card-text">Analyzing Topics</div>
+                        </div>
+                        <div class="image-card">
+                            <div class="image-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </div>
+                            <div class="image-card-text">Writing Script</div>
+                        </div>
+                        <div class="image-card">
+                            <div class="image-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                                    <polyline points="2 17 12 22 22 17"/>
+                                    <polyline points="2 12 12 17 22 12"/>
+                                </svg>
+                            </div>
+                            <div class="image-card-text">Creating Visuals</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Podcast Player View (Initially Hidden) -->
+    <div class="podcast-player" id="podcastPlayer">
+        <!-- Left: Audio & Transcript -->
+        <div class="audio-player">
+            <div class="podcast-header">
+                <div class="gen-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    </svg>
+                </div>
+                <h1 class="podcast-title" id="podcastTitle">Learning Podcast</h1>
+                <p class="podcast-subtitle">AI-powered audio lesson</p>
+            </div>
+            
+            <div class="audio-controls-main">
+                <div class="audio-waveform" id="audioWaveform">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+                
+                <div class="audio-progress">
+                    <div class="progress-bar-clickable" id="progressBar">
+                        <div class="progress-fill-clickable" id="progressFill"></div>
+                    </div>
+                    <div class="progress-time">
+                        <span id="currentTime">0:00</span>
+                        <span id="totalTime">0:00</span>
+                    </div>
+                </div>
+                
+                <!-- Hidden Audio Element -->
+                <audio id="podcastAudio" preload="auto">
+                    <source id="audioSource" type="audio/mpeg">
+                </audio>
+                
+                <div class="controls-row">
+                    <button class="control-btn" onclick="skipBack()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="11 19 2 12 11 5 11 19"/>
+                            <polygon points="22 19 13 12 22 5 22 19"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="control-btn play" id="playBtn" onclick="togglePlay()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="playIcon">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="pauseIcon" style="display: none;">
+                            <rect x="6" y="4" width="4" height="16"/>
+                            <rect x="14" y="4" width="4" height="16"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="control-btn" onclick="skipForward()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 19 22 12 13 5 13 19"/>
+                            <polygon points="2 19 11 12 2 5 2 19"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="speed-btns">
+                    <button class="speed-btn" onclick="setSpeed(0.75)">0.75x</button>
+                    <button class="speed-btn active" onclick="setSpeed(1)">1x</button>
+                    <button class="speed-btn" onclick="setSpeed(1.25)">1.25x</button>
+                    <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                </div>
+            </div>
+            
+            <div class="transcript-section">
+                <div class="transcript-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    </svg>
+                    Transcript
+                </div>
+                <div class="transcript-content" id="transcriptContent">
+                    <!-- Segments will be rendered here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right: Visual Panel -->
+        <div class="visual-panel-player">
+            <div class="visual-header">
+                <span class="visual-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    </svg>
+                    Visual Learning
+                </span>
+            </div>
+            
+            <div class="visual-display-player" id="visualDisplayPlayer">
+                <!-- Visual content will be rendered here -->
+            </div>
+            
+            <div class="podcast-controls">
+                <button class="podcast-btn" onclick="replayPodcast()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                    </svg>
+                    Replay
+                </button>
+                <button class="podcast-btn" onclick="regeneratePodcast()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Regenerate
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // State
+        let podcastData = null;
+        let currentSegment = 0;
+        let isPlaying = false;
+        let playbackSpeed = 1;
+        
+        // Generation Steps
+        const steps = [
+            { id: 'step1', title: 'Analyzing Study Material', visualTitle: 'Reading Your Content', visualDesc: 'Our AI is carefully reading through your study material to understand the key information.', progress: 25 },
+            { id: 'step2', title: 'Identifying Key Concepts', visualTitle: 'Extracting Knowledge', visualDesc: 'Identifying the most important concepts and知识点 that you need to learn.', progress: 50 },
+            { id: 'step3', title: 'Writing Podcast Script', visualTitle: 'Creating Your Lesson', visualDesc: 'Writing an engaging, conversational script that explains concepts clearly.', progress: 75 },
+            { id: 'step4', title: 'Generating Visuals', visualTitle: 'Preparing Visuals', visualDesc: 'Creating diagrams and illustrations to help visualize the concepts.', progress: 90 }
+        ];
+        
+        // Start generation on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            generatePodcast();
+        });
+        
+        // Generate Podcast
+        async function generatePodcast() {
+            let currentStep = 0;
+            
+            // Simulate step progression
+            const stepInterval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    // Update step
+                    document.querySelectorAll('.gen-step').forEach((el, i) => {
+                        el.classList.remove('active', 'completed');
+                        if (i < currentStep) el.classList.add('completed');
+                        if (i === currentStep) el.classList.add('active');
+                    });
+                    
+                    // Update visual
+                    document.getElementById('visualTitle').textContent = steps[currentStep].visualTitle;
+                    document.getElementById('visualDesc').textContent = steps[currentStep].visualDesc;
+                    document.getElementById('genProgress').style.width = steps[currentStep].progress + '%';
+                    document.getElementById('progressText').textContent = steps[currentStep].title + '...';
+                    
+                    currentStep++;
+                }
+            }, 1500); // Each step takes 1.5 seconds
+            
+            try {
+                const response = await fetch('{% url "generate_podcast_ajax" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        material_id: {{ material.pk }}
+                    })
+                });
+                
+                const data = await response.json();
+                
+                clearInterval(stepInterval);
+                
+                if (data.success) {
+                    // Complete final step
+                    document.querySelectorAll('.gen-step').forEach(el => {
+                        el.classList.remove('active');
+                        el.classList.add('completed');
+                    });
+                    document.getElementById('genProgress').style.width = '100%';
+                    document.getElementById('progressText').textContent = 'Generation Complete!';
+                    
+                    // Small delay then show player
+                    setTimeout(() => {
+                        podcastData = data.podcast_script;
+                        showPodcastPlayer(data.material_title, data.audio_url);
+                    }, 1000);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to generate podcast'));
+                }
+            } catch (error) {
+                clearInterval(stepInterval);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        let audioUrl = null;
+        
+        // Show Podcast Player
+        function showPodcastPlayer(title, audioUrlParam) {
+            document.getElementById('generationView').style.display = 'none';
+            document.getElementById('podcastPlayer').classList.add('active');
+            document.getElementById('podcastTitle').textContent = title || 'Learning Podcast';
+            
+            // Set up audio
+            audioUrl = audioUrlParam;
+            const audio = document.getElementById('podcastAudio');
+            const audioSource = document.getElementById('audioSource');
+            
+            if (audioUrl) {
+                audioSource.src = audioUrl;
+                audio.load();
+                audio.playbackRate = playbackSpeed;
+            }
+            
+            renderTranscript();
+            updateVisual(0);
+            updateTotalTime();
+        }
+        
+        // Render Transcript
+        function renderTranscript() {
+            const container = document.getElementById('transcriptContent');
+            let html = '';
+            
+            podcastData.segments.forEach((segment, index) => {
+                html += `
+                    <div class="transcript-segment ${index === currentSegment ? 'active' : ''}" onclick="goToSegment(${index})">
+                        <div class="segment-title">${segment.title}</div>
+                        <div class="segment-text">${segment.content}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Update Visual
+        function updateVisual(segmentIndex) {
+            const container = document.getElementById('visualDisplayPlayer');
+            const segment = podcastData.segments[segmentIndex];
+            
+            const visualData = {
+                'intro': { icon: '🎙️', title: 'Introduction', desc: segment.content.substring(0, 150) + '...' },
+                'concept': { icon: '💡', title: segment.title, desc: segment.content.substring(0, 200) + '...' },
+                'example': { icon: '📝', title: 'Example', desc: segment.content.substring(0, 200) + '...' },
+                'summary': { icon: '📋', title: 'Key Takeaways', desc: segment.content.substring(0, 200) + '...' },
+                'outro': { icon: '🎉', title: 'Great Job!', desc: segment.content.substring(0, 150) + '...' },
+                'loading': { icon: '⏳', title: 'Loading...', desc: 'Please wait while we prepare your content.' }
+            };
+            
+            const visual = visualData[segment.visual] || visualData['concept'];
+            
+            container.innerHTML = `
+                <div class="visual-bg-gradient"></div>
+                <div class="visual-content" style="text-align: center;">
+                    <div class="visual-icon" style="width: 100px; height: 100px; margin: 0 auto 1.5rem;">
+                        <span style="font-size: 48px;">${visual.icon}</span>
+                    </div>
+                    <div class="visual-text">${visual.title}</div>
+                    <div class="visual-desc" style="margin-top: 1rem;">${visual.desc}</div>
+                    
+                    <div class="image-grid" style="margin-top: 1.5rem;">
+                        <div class="image-card">
+                            <div class="image-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                            </div>
+                            <div class="image-card-text">Concept ${segmentIndex + 1}</div>
+                        </div>
+                        <div class="image-card">
+                            <div class="image-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </div>
+                            <div class="image-card-text">Understanding</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Audio Controls
+        function togglePlay() {
+            const audio = document.getElementById('podcastAudio');
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            const waveform = document.getElementById('audioWaveform');
+            
+            if (audio.paused) {
+                audio.play();
+                isPlaying = true;
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+                waveform.classList.add('playing');
+            } else {
+                audio.pause();
+                isPlaying = false;
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                waveform.classList.remove('playing');
+            }
+        }
+        
+        function skipBack() {
+            const audio = document.getElementById('podcastAudio');
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+        }
+        
+        function skipForward() {
+            const audio = document.getElementById('podcastAudio');
+            audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+        }
+        
+        function goToSegment(index) {
+            currentSegment = index;
+            renderTranscript();
+            updateVisual(index);
+            
+            document.querySelectorAll('.transcript-segment').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+            
+            // Scroll to segment in transcript
+            const activeSegment = document.querySelector('.transcript-segment.active');
+            if (activeSegment) {
+                activeSegment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        function setSpeed(speed) {
+            playbackSpeed = speed;
+            const audio = document.getElementById('podcastAudio');
+            audio.playbackRate = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === speed + 'x');
+            });
+        }
+        
+        // Audio event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('podcastAudio');
+            
+            audio.addEventListener('timeupdate', function() {
+                const progressFill = document.getElementById('progressFill');
+                const currentTimeEl = document.getElementById('currentTime');
+                
+                if (audio.duration) {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    progressFill.style.width = percent + '%';
+                    currentTimeEl.textContent = formatTime(audio.currentTime);
+                }
+            });
+            
+            audio.addEventListener('loadedmetadata', function() {
+                document.getElementById('totalTime').textContent = formatTime(audio.duration);
+            });
+            
+            audio.addEventListener('ended', function() {
+                isPlaying = false;
+                document.getElementById('playIcon').style.display = 'block';
+                document.getElementById('pauseIcon').style.display = 'none';
+                document.getElementById('audioWaveform').classList.remove('playing');
+            });
+            
+            // Progress bar click
+            document.getElementById('progressBar').addEventListener('click', function(e) {
+                const audio = document.getElementById('podcastAudio');
+                const rect = this.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = percent * audio.duration;
+            });
+        });
+        
+        function startProgress() {
+            // Progress is now handled by audio events
+        }
+        
+        function updateTotalTime() {
+            // Will be updated when audio loads
+        }
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function replayPodcast() {
+            const audio = document.getElementById('podcastAudio');
+            audio.currentTime = 0;
+            goToSegment(0);
+            audio.play();
+            isPlaying = true;
+            document.getElementById('playIcon').style.display = 'none';
+            document.getElementById('pauseIcon').style.display = 'block';
+            document.getElementById('audioWaveform').classList.add('playing');
+        }
+        
+        function regeneratePodcast() {
+            document.getElementById('podcastPlayer').classList.remove('active');
+            document.getElementById('generationView').style.display = 'grid';
+            document.getElementById('genProgress').style.width = '0%';
+            generatePodcast();
+        }
+    </script>
+</body>
+</html>

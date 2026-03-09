@@ -310,3 +310,120 @@ def export_essay(request):
     
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+
+@login_required
+def ai_material_action(request):
+    """AJAX endpoint for AI actions on study materials (summarize, quiz, flashcards, explain)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        action = data.get('action', '')
+        material_title = data.get('material_title', 'Material')
+        extracted_text = data.get('extracted_text', '')
+        
+        if not extracted_text:
+            return JsonResponse({'success': False, 'error': 'No text content available to analyze.'})
+        
+        prompt = build_material_prompt(action, material_title, extracted_text, data)
+        response = ask_ai(prompt, user=request.user, use_rag=False)
+        
+        return JsonResponse({'success': True, 'response': response})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid request data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def build_material_prompt(action, material_title, extracted_text, data=None):
+    """Build the appropriate prompt based on the action."""
+    
+    text_preview = extracted_text[:3000]
+    
+    prompts = {
+        'summarize': f"""You are an expert study assistant. Please provide a clear and comprehensive summary of the following content from "{material_title}". 
+
+Focus on:
+- Main ideas and key concepts
+- Important details and supporting points
+- Any definitions or formulas mentioned
+
+Write in clear paragraphs, not bullet points. Make it suitable for study review.
+
+Content:
+{text_preview}
+
+Summary:""",
+
+        'quiz': f"""You are an expert study assistant. Create a quiz with 5 multiple choice questions based on the following content from "{material_title}".
+
+For each question:
+1. Make it test understanding, not just memorization
+2. Provide 4 options (A, B, C, D)
+3. Indicate the correct answer
+
+Format your response like this:
+Q1: [Your question here]
+A. [Option A]
+B. [Option B]
+C. [Option C]
+D. [Option D]
+Answer: [Letter]
+
+Content:
+{text_preview}
+
+Quiz:""",
+
+        'flashcards': f"""You are an expert study assistant. Create 10 flashcards based on the following content from "{material_title}".
+
+For each flashcard:
+- Front: Key term or concept (brief, 1-3 words)
+- Back: Definition or explanation (clear, concise)
+
+Format your response as:
+Term: Definition
+
+Example:
+Photosynthesis: The process by which plants convert light energy into chemical energy
+
+Create at least 10 useful flashcards:
+
+Content:
+{text_preview}
+
+Flashcards:""",
+
+        'explain': f"""You are an expert teacher. Explain the key concepts from "{material_title}" in simple, easy-to-understand terms.
+
+Your explanation should:
+- Break down complex ideas into simpler parts
+- Use analogies where helpful
+- Be suitable for a student learning the topic for the first time
+- Include examples where relevant
+
+Write in clear paragraphs:
+
+Content:
+{text_preview}
+
+Explanation:"""
+    }
+    
+    if action == 'ask':
+        user_message = data.get('message', '') if data else ''
+        return f"""You are an expert study assistant helping with "{material_title}".
+
+The student asks: {user_message}
+
+Based on the following content, provide a helpful answer:
+
+Content:
+{text_preview}
+
+Answer:"""
+    
+    return prompts.get(action, prompts['explain'])
+
