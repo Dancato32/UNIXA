@@ -1,0 +1,167 @@
+# Mobile UI Integration Snippet
+
+## Add to BOTH list.html and detail.html templates
+
+### 1. Add at the TOP of the file (after `<head>` tag):
+
+```html
+{% load static %}
+```
+
+### 2. Add in the `<head>` section (before closing `</head>`):
+
+```html
+<!-- Mobile Responsive CSS -->
+<link rel="stylesheet" href="{% static 'materials/mobile-responsive.css' %}">
+```
+
+### 3. Add at the BOTTOM (before closing `</body>` tag, AFTER existing `</script>` tag):
+
+```html
+<!-- UI Controller (must load first) -->
+<script src="{% static 'materials/ui-controller.js' %}"></script>
+
+<!-- Mobile Interactions -->
+<script src="{% static 'materials/mobile-interactions.js' %}"></script>
+
+<!-- Floating Action Button -->
+<button class="quick-actions-fab" onclick="toggleQuickActions()" aria-label="Quick Actions">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+    </svg>
+</button>
+
+<!-- Backdrop for mobile panels -->
+<div class="quick-actions-backdrop"></div>
+
+<!-- Mobile Quick Actions Panel -->
+<div class="quick-actions-mobile">
+    <div class="quick-actions-mobile-header">
+        <div class="quick-actions-mobile-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Quick Actions
+        </div>
+        <button class="quick-actions-close" onclick="toggleQuickActions()" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="quick-actions-mobile-body">
+        <!-- Quick actions will be populated by UI controller -->
+    </div>
+</div>
+```
+
+---
+
+## Complete Example for list.html:
+
+### At the very top (line 1):
+```html
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - NEXA</title>
+    
+    <!-- Mobile Responsive CSS -->
+    <link rel="stylesheet" href="{% static 'materials/mobile-responsive.css' %}">
+    
+    <style>
+        /* Existing styles... */
+```
+
+### At the very bottom (before `</body>`):
+```html
+    </script>
+    
+    <!-- UI Controller (must load first) -->
+    <script src="{% static 'materials/ui-controller.js' %}"></script>
+    
+    <!-- Mobile Interactions -->
+    <script src="{% static 'materials/mobile-interactions.js' %}"></script>
+    
+    <!-- Floating Action Button -->
+    <button class="quick-actions-fab" onclick="toggleQuickActions()" aria-label="Quick Actions">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+    </button>
+    
+    <!-- Backdrop for mobile panels -->
+    <div class="quick-actions-backdrop"></div>
+    
+    <!-- Mobile Quick Actions Panel -->
+    <div class="quick-actions-mobile">
+        <div class="quick-actions-mobile-header">
+            <div class="quick-actions-mobile-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                Quick Actions
+            </div>
+            <button class="quick-actions-close" onclick="toggleQuickActions()" aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="quick-actions-mobile-body">
+            <!-- Quick actions will be populated by UI controller -->
+        </div>
+    </div>
+</body>
+</html>
+```
+
+---
+
+## After Adding These Changes:
+
+1. Run: `python manage.py collectstatic --noinput`
+2. Clear browser cache (Ctrl+Shift+Delete)
+3. Test on mobile (F12 -> Toggle Device Toolbar)
+4. Verify FAB appears on screens < 992px
+5. Verify clicking FAB opens bottom sheet with AI actions
+6. Verify all existing features still work
+
+---
+
+## What This Does:
+
+- **Desktop (>992px)**: No changes, works as before
+- **Tablet/Mobile (<992px)**: 
+  - FAB appears bottom-right
+  - Clicking FAB opens bottom sheet with AI quick actions
+  - All AI features accessible on mobile
+  - Touch-friendly buttons (44px minimum)
+  - No iOS zoom on form inputs
+  - Sidebar becomes collapsible
+  - Toolbar becomes horizontal and scrollable
+
+---
+
+## Troubleshooting:
+
+### FAB not showing:
+1. Check browser console for errors
+2. Verify static files collected: `python manage.py collectstatic`
+3. Check screen width < 992px
+4. Clear browser cache
+
+### Panel not opening:
+1. Check console for JavaScript errors
+2. Verify ui-controller.js loaded (check Network tab)
+3. Try in incognito mode
+
+### Styles not applying:
+1. Run `python manage.py collectstatic --noinput`
+2. Hard refresh (Ctrl+Shift+R)
+3. Check if CSS file loaded (view source)

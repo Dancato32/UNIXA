@@ -186,15 +186,32 @@ def generate_podcast_ajax(request):
         # Parse the AI response into structured segments
         segments = parse_podcast_response(podcast_script, material.title)
         
-        # Generate audio for the podcast
-        audio_filename = generate_podcast_audio(podcast_script, material.pk)
+        # Generate audio for the podcast - try ElevenLabs first, then OpenAI
+        audio_filename = None
+        
+        # Use ElevenLabs TTS for highest quality voice
+        try:
+            audio_filename = generate_podcast_audio_elevenlabs(podcast_script, material.pk)
+        except Exception as e:
+            print(f"ElevenLabs failed: {e}")
+        
+        # Fall back to OpenRouter/OpenAI if ElevenLabs fails
+        if not audio_filename:
+            audio_filename = generate_podcast_audio(podcast_script, material.pk)
+        
+        # Build audio URL
+        if audio_filename:
+            audio_url = f'/materials/podcast/audio/{material.pk}/{audio_filename}'
+        else:
+            audio_url = f'/materials/podcast/audio/{material.pk}/'
         
         return JsonResponse({
             'success': True,
             'podcast_script': segments,
             'material_title': material.title,
             'raw_content': podcast_script,
-            'audio_url': f'/materials/podcast/audio/{material.pk}/'
+            'audio_url': audio_url,
+            'has_audio': audio_filename is not None
         })
         
     except Exception as e:
@@ -202,19 +219,97 @@ def generate_podcast_ajax(request):
 
 
 def generate_podcast_audio(script_text, material_id):
-    """Generate podcast audio using OpenAI TTS API."""
+    """Generate podcast audio using OpenRouter TTS API."""
+    try:
+        import os
+        import requests
+        import base64
+        
+        # Get OpenRouter API key
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            # Try direct OpenAI key as fallback
+            api_key = os.getenv("OPENAI_API_KEY")
+        
+        if not api_key:
+            print("No API key found for TTS")
+            return None
+        
+        # Prepare full text for audio (combine all segments)
+        full_text = script_text
+        if isinstance(script_text, dict):
+            full_text = " ".join([seg['content'] for seg in script_text.get('segments', [])])
+        
+        # Limit text length for TTS
+        full_text = full_text[:2500]
+        
+        if not full_text:
+            return None
+        
+        # Create audio directory if not exists
+        audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcasts')
+        os.makedirs(audio_dir, exist_ok=True)
+        
+        # Generate unique filename
+        filename = f"podcast_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
+        filepath = os.path.join(audio_dir, filename)
+        
+        # Use OpenRouter with a TTS-capable model
+        url = "https://openrouter.ai/api/v1/audio/generation"
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://nexa-learning.com",
+            "X-Title": "NEXA Learning"
+        }
+        
+        data = {
+            "model": "cartesia/cartesia-2",
+            "input": full_text,
+            "voice": "nova"
+        }
+        
+        response = requests.post(url, json=data, headers=headers, timeout=120)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if 'audio' in result:
+                audio_data = base64.b64decode(result['audio'])
+                with open(filepath, 'wb') as f:
+                    f.write(audio_data)
+                return filename
+            elif 'data' in result:
+                audio_data = base64.b64decode(result['data'])
+                with open(filepath, 'wb') as f:
+                    f.write(audio_data)
+                return filename
+            else:
+                print(f"Unexpected response format: {result}")
+                return None
+        else:
+            print(f"OpenRouter TTS Error: {response.status_code} - {response.text}")
+            return generate_podcast_audio_direct(script_text, material_id)
+        
+    except Exception as e:
+        print(f"TTS Generation Error: {e}")
+        try:
+            return generate_podcast_audio_direct(script_text, material_id)
+        except:
+            return None
+
+
+def generate_podcast_audio_direct(script_text, material_id):
+    """Generate podcast audio using direct OpenAI TTS API."""
     try:
         from openai import OpenAI
         import os
         
-        # Get API key - prefer direct OpenAI for TTS
+        # Get direct OpenAI API key only
         api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            # Try OpenRouter key
-            api_key = os.getenv("OPENROUTER_API_KEY")
         
         if not api_key:
-            print("No API key found for TTS")
+            print("No direct OpenAI API key for TTS")
             return None
         
         # Create OpenAI client
@@ -240,10 +335,9 @@ def generate_podcast_audio(script_text, material_id):
         filepath = os.path.join(audio_dir, filename)
         
         # Generate speech using OpenAI's TTS
-        # Using "nova" voice - sounds very natural and human-like
         response = client.audio.speech.create(
-            model="tts-1",  # Standard TTS model
-            voice="nova",   # Nova sounds very natural and friendly
+            model="tts-1",
+            voice="nova",
             input=full_text,
             response_format="mp3"
         )
@@ -254,21 +348,152 @@ def generate_podcast_audio(script_text, material_id):
         return filename
         
     except Exception as e:
-        print(f"TTS Generation Error: {e}")
+        print(f"Direct TTS Error: {e}")
         return None
 
 
+def generate_podcast_audio_elevenlabs(script_text, material_id):
+    """Generate podcast audio using ElevenLabs TTS API for higher quality."""
+    try:
+        import os
+        import requests
+        
+        # Get ElevenLabs API key
+        api_key = os.environ.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
+        if not api_key:
+            print("No ElevenLabs API key found in environment")
+            # Try to get from Django settings
+            api_key = getattr(settings, 'ELEVENLABS_API_KEY', None)
+            if not api_key:
+                print("No ElevenLabs API key found in settings either")
+                return None
+        
+        # Prepare full text for audio
+        full_text = script_text
+        if isinstance(script_text, dict):
+            full_text = " ".join([seg['content'] for seg in script_text.get('segments', [])])
+        
+        full_text = full_text[:2500]
+        
+        if not full_text:
+            print("No text content for TTS")
+            return None
+        
+        # Create audio directory
+        audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcasts')
+        os.makedirs(audio_dir, exist_ok=True)
+        
+        # Generate unique filename
+        filename = f"podcast_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
+        filepath = os.path.join(audio_dir, filename)
+        
+        # ElevenLabs TTS API call - using a popular voice
+        # "Rachel" voice - most popular
+        voice_id = "21m00Tcm4TlvDq8ikWAM"
+        
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+        
+        headers = {
+            "Accept": "audio/mpeg",
+            "Content-Type": "application/json",
+            "xi-api-key": api_key
+        }
+        
+        data = {
+            "text": full_text,
+            "model_id": "eleven_multilingual_v2"
+        }
+        
+        response = requests.post(url, json=data, headers=headers, timeout=120)
+        
+        if response.status_code == 200:
+            with open(filepath, 'wb') as f:
+                f.write(response.content)
+            print(f"ElevenLabs audio generated successfully: {filename}")
+            return filename
+        else:
+            print(f"ElevenLabs API Error {response.status_code}: {response.text[:200]}")
+            return None
+        
+    except Exception as e:
+        print(f"ElevenLabs TTS Exception: {e}")
+        return None
+
+
+def generate_podcast_audio_streaming(request, script_text, material_id):
+    """Generate podcast audio using streaming TTS for immediate playback."""
+    try:
+        from openai import OpenAI
+        import os
+        
+        # Get API key
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            api_key = os.getenv("OPENROUTER_API_KEY")
+        
+        if not api_key:
+            return None, None
+        
+        client = OpenAI(api_key=api_key)
+        
+        # Prepare full text
+        full_text = script_text
+        if isinstance(script_text, dict):
+            full_text = " ".join([seg['content'] for seg in script_text.get('segments', [])])
+        
+        full_text = full_text[:2500]
+        
+        if not full_text:
+            return None, None
+        
+        # Create audio directory
+        audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcasts')
+        os.makedirs(audio_dir, exist_ok=True)
+        
+        # Generate unique filename
+        filename = f"podcast_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
+        filepath = os.path.join(audio_dir, filename)
+        
+        # Generate with streaming for immediate playback
+        response = client.audio.speech.create(
+            model="tts-1-hd",  # Higher quality TTS
+            voice="nova",
+            input=full_text,
+            response_format="mp3"
+        )
+        
+        # Save while generating (streams to file)
+        response.stream_to_file(filepath)
+        
+        return filename, filepath
+        
+    except Exception as e:
+        print(f"Streaming TTS Error: {e}")
+        return None, None
+
+
 @login_required
-def serve_podcast_audio(request, material_id):
+def serve_podcast_audio(request, material_id, filename=None):
     """Serve the generated podcast audio file."""
     try:
-        # Find the latest podcast file for this material
+        # Find the podcast file for this material
         audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcasts')
         
         if not os.path.exists(audio_dir):
             return JsonResponse({'error': 'No audio found'}, status=404)
         
-        # Get list of files for this material
+        # If specific filename provided, serve it directly
+        if filename:
+            filepath = os.path.join(audio_dir, filename)
+            if os.path.exists(filepath):
+                return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
+            # If file doesn't exist with exact name, try finding it
+            files = [f for f in os.listdir(audio_dir) if f.startswith(f'podcast_{material_id}_') and filename in f]
+            if files:
+                filepath = os.path.join(audio_dir, files[0])
+                return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
+        
+        # Otherwise, get the latest file for this material
         files = [f for f in os.listdir(audio_dir) if f.startswith(f'podcast_{material_id}_')]
         
         if not files:

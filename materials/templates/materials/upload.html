@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ title }} - NEXA</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/mobile-fix.css' %}">
     <style>
         * {
             margin: 0;
@@ -662,10 +664,49 @@
             .sidebar {
                 display: flex;
                 width: 280px;
+                transform: translateX(-100%);
             }
             
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            /* Workspace adjusts for mobile toolbar */
+            .workspace {
+                padding-top: 0 !important;
+            }
+            
+            /* Editor area adjustments */
+            .editor-area {
+                height: calc(100vh - 120px) !important;
+            }
+            
+            /* Mobile toolbar - horizontal instead of vertical */
             .toolbar {
-                display: none;
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                height: auto !important;
+                padding: 0.5rem 1rem !important;
+                gap: 0.5rem !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--border) !important;
+                background: var(--bg-secondary) !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            
+            .toolbar-btn {
+                width: 44px !important;
+                height: 44px !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .toolbar-divider {
+                width: 1px !important;
+                height: 32px !important;
+                background: var(--border) !important;
+                margin: 0 0.25rem !important;
             }
             
             .editor-scroll {

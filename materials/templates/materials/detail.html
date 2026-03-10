@@ -1,9 +1,17 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ title }} - NEXA</title>
+    
+    <!-- Universal Mobile Fix -->
+    <link rel="stylesheet" href="{% static 'css/mobile-fix.css' %}">
+    
+    <!-- Mobile Responsive CSS -->
+    <link rel="stylesheet" href="{% static 'materials/mobile-responsive.css' %}">
+    
     <style>
         * {
             margin: 0;
@@ -978,10 +986,49 @@
             .sidebar {
                 display: flex;
                 width: 280px;
+                transform: translateX(-100%);
             }
             
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            /* Workspace adjusts for mobile toolbar */
+            .workspace {
+                padding-top: 0 !important;
+            }
+            
+            /* Editor area adjustments */
+            .editor-area {
+                height: calc(100vh - 120px) !important;
+            }
+            
+            /* Mobile toolbar - horizontal instead of vertical */
             .toolbar {
-                display: none;
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                height: auto !important;
+                padding: 0.5rem 1rem !important;
+                gap: 0.5rem !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--border) !important;
+                background: var(--bg-secondary) !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            
+            .toolbar-btn {
+                width: 44px !important;
+                height: 44px !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .toolbar-divider {
+                width: 1px !important;
+                height: 32px !important;
+                background: var(--border) !important;
+                margin: 0 0.25rem !important;
             }
             
             .editor-scroll {
@@ -1782,5 +1829,42 @@
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
     </script>
+    
+    <!-- UI Controller (must load first) -->
+    <script src="{% static 'materials/ui-controller.js' %}"></script>
+    
+    <!-- Mobile Interactions -->
+    <script src="{% static 'materials/mobile-interactions.js' %}"></script>
+    
+    <!-- Floating Action Button -->
+    <button class="quick-actions-fab" onclick="toggleQuickActions()" aria-label="Quick Actions">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+    </button>
+    
+    <!-- Backdrop for mobile panels -->
+    <div class="quick-actions-backdrop"></div>
+    
+    <!-- Mobile Quick Actions Panel -->
+    <div class="quick-actions-mobile">
+        <div class="quick-actions-mobile-header">
+            <div class="quick-actions-mobile-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                Quick Actions
+            </div>
+            <button class="quick-actions-close" onclick="toggleQuickActions()" aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="quick-actions-mobile-body">
+            <!-- Quick actions will be populated by UI controller -->
+        </div>
+    </div>
 </body>
 </html>

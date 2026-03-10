@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
@@ -9,6 +9,7 @@ urlpatterns = [
     path('podcast/<int:pk>/', views.podcast_view, name='podcast_view'),
     path('podcast/generate/', views.generate_podcast_ajax, name='generate_podcast_ajax'),
     path('podcast/audio/<int:material_id>/', views.serve_podcast_audio, name='serve_podcast_audio'),
+    path('podcast/audio/<int:material_id>/<str:filename>/', views.serve_podcast_audio, name='serve_podcast_audio_named'),
     path('api/count/', views.materials_count_api, name='materials_count_api'),
 ]
 

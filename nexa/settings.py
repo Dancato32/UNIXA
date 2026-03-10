@@ -135,6 +135,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files (uploads)
 MEDIA_URL = '/media/'
@@ -147,6 +148,7 @@ LOGIN_URL = '/login/'
 
 # AI Settings
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
 
 # Logging
 LOGGING = {

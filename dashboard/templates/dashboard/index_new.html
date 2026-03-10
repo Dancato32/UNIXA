@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Dashboard - NEXA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -96,9 +96,10 @@ body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1a1a1a; }
         transition: transform 0.3s ease;
         position: fixed;
         z-index: 1000;
+        width: 240px;
     }
     .sidebar.open { transform: translateX(0); }
-    .main { margin-left: 0; padding: 1rem; }
+    .main { margin-left: 0; padding: 1rem; width: 100%; }
     .mobile-toggle {
         display: flex;
         width: 40px;
@@ -139,6 +140,9 @@ body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1a1a1a; }
     }
     .bottom-nav-item.active { color: #1a1a1a; }
     .bottom-nav-item svg { width: 20px; height: 20px; }
+    
+    /* Add padding to main content for bottom nav */
+    .main { padding-bottom: 80px; }
 }
 
 @media (max-width: 768px) {
