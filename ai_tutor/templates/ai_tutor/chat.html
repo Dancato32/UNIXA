@@ -1134,6 +1134,7 @@ const NexaVoice = {
     waves: null,
     recognition: null,
     synthesis: window.speechSynthesis,
+    currentAudio: null, // For ElevenLabs audio playback
     isListening: false,
     isProcessing: false,
     isActive: false,
@@ -1314,12 +1315,69 @@ const NexaVoice = {
     },
     
     speak(text) {
+        return new Promise(async (resolve) => {
+            if (!text) {
+                resolve();
+                return;
+            }
+            
+            // Stop any currently playing audio
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                this.currentAudio = null;
+            }
+            
+            try {
+                // Call backend TTS endpoint (uses ElevenLabs or OpenAI)
+                const response = await fetch('{% url "ai_tts" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        text: text.substring(0, 2500), // Limit text length
+                        voice: 'alloy' // Can be changed to: echo, fable, onyx, nova, shimmer
+                    })
+                });
+                
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    this.currentAudio = new Audio(audioUrl);
+                    this.currentAudio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        resolve();
+                    };
+                    this.currentAudio.onerror = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        console.error('[NexaVoice] Audio playback error, falling back to browser TTS');
+                        this.speakWithBrowserTTS(text).then(resolve);
+                    };
+                    
+                    await this.currentAudio.play();
+                } else {
+                    console.error('[NexaVoice] TTS request failed:', response.status, 'falling back to browser TTS');
+                    await this.speakWithBrowserTTS(text);
+                    resolve();
+                }
+            } catch (error) {
+                console.error('[NexaVoice] TTS error:', error, 'falling back to browser TTS');
+                await this.speakWithBrowserTTS(text);
+                resolve();
+            }
+        });
+    },
+    
+    speakWithBrowserTTS(text) {
         return new Promise((resolve) => {
             if (!text || !this.synthesis) {
                 resolve();
                 return;
             }
             
+            console.log('[NexaVoice] Using browser TTS');
             this.synthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(text);
@@ -1334,7 +1392,15 @@ const NexaVoice = {
     },
     
     stopSpeaking() {
+        // Stop browser speech synthesis (fallback)
         if (this.synthesis) this.synthesis.cancel();
+        
+        // Stop ElevenLabs audio playback
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio.currentTime = 0;
+            this.currentAudio = null;
+        }
     },
     
     toggleListening() {

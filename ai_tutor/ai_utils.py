@@ -524,29 +524,90 @@ The significance of {topic} cannot be understated in today's world. Its relevanc
 
 def text_to_speech(text, voice='alloy'):
     """
-    Convert text to speech using OpenAI's TTS API.
+    Convert text to speech using ElevenLabs TTS API for high-quality voice.
+    Falls back to returning None if both ElevenLabs and OpenAI fail.
+    Frontend will use browser TTS as final fallback.
     
     Args:
         text: Text to convert to speech
-        voice: Voice to use (alloy, echo, fable, onyx, nova, shimmer)
+        voice: Voice to use (for OpenAI fallback: alloy, echo, fable, onyx, nova, shimmer)
     
     Returns:
         Audio content as bytes or None if unavailable
     """
+    import os
+    import requests
+    
+    # Try ElevenLabs first (higher quality)
     try:
-        client = get_openai_client()
+        api_key = os.environ.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
         
-        response = client.audio.speech.create(
-            model="tts-1",
-            voice=voice,
-            input=text[:4096]  # Limit input length
-        )
-        
-        return response.content
+        if api_key:
+            # ElevenLabs voice mapping
+            voice_map = {
+                'alloy': '21m00Tcm4TlvDq8ikWAM',  # Rachel - warm, friendly
+                'echo': 'pNInz6obpgDQGcFmaJgB',   # Adam - deep, authoritative
+                'fable': 'EXAVITQu4vr4xnSDxMaL',  # Bella - soft, pleasant
+                'onyx': 'VR6AewLTigWG4xSOukaG',   # Arnold - strong, confident
+                'nova': 'ErXwobaYiN019PkySvjV',   # Antoni - smooth, professional
+                'shimmer': 'MF3mGyEYCl7XYWbV9V6O'  # Elli - bright, energetic
+            }
+            
+            voice_id = voice_map.get(voice, '21m00Tcm4TlvDq8ikWAM')  # Default to Rachel
+            
+            url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+            
+            headers = {
+                "Accept": "audio/mpeg",
+                "Content-Type": "application/json",
+                "xi-api-key": api_key
+            }
+            
+            data = {
+                "text": text[:2500],  # Limit text length
+                "model_id": "eleven_multilingual_v2",
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.75
+                }
+            }
+            
+            response = requests.post(url, json=data, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                print("ElevenLabs TTS successful")
+                return response.content
+            else:
+                print(f"ElevenLabs TTS Error {response.status_code}: {response.text[:200]}")
         
     except Exception as e:
-        print(f"TTS Error: {e}")
-        return None
+        print(f"ElevenLabs TTS failed: {e}")
+    
+    # Try OpenAI TTS as fallback (only if API key exists)
+    try:
+        openai_key = os.environ.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+        if openai_key and openai_key != "your-openai-api-key-here":
+            print("Falling back to OpenAI TTS")
+            from openai import OpenAI
+            
+            client = OpenAI(api_key=openai_key)
+            
+            response = client.audio.speech.create(
+                model="tts-1",
+                voice=voice,
+                input=text[:4096]  # Limit input length
+            )
+            
+            return response.content
+        else:
+            print("No OpenAI API key available for TTS fallback")
+            
+    except Exception as e:
+        print(f"OpenAI TTS Error: {e}")
+    
+    # Return None - frontend will use browser TTS
+    print("All TTS services failed - frontend will use browser TTS")
+    return None
 
 
 def search_web(query):

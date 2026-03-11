@@ -871,6 +871,223 @@
                 min-height: 60px;
             }
         }
+        
+        /* Raise Hand Button */
+        .raise-hand-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+            border: none;
+            border-radius: 50%;
+            font-size: 36px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            animation: pulse-hand 2s ease-in-out infinite;
+        }
+        
+        .raise-hand-btn.visible {
+            display: flex;
+        }
+        
+        .raise-hand-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.6);
+        }
+        
+        .raise-hand-btn:active {
+            transform: scale(0.95);
+        }
+        
+        @keyframes pulse-hand {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Question Modal */
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+        
+        .question-modal.active {
+            display: flex;
+        }
+        
+        .question-modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .question-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .question-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .question-modal-close {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-tertiary);
+            border: none;
+            border-radius: 50%;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .question-modal-close:hover {
+            background: var(--accent);
+        }
+        
+        .question-input-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .question-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.2s;
+        }
+        
+        .question-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .question-submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .question-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        }
+        
+        .question-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .ai-answer-container {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            display: none;
+        }
+        
+        .ai-answer-container.visible {
+            display: block;
+        }
+        
+        .ai-answer-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .ai-answer-text {
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 0.9375rem;
+        }
+        
+        .continue-podcast-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-elevated);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .continue-podcast-btn:hover {
+            background: var(--accent);
+        }
+        
+        @media (max-width: 768px) {
+            .raise-hand-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+                bottom: 80px;
+                right: 20px;
+            }
+            
+            .question-modal-content {
+                padding: 1.5rem;
+            }
+            
+            .question-modal-title {
+                font-size: 1.25rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1181,12 +1398,138 @@
         </div>
     </div>
     
+    <!-- Raise Hand Button -->
+    <button class="raise-hand-btn" id="raiseHandBtn" onclick="openQuestionModal()" title="Ask a question">
+        ✋
+    </button>
+    
+    <!-- Question Modal -->
+    <div class="question-modal" id="questionModal">
+        <div class="question-modal-content">
+            <div class="question-modal-header">
+                <h2 class="question-modal-title">
+                    <span>✋</span>
+                    Ask a Question
+                </h2>
+                <button class="question-modal-close" onclick="closeQuestionModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="question-input-container">
+                <textarea 
+                    id="questionInput" 
+                    class="question-input" 
+                    placeholder="Type your question about the podcast content here..."
+                ></textarea>
+            </div>
+            
+            <button class="question-submit-btn" id="questionSubmitBtn" onclick="submitQuestion()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                Ask AI
+            </button>
+            
+            <div class="ai-answer-container" id="aiAnswerContainer">
+                <div class="ai-answer-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    AI Answer
+                </div>
+                <div class="ai-answer-text" id="aiAnswerText"></div>
+                <button class="continue-podcast-btn" onclick="continuePodcast()">
+                    Continue Podcast
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // State
         let podcastData = null;
         let currentSegment = 0;
         let isPlaying = false;
         let playbackSpeed = 1;
+        
+        // Browser-based TTS (Web Speech API) - free fallback
+        let browserTTS = null;
+        let browserTTSEnabled = false;
+        
+        // Check if browser TTS is available
+        if ('speechSynthesis' in window) {
+            browserTTSEnabled = true;
+            console.log('Browser TTS available');
+        }
+        
+        // Browser TTS speak function
+        function speakWithBrowserTTS(text, onEnd) {
+            if (!browserTTSEnabled) {
+                console.log('Browser TTS not available');
+                if (onEnd) onEnd();
+                return;
+            }
+            
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = playbackSpeed;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            // Try to get a good voice
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoices = voices.filter(v => 
+                v.name.includes('Google') || 
+                v.name.includes('Samantha') ||
+                v.name.includes('Microsoft') ||
+                v.name.includes('English')
+            );
+            if (preferredVoices.length > 0) {
+                utterance.voice = preferredVoices[0];
+            }
+            
+            utterance.onend = function() {
+                console.log('Browser TTS finished');
+                if (onEnd) onEnd();
+            };
+            
+            utterance.onerror = function(e) {
+                console.log('Browser TTS error:', e);
+                if (onEnd) onEnd();
+            };
+            
+            window.speechSynthesis.speak(utterance);
+            console.log('Browser TTS started');
+        }
+        
+        // Stop browser TTS
+        function stopBrowserTTS() {
+            if (browserTTSEnabled) {
+                window.speechSynthesis.cancel();
+            }
+        }
+        
+        // Pause browser TTS
+        function pauseBrowserTTS() {
+            if (browserTTSEnabled) {
+                window.speechSynthesis.pause();
+            }
+        }
+        
+        // Resume browser TTS
+        function resumeBrowserTTS() {
+            if (browserTTSEnabled) {
+                window.speechSynthesis.resume();
+            }
+        }
         
         // Generation Steps
         const steps = [
@@ -1270,6 +1613,7 @@
         }
         
         let audioUrl = null;
+        let audioSource = null;
         
         // Show Podcast Player
         function showPodcastPlayer(title, audioUrlParam) {
@@ -1280,7 +1624,7 @@
             // Set up audio
             audioUrl = audioUrlParam;
             const audio = document.getElementById('podcastAudio');
-            const audioSource = document.getElementById('audioSource');
+            audioSource = document.getElementById('audioSource');
             const playIcon = document.getElementById('playIcon');
             const pauseIcon = document.getElementById('pauseIcon');
             
@@ -1352,11 +1696,17 @@
                     }
                 });
             } else {
-                console.log('No audio URL provided');
-                // No audio - show play button
+                console.log('No server audio - using browser TTS');
+                // No server audio - use browser TTS as fallback
                 playIcon.style.display = 'block';
                 pauseIcon.style.display = 'none';
-                showNoAudioNotification();
+                
+                if (browserTTSEnabled) {
+                    console.log('Browser TTS enabled as fallback');
+                    showBrowserTTSNotification();
+                } else {
+                    showNoAudioNotification();
+                }
             }
             
             renderTranscript();
@@ -1398,21 +1748,32 @@
         
         // Show play notification
         function showPlayNotification() {
+            // Remove any existing notification
+            const existing = document.querySelector('.play-notification-overlay');
+            if (existing) existing.remove();
+            
             const notification = document.createElement('div');
-            notification.className = 'play-notification';
+            notification.className = 'play-notification-overlay';
             notification.innerHTML = `
-                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 0.75rem; margin: 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--accent-blue)" stroke="none">
-                        <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    <span style="font-size: 0.875rem; color: var(--text-primary);">Click the play button to start listening</span>
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;">
+                    <div style="background: var(--bg-elevated); border: 2px solid var(--accent); border-radius: 20px; padding: 2rem; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                        <div style="width: 80px; height: 80px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                                <polygon points="8 5 19 12 8 19 8 5"/>
+                            </svg>
+                        </div>
+                        <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary);">Podcast Ready!</h3>
+                        <p style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5;">Your podcast has been generated and is ready to play. Tap the button below to start listening.</p>
+                        <button onclick="this.closest('.play-notification-overlay').remove(); togglePlay();" style="width: 100%; padding: 1rem 2rem; background: var(--accent); border: none; border-radius: 12px; color: white; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            ▶ Start Playing
+                        </button>
+                        <button onclick="this.closest('.play-notification-overlay').remove();" style="width: 100%; padding: 0.75rem; background: transparent; border: none; color: var(--text-secondary); font-size: 0.875rem; cursor: pointer; margin-top: 0.75rem;">
+                            Close
+                        </button>
+                    </div>
                 </div>
             `;
-            
-            const audioControls = document.querySelector('.audio-controls-main');
-            if (audioControls && !document.querySelector('.play-notification')) {
-                audioControls.insertBefore(notification, audioControls.firstChild);
-            }
+            document.body.appendChild(notification);
         }
         
         // Show no audio notification
@@ -1432,6 +1793,29 @@
             
             const audioControls = document.querySelector('.audio-controls-main');
             if (audioControls && !document.querySelector('.no-audio-notification')) {
+                audioControls.insertBefore(notification, audioControls.firstChild);
+            }
+        }
+        
+        // Show browser TTS notification
+        function showBrowserTTSNotification() {
+            const existing = document.querySelector('.browser-tts-notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = 'browser-tts-notification';
+            notification.innerHTML = `
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; border-radius: 8px; padding: 0.75rem; margin: 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#3b82f6" stroke="none">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    </svg>
+                    <span style="font-size: 0.875rem; color: var(--text-primary);">Using browser voice. Click play to start narration.</span>
+                </div>
+            `;
+            
+            const audioControls = document.querySelector('.audio-controls-main');
+            if (audioControls && !document.querySelector('.browser-tts-notification')) {
                 audioControls.insertBefore(notification, audioControls.firstChild);
             }
         }
@@ -1516,6 +1900,46 @@
                 playNotification.parentNode.removeChild(playNotification);
             }
             
+            // Check if we should use browser TTS (no server audio available)
+            const hasServerAudio = audioUrl && audioSource && audioSource.src && audioSource.src.length > 0;
+            
+            if (!hasServerAudio && browserTTSEnabled) {
+                // Use browser TTS
+                if (isPlaying) {
+                    // Pause browser TTS
+                    pauseBrowserTTS();
+                    isPlaying = false;
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    waveform.classList.remove('playing');
+                } else {
+                    // Start browser TTS - combine all segment content
+                    let fullText = '';
+                    if (podcastData && podcastData.segments) {
+                        podcastData.segments.forEach(seg => {
+                            fullText += seg.content + ' ';
+                        });
+                    }
+                    
+                    if (fullText.trim()) {
+                        isPlaying = true;
+                        playIcon.style.display = 'none';
+                        pauseIcon.style.display = 'block';
+                        waveform.classList.add('playing');
+                        
+                        speakWithBrowserTTS(fullText.trim(), () => {
+                            // When TTS finishes
+                            isPlaying = false;
+                            playIcon.style.display = 'block';
+                            pauseIcon.style.display = 'none';
+                            waveform.classList.remove('playing');
+                        });
+                    }
+                }
+                return;
+            }
+            
+            // Use server audio
             if (audio.paused) {
                 const playPromise = audio.play();
                 if (playPromise !== undefined) {
@@ -1785,6 +2209,188 @@
             document.getElementById('genProgress').style.width = '0%';
             generatePodcast();
         }
+        
+        // Raise Hand Feature
+        let savedPlaybackPosition = 0;
+        let wasPlayingBeforeQuestion = false;
+        
+        function openQuestionModal() {
+            const audio = document.getElementById('podcastAudio');
+            const modal = document.getElementById('questionModal');
+            
+            // Save current state
+            wasPlayingBeforeQuestion = !audio.paused;
+            savedPlaybackPosition = audio.currentTime;
+            
+            // Pause podcast
+            if (wasPlayingBeforeQuestion) {
+                audio.pause();
+                isPlaying = false;
+                document.getElementById('playIcon').style.display = 'block';
+                document.getElementById('pauseIcon').style.display = 'none';
+                document.getElementById('audioWaveform').classList.remove('playing');
+            }
+            
+            // Show modal
+            modal.classList.add('active');
+            document.getElementById('questionInput').focus();
+            
+            // Reset answer container
+            document.getElementById('aiAnswerContainer').classList.remove('visible');
+            document.getElementById('questionInput').value = '';
+        }
+        
+        function closeQuestionModal() {
+            const modal = document.getElementById('questionModal');
+            modal.classList.remove('active');
+        }
+        
+        async function submitQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('questionSubmitBtn');
+            const answerContainer = document.getElementById('aiAnswerContainer');
+            const answerText = document.getElementById('aiAnswerText');
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;">
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+                Thinking...
+            `;
+            
+            try {
+                // Get podcast context
+                const podcastContext = podcastData ? 
+                    podcastData.segments.map(s => `${s.title}: ${s.content}`).join('\n\n') : 
+                    'No context available';
+                
+                const response = await fetch('{% url "podcast_question_ajax" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        podcast_context: podcastContext,
+                        material_id: {{ material.pk }}
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show answer
+                    answerText.textContent = data.answer;
+                    answerContainer.classList.add('visible');
+                    
+                    // Play audio answer if available
+                    if (data.audio_url) {
+                        playAnswerAudio(data.audio_url);
+                    }
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to get answer'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                    Ask AI
+                `;
+            }
+        }
+        
+        let answerAudio = null;
+        
+        function playAnswerAudio(audioUrl) {
+            // Stop any existing answer audio
+            if (answerAudio) {
+                answerAudio.pause();
+                answerAudio = null;
+            }
+            
+            // Create and play new audio
+            answerAudio = new Audio(audioUrl);
+            answerAudio.play().catch(error => {
+                console.log('Answer audio playback failed:', error);
+            });
+        }
+        
+        function continuePodcast() {
+            // Stop answer audio if playing
+            if (answerAudio) {
+                answerAudio.pause();
+                answerAudio = null;
+            }
+            
+            // Close modal
+            closeQuestionModal();
+            
+            // Resume podcast if it was playing
+            if (wasPlayingBeforeQuestion) {
+                const audio = document.getElementById('podcastAudio');
+                audio.currentTime = savedPlaybackPosition;
+                
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isPlaying = true;
+                        document.getElementById('playIcon').style.display = 'none';
+                        document.getElementById('pauseIcon').style.display = 'block';
+                        document.getElementById('audioWaveform').classList.add('playing');
+                    }).catch(error => {
+                        console.log('Resume playback failed:', error);
+                    });
+                }
+            }
+        }
+        
+        // Show/hide raise hand button based on playback state
+        function updateRaiseHandButton() {
+            const raiseHandBtn = document.getElementById('raiseHandBtn');
+            const audio = document.getElementById('podcastAudio');
+            const playerActive = document.getElementById('podcastPlayer').classList.contains('active');
+            
+            if (playerActive && !audio.paused) {
+                raiseHandBtn.classList.add('visible');
+            } else {
+                raiseHandBtn.classList.remove('visible');
+            }
+        }
+        
+        // Update raise hand button visibility on play/pause
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('podcastAudio');
+            
+            audio.addEventListener('play', updateRaiseHandButton);
+            audio.addEventListener('pause', updateRaiseHandButton);
+            audio.addEventListener('ended', updateRaiseHandButton);
+            
+            // Add CSS for spin animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
     </script>
 </body>
 </html>

@@ -16,7 +16,7 @@ def dashboard_home(request):
     materials_count = materials.count()
     assignments_count = assignments.count()
     
-    return render(request, 'dashboard/index_new.html', {
+    return render(request, 'dashboard/index.html', {
         'materials': materials[:5],
         'assignments': assignments[:5],
         'materials_count': materials_count,
