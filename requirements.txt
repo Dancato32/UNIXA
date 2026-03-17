@@ -1,7 +1,28 @@
+# Core
 Django>=4.2,<5.0
-django-jazzmin>=2.6.0
+python-dotenv>=1.0.0
+
+# Server (production WSGI server)
+gunicorn>=21.2.0
+
+# Static files (serves CSS/JS in production without a separate web server)
+whitenoise>=6.6.0
+
+# Database (PostgreSQL for production)
+psycopg2-binary>=2.9.9
+dj-database-url>=2.1.0
+
+# AI / API
 openai>=1.0.0
-PyPDF2>=3.0.0
+
+# Document generation
 python-docx>=0.8.11
 python-pptx>=0.6.21
+PyPDF2>=3.0.0
+reportlab>=4.0.0
+
+# Image handling
 Pillow>=10.0.0
+
+# Admin UI
+django-jazzmin>=2.6.0
