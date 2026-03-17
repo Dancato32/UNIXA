@@ -97,7 +97,7 @@ if DATABASE_URL:
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=600,
-            ssl_require=True,
+            # Don't force ssl_require here — Render's URL already includes sslmode
         )
     }
 else:
@@ -171,10 +171,11 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'WARNING',
+        'level': 'INFO',
     },
     'loggers': {
-        'django': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'django': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+        'django.request': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
         'ai_tutor': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
         'assignment': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
         'materials': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
