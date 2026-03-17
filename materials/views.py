@@ -197,59 +197,34 @@ def podcast_view(request, pk):
 
 @login_required
 def generate_podcast_ajax(request):
-    """AJAX endpoint to generate podcast content from study material using AI."""
+    """AJAX endpoint to generate podcast script — TTS handled client-side."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST request required'}, status=405)
-    
+
     try:
         data = json.loads(request.body)
         material_id = data.get('material_id')
-        
+
         material = get_object_or_404(StudyMaterial, pk=material_id, owner=request.user)
-        
+
         if not material.extracted_text:
             return JsonResponse({'error': 'No text content available for this material'}, status=400)
-        
-        # Get the extracted text (truncated for processing)
-        text_content = material.extracted_text[:4000] if material.extracted_text else ""
-        
-        # Build AI prompt for podcast generation
+
+        text_content = material.extracted_text[:4000]
         prompt = build_podcast_prompt(text_content, material.title)
-        
-        # Generate podcast script using AI
         podcast_script = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
-        
-        # Parse the AI response into structured segments
-        segments = parse_podcast_response(podcast_script, material.title)
-        
-        # Generate audio for the podcast - try ElevenLabs first, then OpenAI
-        audio_filename = None
-        
-        # Use ElevenLabs TTS for highest quality voice
-        try:
-            audio_filename = generate_podcast_audio_elevenlabs(podcast_script, material.pk)
-        except Exception as e:
-            print(f"ElevenLabs failed: {e}")
-        
-        # Fall back to OpenRouter/OpenAI if ElevenLabs fails
-        if not audio_filename:
-            audio_filename = generate_podcast_audio(podcast_script, material.pk)
-        
-        # Build audio URL
-        if audio_filename:
-            audio_url = f'/materials/podcast/audio/{material.pk}/{audio_filename}'
-        else:
-            audio_url = None  # No audio available, frontend will use browser TTS
-        
+
+        word_count = len(podcast_script.split())
+        duration_mins = round(word_count / 130)
+
         return JsonResponse({
             'success': True,
-            'podcast_script': segments,
-            'material_title': material.title,
             'raw_content': podcast_script,
-            'audio_url': audio_url,
-            'has_audio': audio_filename is not None
+            'material_title': material.title,
+            'word_count': word_count,
+            'duration_estimate': f'~{duration_mins} minutes',
         })
-        
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 

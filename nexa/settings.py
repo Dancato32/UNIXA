@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'assignment',
     'cloudinary_storage',
     'cloudinary',
+    'library',
 ]
 
 # ── Middleware ────────────────────────────────────────────────────────────────

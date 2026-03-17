@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{{ level_name }} - {{ subject_label }} - Nexa Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh}
+.topnav{height:52px;background:#111;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;position:sticky;top:0;z-index:100}
+.brand{font-weight:700;font-size:1rem;color:#fff;text-decoration:none;display:flex;align-items:center;gap:.5rem}
+.brand-dot{width:22px;height:22px;background:#fff;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#000;font-weight:800}
+.back-btn{color:#888;text-decoration:none;font-size:.875rem;display:flex;align-items:center;gap:.375rem;margin-left:auto}
+.back-btn:hover{color:#fff}
+.back-btn svg{width:16px;height:16px}
+.page{max-width:860px;margin:0 auto;padding:2rem 1.5rem 5rem}
+.level-header{margin-bottom:2rem}
+.breadcrumb{font-size:.8125rem;color:#555;margin-bottom:.75rem;display:flex;align-items:center;gap:.375rem;flex-wrap:wrap}
+.breadcrumb a{color:#555;text-decoration:none}
+.breadcrumb a:hover{color:#888}
+.breadcrumb-sep{color:#333}
+.level-title{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.375rem}
+.level-sub{font-size:.875rem;color:#555}
+.level-badge{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:600;margin-bottom:.875rem}
+.lv-primary .level-badge{background:#22c55e20;color:#4ade80;border:1px solid #22c55e30}
+.lv-jhs .level-badge{background:#3b82f620;color:#93c5fd;border:1px solid #3b82f630}
+.lv-shs .level-badge{background:#f59e0b20;color:#fcd34d;border:1px solid #f59e0b30}
+.lv-uni .level-badge{background:#a855f720;color:#d8b4fe;border:1px solid #a855f730}
+.topics-grid{display:flex;flex-direction:column;gap:.5rem}
+.topic-item{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:1rem 1.25rem;text-decoration:none;color:#f0f0f0;display:flex;align-items:center;gap:1rem;transition:all .15s}
+.topic-item:hover{background:#161616;border-color:#333}
+.topic-num{font-size:.75rem;color:#444;font-weight:600;width:1.75rem;flex-shrink:0;text-align:right}
+.topic-name{font-weight:500;font-size:.9375rem;flex:1}
+.topic-arrow{color:#333;flex-shrink:0}
+.topic-arrow svg{width:16px;height:16px}
+.topic-item:hover .topic-arrow{color:#888}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #222;padding:.5rem;z-index:100}
+@media(max-width:768px){.bottom-nav{display:flex;justify-content:space-around}body{padding-bottom:70px}.level-title{font-size:1.25rem}}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:.2rem;color:#666;text-decoration:none;font-size:.625rem;padding:.4rem .6rem;border-radius:8px}
+.bn-item.active,.bn-item:hover{color:#fff;background:#1a1a1a}
+.bn-item svg{width:20px;height:20px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="{% url 'dashboard' %}" class="brand"><span class="brand-dot">N</span>NEXA</a>
+  <a href="{% url 'library_subject' subject_key %}" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    {{ subject_label }}
+  </a>
+</nav>
+
+<div class="page">
+  <div class="level-header {% if 'primary' in level_slug %}lv-primary{% elif 'jhs' in level_slug %}lv-jhs{% elif 'shs' in level_slug %}lv-shs{% else %}lv-uni{% endif %}">
+    <div class="breadcrumb">
+      <a href="{% url 'library_home' %}">Library</a>
+      <span class="breadcrumb-sep">&#8250;</span>
+      <a href="{% url 'library_subject' subject_key %}">{{ subject_label }}</a>
+      <span class="breadcrumb-sep">&#8250;</span>
+      <span>{{ level_name }}</span>
+    </div>
+    <div class="level-badge">
+      {% if "primary" in level_slug %}&#127807; Primary
+      {% elif "jhs" in level_slug %}&#128218; JHS
+      {% elif "shs" in level_slug %}&#127891; SHS / WAEC
+      {% else %}&#127979; University / Advanced
+      {% endif %}
+    </div>
+    <div class="level-title">{{ level_name }}</div>
+    <div class="level-sub">{{ topics|length }} topics &mdash; click any topic to start learning</div>
+  </div>
+
+  <div class="topics-grid">
+    {% for topic in topics %}
+    <a href="{% url 'library_topic' subject_key topic|lower|slugify %}" class="topic-item">
+      <span class="topic-num">{{ forloop.counter }}</span>
+      <span class="topic-name">{{ topic }}</span>
+      <span class="topic-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="{% url 'dashboard' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
+  <a href="{% url 'library_home' %}" class="bn-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Library</a>
+  <a href="{% url 'ai_chat' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Tutor</a>
+</nav>
+</body>
+</html>
