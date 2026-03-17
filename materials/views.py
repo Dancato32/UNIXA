@@ -61,8 +61,21 @@ def extract_text_from_file(file_path, file_extension):
     return text
 
 
-@login_required
-def upload_material(request):
+def extract_text_from_memory(uploaded_file, file_extension):
+    """Extract text from an in-memory uploaded file (used with cloud storage)."""
+    import tempfile, shutil
+    text = ""
+    try:
+        uploaded_file.seek(0)
+        suffix = file_extension or '.tmp'
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            shutil.copyfileobj(uploaded_file, tmp)
+            tmp_path = tmp.name
+        text = extract_text_from_file(tmp_path, file_extension)
+        os.remove(tmp_path)
+    except Exception as e:
+        text = f"[Error extracting text: {str(e)}]"
+    return text
     """Allow logged-in students to upload study materials."""
     if request.method == 'POST':
         form = StudyMaterialForm(request.POST, request.FILES)
@@ -95,9 +108,19 @@ def upload_material_ajax(request):
         material = form.save(commit=False)
         material.owner = request.user
         material.save()
-        file_path = material.file.path
-        file_extension = os.path.splitext(file_path)[1].lower()
-        extracted_text = extract_text_from_file(file_path, file_extension)
+
+        # Extract text — works with both local disk and Cloudinary storage
+        uploaded_file = request.FILES.get('file')
+        file_extension = os.path.splitext(uploaded_file.name)[1].lower() if uploaded_file else ''
+
+        try:
+            # Try local path first (local dev)
+            file_path = material.file.path
+            extracted_text = extract_text_from_file(file_path, file_extension)
+        except (NotImplementedError, ValueError, AttributeError):
+            # Cloudinary storage — read from the uploaded file in memory
+            extracted_text = extract_text_from_memory(uploaded_file, file_extension)
+
         material.extracted_text = extracted_text
         material.save(update_fields=['extracted_text'])
         return JsonResponse({'success': True, 'redirect': '/materials/'})
