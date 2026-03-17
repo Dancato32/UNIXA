@@ -76,6 +76,10 @@ def extract_text_from_memory(uploaded_file, file_extension):
     except Exception as e:
         text = f"[Error extracting text: {str(e)}]"
     return text
+
+
+@login_required
+def upload_material(request):
     """Allow logged-in students to upload study materials."""
     if request.method == 'POST':
         form = StudyMaterialForm(request.POST, request.FILES)
@@ -83,15 +87,19 @@ def extract_text_from_memory(uploaded_file, file_extension):
             material = form.save(commit=False)
             material.owner = request.user
             material.save()
-            file_path = material.file.path
-            file_extension = os.path.splitext(file_path)[1].lower()
-            extracted_text = extract_text_from_file(file_path, file_extension)
+            uploaded_file = request.FILES.get('file')
+            file_extension = os.path.splitext(uploaded_file.name)[1].lower() if uploaded_file else ''
+            try:
+                file_path = material.file.path
+                extracted_text = extract_text_from_file(file_path, file_extension)
+            except (NotImplementedError, ValueError, AttributeError):
+                extracted_text = extract_text_from_memory(uploaded_file, file_extension)
             material.extracted_text = extracted_text
             material.save(update_fields=['extracted_text'])
             if extracted_text.startswith('[') and 'requires' in extracted_text:
                 messages.warning(request, f'Material uploaded, but {extracted_text}')
             else:
-                messages.success(request, 'Material uploaded successfully! Text has been extracted.')
+                messages.success(request, 'Material uploaded successfully!')
             return redirect('list_materials')
     else:
         form = StudyMaterialForm()
