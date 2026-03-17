@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('upload/', views.upload_material, name='upload_material'),
+    path('upload/ajax/', views.upload_material_ajax, name='upload_material_ajax'),
     path('list/', views.list_materials, name='list_materials'),
     path('detail/<int:pk>/', views.material_detail, name='material_detail'),
     path('delete/<int:pk>/', views.delete_material, name='delete_material'),

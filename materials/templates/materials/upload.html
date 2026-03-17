@@ -1029,15 +1029,15 @@
                                     Upload Study Material
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST" enctype="multipart/form-data" action="{% url 'upload_material' %}">
+                                    <form id="uploadForm" enctype="multipart/form-data">
                                         {% csrf_token %}
-                                        
+
                                         <div class="form-group">
                                             <label for="id_title" class="form-label">Title</label>
-                                            <input type="text" class="form-input" id="id_title" name="title" 
+                                            <input type="text" class="form-input" id="id_title" name="title"
                                                    placeholder="Enter material title" required>
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label class="form-label">File</label>
                                             <div class="file-input-wrapper">
@@ -1049,19 +1049,19 @@
                                                     </svg>
                                                     <span>Click to upload or drag and drop</span>
                                                 </label>
-                                                <input type="file" class="file-input" id="id_file" name="file" 
+                                                <input type="file" class="file-input" id="id_file" name="file"
                                                        accept=".pdf,.docx,.pptx" required
                                                        onchange="handleFileSelect(this)">
                                             </div>
-                                            <div class="form-hint">Supported: PDF, Word (.docx), PowerPoint (.pptx)</div>
-                                            <div class="file-name" id="fileName" style="display: none;">
+                                            <div class="form-hint">Supported: PDF, Word (.docx), PowerPoint (.pptx) — max 200 MB</div>
+                                            <div class="file-name" id="fileName" style="display:none;">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                                                     <polyline points="20 6 9 17 4 12"/>
                                                 </svg>
                                                 <span></span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label for="id_material_type" class="form-label">Material Type</label>
                                             <select class="form-select" id="id_material_type" name="material_type" required>
@@ -1072,15 +1072,28 @@
                                                 <option value="Slides">Slides</option>
                                             </select>
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label for="id_subject" class="form-label">Subject (Optional)</label>
-                                            <input type="text" class="form-input" id="id_subject" name="subject" 
+                                            <input type="text" class="form-input" id="id_subject" name="subject"
                                                    placeholder="Enter subject">
                                         </div>
-                                        
+
+                                        <!-- Progress UI (hidden until upload starts) -->
+                                        <div id="progressWrapper" style="display:none; margin-bottom:1.25rem;">
+                                            <div style="display:flex; justify-content:space-between; font-size:0.8125rem; color:var(--text-secondary); margin-bottom:0.5rem;">
+                                                <span id="progressLabel">Uploading…</span>
+                                                <span id="progressPct">0%</span>
+                                            </div>
+                                            <div style="background:var(--bg-tertiary); border-radius:999px; height:6px; overflow:hidden;">
+                                                <div id="progressBar" style="height:100%; width:0%; background:#fff; border-radius:999px; transition:width 0.2s ease;"></div>
+                                            </div>
+                                        </div>
+
+                                        <div id="uploadError" class="alert alert-warning" style="display:none;"></div>
+
                                         <div class="btn-group">
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn btn-primary" id="submitBtn">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                                     <polyline points="17 8 12 3 7 8"/>
@@ -1088,9 +1101,7 @@
                                                 </svg>
                                                 Upload Material
                                             </button>
-                                            <a href="{% url 'list_materials' %}" class="btn btn-secondary">
-                                                Cancel
-                                            </a>
+                                            <a href="{% url 'list_materials' %}" class="btn btn-secondary" id="cancelBtn">Cancel</a>
                                         </div>
                                     </form>
                                 </div>
@@ -1140,21 +1151,18 @@
     </div>
     
     <script>
-        // Sidebar Toggle
         function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('open');
         }
-        
+
         function handleFileSelect(input) {
             const fileName = document.getElementById('fileName');
             const fileLabel = document.getElementById('fileLabel');
-            
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                fileName.querySelector('span').textContent = file.name;
+                const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+                fileName.querySelector('span').textContent = `${file.name} (${sizeMB} MB)`;
                 fileName.style.display = 'flex';
                 fileLabel.querySelector('span').textContent = 'Click to change file';
             } else {
@@ -1162,6 +1170,81 @@
                 fileLabel.querySelector('span').textContent = 'Click to upload or drag and drop';
             }
         }
+
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const progressWrapper = document.getElementById('progressWrapper');
+            const progressBar = document.getElementById('progressBar');
+            const progressPct = document.getElementById('progressPct');
+            const progressLabel = document.getElementById('progressLabel');
+            const errorDiv = document.getElementById('uploadError');
+
+            errorDiv.style.display = 'none';
+
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+
+            // Show progress UI
+            progressWrapper.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            cancelBtn.style.pointerEvents = 'none';
+            cancelBtn.style.opacity = '0.4';
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = pct + '%';
+                    progressPct.textContent = pct + '%';
+                    if (pct < 100) {
+                        progressLabel.textContent = 'Uploading…';
+                    } else {
+                        progressLabel.textContent = 'Processing file…';
+                    }
+                }
+            });
+
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            progressLabel.textContent = 'Done! Redirecting…';
+                            progressBar.style.width = '100%';
+                            progressBar.style.background = '#6ee7b7';
+                            setTimeout(() => { window.location.href = data.redirect; }, 600);
+                        } else {
+                            showError(JSON.stringify(data.errors));
+                        }
+                    } catch(err) {
+                        showError('Unexpected server response.');
+                    }
+                } else {
+                    showError('Upload failed (status ' + xhr.status + '). Try a smaller file or check your connection.');
+                }
+            });
+
+            xhr.addEventListener('error', function() {
+                showError('Network error. Check your connection and try again.');
+            });
+
+            function showError(msg) {
+                progressWrapper.style.display = 'none';
+                errorDiv.textContent = msg;
+                errorDiv.style.display = 'flex';
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                cancelBtn.style.pointerEvents = '';
+                cancelBtn.style.opacity = '1';
+            }
+
+            xhr.open('POST', '{% url "upload_material_ajax" %}');
+            xhr.send(formData);
+        });
     </script>
 </body>
 </html>

@@ -64,39 +64,44 @@ def extract_text_from_file(file_path, file_extension):
 @login_required
 def upload_material(request):
     """Allow logged-in students to upload study materials."""
-    
     if request.method == 'POST':
         form = StudyMaterialForm(request.POST, request.FILES)
         if form.is_valid():
-            # Save the material but don't commit yet
             material = form.save(commit=False)
-            # Set the owner to the current user
             material.owner = request.user
-            
-            # Save the material to get the file path
             material.save()
-            
-            # Extract text from the uploaded file
             file_path = material.file.path
             file_extension = os.path.splitext(file_path)[1].lower()
-            
             extracted_text = extract_text_from_file(file_path, file_extension)
             material.extracted_text = extracted_text
             material.save(update_fields=['extracted_text'])
-            
             if extracted_text.startswith('[') and 'requires' in extracted_text:
                 messages.warning(request, f'Material uploaded, but {extracted_text}')
             else:
                 messages.success(request, 'Material uploaded successfully! Text has been extracted.')
-            
             return redirect('list_materials')
     else:
         form = StudyMaterialForm()
-    
-    return render(request, 'materials/upload.html', {
-        'form': form,
-        'title': 'Upload Study Material'
-    })
+    return render(request, 'materials/upload.html', {'form': form, 'title': 'Upload Study Material'})
+
+
+@login_required
+def upload_material_ajax(request):
+    """AJAX upload endpoint — returns JSON so the frontend can show a progress bar."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    form = StudyMaterialForm(request.POST, request.FILES)
+    if form.is_valid():
+        material = form.save(commit=False)
+        material.owner = request.user
+        material.save()
+        file_path = material.file.path
+        file_extension = os.path.splitext(file_path)[1].lower()
+        extracted_text = extract_text_from_file(file_path, file_extension)
+        material.extracted_text = extracted_text
+        material.save(update_fields=['extracted_text'])
+        return JsonResponse({'success': True, 'redirect': '/materials/'})
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
 
 @login_required
