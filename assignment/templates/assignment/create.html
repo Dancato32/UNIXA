@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>New Assignment — NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0a0a; --surface: #111; --surface2: #1a1a1a;
+  --border: #222; --border2: #2e2e2e;
+  --text: #f0f0f0; --text2: #888; --text3: #555;
+  --accent: #6366f1; --sidebar: 220px;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: var(--sidebar); background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; display: flex; flex-direction: column; transition: transform 0.25s; }
+.sidebar-logo { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+.sidebar-logo a { font-size: 1rem; font-weight: 800; color: var(--text); text-decoration: none; }
+.sidebar-nav { flex: 1; padding: 0.625rem; overflow-y: auto; }
+.nav-link { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.75rem; color: var(--text2); text-decoration: none; font-size: 0.8125rem; border-radius: 7px; transition: all 0.15s; margin-bottom: 1px; }
+.nav-link:hover { background: var(--surface2); color: var(--text); }
+.nav-link.active { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+.nav-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+.main { flex: 1; margin-left: var(--sidebar); display: flex; flex-direction: column; }
+.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; flex-shrink: 0; }
+.topbar-left { display: flex; align-items: center; gap: 0.75rem; }
+.menu-btn { display: none; width: 36px; height: 36px; align-items: center; justify-content: center; background: none; border: none; color: var(--text2); cursor: pointer; border-radius: 6px; }
+.menu-btn svg { width: 20px; height: 20px; }
+.topbar-title { font-size: 0.875rem; font-weight: 600; color: var(--text2); }
+.avatar { width: 30px; height: 30px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text2); }
+.page { padding: 1.75rem 2rem; max-width: 760px; }
+.page-head { margin-bottom: 1.75rem; }
+.page-title { font-size: 1.375rem; font-weight: 700; margin-bottom: 0.25rem; }
+.page-sub { font-size: 0.875rem; color: var(--text2); }
+.mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.75rem; }
+.mode-tab { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.15s; text-align: center; user-select: none; }
+.mode-tab:hover { border-color: #444; }
+.mode-tab.active { border-color: var(--accent); background: rgba(99,102,241,0.07); }
+.mode-tab-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--surface2); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; transition: background 0.15s; }
+.mode-tab.active .mode-tab-icon { background: rgba(99,102,241,0.2); }
+.mode-tab-icon svg { width: 22px; height: 22px; color: var(--text3); transition: color 0.15s; }
+.mode-tab.active .mode-tab-icon svg { color: #a5b4fc; }
+.mode-tab-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.2rem; }
+.mode-tab-desc { font-size: 0.75rem; color: var(--text2); }
+.panel { display: none; }
+.panel.active { display: block; }
+.voice-wrap { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 2.5rem 2rem; text-align: center; }
+.voice-orb { width: 120px; height: 120px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; transition: all 0.3s; cursor: pointer; }
+.voice-orb.listening { border-color: var(--accent); background: rgba(99,102,241,0.12); animation: orb-pulse 1.5s ease-in-out infinite; }
+@keyframes orb-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.3)} 50%{box-shadow:0 0 0 16px rgba(99,102,241,0)} }
+.voice-orb svg { width: 44px; height: 44px; color: var(--text3); }
+.voice-orb.listening svg { color: #a5b4fc; }
+.voice-status { font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem; }
+.voice-transcript { min-height: 80px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 1rem; font-size: 0.875rem; color: var(--text3); line-height: 1.6; margin-bottom: 1.5rem; text-align: left; }
+.voice-transcript.has-text { color: var(--text); }
+.voice-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: all 0.15s; }
+.voice-btn:hover { background: #4f52d9; }
+.voice-btn svg { width: 22px; height: 22px; }
+.form-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-group.span2 { grid-column: 1 / -1; }
+.form-label { font-size: 0.8125rem; font-weight: 600; color: var(--text2); }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 0.625rem 0.875rem; font-size: 0.875rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: inherit; transition: border-color 0.15s; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+.form-textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M2 4l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; padding-right: 2.25rem; }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
+.file-drop { border: 1.5px dashed var(--border2); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.15s; }
+.file-drop:hover { border-color: var(--accent); background: rgba(99,102,241,0.04); }
+.file-drop svg { width: 28px; height: 28px; color: var(--text3); margin-bottom: 0.5rem; }
+.file-drop-text { font-size: 0.8125rem; color: var(--text2); }
+.file-drop-hint { font-size: 0.75rem; color: var(--text3); margin-top: 0.25rem; }
+.file-name-tag { margin-top: 0.625rem; padding: 0.5rem 0.875rem; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); border-radius: 7px; font-size: 0.8125rem; color: #a5b4fc; display: none; }
+
+/* ── Upload tabs ── */
+.upload-tabs { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.upload-tab { display: flex; align-items: center; gap: 0.375rem; padding: 0.4rem 0.875rem; font-size: 0.8rem; font-weight: 600; border-radius: 7px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.upload-tab.active { background: rgba(99,102,241,0.12); border-color: var(--accent); color: #a5b4fc; }
+
+/* ── Camera ── */
+.camera-wrap { background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; overflow: hidden; min-height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; position: relative; }
+.camera-idle { text-align: center; padding: 2rem; color: var(--text3); }
+.camera-idle svg { color: var(--text3); }
+#cameraFeed { width: 100%; max-height: 280px; object-fit: cover; display: block; }
+.camera-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* ── Materials section ── */
+.mat-section { background: rgba(99,102,241,0.04); border: 1px solid rgba(99,102,241,0.15); border-radius: 12px; padding: 1.25rem; }
+.mat-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.rag-info-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.2rem; }
+.rag-info-sub { font-size: 0.75rem; color: var(--text2); }
+.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.625rem; margin-bottom: 0.625rem; }
+.mat-card { cursor: pointer; }
+.mat-card input { display: none; }
+.mat-card-inner { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 9px; transition: all 0.15s; }
+.mat-card:hover .mat-card-inner { border-color: #444; }
+.mat-card input:checked + .mat-card-inner { border-color: var(--accent); background: rgba(99,102,241,0.1); }
+.mat-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mat-icon svg { width: 16px; height: 16px; color: var(--text3); }
+.mat-card input:checked + .mat-card-inner .mat-icon { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); }
+.mat-card input:checked + .mat-card-inner .mat-icon svg { color: #a5b4fc; }
+.mat-info { flex: 1; min-width: 0; }
+.mat-title { font-size: 0.8rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mat-meta { font-size: 0.7rem; color: var(--text3); margin-top: 0.1rem; }
+.mat-tick { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.mat-tick svg { width: 10px; height: 10px; color: transparent; }
+.mat-card input:checked + .mat-card-inner .mat-tick { background: var(--accent); border-color: var(--accent); }
+.mat-card input:checked + .mat-card-inner .mat-tick svg { color: #fff; }
+.mat-hint { font-size: 0.75rem; color: var(--text3); }
+.mat-empty { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--text2); padding: 0.75rem; background: var(--surface2); border-radius: 8px; }
+.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track { position: absolute; inset: 0; background: var(--surface2); border-radius: 12px; cursor: pointer; transition: background 0.2s; border: 1px solid var(--border2); }
+.toggle input:checked + .toggle-track { background: var(--accent); border-color: var(--accent); }
+.toggle-track::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
+.toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+.section-sep { height: 1px; background: var(--border); margin: 1.25rem 0; }
+.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 600; border-radius: 7px; text-decoration: none; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #4f52d9; }
+.btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+.btn-ghost:hover { color: var(--text); border-color: #444; }
+.btn-lg { padding: 0.75rem 1.5rem; font-size: 0.9375rem; }
+.form-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 199; }
+.overlay.open { display: block; }
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.5rem; z-index: 100; justify-content: space-around; }
+.bn-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.4rem 0.75rem; color: var(--text3); text-decoration: none; font-size: 0.6rem; border-radius: 6px; }
+.bn-item svg { width: 20px; height: 20px; }
+.bn-item.active { color: var(--accent); }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .menu-btn { display: flex; }
+  .bottom-nav { display: flex; }
+  .page { padding-bottom: 5rem; }
+}
+@media (max-width: 700px) {
+  .page { padding: 1rem; padding-bottom: 5rem; }
+  .topbar { padding: 0 1rem; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.span2 { grid-column: 1; }
+  .form-footer { flex-direction: column-reverse; }
+  .form-footer .btn { width: 100%; justify-content: center; }
+  .mode-tabs { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><a href="{% url 'dashboard' %}">NEXA</a></div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'dashboard' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="{% url 'list_materials' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        My Materials
+      </a>
+      <a href="{% url 'ai_chat' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI Tutor
+      </a>
+      <div class="nav-divider"></div>
+      <a href="{% url 'essay_request' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Essay Generator
+      </a>
+      <a href="{% url 'assignment_list' %}" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Assignments
+      </a>
+      <div class="nav-divider"></div>
+      <a href="{% url 'logout' %}" class="nav-link" style="color:var(--text3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </a>
+    </nav>
+  </aside>
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleMenu()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="topbar-title">New Assignment</span>
+      </div>
+      <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+    </div>
+
+    <div class="page">
+      <div class="page-head">
+        <h1 class="page-title">New Assignment</h1>
+        <p class="page-sub">Choose how you want to create your assignment</p>
+      </div>
+
+      <!-- Mode tabs -->
+      <div class="mode-tabs">
+        <div class="mode-tab active" id="tab-voice" onclick="switchMode('voice')">
+          <div class="mode-tab-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </div>
+          <div class="mode-tab-title">Voice Input</div>
+          <div class="mode-tab-desc">Tell AI what you need</div>
+        </div>
+        <div class="mode-tab" id="tab-manual" onclick="switchMode('manual')">
+          <div class="mode-tab-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <div class="mode-tab-title">Manual Input</div>
+          <div class="mode-tab-desc">Structure it yourself</div>
+        </div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="assignmentForm">
+        {% csrf_token %}
+
+        <!-- Voice panel -->
+        <div class="panel active" id="panel-voice">
+          <div class="voice-wrap">
+            <div class="voice-orb" id="voiceOrb" onclick="toggleVoice()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </div>
+            <div class="voice-status" id="voiceStatus">Click the mic to start speaking</div>
+            <div class="voice-transcript" id="voiceTranscript">Your speech will appear here…</div>
+            <button type="button" class="voice-btn" onclick="toggleVoice()">
+              <svg id="voiceBtnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+            </button>
+            <input type="hidden" name="voice_content" id="voiceContent">
+          </div>
+        </div>
+
+        <!-- Manual panel -->
+        <div class="panel" id="panel-manual">
+          <div class="form-card">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="title">Assignment Title</label>
+                <input type="text" name="title" id="title" class="form-input" placeholder="e.g. Chapter 5 Essay" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="task_type">Task Type</label>
+                <select name="task_type" id="task_type" class="form-select">
+                  <option value="essay">Write an Essay</option>
+                  <option value="summarize">Summarize</option>
+                  <option value="answer">Answer Questions</option>
+                  <option value="slides">Generate Slides</option>
+                  <option value="structured">Structured Answers</option>
+                </select>
+              </div>
+              <div class="form-group span2">
+                <label class="form-label">Upload Assignment File (Optional)</label>
+                <div class="upload-tabs">
+                  <button type="button" class="upload-tab active" onclick="switchUpload('file')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload File
+                  </button>
+                  <button type="button" class="upload-tab" onclick="switchUpload('camera')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Take Photo
+                  </button>
+                </div>
+
+                <!-- File upload -->
+                <div id="upload-file">
+                  <div class="file-drop" onclick="document.getElementById('fileInput').click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <div class="file-drop-text">Click to upload or drag and drop</div>
+                    <div class="file-drop-hint">PDF, Word, PowerPoint supported</div>
+                  </div>
+                  <input type="file" name="file" id="fileInput" accept=".pdf,.docx,.pptx,.ppt,image/*" style="display:none" onchange="showFile(this)">
+                  <div class="file-name-tag" id="fileNameTag"></div>
+                </div>
+
+                <!-- Camera capture -->
+                <div id="upload-camera" style="display:none">
+                  <div class="camera-wrap">
+                    <video id="cameraFeed" autoplay playsinline style="display:none"></video>
+                    <canvas id="cameraCanvas" style="display:none"></canvas>
+                    <img id="capturedPhoto" style="display:none; width:100%; border-radius:8px; max-height:280px; object-fit:contain;" alt="Captured">
+                    <div class="camera-idle" id="cameraIdle">
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      <div style="font-size:0.8125rem;color:var(--text2);margin-top:0.5rem;">Camera preview will appear here</div>
+                    </div>
+                  </div>
+                  <div class="camera-btns">
+                    <button type="button" class="btn btn-ghost" id="startCamBtn" onclick="startCamera()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      Open Camera
+                    </button>
+                    <button type="button" class="btn btn-primary" id="snapBtn" onclick="snapPhoto()" style="display:none">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                      Capture
+                    </button>
+                    <button type="button" class="btn btn-ghost" id="retakeBtn" onclick="retakePhoto()" style="display:none">Retake</button>
+                  </div>
+                  <input type="hidden" name="photo_data" id="photoData">
+                </div>
+              </div>
+              <div class="form-group span2">
+                <label class="form-label" for="text_content">Or Paste Assignment Content</label>
+                <textarea name="text_content" id="text_content" class="form-textarea" placeholder="Paste assignment instructions or content here…"></textarea>
+              </div>
+              <div class="form-group span2">
+                <label class="form-label" for="instructions">Additional Instructions</label>
+                <textarea name="instructions" id="instructions" class="form-textarea" style="min-height:80px" placeholder="Any specific requirements for the AI…"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="output_format">Output Format</label>
+                <select name="output_format" id="output_format" class="form-select">
+                  <option value="word">Microsoft Word (.docx)</option>
+                  <option value="powerpoint">PowerPoint (.pptx)</option>
+                  <option value="pdf">PDF Document (.pdf)</option>
+                  <option value="text">Plain Text</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="word_count">Target Word Count</label>
+                <input type="number" name="word_count" id="word_count" class="form-input" placeholder="e.g. 1000" min="100" max="10000">
+              </div>
+            </div>
+
+            <div class="section-sep"></div>
+
+            <!-- Display Options -->
+            <div style="margin-bottom:1.25rem;">
+              <div style="font-size:0.8125rem;font-weight:700;color:var(--text2);margin-bottom:0.875rem;display:flex;align-items:center;gap:0.5rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                Display Options
+              </div>
+              <div class="form-grid" style="gap:0.875rem;">
+                <div class="form-group">
+                  <label class="form-label">Font Style</label>
+                  <select name="font_style" id="font_style" class="form-select">
+                    <option value="inter">Inter (Modern)</option>
+                    <option value="georgia">Georgia (Serif)</option>
+                    <option value="times">Times New Roman (Classic)</option>
+                    <option value="mono">Monospace (Code)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Font Size</label>
+                  <select name="font_size" id="font_size" class="form-select">
+                    <option value="12">12pt (Small)</option>
+                    <option value="14" selected>14pt (Normal)</option>
+                    <option value="16">16pt (Large)</option>
+                    <option value="18">18pt (Extra Large)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Line Spacing</label>
+                  <select name="line_spacing" id="line_spacing" class="form-select">
+                    <option value="1.4">Compact (1.4)</option>
+                    <option value="1.6" selected>Normal (1.6)</option>
+                    <option value="1.8">Relaxed (1.8)</option>
+                    <option value="2.0">Double (2.0)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Text Alignment</label>
+                  <select name="text_align" id="text_align" class="form-select">
+                    <option value="left" selected>Left</option>
+                    <option value="justify">Justified</option>
+                    <option value="center">Center</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Live preview -->
+              <div style="margin-top:0.875rem;">
+                <div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.375rem;">Preview</div>
+                <div id="formatPreview" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;font-size:14px;line-height:1.6;text-align:left;color:#ccc;transition:all 0.2s;">
+                  The quick brown fox jumps over the lazy dog. This is how your generated text will appear when displayed.
+                </div>
+              </div>
+            </div>
+
+            <div class="section-sep"></div>
+
+            <!-- Study Materials Picker -->
+            <div class="mat-section">
+              <div class="mat-header">
+                <div>
+                  <div class="rag-info-title">Study Materials</div>
+                  <div class="rag-info-sub">Choose which materials AI should reference — or enable all</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" name="use_rag" id="use_rag" checked onchange="toggleMaterials(this)">
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+
+              <div id="materialsPanel">
+                {% if user_materials %}
+                <div class="mat-grid">
+                  {% for m in user_materials %}
+                  <label class="mat-card" for="mat_{{ m.pk }}">
+                    <input type="checkbox" name="selected_materials" id="mat_{{ m.pk }}" value="{{ m.pk }}" class="mat-check">
+                    <div class="mat-card-inner">
+                      <div class="mat-icon">
+                        {% if m.material_type == 'PDF' %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        {% elif m.material_type == 'PowerPoint' or m.material_type == 'Slides' %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        {% endif %}
+                      </div>
+                      <div class="mat-info">
+                        <div class="mat-title">{{ m.title }}</div>
+                        <div class="mat-meta">{{ m.material_type }} · {{ m.uploaded_at|date:"M d" }}</div>
+                      </div>
+                      <div class="mat-tick">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                    </div>
+                  </label>
+                  {% endfor %}
+                </div>
+                <div class="mat-hint">Leave all unchecked to use all materials, or select specific ones.</div>
+                {% else %}
+                <div class="mat-empty">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  No study materials uploaded yet. <a href="{% url 'upload_material' %}" style="color:#a5b4fc">Upload materials</a> to use them here.
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <a href="{% url 'assignment_list' %}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary btn-lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Generate Assignment
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<nav class="bottom-nav">
+  <a href="{% url 'dashboard' %}" class="bn-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Home
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    AI
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Materials
+  </a>
+  <a href="{% url 'assignment_list' %}" class="bn-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Tasks
+  </a>
+</nav>
+
+<script>
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+function switchMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + mode).classList.add('active');
+  document.getElementById('panel-' + mode).classList.add('active');
+}
+
+function showFile(input) {
+  const tag = document.getElementById('fileNameTag');
+  if (input.files[0]) {
+    tag.textContent = input.files[0].name;
+    tag.style.display = 'block';
+  }
+}
+
+// ── Upload tabs (file vs camera) ──
+function switchUpload(mode) {
+  document.querySelectorAll('.upload-tab').forEach(t => t.classList.remove('active'));
+  event.target.closest('.upload-tab').classList.add('active');
+  document.getElementById('upload-file').style.display = mode === 'file' ? '' : 'none';
+  document.getElementById('upload-camera').style.display = mode === 'camera' ? '' : 'none';
+  if (mode !== 'camera') stopCamera();
+}
+
+// ── Camera ──
+let cameraStream = null;
+
+async function startCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    const video = document.getElementById('cameraFeed');
+    video.srcObject = cameraStream;
+    video.style.display = 'block';
+    document.getElementById('cameraIdle').style.display = 'none';
+    document.getElementById('capturedPhoto').style.display = 'none';
+    document.getElementById('startCamBtn').style.display = 'none';
+    document.getElementById('snapBtn').style.display = '';
+    document.getElementById('retakeBtn').style.display = 'none';
+  } catch (e) {
+    alert('Camera access denied or not available: ' + e.message);
+  }
+}
+
+function snapPhoto() {
+  const video = document.getElementById('cameraFeed');
+  const canvas = document.getElementById('cameraCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  document.getElementById('photoData').value = dataUrl;
+  document.getElementById('capturedPhoto').src = dataUrl;
+  document.getElementById('capturedPhoto').style.display = 'block';
+  video.style.display = 'none';
+  document.getElementById('snapBtn').style.display = 'none';
+  document.getElementById('retakeBtn').style.display = '';
+  stopCamera();
+}
+
+function retakePhoto() {
+  document.getElementById('capturedPhoto').style.display = 'none';
+  document.getElementById('photoData').value = '';
+  document.getElementById('retakeBtn').style.display = 'none';
+  document.getElementById('startCamBtn').style.display = '';
+  document.getElementById('cameraIdle').style.display = '';
+}
+
+function stopCamera() {
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+}
+
+// ── Format preview ──
+const fontMap = {
+  inter: "'Inter', sans-serif",
+  georgia: "Georgia, serif",
+  times: "'Times New Roman', Times, serif",
+  mono: "'Courier New', Courier, monospace"
+};
+function updateFormatPreview() {
+  const preview = document.getElementById('formatPreview');
+  if (!preview) return;
+  const font = document.getElementById('font_style').value;
+  const size = document.getElementById('font_size').value;
+  const spacing = document.getElementById('line_spacing').value;
+  const align = document.getElementById('text_align').value;
+  preview.style.fontFamily = fontMap[font] || fontMap.inter;
+  preview.style.fontSize = size + 'px';
+  preview.style.lineHeight = spacing;
+  preview.style.textAlign = align;
+}
+['font_style','font_size','line_spacing','text_align'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', updateFormatPreview);
+});
+
+// ── Materials toggle ──
+function toggleMaterials(cb) {
+  document.getElementById('materialsPanel').style.opacity = cb.checked ? '1' : '0.4';
+  document.getElementById('materialsPanel').style.pointerEvents = cb.checked ? '' : 'none';
+}
+
+// ── Voice input ──
+let recognition = null;
+let isListening = false;
+
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Speech recognition is not supported in this browser. Please use Chrome.');
+    return;
+  }
+  if (isListening) { recognition.stop(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('voiceOrb').classList.add('listening');
+    document.getElementById('voiceStatus').textContent = 'Listening…';
+    document.getElementById('voiceTranscript').classList.add('has-text');
+  };
+  recognition.onresult = (e) => {
+    let t = '';
+    for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+    document.getElementById('voiceTranscript').textContent = t;
+    document.getElementById('voiceContent').value = t;
+  };
+  recognition.onend = () => {
+    isListening = false;
+    document.getElementById('voiceOrb').classList.remove('listening');
+    document.getElementById('voiceStatus').textContent = 'Click the mic to start speaking';
+  };
+  recognition.onerror = (e) => {
+    isListening = false;
+    document.getElementById('voiceOrb').classList.remove('listening');
+    document.getElementById('voiceStatus').textContent = 'Error: ' + e.error;
+  };
+  recognition.start();
+}
+
+document.getElementById('assignmentForm').addEventListener('submit', function(e) {
+  const activePanel = document.querySelector('.panel.active');
+  if (activePanel && activePanel.id === 'panel-voice') {
+    const transcript = document.getElementById('voiceContent').value.trim();
+    if (!transcript) { e.preventDefault(); alert('Please record your assignment first.'); return; }
+    if (!document.getElementById('title').value) document.getElementById('title').value = transcript.slice(0, 80);
+    document.getElementById('text_content').value = transcript;
+  }
+  stopCamera();
+});
+</script>
+</body>
+</html>

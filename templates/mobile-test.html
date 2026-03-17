@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Responsive Test - NEXA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        h1 { margin-bottom: 1rem; font-size: 2rem; }
+        .info-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .info-box strong { display: block; margin-bottom: 0.5rem; }
+        .status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .status.mobile { background: #10b981; }
+        .status.desktop { background: #ef4444; }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .test-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .test-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .test-card p { font-size: 0.875rem; opacity: 0.9; }
+        
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .test-container { padding: 1.5rem; }
+            h1 { font-size: 1.5rem; }
+            .test-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>📱 Mobile Responsive Test</h1>
+        
+        <div class="info-box">
+            <strong>Screen Width:</strong>
+            <span id="screen-width"></span>
+            <span class="status" id="device-type"></span>
+        </div>
+        
+        <div class="info-box">
+            <strong>Viewport:</strong>
+            <span id="viewport"></span>
+        </div>
+        
+        <div class="info-box">
+            <strong>Device Pixel Ratio:</strong>
+            <span id="dpr"></span>
+        </div>
+        
+        <div class="info-box">
+            <strong>User Agent:</strong>
+            <span id="user-agent" style="font-size: 0.875rem; word-break: break-all;"></span>
+        </div>
+        
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>✅ Viewport Meta</h3>
+                <p>Properly configured</p>
+            </div>
+            <div class="test-card">
+                <h3>✅ Box Sizing</h3>
+                <p>Border-box applied</p>
+            </div>
+            <div class="test-card">
+                <h3>✅ Responsive Grid</h3>
+                <p>Adapts to screen</p>
+            </div>
+            <div class="test-card">
+                <h3>✅ Touch Friendly</h3>
+                <p>44px+ tap targets</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="/dashboard/" style="display: inline-block; padding: 1rem 2rem; background: white; color: #667eea; text-decoration: none; border-radius: 10px; font-weight: 600;">
+                Go to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        function updateInfo() {
+            document.getElementById('screen-width').textContent = window.innerWidth + 'px × ' + window.innerHeight + 'px';
+            document.getElementById('viewport').textContent = document.documentElement.clientWidth + 'px × ' + document.documentElement.clientHeight + 'px';
+            document.getElementById('dpr').textContent = window.devicePixelRatio || 1;
+            document.getElementById('user-agent').textContent = navigator.userAgent;
+            
+            const deviceType = document.getElementById('device-type');
+            if (window.innerWidth <= 768) {
+                deviceType.textContent = 'Mobile View';
+                deviceType.className = 'status mobile';
+            } else {
+                deviceType.textContent = 'Desktop View';
+                deviceType.className = 'status desktop';
+            }
+        }
+        
+        updateInfo();
+        window.addEventListener('resize', updateInfo);
+    </script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{{ title }} - NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #111;
+  --surface2: #1a1a1a;
+  --border: #222;
+  --border2: #2e2e2e;
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+}
+
+/* Card color palettes — front gradient / back gradient */
+.palette-0  { --cf: linear-gradient(135deg,#6366f1,#8b5cf6); --cb: linear-gradient(135deg,#1e1b4b,#2e1065); --ct: #c4b5fd; }
+.palette-1  { --cf: linear-gradient(135deg,#0ea5e9,#06b6d4); --cb: linear-gradient(135deg,#0c2340,#0a2e38); --ct: #7dd3fc; }
+.palette-2  { --cf: linear-gradient(135deg,#10b981,#059669); --cb: linear-gradient(135deg,#052e16,#064e3b); --ct: #6ee7b7; }
+.palette-3  { --cf: linear-gradient(135deg,#f59e0b,#ef4444); --cb: linear-gradient(135deg,#2d1a00,#3b0a0a); --ct: #fcd34d; }
+.palette-4  { --cf: linear-gradient(135deg,#ec4899,#f43f5e); --cb: linear-gradient(135deg,#3b0a1e,#2d0a14); --ct: #f9a8d4; }
+.palette-5  { --cf: linear-gradient(135deg,#14b8a6,#0d9488); --cb: linear-gradient(135deg,#042f2e,#0a2e2e); --ct: #5eead4; }
+.palette-6  { --cf: linear-gradient(135deg,#a855f7,#7c3aed); --cb: linear-gradient(135deg,#2e1065,#1e0a3c); --ct: #d8b4fe; }
+.palette-7  { --cf: linear-gradient(135deg,#f97316,#ea580c); --cb: linear-gradient(135deg,#3b1200,#2d0e00); --ct: #fdba74; }
+
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Topbar ── */
+.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; flex-shrink: 0; gap: 1rem; }
+.topbar-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+.back-btn { display: flex; align-items: center; gap: 0.375rem; color: var(--text2); text-decoration: none; font-size: 0.8125rem; padding: 0.375rem 0.75rem; border: 1px solid var(--border2); border-radius: 6px; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; }
+.back-btn:hover { color: var(--text); border-color: #444; }
+.topbar-title { font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); }
+.topbar-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+.seen-chip { background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 0.25rem 0.875rem; font-size: 0.8125rem; color: var(--text2); }
+
+/* ── Screens ── */
+.screen { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+.screen.active { display: flex; }
+
+/* ── Idle ── */
+.idle-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; text-align: center; }
+.idle-icon { width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg,#6366f1,#8b5cf6); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
+.idle-icon svg { width: 30px; height: 30px; color: #fff; }
+.idle-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+.idle-desc { color: var(--text2); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.75rem; }
+.idle-meta { display: flex; gap: 0.625rem; justify-content: center; margin-bottom: 1.75rem; flex-wrap: wrap; }
+.meta-chip { background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 0.375rem 0.75rem; font-size: 0.8rem; color: var(--text2); }
+.gen-btn { width: 100%; padding: 0.875rem; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; border: none; border-radius: 10px; font-size: 0.9375rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: opacity 0.15s; font-family: inherit; }
+.gen-btn:hover { opacity: 0.9; }
+
+/* ── Loading ── */
+.loading-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 2.5rem 2rem; max-width: 340px; width: 100%; text-align: center; }
+.spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--border2); border-top-color: #6366f1; animation: spin 0.75s linear infinite; margin: 0 auto 1.25rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.375rem; }
+.loading-sub { font-size: 0.8125rem; color: var(--text2); }
+
+/* ── Error ── */
+.error-card { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 16px; padding: 2rem; max-width: 380px; width: 100%; text-align: center; }
+.error-title { font-size: 1rem; font-weight: 600; color: #f87171; margin-bottom: 0.5rem; }
+.error-body { font-size: 0.875rem; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.5; }
+.retry-btn { padding: 0.625rem 1.5rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+/* ── Flashcard area ── */
+#resultScreen { gap: 1.5rem; padding: 1.5rem; }
+
+.fc-topbar { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 560px; }
+.fc-counter { font-size: 0.875rem; font-weight: 600; color: var(--text2); }
+.fc-seen { font-size: 0.8125rem; color: var(--text3); }
+
+/* Progress dots */
+.dots-row { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; max-width: 560px; width: 100%; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: all 0.25s; }
+.dot.seen { background: #444; }
+.dot.active { width: 22px; border-radius: 4px; background: #6366f1; }
+
+/* The flip card */
+.fc-scene { width: 100%; max-width: 560px; height: 260px; perspective: 1200px; cursor: pointer; }
+.fc-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(.4,0,.2,1); border-radius: 20px; }
+.fc-card.flipped { transform: rotateY(180deg); }
+.fc-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+.fc-front { background: var(--cf); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.fc-back  { background: var(--cb); border: 1px solid rgba(255,255,255,0.08); transform: rotateY(180deg); }
+.fc-label { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; margin-bottom: 0.75rem; }
+.fc-front .fc-label { color: rgba(255,255,255,0.7); }
+.fc-back  .fc-label { color: var(--ct); }
+.fc-term { font-size: 1.25rem; font-weight: 800; color: #fff; line-height: 1.35; }
+.fc-def  { font-size: 0.9375rem; font-weight: 500; color: var(--ct); line-height: 1.65; }
+
+.fc-hint { font-size: 0.75rem; color: var(--text3); display: flex; align-items: center; gap: 0.375rem; }
+.fc-hint svg { width: 14px; height: 14px; }
+
+/* Controls */
+.fc-controls { display: flex; gap: 0.75rem; align-items: center; }
+.fc-btn { display: flex; align-items: center; gap: 0.375rem; padding: 0.625rem 1.25rem; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; font-family: inherit; }
+.fc-btn:hover:not(:disabled) { color: var(--text); border-color: #444; }
+.fc-btn:disabled { opacity: 0.3; cursor: default; }
+.fc-btn.next { background: linear-gradient(135deg,#6366f1,#8b5cf6); border-color: transparent; color: #fff; font-weight: 600; }
+.fc-btn.next:hover { opacity: 0.9; }
+.regen-link { font-size: 0.8125rem; color: var(--text3); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0.25rem; }
+.regen-link:hover { color: var(--text2); }
+
+/* ── Bottom nav ── */
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.5rem; z-index: 100; justify-content: space-around; }
+.bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.5rem; color: var(--text3); text-decoration: none; font-size: 0.625rem; }
+.bottom-nav-item svg { width: 20px; height: 20px; }
+.bottom-nav-item.active { color: #6366f1; }
+
+@media (max-width: 900px) {
+  .screen { padding: 1rem; }
+  .fc-scene { height: 220px; }
+  .fc-term { font-size: 1.05rem; }
+  .fc-def  { font-size: 0.875rem; }
+  .bottom-nav { display: flex; }
+  body { padding-bottom: 64px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="{% url 'select_material_for_action' 'flashcards' %}" class="back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <span class="topbar-title">{{ material.title }}</span>
+  </div>
+  <div class="topbar-right">
+    <span class="seen-chip" id="seenChip" style="display:none"></span>
+  </div>
+</div>
+
+<!-- Idle -->
+<div class="screen active" id="idleScreen">
+  <div class="idle-card">
+    <div class="idle-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+    </div>
+    <div class="idle-title">Flashcards</div>
+    <div class="idle-desc">AI generates 15 flashcards from your material. Tap each card to reveal the answer.</div>
+    <div class="idle-meta">
+      <span class="meta-chip">15 Cards</span>
+      <span class="meta-chip">Flip to Reveal</span>
+      <span class="meta-chip">Color-coded</span>
+    </div>
+    <button class="gen-btn" onclick="generate()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Generate Flashcards
+    </button>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="screen" id="loadingScreen">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <div class="loading-title">Creating flashcards…</div>
+    <div class="loading-sub">AI is reading your material</div>
+  </div>
+</div>
+
+<!-- Error -->
+<div class="screen" id="errorScreen">
+  <div class="error-card">
+    <div class="error-title">⚠️ Couldn't generate flashcards</div>
+    <div class="error-body" id="errorMsg"></div>
+    <button class="retry-btn" onclick="generate()">Try Again</button>
+  </div>
+</div>
+
+<!-- Result -->
+<div class="screen" id="resultScreen">
+  <div class="fc-topbar">
+    <span class="fc-counter" id="fcCounter">1 / 15</span>
+    <span class="fc-seen" id="fcSeen">0 seen</span>
+  </div>
+  <div class="dots-row" id="dotsRow"></div>
+  <div class="fc-scene" id="fcScene" onclick="flipCard()">
+    <div class="fc-card" id="fcCard">
+      <div class="fc-face fc-front"><div class="fc-label">Term</div><div class="fc-term" id="fcTerm"></div></div>
+      <div class="fc-face fc-back"><div class="fc-label">Definition</div><div class="fc-def" id="fcDef"></div></div>
+    </div>
+  </div>
+  <div class="fc-hint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5-5 5 5"/></svg>
+    Tap card to flip
+  </div>
+  <div class="fc-controls">
+    <button class="fc-btn" id="prevBtn" onclick="prevCard()" disabled>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" 
+stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Prev
+    </button>
+    <button class="fc-btn next" id="nextBtn" onclick="nextCard()">
+      Next
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+  <button class="regen-link" onclick="generate()">↺ Regenerate</button>
+</div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a href="{% url 'dashboard' %}" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Home
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    AI
+  </a>
+  <a href="{% url 'list_materials' %}" class="bottom-nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Materials
+  </a>
+</nav>
+
+<script>
+const AJAX_URL = '{% url "flashcards_ajax" material.pk %}';
+const CSRF = '{{ csrf_token }}';
+const PALETTES = 8;
+
+let cards = [], idx = 0, seen = new Set();
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function generate() {
+  showScreen('loadingScreen');
+  idx = 0; seen = new Set();
+  try {
+    const res = await fetch(AJAX_URL, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success && data.cards && data.cards.length > 0) {
+      cards = data.cards;
+      renderCard();
+      showScreen('resultScreen');
+    } else {
+      document.getElementById('errorMsg').textContent = data.error || 'No cards generated.';
+      showScreen('errorScreen');
+    }
+  } catch (e) {
+    document.getElementById('errorMsg').textContent = 'Network error: ' + e.message;
+    showScreen('errorScreen');
+  }
+}
+
+function renderCard() {
+  const c = cards[idx];
+  seen.add(idx);
+
+  // palette cycles through 8 colors
+  const p = idx % PALETTES;
+  const scene = document.getElementById('fcScene');
+  // remove old palette classes
+  for (let i = 0; i < PALETTES; i++) scene.classList.remove(`palette-${i}`);
+  scene.classList.add(`palette-${p}`);
+
+  // un-flip
+  document.getElementById('fcCard').classList.remove('flipped');
+
+  // content
+  document.getElementById('fcTerm').textContent = c.front;
+  document.getElementById('fcDef').textContent  = c.back;
+
+  // counter
+  document.getElementById('fcCounter').textContent = `${idx + 1} / ${cards.length}`;
+  document.getElementById('fcSeen').textContent = `${seen.size} seen`;
+
+  // seen chip in topbar
+  const chip = document.getElementById('seenChip');
+  chip.style.display = 'inline-flex';
+  chip.textContent = `${seen.size} / ${cards.length} seen`;
+
+  // dots
+  document.getElementById('dotsRow').innerHTML = cards.map((_,i) =>
+    `<div class="dot${i===idx?' active':seen.has(i)?' seen':''}"></div>`
+  ).join('');
+
+  // buttons
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').textContent = idx === cards.length - 1 ? 'Restart' : 'Next';
+  // re-add arrow to next btn
+  document.getElementById('nextBtn').innerHTML =
+    (idx === cards.length - 1 ? 'Restart' : 'Next') +
+    ` <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
+}
+
+function flipCard() {
+  document.getElementById('fcCard').classList.toggle('flipped');
+}
+function nextCard() { idx = idx >= cards.length - 1 ? 0 : idx + 1; renderCard(); }
+function prevCard() { if (idx > 0) { idx--; renderCard(); } }
+
+generate();
+</script>
+</body>
+</html>

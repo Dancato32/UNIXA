@@ -1,0 +1,781 @@
+/* ============================================
+   NEXA - Complete Mobile Responsive CSS
+   Add this to any template that needs mobile support
+   ============================================ */
+
+/* ============================================
+   Base Mobile Reset
+   ============================================ */
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+    
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+        -webkit-text-size-adjust: 100%;
+    }
+}
+
+/* ============================================
+   Touch Targets (minimum 44px for mobile)
+   ============================================ */
+@media (max-width: 768px) {
+    button,
+    .btn,
+    input[type="checkbox"],
+    input[type="radio"],
+    select,
+    a.nav-link,
+    a.nav-item,
+    .nav-link,
+    .menu-toggle {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Prevents iOS zoom on input focus */
+    input,
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+}
+
+/* ============================================
+   Sidebar - Mobile
+   ============================================ */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease-in-out !important;
+        position: fixed !important;
+        z-index: 1000 !important;
+        width: 280px !important;
+        display: flex !important;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0) !important;
+    }
+    
+    .main-content,
+    .workspace,
+    .app-layout > main,
+    .app > main,
+    .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/* ============================================
+   Menu Toggle Button
+   ============================================ */
+.menu-toggle,
+.mobile-toggle {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .menu-toggle,
+    .mobile-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: inherit;
+    }
+    
+    .menu-toggle svg,
+    .mobile-toggle svg {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+/* ============================================
+   Sidebar Overlay
+   ============================================ */
+.sidebar-overlay {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    
+    .sidebar-overlay.open {
+        display: block;
+    }
+}
+
+/* ============================================
+   Bottom Navigation (Mobile)
+   ============================================ */
+.bottom-nav {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 65px !important;
+        background: var(--bg-primary, #fff) !important;
+        border-top: 1px solid var(--border, #e1e1e0) !important;
+        padding: 0.5rem !important;
+        padding-bottom: env(safe-area-inset-bottom, 0.5rem) !important;
+        z-index: 1000 !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+    }
+    
+    .bottom-nav-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 2px !important;
+        padding: 8px 12px !important;
+        color: var(--text-secondary, #787774) !important;
+        text-decoration: none !important;
+        font-size: 0.625rem !important;
+        font-weight: 500 !important;
+        border-radius: 8px !important;
+        flex: 1 !important;
+        max-width: 72px !important;
+    }
+    
+    .bottom-nav-item.active {
+        color: var(--text-primary, #37352f) !important;
+    }
+    
+    .bottom-nav-item svg {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    
+    /* Add padding to main content for bottom nav */
+    .main-content,
+    .page-content,
+    .workspace,
+    .content,
+    .app > main {
+        padding-bottom: 80px !important;
+    }
+}
+
+/* ============================================
+   Header - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .header {
+        padding: 0.75rem !important;
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .header-left,
+    .header-right {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    .header-title {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .search-box,
+    .search-input,
+    .search-bar,
+    .search-input {
+        display: none !important;
+    }
+    
+    .user-info,
+    .user-name {
+        display: none !important;
+    }
+    
+    .user-avatar {
+        width: 36px !important;
+        height: 36px !important;
+    }
+}
+
+/* ============================================
+   Grid Layouts - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .grid-2,
+    .grid-3,
+    .grid-4,
+    .stats-grid,
+    .materials-grid,
+    .feature-grid,
+    .categories-grid,
+    .options-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .stats-grid {
+        gap: 1rem !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .stats-grid,
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* ============================================
+   Cards - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .card,
+    .stat-card,
+    .feature-card,
+    .assignment-card,
+    .material-card,
+    .category-card,
+    .action-card,
+    .tip-item,
+    .delete-card,
+    .confirm-card {
+        padding: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .card-header {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+    }
+    
+    .card-title {
+        font-size: 1rem !important;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+}
+
+/* ============================================
+   Forms - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .form-group {
+        margin-bottom: 1rem !important;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .form-label {
+        font-size: 0.875rem !important;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        padding: 0.75rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .form-actions {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .form-actions .btn {
+        width: 100% !important;
+    }
+}
+
+/* ============================================
+   Buttons - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9375rem !important;
+        min-height: 44px !important;
+    }
+    
+    .btn-lg {
+        padding: 0.875rem 1.25rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.8125rem !important;
+    }
+}
+
+/* ============================================
+   Container & Layout - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    .page-content {
+        padding: 1rem !important;
+    }
+    
+    .content {
+        padding: 1rem !important;
+    }
+    
+    .editor-scroll {
+        padding: 1rem !important;
+    }
+}
+
+/* ============================================
+   Typography - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    h1, .page-title, .welcome-title {
+        font-size: 1.5rem !important;
+    }
+    
+    h2, .section-title {
+        font-size: 1.25rem !important;
+    }
+    
+    h3, .card-title {
+        font-size: 1.125rem !important;
+    }
+    
+    h4 {
+        font-size: 1rem !important;
+    }
+    
+    p {
+        font-size: 0.9375rem !important;
+        line-height: 1.5 !important;
+    }
+}
+
+/* ============================================
+   Navigation - Mobile Enhancements
+   ============================================ */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.75rem !important;
+    }
+    
+    .navbar-content {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .nav-actions {
+        gap: 0.5rem !important;
+    }
+    
+    .nav-link {
+        padding: 0.75rem !important;
+        font-size: 0.9375rem !important;
+    }
+}
+
+/* ============================================
+   Hero Section - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .hero {
+        padding: 3rem 1rem !important;
+    }
+    
+    .hero h1,
+    .welcome-title {
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .hero p,
+    .welcome-subtitle {
+        font-size: 1rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .hero-actions {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .hero-actions .btn {
+        width: 100% !important;
+    }
+}
+
+/* ============================================
+   Chat Interface - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .chat-container {
+        padding: 1rem !important;
+    }
+    
+    .chat-messages {
+        gap: 1rem !important;
+    }
+    
+    .message {
+        max-width: 85% !important;
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .message-text {
+        font-size: 0.9375rem !important;
+    }
+    
+    .input-container {
+        padding: 0.75rem !important;
+    }
+    
+    .chat-textarea {
+        padding: 0.75rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .send-btn {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+    }
+    
+    .welcome-screen {
+        padding: 2rem 1rem !important;
+    }
+    
+    .welcome-logo {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    .welcome-logo-text {
+        font-size: 2rem !important;
+    }
+    
+    .welcome-title {
+        font-size: 1.5rem !important;
+    }
+    
+    .suggestion-cards {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ============================================
+   AI Panel & Toolbar - Mobile
+   ============================================ */
+@media (max-width: 992px) {
+    .ai-panel {
+        display: none !important;
+    }
+    
+    .toolbar {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   Pagination - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .pagination {
+        flex-wrap: wrap !important;
+        gap: 0.375rem !important;
+    }
+    
+    .page-link {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.8125rem !important;
+    }
+}
+
+/* ============================================
+   Empty State - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .empty-state {
+        padding: 2rem 1rem !important;
+    }
+    
+    .empty-icon {
+        font-size: 2.5rem !important;
+    }
+    
+    .empty-title {
+        font-size: 1rem !important;
+    }
+}
+
+/* ============================================
+   Assignment Specific - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .assignment-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+    
+    .assignment-info {
+        width: 100% !important;
+    }
+    
+    .assignment-title {
+        font-size: 1rem !important;
+    }
+    
+    .assignment-meta {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .assignment-actions {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+}
+
+/* ============================================
+   Material Card - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .material-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    
+    .material-title {
+        font-size: 0.9375rem !important;
+    }
+    
+    .material-meta {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .material-actions {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .materials-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+    
+    .materials-actions {
+        width: 100% !important;
+    }
+    
+    .materials-actions .btn {
+        flex: 1 !important;
+    }
+}
+
+/* ============================================
+   Input Mode Tabs - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .input-mode-tabs {
+        flex-direction: column !important;
+    }
+    
+    .mode-tab {
+        padding: 1rem !important;
+    }
+    
+    .mode-icon {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* ============================================
+   Breadcrumb - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .breadcrumb {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   Quick Actions & Stats - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .stats-section {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* ============================================
+   Auth Pages - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .auth-container {
+        max-width: 100% !important;
+        padding: 1rem !important;
+    }
+    
+    .auth-card {
+        padding: 1.5rem !important;
+        border-radius: 12px !important;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* ============================================
+   Landing Page - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .hero {
+        padding: 4rem 1rem !important;
+    }
+    
+    .hero h1 {
+        font-size: 2rem !important;
+    }
+    
+    .hero p {
+        font-size: 1rem !important;
+    }
+    
+    .features {
+        padding: 3rem 0 !important;
+    }
+    
+    .features-header h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .feature-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .cta {
+        padding: 3rem 1rem !important;
+    }
+    
+    .cta h2 {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* ============================================
+   Scrollable Areas - Mobile
+   ============================================ */
+@media (max-width: 768px) {
+    .chat-container,
+    .sidebar-nav,
+    .editor-scroll,
+    .ai-panel-body {
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
+
+/* ============================================
+   Fix for iOS Safari bottom bar
+   ============================================ */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    @media (max-width: 992px) {
+        .bottom-nav {
+            padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important;
+        }
+        
+        .main-content,
+        .page-content,
+        .workspace,
+        .content {
+            padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+        }
+    }
+}
+
+/* ============================================
+   Small phones (iPhone SE, etc)
+   ============================================ */
+@media (max-width: 375px) {
+    .bottom-nav-item {
+        padding: 6px 8px !important;
+        font-size: 0.5625rem !important;
+    }
+    
+    .bottom-nav-item svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+    
+    .stats-section {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+}
+
+/* ============================================
+   Tablet specific fixes
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .sidebar {
+        width: 220px !important;
+    }
+    
+    .main-content {
+        margin-left: 220px !important;
+    }
+}

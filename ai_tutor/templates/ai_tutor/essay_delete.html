@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete Essay — NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#222;--border2:#2e2e2e;--text:#f0f0f0;--text2:#888;--text3:#444;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+.topnav{display:flex;align-items:center;justify-content:space-between;height:56px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:200;}
+.topnav-logo{font-size:1rem;font-weight:800;color:var(--text);text-decoration:none;}
+.topnav-link{display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;color:var(--text2);text-decoration:none;font-size:.8125rem;font-weight:500;border-radius:7px;transition:all .15s;}
+.topnav-link:hover{background:var(--surface2);color:var(--text);}
+.topnav-link svg{width:14px;height:14px;}
+.avatar{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--text2);}
+.page{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.delete-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:2.5rem;max-width:440px;width:100%;text-align:center;}
+.warn-icon{width:56px;height:56px;border-radius:14px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;}
+.warn-icon svg{width:26px;height:26px;color:#f87171;}
+.delete-title{font-size:1.125rem;font-weight:700;margin-bottom:.5rem;}
+.delete-sub{font-size:.875rem;color:var(--text2);line-height:1.6;margin-bottom:.375rem;}
+.essay-name{font-weight:600;color:var(--text);display:block;margin-top:.25rem;}
+.actions{display:flex;gap:.75rem;justify-content:center;margin-top:1.75rem;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.625rem 1.25rem;font-size:.875rem;font-weight:600;border-radius:8px;cursor:pointer;border:none;font-family:inherit;text-decoration:none;transition:all .15s;}
+.btn-danger{background:#ef4444;color:#fff;}
+.btn-danger:hover{background:#dc2626;}
+.btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.btn-cancel:hover{color:var(--text);border-color:#444;}
+@media(max-width:480px){.actions{flex-direction:column;}.btn{width:100%;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="{% url 'dashboard' %}" class="topnav-logo">NEXA</a>
+  <div style="display:flex;align-items:center;gap:.5rem;">
+    <a href="{% url 'essay_request' %}" class="topnav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Back</a>
+    <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+  </div>
+</nav>
+<div class="page">
+  <div class="delete-card">
+    <div class="warn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="delete-title">Delete Essay</div>
+    <div class="delete-sub">
+      Are you sure you want to delete this essay? This cannot be undone.
+      <span class="essay-name">"{{ essay.topic }}"</span>
+    </div>
+    <form method="POST" action="{% url 'delete_essay' essay.id %}">
+      {% csrf_token %}
+      <div class="actions">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'essay_request' %}" class="btn btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

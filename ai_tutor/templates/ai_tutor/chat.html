@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ title }} - NEXA</title>
+    
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        /* CSS STYLES - Unchanged for compatibility */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #1a1a1a;
+            --accent-primary: #ffffff;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-tertiary: rgba(255, 255, 255, 0.5);
+            --border: rgba(255, 255, 255, 0.15);
+            --sidebar-width: 260px;
+            --header-height: 60px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+        }
+        
+        /* Layout */
+        .app-container { display: flex; height: 100vh; }
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(26, 26, 26, 0.95);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+        }
+        .sidebar-header { padding: 1rem; border-bottom: 1px solid var(--border); }
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .sidebar-nav { flex: 1; padding: 0.75rem; overflow-y: auto; }
+        .nav-section { margin-bottom: 1.5rem; }
+        .nav-section-title {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.5rem 0.75rem 0.5rem;
+        }
+        .nav-item { margin-bottom: 4px; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 8px;
+        }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
+        .nav-link.active { background: rgba(255, 255, 255, 0.15); color: var(--text-primary); font-weight: 500; }
+        .nav-link-icon { font-size: 1.125rem; font-weight: 600; width: 1.5rem; text-align: center; flex-shrink: 0; }
+        .nav-link-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nav-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            background: rgba(26, 26, 26, 0.8);
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .menu-btn { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; color: var(--text-primary); }
+        .header-title { font-size: 1.125rem; font-weight: 600; color: var(--text-primary); }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .icon-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px;
+            background: none; border: 1px solid var(--border);
+            border-radius: 8px; cursor: pointer; color: var(--text-secondary);
+            transition: color 0.2s, background 0.2s;
+        }
+        .icon-btn:hover { color: #ef4444; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
+        .clear-chat-sidebar-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-secondary); padding: 2px 4px; border-radius: 4px;
+            opacity: 0.6; transition: opacity 0.2s, color 0.2s;
+            vertical-align: middle; margin-left: 6px;
+        }
+        .clear-chat-sidebar-btn:hover { opacity: 1; color: #ef4444; }
+        .nav-section-title { display: flex; align-items: center; }
+        .voice-mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .voice-mode-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--accent-primary); }
+        
+        /* Mode Selector */
+        .mode-selector { display: flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 8px; padding: 0.25rem; }
+        .mode-btn { padding: 0.5rem 0.875rem; background: transparent; border: none; border-radius: 6px; font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+        .mode-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
+        .mode-btn.active { background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); color: #1a1a1a; font-weight: 600; }
+        
+        .user-avatar { width: 2rem; height: 2rem; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); color: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600; }
+        
+        /* Chat Container */
+        .chat-container { flex: 1; overflow-y: auto; padding-bottom: 1rem; }
+        .chat-messages { max-width: 800px; margin: 0 auto; padding: 0 1.5rem; }
+        
+        /* Welcome Screen */
+        .welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 250px); text-align: center; padding: 3rem 2rem; }
+        .welcome-logo { width: 120px; height: 120px; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; box-shadow: 0 0 60px rgba(255, 255, 255, 0.3); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .welcome-logo-text { font-size: 3rem; color: #1a1a1a; font-weight: 700; }
+        .welcome-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary); }
+        .welcome-subtitle { font-size: 1.125rem; color: var(--text-secondary); margin-bottom: 3rem; }
+        .suggestion-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; max-width: 700px; width: 100%; }
+        .suggestion-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; text-align: left; cursor: pointer; }
+        .suggestion-card:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent-primary); transform: translateY(-2px); }
+        .suggestion-card-title { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.375rem; color: var(--text-primary); }
+        .suggestion-card-desc { font-size: 0.8125rem; color: var(--text-secondary); }
+        
+        /* Messages */
+        .message-wrapper { padding: 2rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .message-wrapper:last-child { border-bottom: none; }
+        .message { max-width: 100%; display: flex; gap: 1rem; }
+        .message-avatar { width: 2.5rem; height: 2.5rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.875rem; font-weight: 600; flex-shrink: 0; }
+        .message-user .message-avatar { background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); color: #1a1a1a; }
+        .message-ai .message-avatar { background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); color: #1a1a1a; }
+        .message-content { flex: 1; min-width: 0; }
+        .message-text { font-size: 1rem; line-height: 1.7; word-break: break-word; color: var(--text-primary); }
+        .message-text .katex-display { margin: 0.75rem 0; }
+        .message-text p { margin-bottom: 0.5rem; }
+
+        /* Board-style chat rendering */
+        .board-render { font-size: 0.9375rem; }
+        .br-intro { color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.7; }
+        .br-plain { white-space: pre-wrap; line-height: 1.7; }
+        .br-section { padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.1); opacity: 0; animation: brFadeIn 0.4s ease forwards; }
+        .br-section:last-child { border-bottom: none; }
+        @keyframes brFadeIn { to { opacity: 1; } }
+        .br-step-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .br-step-body { }
+        .br-text { color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.25rem; }
+        .br-math { text-align: center; color: var(--text-primary); padding: 0.4rem 0; font-size: 1.05rem; }
+        .br-math-block { text-align: center; color: var(--text-primary); padding: 0.4rem 0; font-size: 1.1rem; }
+        .br-bullets { list-style: disc; padding-left: 1.5rem; color: var(--text-secondary); line-height: 1.8; margin: 0.5rem 0; }
+        .br-final-header { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
+        .br-check { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: #22c55e; border-radius: 4px; font-size: 0.75rem; color: #fff; flex-shrink: 0; }
+        .message-actions { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+        .message-action-btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 0.875rem; background: rgba(255, 255, 255, 0.08); border: none; font-size: 0.8125rem; color: var(--text-secondary); cursor: pointer; border-radius: 6px; }
+        .message-action-btn:hover { background: rgba(255, 255, 255, 0.15); color: var(--text-primary); }
+        .message-time { font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem; }
+        
+        /* Input Area */
+        .input-container { padding: 1.5rem; background: rgba(26, 26, 26, 0.8); border-top: 1px solid var(--border); }
+        .input-wrapper { max-width: 800px; margin: 0 auto; position: relative; }
+        .chat-input-container { border: 1px solid var(--border); border-radius: 16px; background: rgba(255, 255, 255, 0.05); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); transition: all 0.2s ease; }
+        .chat-input-container:focus-within { border-color: var(--accent-primary); box-shadow: 0 4px 24px rgba(255, 255, 255, 0.2); }
+        .chat-textarea { width: 100%; border: none; border-radius: 16px; padding: 1.125rem 1.25rem 0.875rem; font-family: inherit; font-size: 1rem; resize: none; min-height: 60px; max-height: 200px; background: transparent; color: var(--text-primary); }
+        .chat-textarea:focus { outline: none; }
+        .chat-textarea::placeholder { color: var(--text-tertiary); }
+        .input-actions { display: flex; justify-content: space-between; align-items: center; padding: 0 0.75rem 0.75rem 0.75rem; }
+        .input-tools { display: flex; gap: 0.5rem; align-items: center; }
+        .voice-btn { width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.08); border: none; border-radius: 8px; cursor: pointer; color: var(--text-primary); }
+        .voice-btn:hover { background: rgba(255, 255, 255, 0.15); }
+        .voice-btn.listening { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .rag-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--text-secondary); }
+        .rag-toggle input { accent-color: var(--accent-primary); }
+        .send-btn { width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); border: none; border-radius: 10px; cursor: pointer; color: #1a1a1a; }
+        .send-btn:hover { transform: translateY(-2px); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .input-footer { text-align: center; padding: 0.75rem; font-size: 0.75rem; color: var(--text-tertiary); }
+
+        /* Attach menu */
+        .attach-menu {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            background: #2a2a2a;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 6px;
+            min-width: 190px;
+            z-index: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .attach-menu.open { display: block; }
+        .attach-menu-item {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 10px 14px;
+            background: none; border: none; border-radius: 8px;
+            color: var(--text-primary); font-size: 0.9375rem;
+            cursor: pointer; text-align: left;
+        }
+        .attach-menu-item:hover { background: rgba(255,255,255,0.08); }
+        .attach-menu-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; }
+        #image-preview-strip { display: flex; }
+
+        /* Camera modal */
+        .camera-modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92); z-index: 2000;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .camera-modal.open { display: flex; }
+        .camera-modal-inner {
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 20px; overflow: hidden;
+            width: min(480px, 96vw); max-height: 90vh;
+            display: flex; flex-direction: column;
+        }
+        .camera-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .camera-modal-title { font-size: 0.9375rem; font-weight: 600; }
+        .camera-close-btn {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: none;
+            color: #fff; cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .camera-preview-wrap {
+            position: relative; background: #000;
+            min-height: 260px; display: flex; align-items: center; justify-content: center;
+        }
+        #camFeed { width: 100%; max-height: 340px; object-fit: cover; display: block; }
+        #camCanvas { display: none; }
+        #camCaptured { display: none; width: 100%; max-height: 340px; object-fit: contain; }
+        .camera-idle-msg {
+            color: rgba(255,255,255,0.4); font-size: 0.875rem; text-align: center; padding: 2rem;
+        }
+        .camera-modal-footer {
+            padding: 1rem 1.25rem; display: flex; gap: 0.625rem;
+            justify-content: center; flex-wrap: wrap;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .cam-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.6rem 1.25rem; border-radius: 10px; font-size: 0.875rem;
+            font-weight: 600; cursor: pointer; border: none; font-family: inherit;
+            transition: all 0.15s;
+        }
+        .cam-btn-ghost { background: rgba(255,255,255,0.08); color: #fff; }
+        .cam-btn-ghost:hover { background: rgba(255,255,255,0.14); }
+        .cam-btn-primary { background: #fff; color: #000; }
+        .cam-btn-primary:hover { background: #e8e8e8; }
+        .cam-btn-send { background: #fff; color: #000; }
+        .cam-btn-send:hover { background: #e8e8e8; transform: translateY(-1px); }
+        
+        /* Loading */
+        .loading-indicator { display: none; align-items: center; justify-content: center; padding: 1.5rem; gap: 0.5rem; }
+        .loading-indicator.active { display: flex; }
+        .loading-dot { width: 10px; height: 10px; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        /* Voice Overlay */
+        .voice-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%); z-index: 1000; }
+        .voice-overlay.active { display: flex; }
+        .voice-dual-panel { display: flex; width: 100%; height: 100%; }
+        .voice-panel { width: 35%; background: rgba(26, 26, 26, 0.95); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; position: relative; }
+        .board-panel { width: 65%; background: #1a1a1a; padding: 2.5rem 3rem; overflow-y: auto; }
+        .board-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        .board-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
+        .board-content { min-height: 400px; }
+        .board-step { padding: 1.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.1); opacity: 0; transform: translateY(16px); animation: stepFadeIn 0.45s ease forwards; }
+        .board-step:last-child { border-bottom: none; }
+        @keyframes stepFadeIn { to { opacity: 1; transform: translateY(0); } }
+        .board-step-title { font-size: 1.0625rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .board-step-subtitle { font-size: 0.9375rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6; }
+        .board-step-math { text-align: center; font-size: 1.25rem; color: var(--text-primary); line-height: 2; padding: 0.5rem 0; }
+        .board-step-bullets { list-style: disc; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.8; }
+        .board-step-bullets li { margin-bottom: 0.25rem; }
+        .board-final { display: flex; align-items: center; gap: 0.625rem; font-size: 1.0625rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; }
+        .board-final-check { width: 22px; height: 22px; background: #22c55e; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .board-suggestions { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .board-suggestions-label { font-size: 0.9375rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+        .board-suggestions-list { list-style: disc; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.8; }
+        
+        .voice-status { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; text-align: center; }
+        .voice-bubble { width: 180px; height: 180px; border-radius: 50%; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 60px rgba(255, 255, 255, 0.4); margin-bottom: 2rem; }
+        .voice-bubble.speaking { animation: pulse-glow 1.5s ease-in-out infinite; }
+        .voice-bubble.listening { background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%); box-shadow: 0 0 60px rgba(255, 255, 255, 0.6); }
+        .voice-bubble.thinking { background: linear-gradient(135deg, #cccccc 0%, #999999 100%); box-shadow: 0 0 60px rgba(200, 200, 200, 0.6); }
+        @keyframes pulse-glow { 0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(255, 255, 255, 0.4); } 50% { transform: scale(1.05); box-shadow: 0 0 80px rgba(255, 255, 255, 0.6); } }
+        .voice-bubble-icon { width: 70px; height: 70px; fill: #1a1a1a; }
+        .voice-text-container { width: 100%; text-align: center; margin-top: 1rem; }
+        .voice-user-text { font-size: 1rem; color: var(--text-secondary); margin-bottom: 1rem; min-height: 1.5rem; }
+        .voice-ai-text { font-size: 1.125rem; color: var(--text-primary); line-height: 1.6; min-height: 2rem; font-weight: 500; }
+        .voice-waves { display: flex; gap: 0.375rem; margin-top: 1rem; justify-content: center; }
+        .voice-wave { width: 4px; height: 20px; background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); border-radius: 3px; animation: wave 0.5s ease-in-out infinite; }
+        .voice-wave:nth-child(2) { animation-delay: 0.1s; }
+        .voice-wave:nth-child(3) { animation-delay: 0.2s; }
+        .voice-wave:nth-child(4) { animation-delay: 0.3s; }
+        .voice-wave:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 30px; } }
+        .voice-controls { position: absolute; bottom: 2rem; display: flex; gap: 0.75rem; flex-direction: column; align-items: center; width: calc(100% - 4rem); }
+        .voice-control-btn { padding: 0.875rem 1.5rem; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border); border-radius: 2rem; color: #fff; font-size: 0.9375rem; cursor: pointer; width: 100%; max-width: 280px; }
+        .voice-control-btn:hover { background: rgba(255, 255, 255, 0.15); }
+        .voice-control-btn.primary { background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%); border: none; color: #1a1a1a; }
+        .voice-control-btn.primary:hover { transform: translateY(-2px); }
+        .voice-error-info { color: var(--text-tertiary); font-size: 0.8125rem; margin-top: 0.75rem; text-align: center; max-width: 280px; line-height: 1.5; }
+        
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        .menu-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .menu-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 0.5rem;
+            z-index: 100;
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.625rem;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+        
+        .bottom-nav-item:hover,
+        .bottom-nav-item.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        
+        .bottom-nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* ── MOBILE CHATGPT-STYLE UI ── */
+        @media (max-width: 768px) {
+            * { -webkit-tap-highlight-color: transparent; }
+            html, body { height: 100%; overflow: hidden; background: #111; }
+
+            /* Hide desktop-only elements */
+            .sidebar, .mode-selector, .voice-mode-btn,
+            .menu-toggle, .sidebar-overlay, .input-footer { display: none !important; }
+
+            .main-content {
+                margin-left: 0 !important;
+                height: 100vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                background: #111 !important;
+            }
+
+            /* Header */
+            .header {
+                height: 56px !important;
+                padding: 0 16px !important;
+                background: #111 !important;
+                border-bottom: none !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-shrink: 0 !important;
+            }
+            .header-left { gap: 8px !important; }
+            .header-title { font-size: 18px !important; font-weight: 700 !important; }
+            .header-actions { display: flex !important; align-items: center !important; gap: 10px !important; }
+
+            /* Voice button in header — pill style */
+            .voice-mode-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 40px !important;
+                height: 40px !important;
+                background: #2a2a2a !important;
+                border: none !important;
+                border-radius: 50% !important;
+                color: #fff !important;
+                padding: 0 !important;
+            }
+            .voice-mode-btn span { display: none !important; }
+
+            /* Avatar */
+            .user-avatar {
+                width: 36px !important; height: 36px !important;
+                border-radius: 50% !important;
+                background: #fff !important; color: #000 !important;
+                font-weight: 700 !important; font-size: 15px !important;
+            }
+
+            /* Chat area */
+            .chat-container {
+                flex: 1 !important;
+                overflow-y: auto !important;
+                padding: 0 !important;
+                padding-bottom: 140px !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            .chat-messages {
+                max-width: 100% !important;
+                padding: 16px !important;
+            }
+
+            /* Messages — full width, no avatar bubble */
+            .message-wrapper { padding: 12px 0 !important; border-bottom: none !important; }
+            .message { gap: 10px !important; }
+            .message-avatar { width: 28px !important; height: 28px !important; font-size: 11px !important; border-radius: 6px !important; flex-shrink: 0 !important; }
+            .message-text { font-size: 15px !important; line-height: 1.65 !important; }
+            .message-actions { padding-top: 8px !important; margin-top: 8px !important; }
+            .message-action-btn { padding: 6px 14px !important; font-size: 12px !important; border-radius: 20px !important; }
+
+            /* Welcome screen */
+            .welcome-screen {
+                min-height: calc(100vh - 200px) !important;
+                padding: 2rem 1.5rem !important;
+            }
+            .welcome-title { font-size: 1.75rem !important; }
+            .welcome-logo { width: 80px !important; height: 80px !important; }
+            .welcome-logo-text { font-size: 2rem !important; }
+            .suggestion-cards { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+            .suggestion-card { padding: 1rem !important; }
+
+            /* Input area — fixed at bottom above nav */
+            .input-container {
+                position: fixed !important;
+                bottom: 70px !important;
+                left: 0 !important; right: 0 !important;
+                padding: 10px 16px 12px !important;
+                background: #111 !important;
+                border-top: 1px solid #222 !important;
+                z-index: 200 !important;
+            }
+            .input-wrapper { max-width: 100% !important; }
+            .chat-input-container {
+                border-radius: 28px !important;
+                background: #2a2a2a !important;
+                border: none !important;
+                box-shadow: none !important;
+                display: flex !important;
+                align-items: center !important;
+                padding: 0 8px 0 16px !important;
+            }
+            .chat-textarea {
+                padding: 12px 0 !important;
+                font-size: 15px !important;
+                min-height: 44px !important;
+                max-height: 120px !important;
+                background: transparent !important;
+                border-radius: 0 !important;
+            }
+            .input-actions {
+                padding: 0 !important;
+                flex-shrink: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+            }
+            .rag-toggle span { display: none !important; }
+            .rag-toggle { margin: 0 !important; }
+            .send-btn {
+                width: 36px !important; height: 36px !important;
+                border-radius: 50% !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Bottom nav */
+            .bottom-nav {
+                display: flex !important;
+                position: fixed !important;
+                bottom: 0 !important; left: 0 !important; right: 0 !important;
+                height: 70px !important;
+                background: #111 !important;
+                border-top: 1px solid #222 !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+                z-index: 300 !important;
+                padding: 0 !important;
+            }
+            .bottom-nav-item {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 4px !important;
+                color: #666 !important;
+                font-size: 10px !important;
+                font-weight: 500 !important;
+                text-decoration: none !important;
+                background: transparent !important;
+                border: none !important;
+                cursor: pointer !important;
+                padding: 8px 12px !important;
+                border-radius: 8px !important;
+            }
+            .bottom-nav-item.active { color: #fff !important; }
+            .bottom-nav-item svg { width: 22px !important; height: 22px !important; }
+
+            /* Voice overlay hidden on mobile */
+            .voice-overlay { display: none !important; }
+
+            /* Mode toggle strip */
+            .mode-toggle-mobile {
+                display: flex !important;
+                gap: 6px !important;
+                padding: 8px 16px !important;
+                overflow-x: auto !important;
+                background: #111 !important;
+                border-bottom: 1px solid #222 !important;
+                scrollbar-width: none !important;
+                flex-shrink: 0 !important;
+            }
+            .mode-toggle-mobile::-webkit-scrollbar { display: none !important; }
+            .mode-btn-mobile {
+                padding: 7px 18px !important;
+                border-radius: 20px !important;
+                font-size: 13px !important;
+                font-weight: 500 !important;
+                white-space: nowrap !important;
+                background: #2a2a2a !important;
+                color: #aaa !important;
+                border: none !important;
+                cursor: pointer !important;
+            }
+            .mode-btn-mobile.active { background: #fff !important; color: #000 !important; }
+        }
+
+        @media (max-width: 480px) {
+            .header-title { font-size: 17px !important; }
+            .message-text { font-size: 14px !important; }
+        }
+
+        /* Desktop: hide mobile-only elements */
+        .mode-toggle-mobile { display: none; }
+        .voice-fab { display: none; }
+    </style>
+</head>
+<body>
+    <!-- APP CONTAINER -->
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="#" onclick="NexaChat.newChat(); return false;" class="new-chat-btn">
+                    <span>+</span>
+                    <span>New Chat</span>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu</div>
+                    <div class="nav-item">
+                        <a href="{% url 'dashboard' %}" class="nav-link">
+                            <span class="nav-link-icon">H</span>
+                            <span class="nav-link-text">Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'explore' %}" class="nav-link">
+                            <span class="nav-link-icon">E</span>
+                            <span class="nav-link-text">Explore</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'list_materials' %}" class="nav-link">
+                            <span class="nav-link-icon">M</span>
+                            <span class="nav-link-text">My Materials</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-divider"></div>
+                <div class="nav-section">
+                    <div class="nav-section-title">AI Features</div>
+                    <div class="nav-item">
+                        <a href="{% url 'ai_chat' %}" class="nav-link active">
+                            <span class="nav-link-icon">A</span>
+                            <span class="nav-link-text">AI Chat</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'essay_request' %}" class="nav-link">
+                            <span class="nav-link-icon">E</span>
+                            <span class="nav-link-text">Essay Generator</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'assignment_list' %}" class="nav-link">
+                            <span class="nav-link-icon">S</span>
+                            <span class="nav-link-text">Assignment</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-divider"></div>
+                {% if conversations %}
+                <div class="nav-section">
+                    <div class="nav-section-title">Recent Chats
+                        <button class="clear-chat-sidebar-btn" onclick="NexaChat.clearChat()" title="Clear all chats">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6l-1 14H6L5 6"></path>
+                                <path d="M9 6V4h6v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="nav-divider"></div>
+                <div class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link">
+                        <span class="nav-link-icon">L</span>
+                        <span class="nav-link-text">Log out</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleMobileMenu()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <h1 class="header-title">AI Tutor</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="mode-selector">
+                        <button class="mode-btn active" data-mode="explain" onclick="NexaAI.setMode('explain')">Explain</button>
+                        <button class="mode-btn" data-mode="coach" onclick="NexaAI.setMode('coach')">Coach</button>
+                        <button class="mode-btn" data-mode="exam" onclick="NexaAI.setMode('exam')">Exam</button>
+                    </div>
+                    <button class="voice-mode-btn" onclick="NexaVoice.open()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        </svg>
+                        <span class="voice-btn-text">Voice</span>
+                    </button>
+                    <button class="icon-btn" title="Clear chat" onclick="NexaChat.clearChat()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6l-1 14H6L5 6"></path>
+                            <path d="M10 11v6M14 11v6"></path>
+                            <path d="M9 6V4h6v2"></path>
+                        </svg>
+                    </button>
+                    <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                </div>
+            </header>
+
+            <!-- Mobile mode strip -->
+            <div class="mode-toggle-mobile">
+                <button class="mode-btn-mobile active" data-mode="explain" onclick="NexaAI.setMode('explain'); document.querySelectorAll('.mode-btn-mobile').forEach(b=>b.classList.remove('active')); this.classList.add('active')">Explain</button>
+                <button class="mode-btn-mobile" data-mode="coach" onclick="NexaAI.setMode('coach'); document.querySelectorAll('.mode-btn-mobile').forEach(b=>b.classList.remove('active')); this.classList.add('active')">Coach</button>
+                <button class="mode-btn-mobile" data-mode="exam" onclick="NexaAI.setMode('exam'); document.querySelectorAll('.mode-btn-mobile').forEach(b=>b.classList.remove('active')); this.classList.add('active')">Exam</button>
+            </div>
+            
+            <!-- Chat Container -->
+            <div class="chat-container" id="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    {% if conversations %}
+                        {% for conv in conversations %}
+                        <div class="message-wrapper">
+                            <div class="message message-user">
+                                <div class="message-avatar">U</div>
+                                <div class="message-content">
+                                    <div class="message-text">{{ conv.message }}</div>
+                                    <div class="message-time">{{ conv.created_at|date:"H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="message-wrapper">
+                            <div class="message message-ai">
+                                <div class="message-avatar">AI</div>
+                                <div class="message-content">
+                                    <div class="message-text">{{ conv.response|linebreaks }}</div>
+                                    <div class="message-actions">
+                                        <button class="message-action-btn" onclick="NexaVoice.speak('{{ conv.response|escapejs }}')">Listen</button>
+                                        <button class="message-action-btn" onclick="NexaUI.copyText('{{ conv.response|escapejs }}')">Copy</button>
+                                    </div>
+                                    <div class="message-time">{{ conv.created_at|date:"H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="welcome-screen" id="welcome-screen">
+                        <div class="welcome-logo">
+                            <span class="welcome-logo-text">N</span>
+                        </div>
+                        <h1 class="welcome-title">Ready to Create Something New?</h1>
+                        <p class="welcome-subtitle">I can help you with your studies, answer questions, and more.</p>
+                        <div class="suggestion-cards">
+                            <div class="suggestion-card" onclick="NexaChat.send('Explain quantum computing in simple terms')">
+                                <div class="suggestion-card-title">Explain a concept</div>
+                                <div class="suggestion-card-desc">Quantum computing in simple terms</div>
+                            </div>
+                            <div class="suggestion-card" onclick="NexaChat.send('Help me study for my math exam on algebra')">
+                                <div class="suggestion-card-title">Study help</div>
+                                <div class="suggestion-card-desc">Help me study for my math exam</div>
+                            </div>
+                            <div class="suggestion-card" onclick="NexaChat.send('What are the key points from my uploaded study materials?')">
+                                <div class="suggestion-card-title">Review materials</div>
+                                <div class="suggestion-card-desc">Summarize my uploaded study materials</div>
+                            </div>
+                            <div class="suggestion-card" onclick="NexaChat.send('Create a learning plan for next week')">
+                                <div class="suggestion-card-title">Learning plan</div>
+                                <div class="suggestion-card-desc">Create a study schedule</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="loading-indicator" id="loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <!-- Hidden file input for image upload -->
+                    <input type="file" id="image-input" accept="image/*" style="display:none" onchange="NexaChat.handleImageSelected(this)">
+
+                    <!-- Attachment popup menu -->
+                    <div class="attach-menu" id="attach-menu">
+                        <button class="attach-menu-item" onclick="document.getElementById('image-input').click(); NexaChat.closeAttachMenu()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            Upload photo
+                        </button>
+                        <button class="attach-menu-item" onclick="NexaCamera.open(); NexaChat.closeAttachMenu()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Take photo
+                        </button>
+                        <div class="attach-menu-divider"></div>
+                        <button class="attach-menu-item" onclick="NexaChat.sendWebSearch(); NexaChat.closeAttachMenu()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                            </svg>
+                            Web search
+                        </button>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <!-- Image preview strip -->
+                        <div id="image-preview-strip" style="display:none; padding: 8px 12px 0; gap: 8px; align-items: center;">
+                            <img id="image-preview-thumb" style="height:48px; border-radius:6px; object-fit:cover;">
+                            <button onclick="NexaChat.clearImage()" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">✕</button>
+                        </div>
+                        <!-- Web search badge -->
+                        <div id="websearch-badge" style="display:none; padding: 6px 12px 0; align-items:center; gap:6px; font-size:12px; color:#aaa;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            Web search enabled
+                            <button onclick="NexaChat.clearWebSearch()" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:12px;">✕</button>
+                        </div>
+
+                        <textarea class="chat-textarea" id="chat-input" placeholder="Ask Anything..." rows="1"></textarea>
+                        <div class="input-actions">
+                            <div class="input-tools">
+                                <!-- + button -->
+                                <button class="voice-btn" id="attach-btn" onclick="NexaChat.toggleAttachMenu(event)" title="Add photos or web search">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                    </svg>
+                                </button>
+                                <button class="voice-btn" id="voice-btn" onclick="NexaVoice.toggleInput()">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    </svg>
+                                </button>
+                                <label class="rag-toggle">
+                                    <input type="checkbox" id="use-rag" checked>
+                                    <span>Study materials</span>
+                                </label>
+                            </div>
+                            <button class="send-btn" id="send-btn" onclick="NexaChat.send()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-footer">AI can make mistakes. Please check important information.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Camera Modal -->
+    <div class="camera-modal" id="camera-modal">
+        <div class="camera-modal-inner">
+            <div class="camera-modal-header">
+                <span class="camera-modal-title">Take a Photo</span>
+                <button class="camera-close-btn" onclick="NexaCamera.close()">X</button>
+            </div>
+            <div class="camera-preview-wrap">
+                <video id="camFeed" autoplay playsinline muted></video>
+                <canvas id="camCanvas"></canvas>
+                <img id="camCaptured" alt="Captured photo">
+                <div class="camera-idle-msg" id="camIdleMsg">Camera will appear here</div>
+            </div>
+            <div class="camera-modal-footer">
+                <button class="cam-btn cam-btn-ghost" id="camStartBtn" onclick="NexaCamera.start()">Open Camera</button>
+                <button class="cam-btn cam-btn-primary" id="camSnapBtn" onclick="NexaCamera.snap()" style="display:none">Capture</button>
+                <button class="cam-btn cam-btn-ghost" id="camRetakeBtn" onclick="NexaCamera.retake()" style="display:none">Retake</button>
+                <button class="cam-btn cam-btn-send" id="camSendBtn" onclick="NexaCamera.usePhoto()" style="display:none">Use Photo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Overlay -->
+    <div class="voice-overlay" id="voice-overlay">
+        <div class="voice-dual-panel">
+            <div class="voice-panel">
+                <button onclick="NexaVoice.close()" style="position: absolute; top: 1.5rem; right: 1.5rem; width: 2.5rem; height: 2.5rem; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border); border-radius: 50%; color: #fff; font-size: 1.25rem; cursor: pointer;">X</button>
+                <div class="voice-status" id="voice-status">Tap to start...</div>
+                <div class="voice-bubble" id="voice-bubble">
+                    <svg class="voice-bubble-icon" viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    </svg>
+                </div>
+                <div class="voice-waves" id="voice-waves" style="display: none;">
+                    <div class="voice-wave"></div>
+                    <div class="voice-wave"></div>
+                    <div class="voice-wave"></div>
+                    <div class="voice-wave"></div>
+                    <div class="voice-wave"></div>
+                </div>
+                <div class="voice-text-container">
+                    <div class="voice-user-text" id="voice-user-text"></div>
+                    <div class="voice-ai-text" id="voice-ai-text"></div>
+                </div>
+                <div class="voice-controls">
+                    <button class="voice-control-btn" onclick="NexaVoice.stopSpeaking()">Stop</button>
+                    <button class="voice-control-btn primary" id="voice-start-btn" onclick="NexaVoice.toggleListening()">
+                        <span id="voice-btn-text">Start Listening</span>
+                    </button>
+                    <label style="display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--text-secondary); font-size: 13px; cursor: pointer;">
+                        <input type="checkbox" id="always-listen" onchange="NexaVoice.toggleAlwaysListen(this.checked)" style="width: 18px; height: 18px;">
+                        Always listen for "Start voice"
+                    </label>
+                </div>
+            </div>
+            <div class="board-panel">
+                <div class="board-panel-header">
+                    <div class="board-title">Solution Board</div>
+                </div>
+                <div class="board-content" id="board-content">
+                    <div style="text-align: center; color: var(--text-tertiary); padding: 4rem 2rem;">
+                        <p style="font-size: 1.125rem;">Ask a question to see the solution appear here step-by-step</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+// =====================================================
+// NEXA AI TUTOR - Clean Modular JavaScript
+// =====================================================
+
+const NexaUI = {
+    elements: {},
+    
+    init() {
+        this.elements = {
+            chatInput: document.getElementById('chat-input'),
+            sendBtn: document.getElementById('send-btn'),
+            chatMessages: document.getElementById('chat-messages'),
+            chatContainer: document.getElementById('chat-container'),
+            loading: document.getElementById('loading'),
+            welcomeScreen: document.getElementById('welcome-screen'),
+            useRag: document.getElementById('use-rag'),
+            sidebar: document.querySelector('.sidebar')
+        };
+        
+        this.bindEvents();
+        console.log('[NexaUI] Initialized');
+    },
+    
+    bindEvents() {
+        const { chatInput, sendBtn } = this.elements;
+        if (!chatInput || !sendBtn) {
+            console.error('[NexaUI] Critical elements missing!');
+            return;
+        }
+        
+        // Send button click
+        sendBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            NexaChat.send();
+        });
+        
+        // Enter key to send
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                NexaChat.send();
+            }
+        });
+        
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        });
+    },
+    
+    toggleSidebar() {
+        if (this.elements.sidebar) {
+            this.elements.sidebar.style.display = this.elements.sidebar.style.display === 'none' ? 'flex' : 'none';
+        }
+    },
+    
+    showLoading() {
+        if (this.elements.loading) this.elements.loading.classList.add('active');
+    },
+    
+    hideLoading() {
+        if (this.elements.loading) this.elements.loading.classList.remove('active');
+    },
+    
+    hideWelcome() {
+        if (this.elements.welcomeScreen) {
+            this.elements.welcomeScreen.style.display = 'none';
+        }
+    },
+    
+    showWelcome() {
+        if (this.elements.welcomeScreen) {
+            this.elements.welcomeScreen.style.display = 'flex';
+        }
+    },
+    
+    scrollToBottom() {
+        if (this.elements.chatContainer) {
+            this.elements.chatContainer.scrollTop = this.elements.chatContainer.scrollHeight;
+        }
+    },
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+    
+    copyText(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Copied to clipboard!');
+        });
+    }
+};
+
+const NexaAI = {
+    currentMode: 'explain',
+    csrfToken: '{{ csrf_token }}',
+    ajaxUrl: '{% url "ai_chat_ajax" %}',
+    
+    setMode(mode) {
+        this.currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+        console.log('[NexaAI] Mode changed to:', mode);
+    },
+    
+    async sendToAI(message, useRag = true) {
+        console.log('[NexaAI] Sending message:', message);
+        
+        try {
+            const response = await fetch(this.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.csrfToken
+                },
+                body: JSON.stringify({
+                    message: message,
+                    use_rag: useRag,
+                    learning_mode: this.currentMode
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('[NexaAI] Response received:', data.success);
+            
+            if (data.success) {
+                return data;
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
+        } catch (error) {
+            console.error('[NexaAI] Error:', error);
+            throw error;
+        }
+    },
+    
+    renderMath(element) {
+        if (typeof renderMathInElement === 'function') {
+            try {
+                renderMathInElement(element, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } catch (e) {
+                console.log('[NexaAI] Math rendering:', e);
+            }
+        }
+    },
+    
+    async streamText(element, text, speed = 20) {
+        element.textContent = '';
+        let i = 0;
+        
+        return new Promise(resolve => {
+            function typeChar() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    NexaUI.scrollToBottom();
+                    setTimeout(typeChar, speed);
+                } else {
+                    resolve();
+                }
+            }
+            typeChar();
+        });
+    }
+};
+
+const NexaChat = {
+    isSending: false,
+    pendingImage: null,
+    webSearchMode: false,
+
+    toggleAttachMenu(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('attach-menu');
+        menu.classList.toggle('open');
+    },
+
+    closeAttachMenu() {
+        document.getElementById('attach-menu').classList.remove('open');
+    },
+
+    handleImageSelected(input) {
+        const file = input.files[0];
+        if (!file) return;
+        this.pendingImage = file;
+        const strip = document.getElementById('image-preview-strip');
+        const thumb = document.getElementById('image-preview-thumb');
+        thumb.src = URL.createObjectURL(file);
+        strip.style.display = 'flex';
+    },
+
+    clearImage() {
+        this.pendingImage = null;
+        document.getElementById('image-preview-strip').style.display = 'none';
+        document.getElementById('image-input').value = '';
+    },
+
+    sendWebSearch() {
+        this.webSearchMode = true;
+        document.getElementById('websearch-badge').style.display = 'flex';
+        document.getElementById('chat-input').placeholder = 'Ask anything — I\'ll search the web...';
+        document.getElementById('chat-input').focus();
+    },
+
+    clearWebSearch() {
+        this.webSearchMode = false;
+        document.getElementById('websearch-badge').style.display = 'none';
+        document.getElementById('chat-input').placeholder = 'Ask Anything...';
+    },
+    
+    async newChat() {
+        // Clear chat messages (keep only loading and welcome)
+        const messagesContainer = NexaUI.elements.chatMessages;
+        if (messagesContainer) {
+            // Remove all message wrappers
+            const wrappers = messagesContainer.querySelectorAll('.message-wrapper');
+            wrappers.forEach(w => w.remove());
+            
+            // Show welcome screen
+            NexaUI.showWelcome();
+        }
+        
+        // Clear input
+        if (NexaUI.elements.chatInput) {
+            NexaUI.elements.chatInput.value = '';
+            NexaUI.elements.chatInput.style.height = 'auto';
+        }
+        
+        console.log('[NexaChat] New chat started');
+    },
+
+    async clearChat() {
+        if (!confirm('Clear all chat history? This cannot be undone.')) return;
+        try {
+            const res = await fetch('{% url "clear_conversations" %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            if (res.ok || res.redirected) {
+                // Wipe DOM messages
+                const container = NexaUI.elements.chatMessages;
+                if (container) {
+                    container.querySelectorAll('.message-wrapper').forEach(w => w.remove());
+                    NexaUI.showWelcome();
+                }
+                // Hide sidebar recent chats section
+                document.querySelectorAll('.nav-section').forEach(s => {
+                    if (s.querySelector('.nav-section-title')?.textContent.includes('Recent')) s.remove();
+                });
+            }
+        } catch (e) {
+            console.error('[NexaChat] clearChat error', e);
+        }
+    },
+    
+    async send(message) {
+        if (this.isSending) return;
+
+        const msg = message || NexaUI.elements.chatInput.value.trim();
+        if (!msg && !this.pendingImage) return;
+
+        this.isSending = true;
+        NexaUI.hideWelcome();
+        NexaUI.showLoading();
+        if (NexaUI.elements.sendBtn) NexaUI.elements.sendBtn.disabled = true;
+
+        if (!message && NexaUI.elements.chatInput) {
+            NexaUI.elements.chatInput.value = '';
+            NexaUI.elements.chatInput.style.height = 'auto';
+        }
+
+        // Route to correct handler
+        try {
+            if (this.pendingImage) {
+                const displayMsg = msg || 'What is in this image?';
+                this.addUserMessage(displayMsg, this.pendingImage);
+                const data = await this.sendImage(displayMsg, this.pendingImage);
+                if (data.success) await this.addAIMessage(data.response, data.timestamp);
+                else alert('Error: ' + (data.error || 'Image analysis failed'));
+                this.clearImage();
+            } else if (this.webSearchMode) {
+                this.addUserMessage('🌐 ' + msg);
+                const data = await this.sendToWebSearch(msg);
+                if (data.success) await this.addAIMessage(data.response, data.timestamp);
+                else alert('Error: ' + (data.error || 'Web search failed'));
+                this.clearWebSearch();
+            } else {
+                this.addUserMessage(msg);
+                const data = await NexaAI.sendToAI(msg, NexaUI.elements.useRag?.checked ?? true);
+                if (data.success) await this.addAIMessage(data.response, data.timestamp);
+                else alert('Error: ' + (data.error || 'Failed to get response'));
+            }
+        } catch (error) {
+            console.error('[NexaChat] Error:', error);
+            alert('Failed to connect to server.');
+        } finally {
+            this.isSending = false;
+            NexaUI.hideLoading();
+            if (NexaUI.elements.sendBtn) NexaUI.elements.sendBtn.disabled = false;
+            NexaUI.scrollToBottom();
+        }
+    },
+
+    async sendImage(message, imageFile) {
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('image', imageFile);
+        formData.append('learning_mode', NexaAI.currentMode);
+        formData.append('csrfmiddlewaretoken', NexaAI.csrfToken);
+        const response = await fetch('{% url "ai_chat_image" %}', { method: 'POST', body: formData });
+        return response.json();
+    },
+
+    async sendToWebSearch(message) {
+        const response = await fetch('{% url "ai_web_search" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
+            body: JSON.stringify({ message, learning_mode: NexaAI.currentMode })
+        });
+        return response.json();
+    },
+    
+    addUserMessage(text, imageFile) {
+        const imgHtml = imageFile
+            ? `<img src="${URL.createObjectURL(imageFile)}" style="max-width:200px; border-radius:8px; margin-top:8px; display:block;">`
+            : '';
+        const html = `
+            <div class="message-wrapper">
+                <div class="message message-user">
+                    <div class="message-avatar">U</div>
+                    <div class="message-content">
+                        <div class="message-text">${NexaUI.escapeHtml(text)}${imgHtml}</div>
+                        <div class="message-time">${new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
+    },
+    
+    async addAIMessage(text, timestamp) {
+        const msgId = 'ai-msg-' + Date.now();
+        const html = `
+            <div class="message-wrapper">
+                <div class="message message-ai">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="message-text board-render" id="${msgId}"></div>
+                        <div class="message-actions">
+                            <button class="message-action-btn" onclick="NexaVoice.speak(this.closest('.message-wrapper').dataset.plain)">Listen</button>
+                            <button class="message-action-btn" onclick="NexaUI.copyText(this.closest('.message-wrapper').dataset.plain)">Copy</button>
+                        </div>
+                        <div class="message-time">${timestamp || new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
+
+        // Store plain text for copy/listen
+        const wrapper = NexaUI.elements.chatMessages.lastElementChild;
+        wrapper.dataset.plain = text;
+
+        const element = document.getElementById(msgId);
+        if (element) {
+            element.innerHTML = NexaChat.renderBoardHTML(text);
+            if (typeof renderMathInElement === 'function') {
+                try {
+                    renderMathInElement(element, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError: false
+                    });
+                } catch(e) {}
+            }
+        }
+        NexaUI.scrollToBottom();
+    },
+
+    // Convert AI markdown response → structured board HTML
+    renderBoardHTML(raw) {
+        // 1. Normalize LaTeX delimiters: \(...\) → $...$  and \[...\] → $$...$$
+        let text = raw
+            .replace(/\\\(/g, '$').replace(/\\\)/g, '$')
+            .replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+
+        // 2. Strip markdown bold/italic but keep content
+        text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+        // 3. Split into lines and parse into sections
+        const lines = text.split('\n');
+        const sections = [];
+        let current = null;
+
+        const isStepHeader = (line) => {
+            const t = line.replace(/<[^>]+>/g, '').trim();
+            return t.match(/^(step\s*\d+[\s:\-]*|problem[\s:\-]*|final\s*answer[\s:\-]*|question[\s:\-]*)/i);
+        };
+
+        for (let i = 0; i < lines.length; i++) {
+            const raw_line = lines[i];
+            const stripped = raw_line.replace(/<[^>]+>/g, '').trim();
+            if (!stripped) {
+                if (current) current.lines.push('');
+                continue;
+            }
+
+            if (isStepHeader(raw_line)) {
+                if (current) sections.push(current);
+                const isFinal = /^(<strong>)?final/i.test(raw_line.trim());
+                current = { title: raw_line.trim(), isFinal, lines: [] };
+            } else if (current) {
+                current.lines.push(raw_line);
+            } else {
+                // Before any header — treat as intro paragraph
+                if (!sections.length || sections[sections.length-1].type !== 'intro') {
+                    sections.push({ type: 'intro', lines: [] });
+                }
+                sections[sections.length-1].lines.push(raw_line);
+            }
+        }
+        if (current) sections.push(current);
+
+        // If no sections found, render as plain formatted text
+        if (sections.length === 0) {
+            return '<div class="br-plain">' + this.renderLines(lines) + '</div>';
+        }
+
+        let html = '';
+        sections.forEach((sec, idx) => {
+            if (sec.type === 'intro') {
+                html += `<div class="br-intro">${this.renderLines(sec.lines)}</div>`;
+                return;
+            }
+            const delay = idx * 0.15;
+            if (sec.isFinal) {
+                html += `
+                <div class="br-section" style="animation-delay:${delay}s">
+                    <div class="br-final-header">
+                        <span class="br-check">✓</span> Final Answer
+                    </div>
+                    <div class="br-math-block">${this.renderLines(sec.lines)}</div>
+                </div>`;
+            } else {
+                html += `
+                <div class="br-section" style="animation-delay:${delay}s">
+                    <div class="br-step-title">${sec.title}</div>
+                    <div class="br-step-body">${this.renderLines(sec.lines)}</div>
+                </div>`;
+            }
+        });
+        return html;
+    },
+
+    renderLines(lines) {
+        let html = '';
+        let inBullets = false;
+
+        for (const line of lines) {
+            const t = line.trim();
+            if (!t) {
+                if (inBullets) { html += '</ul>'; inBullets = false; }
+                continue;
+            }
+            // Bullet
+            if (/^[•\-\*]\s/.test(t)) {
+                if (!inBullets) { html += '<ul class="br-bullets">'; inBullets = true; }
+                html += `<li>${t.replace(/^[•\-\*]\s*/, '')}</li>`;
+            } else {
+                if (inBullets) { html += '</ul>'; inBullets = false; }
+                // Lines that are purely math (start/end with $ or contain =) → center them
+                const isMathLine = /^\$/.test(t) || /^\\/.test(t);
+                if (isMathLine) {
+                    html += `<div class="br-math">${line}</div>`;
+                } else {
+                    html += `<div class="br-text">${line}</div>`;
+                }
+            }
+        }
+        if (inBullets) html += '</ul>';
+        return html;
+    }
+};
+
+const NexaVoice = {
+    overlay: null,
+    bubble: null,
+    status: null,
+    userText: null,
+    aiText: null,
+    waves: null,
+    recognition: null,
+    synthesis: window.speechSynthesis,
+    currentAudio: null, // For ElevenLabs audio playback
+    isListening: false,
+    isProcessing: false,
+    isActive: false,
+    alwaysListen: false,
+    
+    init() {
+        this.overlay = document.getElementById('voice-overlay');
+        this.bubble = document.getElementById('voice-bubble');
+        this.status = document.getElementById('voice-status');
+        this.userText = document.getElementById('voice-user-text');
+        this.aiText = document.getElementById('voice-ai-text');
+        this.waves = document.getElementById('voice-waves');
+        
+        this.setupRecognition();
+        console.log('[NexaVoice] Initialized');
+    },
+    
+    setupRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            console.log('[NexaVoice] Speech recognition not supported');
+            return;
+        }
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        this.recognition.lang = 'en-US';
+        
+        this.recognition.onstart = () => {
+            this.isListening = true;
+            this.updateStatus('Listening...', 'listening');
+        };
+        
+        this.recognition.onresult = (event) => {
+            let final = '';
+            let interim = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    final += event.results[i][0].transcript;
+                } else {
+                    interim += event.results[i][0].transcript;
+                }
+            }
+            
+            if (interim) {
+                this.userText.textContent = interim;
+            }
+            
+            if (final) {
+                this.userText.textContent = final;
+                this.handleTranscript(final);
+            }
+        };
+        
+        this.recognition.onerror = (event) => {
+            console.log('[NexaVoice] Error:', event.error);
+            this.isListening = false;
+            
+            if (event.error === 'not-allowed') {
+                this.updateStatus('Mic blocked - allow access', '');
+            }
+        };
+        
+        this.recognition.onend = () => {
+            this.isListening = false;
+            // Auto-restart if still active
+            if (this.isActive && !this.isProcessing) {
+                setTimeout(() => this.startListening(), 500);
+            }
+        };
+    },
+    
+    handleTranscript(text) {
+        const lower = text.toLowerCase().trim();
+        
+        // Check for trigger phrases if always listen is enabled
+        if (this.alwaysListen) {
+            const triggers = ['start voice', 'next', 'hey nexa', 'talk to me', 'voice mode'];
+            if (triggers.some(t => lower.includes(t))) {
+                this.showTriggerNotification();
+                this.open();
+                return;
+            }
+        }
+        
+        // If in voice mode, process as message
+        if (this.isActive) {
+            this.processMessage(text);
+        }
+    },
+    
+    startListening() {
+        if (!this.recognition || this.isListening || this.isProcessing) return;
+        
+        try {
+            this.recognition.start();
+        } catch(e) {
+            // Ignore if already started
+        }
+    },
+    
+    stopListening() {
+        if (!this.recognition) return;
+        try {
+            this.recognition.stop();
+        } catch(e) {}
+        this.isListening = false;
+    },
+    
+    open() {
+        if (!this.overlay) this.init();
+        
+        this.isActive = true;
+        this.isProcessing = false;
+        this.overlay.classList.add('active');
+        
+        this.userText.textContent = '';
+        this.aiText.textContent = '';
+        
+        this.updateStatus('Starting...', '');
+        
+        setTimeout(() => {
+            this.updateStatus('Listening...', 'listening');
+            this.startListening();
+        }, 300);
+    },
+    
+    close() {
+        this.isActive = false;
+        this.stopListening();
+        this.stopSpeaking();
+        
+        if (this.overlay) {
+            this.overlay.classList.remove('active');
+        }
+        
+        this.updateStatus('', '');
+    },
+    
+    updateStatus(text, state) {
+        if (this.status) this.status.textContent = text;
+        if (this.bubble) this.bubble.className = 'voice-bubble ' + state;
+        if (this.waves) this.waves.style.display = state === 'listening' ? 'flex' : 'none';
+    },
+    
+    async processMessage(message) {
+        if (this.isProcessing || !message.trim()) return;
+        
+        this.isProcessing = true;
+        this.stopListening();
+        this.updateStatus('Thinking...', 'thinking');
+        
+        try {
+            const data = await NexaAI.sendToAI(message, true);
+            
+            if (data.success) {
+                this.updateStatus('Speaking...', 'speaking');
+                this.aiText.textContent = '';
+                this.displayOnBoard(message, data.response);
+                await this.speak(data.response);
+            } else {
+                this.updateStatus('Error', 'thinking');
+                this.aiText.textContent = 'Error: ' + (data.error || 'Failed');
+            }
+        } catch (error) {
+            console.error('[NexaVoice] Error:', error);
+            this.updateStatus('Error', 'thinking');
+            this.aiText.textContent = 'Error: ' + error.message;
+        } finally {
+            this.isProcessing = false;
+            if (this.isActive) {
+                this.updateStatus('Listening...', 'listening');
+                setTimeout(() => this.startListening(), 500);
+            }
+        }
+    },
+    
+    speak(text) {
+        return new Promise(async (resolve) => {
+            if (!text) {
+                resolve();
+                return;
+            }
+            
+            // Stop any currently playing audio
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                this.currentAudio = null;
+            }
+            
+            try {
+                // Call backend TTS endpoint (uses ElevenLabs or OpenAI)
+                const response = await fetch('{% url "ai_tts" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        text: text.substring(0, 2500), // Limit text length
+                        voice: 'alloy' // Can be changed to: echo, fable, onyx, nova, shimmer
+                    })
+                });
+                
+                if (response.ok) {
+                    // Check if server signaled to use browser TTS
+                    const contentType = response.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        const json = await response.json();
+                        if (json.use_browser_tts) {
+                            console.log('[NexaVoice] Server TTS unavailable, using browser TTS');
+                            await this.speakWithBrowserTTS(text);
+                            resolve();
+                            return;
+                        }
+                    }
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    this.currentAudio = new Audio(audioUrl);
+                    this.currentAudio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        resolve();
+                    };
+                    this.currentAudio.onerror = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        console.error('[NexaVoice] Audio playback error, falling back to browser TTS');
+                        this.speakWithBrowserTTS(text).then(resolve);
+                    };
+                    
+                    await this.currentAudio.play();
+                } else {
+                    console.error('[NexaVoice] TTS request failed:', response.status, 'falling back to browser TTS');
+                    await this.speakWithBrowserTTS(text);
+                    resolve();
+                }
+            } catch (error) {
+                console.error('[NexaVoice] TTS error:', error, 'falling back to browser TTS');
+                await this.speakWithBrowserTTS(text);
+                resolve();
+            }
+        });
+    },
+    
+    speakWithBrowserTTS(text) {
+        return new Promise((resolve) => {
+            if (!text || !this.synthesis) {
+                resolve();
+                return;
+            }
+            
+            console.log('[NexaVoice] Using browser TTS');
+            this.synthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            
+            utterance.onend = () => resolve();
+            utterance.onerror = () => resolve();
+            
+            this.synthesis.speak(utterance);
+        });
+    },
+    
+    stopSpeaking() {
+        // Stop browser speech synthesis (fallback)
+        if (this.synthesis) this.synthesis.cancel();
+        
+        // Stop ElevenLabs audio playback
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio.currentTime = 0;
+            this.currentAudio = null;
+        }
+    },
+    
+    toggleListening() {
+        if (this.isListening) {
+            this.stopListening();
+        } else {
+            this.startListening();
+        }
+    },
+    
+    toggleAlwaysListen(enabled) {
+        this.alwaysListen = enabled;
+        console.log('[NexaVoice] Always listen:', enabled);
+    },
+    
+    showTriggerNotification() {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            background: #ffffff; color: #000; padding: 16px 32px;
+            border-radius: 12px; font-size: 16px; font-weight: 600;
+            z-index: 2000; box-shadow: 0 8px 30px rgba(255,255,255,0.3);
+        `;
+        notification.textContent = 'Voice Mode Activated!';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => notification.remove(), 2500);
+    },
+    
+    displayOnBoard(question, answer) {
+        const content = document.getElementById('board-content');
+        if (!content) return;
+
+        const sections = this.parseBoard(answer);
+
+        // Question block
+        let html = `
+            <div class="board-step" style="animation-delay:0s">
+                <div class="board-step-title">Question</div>
+                <div class="board-step-math">${this.renderInlineMath(this.escapeHtml(question))}</div>
+            </div>`;
+
+        sections.forEach((sec, i) => {
+            const delay = (i + 1) * 0.18;
+            if (sec.type === 'final') {
+                html += `
+                <div class="board-step" style="animation-delay:${delay}s">
+                    <div class="board-final">
+                        <div class="board-final-check">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        Final Answer
+                    </div>
+                    <div class="board-step-math">${this.renderInlineMath(this.escapeHtml(sec.content))}</div>
+                </div>`;
+            } else {
+                // Parse bullets (lines starting with • or -)
+                const lines = sec.content.split('\n').filter(l => l.trim());
+                const bullets = lines.filter(l => /^[•\-\*]/.test(l.trim()));
+                const mathLines = lines.filter(l => !/^[•\-\*]/.test(l.trim()));
+
+                let bodyHtml = '';
+
+                if (sec.subtitle) {
+                    bodyHtml += `<div class="board-step-subtitle">${this.renderInlineMath(this.escapeHtml(sec.subtitle))}</div>`;
+                }
+
+                if (bullets.length > 0) {
+                    bodyHtml += `<ul class="board-step-bullets">`;
+                    bullets.forEach(b => {
+                        bodyHtml += `<li>${this.renderInlineMath(this.escapeHtml(b.replace(/^[•\-\*]\s*/, '')))}</li>`;
+                    });
+                    bodyHtml += `</ul>`;
+                }
+
+                mathLines.forEach(l => {
+                    if (l.trim()) {
+                        bodyHtml += `<div class="board-step-math">${this.renderInlineMath(this.escapeHtml(l))}</div>`;
+                    }
+                });
+
+                html += `
+                <div class="board-step" style="animation-delay:${delay}s">
+                    <div class="board-step-title">${this.escapeHtml(sec.title)}</div>
+                    ${bodyHtml}
+                </div>`;
+            }
+        });
+
+        // Follow-up suggestions
+        html += `
+            <div class="board-suggestions">
+                <div class="board-suggestions-label">👍 If you want, I can also show:</div>
+                <ul class="board-suggestions-list">
+                    <li>Harder problems (exam level)</li>
+                    <li>A different method</li>
+                    <li>Practice questions</li>
+                </ul>
+            </div>`;
+
+        content.innerHTML = html;
+
+        // Render KaTeX on the board
+        if (typeof renderMathInElement === 'function') {
+            try {
+                renderMathInElement(content, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } catch(e) {}
+        }
+    },
+
+    renderInlineMath(html) {
+        // Wrap $...$ spans so KaTeX can pick them up after innerHTML is set
+        return html;
+    },
+
+    parseBoard(answer) {
+        const sections = [];
+        const lines = answer.split('\n');
+        let current = null;
+
+        const isHeader = (line) => {
+            const t = line.trim();
+            return t.match(/^(step\s*\d+[\s\:\-]*|problem[\s\:\-]*|final\s*answer[\s\:\-]*|solution[\s\:\-]*)/i);
+        };
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            if (isHeader(trimmed)) {
+                if (current) sections.push(current);
+                const isFinal = /^final/i.test(trimmed);
+                current = { type: isFinal ? 'final' : 'step', title: trimmed, subtitle: '', content: '' };
+            } else if (current) {
+                // First non-empty line after header with no math = subtitle
+                if (!current.subtitle && !current.content && !/[$\\]/.test(trimmed) && !/^[•\-\*]/.test(trimmed)) {
+                    current.subtitle = trimmed;
+                } else {
+                    current.content += line + '\n';
+                }
+            } else {
+                // Before any header
+                current = { type: 'step', title: 'Solution', subtitle: '', content: line + '\n' };
+            }
+        }
+        if (current) sections.push(current);
+        if (sections.length === 0) sections.push({ type: 'step', title: 'Answer', subtitle: '', content: answer });
+        return sections;
+    },
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+};
+
+// =====================================================
+// MOBILE NAVIGATION
+// =====================================================
+
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+}
+
+// Close menu when clicking overlay
+document.addEventListener('click', function(e) {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (overlay && overlay.classList.contains('open') && e.target === overlay) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+    }
+});
+
+
+// =====================================================
+// NEXA CAMERA — take photo and send to AI
+// =====================================================
+const NexaCamera = {
+    stream: null,
+    capturedBlob: null,
+
+    open() {
+        document.getElementById('camera-modal').classList.add('open');
+        // reset state
+        this._showIdle();
+    },
+
+    close() {
+        this._stopStream();
+        document.getElementById('camera-modal').classList.remove('open');
+        this._showIdle();
+        this.capturedBlob = null;
+    },
+
+    async start() {
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+            const feed = document.getElementById('camFeed');
+            feed.srcObject = this.stream;
+            feed.style.display = 'block';
+            document.getElementById('camIdleMsg').style.display = 'none';
+            document.getElementById('camCaptured').style.display = 'none';
+            document.getElementById('camStartBtn').style.display = 'none';
+            document.getElementById('camSnapBtn').style.display = '';
+            document.getElementById('camRetakeBtn').style.display = 'none';
+            document.getElementById('camSendBtn').style.display = 'none';
+        } catch(e) {
+            alert('Camera access denied or not available. Please allow camera permissions.');
+        }
+    },
+
+    snap() {
+        const feed = document.getElementById('camFeed');
+        const canvas = document.getElementById('camCanvas');
+        canvas.width = feed.videoWidth;
+        canvas.height = feed.videoHeight;
+        canvas.getContext('2d').drawImage(feed, 0, 0);
+        this._stopStream();
+        feed.style.display = 'none';
+
+        canvas.toBlob(blob => {
+            this.capturedBlob = blob;
+            const img = document.getElementById('camCaptured');
+            img.src = URL.createObjectURL(blob);
+            img.style.display = 'block';
+        }, 'image/jpeg', 0.92);
+
+        document.getElementById('camSnapBtn').style.display = 'none';
+        document.getElementById('camRetakeBtn').style.display = '';
+        document.getElementById('camSendBtn').style.display = '';
+    },
+
+    retake() {
+        document.getElementById('camCaptured').style.display = 'none';
+        this.capturedBlob = null;
+        document.getElementById('camRetakeBtn').style.display = 'none';
+        document.getElementById('camSendBtn').style.display = 'none';
+        this.start();
+    },
+
+    usePhoto() {
+        if (!this.capturedBlob) return;
+        // Convert blob to File so it works with existing NexaChat.handleImageSelected flow
+        const file = new File([this.capturedBlob], 'camera_photo.jpg', { type: 'image/jpeg' });
+        NexaChat.pendingImage = file;
+        const strip = document.getElementById('image-preview-strip');
+        const thumb = document.getElementById('image-preview-thumb');
+        thumb.src = URL.createObjectURL(file);
+        strip.style.display = 'flex';
+        this.close();
+        // Focus input so user can optionally add a message
+        document.getElementById('chat-input').focus();
+    },
+
+    _stopStream() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(t => t.stop());
+            this.stream = null;
+        }
+    },
+
+    _showIdle() {
+        document.getElementById('camFeed').style.display = 'none';
+        document.getElementById('camCaptured').style.display = 'none';
+        document.getElementById('camIdleMsg').style.display = 'block';
+        document.getElementById('camStartBtn').style.display = '';
+        document.getElementById('camSnapBtn').style.display = 'none';
+        document.getElementById('camRetakeBtn').style.display = 'none';
+        document.getElementById('camSendBtn').style.display = 'none';
+    }
+};
+
+// =====================================================
+// INITIALIZATION
+// =====================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('[Nexa] Initializing...');
+    NexaUI.init();
+    NexaVoice.init();
+    console.log('[Nexa] Ready!');
+
+    // Close attach menu on outside click
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#attach-btn') && !e.target.closest('#attach-menu')) {
+            NexaChat.closeAttachMenu();
+        }
+    });
+});
+    </script>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <!-- Voice FAB Button -->
+    <button class="voice-fab" onclick="NexaVoice.open()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        </svg>
+    </button>
+    
+    <!-- Bottom Navigation - Uber Style -->
+    <nav class="bottom-nav">
+        <a href="{% url 'dashboard' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            Home
+        </a>
+        <a href="{% url 'explore' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            Explore
+        </a>
+        <a href="{% url 'ai_chat' %}" class="bottom-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Chat
+        </a>
+        <a href="{% url 'list_materials' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Files
+        </a>
+        <a href="{% url 'essay_request' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Essays
+        </a>
+    </nav>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Essays
+        </a>
+    </nav>
+</body>
+</html>

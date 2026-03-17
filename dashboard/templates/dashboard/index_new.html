@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dashboard - NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1a1a1a; }
+.app { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: #1a1a1a; display: flex; flex-direction: column; padding: 2rem 0; position: fixed; height: 100vh; z-index: 100; }
+.logo { display: flex; align-items: center; gap: 0.75rem; padding: 0 1.5rem; margin-bottom: 3rem; }
+.logo-icon { width: 40px; height: 40px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem; }
+.logo-text { font-size: 1.5rem; font-weight: 700; color: white; }
+.nav-item { padding: 0 1rem; margin-bottom: 0.5rem; }
+.nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #9ca3af; text-decoration: none; border-radius: 12px; transition: all 0.2s; font-size: 0.9rem; }
+.nav-link:hover, .nav-link.active { background: #2d2d2d; color: white; }
+.nav-link svg { width: 20px; height: 20px; flex-shrink: 0; }
+.nav-section { margin-top: 2rem; padding: 0 1rem; }
+.nav-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; padding: 0 1rem; margin-bottom: 0.75rem; }
+
+/* Main */
+.main { flex: 1; margin-left: 240px; padding: 2rem; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.search { position: relative; }
+.search input { padding: 0.75rem 1rem 0.75rem 3rem; border: 1px solid #e5e7eb; border-radius: 12px; width: 300px; font-size: 0.875rem; }
+.search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #9ca3af; }
+.user-menu { display: flex; align-items: center; gap: 1rem; }
+.notification { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: white; border-radius: 10px; cursor: pointer; }
+.notification-badge { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+.user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; cursor: pointer; }
+
+/* Greeting */
+.greeting { background: white; border-radius: 20px; padding: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+.greeting-text h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+.greeting-text p { color: #6b7280; }
+.greeting-avatar { width: 120px; height: 120px; }
+.greeting-avatar svg { width: 100%; height: 100%; }
+
+/* Stats */
+.stats { display: flex; gap: 2rem; margin-bottom: 2rem; }
+.stat-box { background: white; border-radius: 16px; padding: 1.5rem; flex: 1; }
+.stat-box h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+.stat-box p { color: #6b7280; font-size: 0.875rem; }
+
+/* Content Grid */
+.content-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; }
+
+/* Courses */
+.courses { background: white; border-radius: 20px; padding: 2rem; }
+.courses-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.courses-header h2 { font-size: 1.25rem; font-weight: 700; }
+.tabs { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
+.tab { color: #9ca3af; cursor: pointer; padding-bottom: 0.5rem; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 600; }
+.course-card { display: flex; gap: 1rem; padding: 1.25rem; background: #f9fafb; border-radius: 16px; margin-bottom: 1rem; transition: all 0.2s; cursor: pointer; }
+.course-card:hover { background: #f3f4f6; transform: translateX(4px); }
+.course-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.course-info { flex: 1; }
+.course-info h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem; }
+.course-info p { font-size: 0.8rem; color: #6b7280; }
+.course-meta { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: #6b7280; }
+.course-meta span { display: flex; align-items: center; gap: 0.25rem; }
+.btn-view { padding: 0.625rem 1.25rem; background: #1a1a1a; color: white; border-radius: 10px; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; }
+
+/* Statistics */
+.statistics { background: white; border-radius: 20px; padding: 2rem; }
+.statistics h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+.chart-tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+.chart-tab { padding: 0.5rem 1rem; background: #f9fafb; border-radius: 8px; font-size: 0.875rem; cursor: pointer; border: none; }
+.chart-tab.active { background: #1a1a1a; color: white; }
+.chart { height: 200px; margin-bottom: 2rem; position: relative; }
+.chart svg { width: 100%; height: 100%; }
+
+/* Premium */
+.premium { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 20px; padding: 2rem; display: flex; justify-content: space-between; align-items: center; }
+.premium-text h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+.premium-text p { color: #78350f; font-size: 0.875rem; margin-bottom: 1rem; }
+.btn-premium { padding: 0.75rem 1.5rem; background: #1a1a1a; color: white; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; }
+.premium-icon { width: 100px; height: 100px; }
+.premium-icon svg { width: 100%; height: 100%; }
+
+/* Mobile Menu Toggle */
+.mobile-toggle { display: none; }
+
+/* Bottom Navigation */
+.bottom-nav { display: none; }
+
+/* Responsive */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        position: fixed;
+        z-index: 1000;
+        width: 240px;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1rem; width: 100%; }
+    .mobile-toggle {
+        display: flex;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .mobile-toggle svg { width: 24px; height: 24px; }
+    .header { flex-wrap: wrap; gap: 1rem; }
+    .search { order: 3; width: 100%; }
+    .search input { width: 100%; }
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        padding: 0.5rem;
+        z-index: 100;
+        justify-content: space-around;
+    }
+    .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.625rem;
+        border-radius: 8px;
+    }
+    .bottom-nav-item.active { color: #1a1a1a; }
+    .bottom-nav-item svg { width: 20px; height: 20px; }
+    
+    /* Add padding to main content for bottom nav */
+    .main { padding-bottom: 80px; }
+}
+
+@media (max-width: 768px) {
+    .greeting { flex-direction: column; text-align: center; padding: 1.5rem; }
+    .greeting-avatar { width: 80px; height: 80px; }
+    .greeting-text h1 { font-size: 1.5rem; }
+    .stats { flex-direction: column; gap: 1rem; }
+    .stat-box { padding: 1rem; }
+    .stat-box h2 { font-size: 1.75rem; }
+    .content-grid { grid-template-columns: 1fr; }
+    .courses, .statistics { padding: 1.5rem; }
+    .premium { flex-direction: column; text-align: center; padding: 1.5rem; }
+    .premium-icon { width: 80px; height: 80px; }
+    .greeting-avatar { display: none; }
+}
+
+@media (max-width: 480px) {
+    .main { padding: 0.75rem; padding-bottom: 80px; }
+    .header { margin-bottom: 1rem; }
+    .greeting-text h1 { font-size: 1.25rem; }
+    .stat-box h2 { font-size: 1.5rem; }
+    .courses-header h2 { font-size: 1rem; }
+    .tabs { gap: 1rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab { font-size: 0.875rem; white-space: nowrap; }
+    .course-card { padding: 1rem; }
+    .course-icon { width: 40px; height: 40px; }
+    .course-info h3 { font-size: 0.875rem; }
+    .course-meta { flex-wrap: wrap; }
+    .btn-view { padding: 0.5rem 1rem; font-size: 0.8125rem; }
+    .user-menu { display: none; }
+    .notification { width: 36px; height: 36px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- Sidebar -->
+<aside class="sidebar">
+<div class="logo">
+<div class="logo-icon">N</div>
+<span class="logo-text">NEXA</span>
+</div>
+
+<div class="nav-item">
+<a href="{% url 'dashboard' %}" class="nav-link active">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+<span>Dashboard</span>
+</a>
+</div>
+
+<div class="nav-item">
+<a href="{% url 'explore' %}" class="nav-link">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+<span>Explore</span>
+</a>
+</div>
+
+<div class="nav-section">
+<div class="nav-section-title">Learning</div>
+<div class="nav-item">
+<a href="{% url 'list_materials' %}" class="nav-link">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+<span>My Materials</span>
+</a>
+</div>
+<div class="nav-item">
+<a href="{% url 'ai_chat' %}" class="nav-link">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+<span>AI Tutor</span>
+</a>
+</div>
+<div class="nav-item">
+<a href="{% url 'essay_request' %}" class="nav-link">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+<span>Essay Generator</span>
+</a>
+</div>
+<div class="nav-item">
+<a href="{% url 'assignment_list' %}" class="nav-link">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+<span>Assignments</span>
+</a>
+</div>
+</div>
+
+<div class="nav-section" style="margin-top: auto;">
+<div class="nav-item">
+<a href="{% url 'logout' %}" class="nav-link">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+<span>Logout</span>
+</a>
+</div>
+</div>
+</aside>
+
+<!-- Main Content -->
+<main class="main">
+<div class="header">
+<button class="mobile-toggle" onclick="toggleSidebar()">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+</button>
+<div class="search">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+<input type="text" placeholder="Search...">
+</div>
+<div class="user-menu">
+<div class="notification">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+<span class="notification-badge"></span>
+</div>
+<div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+</div>
+</div>
+
+<div class="greeting">
+<div class="greeting-text">
+<h1>Hello {{ user.username }}!</h1>
+<p>It's good to see you again.</p>
+</div>
+<div class="greeting-avatar">
+<svg viewBox="0 0 200 200"><circle cx="100" cy="60" r="30" fill="#1a1a1a"/><path d="M100 100 Q80 90 70 110 L70 150 Q70 160 80 160 L120 160 Q130 160 130 150 L130 110 Q120 90 100 100" fill="#1a1a1a"/><path d="M60 120 L60 180 Q60 190 70 190 L130 190 Q140 190 140 180 L140 120" fill="#1a1a1a"/></svg>
+</div>
+</div>
+
+<div class="stats">
+<div class="stat-box">
+<h2>{{ materials_count|default:"0" }}</h2>
+<p>Study Materials</p>
+</div>
+<div class="stat-box">
+<h2>0</h2>
+<p>AI Sessions</p>
+</div>
+<div class="stat-box">
+<h2>0</h2>
+<p>Essays Written</p>
+</div>
+<div class="stat-box">
+<h2>{{ assignments_count|default:"0" }}</h2>
+<p>Assignments</p>
+</div>
+</div>
+
+<div class="content-grid">
+<div class="courses">
+<div class="courses-header">
+<h2>My Study Materials</h2>
+<a href="{% url 'list_materials' %}" style="font-size: 0.875rem; color: #1a1a1a; text-decoration: none; font-weight: 600;">View All</a>
+</div>
+
+{% if materials %}
+{% for material in materials %}
+<div class="course-card">
+<div class="course-icon" style="background:#e0f2fe">
+<svg width="24" height="24" fill="none" stroke="#0284c7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+</div>
+<div class="course-info">
+<h3>{{ material.title }}</h3>
+<p>{{ material.get_material_type_display }} - Uploaded {{ material.uploaded_at|date:"M d, Y" }}</p>
+</div>
+<a href="{% url 'material_detail' material.id %}" class="btn-view">View</a>
+</div>
+{% endfor %}
+{% else %}
+<div style="text-align: center; padding: 3rem 2rem;">
+<svg width="64" height="64" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" style="margin: 0 auto 1.5rem;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+<h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #1a1a1a;">No materials yet</h3>
+<p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Upload your first study material to get started</p>
+<a href="{% url 'upload_material' %}" class="btn-view" style="display: inline-block;">Upload Material</a>
+</div>
+{% endif %}
+</div>
+
+<div>
+<div class="statistics">
+<h2>Learning Progress</h2>
+<div style="padding: 1rem 0;">
+<div style="margin-bottom: 1.5rem;">
+<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+<span style="font-size: 0.9rem; font-weight: 500;">Materials Uploaded</span>
+<span style="font-size: 0.85rem; color: #6b7280;">{{ materials_count|default:"0" }}/10</span>
+</div>
+<div style="height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+<div style="height: 100%; background: #667eea; border-radius: 4px; width: {% widthratio materials_count 10 100 %}%;"></div>
+</div>
+</div>
+
+<div style="margin-bottom: 1.5rem;">
+<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+<span style="font-size: 0.9rem; font-weight: 500;">AI Chat Sessions</span>
+<span style="font-size: 0.85rem; color: #6b7280;">0/20</span>
+</div>
+<div style="height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+<div style="height: 100%; background: #0ea5e9; border-radius: 4px; width: 0%;"></div>
+</div>
+</div>
+
+<div style="margin-bottom: 1.5rem;">
+<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+<span style="font-size: 0.9rem; font-weight: 500;">Essays Completed</span>
+<span style="font-size: 0.85rem; color: #6b7280;">0/5</span>
+</div>
+<div style="height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+<div style="height: 100%; background: #ec4899; border-radius: 4px; width: 0%;"></div>
+</div>
+</div>
+
+<div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+<span style="font-size: 0.9rem; font-weight: 500;">Assignments Done</span>
+<span style="font-size: 0.85rem; color: #6b7280;">{{ assignments_count|default:"0" }}/15</span>
+</div>
+<div style="height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+<div style="height: 100%; background: #10b981; border-radius: 4px; width: {% widthratio assignments_count 15 100 %}%;"></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="statistics" style="margin-top: 1.5rem;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+<h2 style="margin: 0;">Recent Materials</h2>
+<a href="{% url 'list_materials' %}" style="font-size: 0.875rem; color: #1a1a1a; text-decoration: none; font-weight: 600;">View All</a>
+</div>
+{% if materials %}
+<div>
+{% for material in materials %}
+<div style="display: flex; gap: 1rem; padding: 0.875rem 0; border-bottom: 1px solid #f3f4f6;">
+<div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(102, 126, 234, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+<svg width="16" height="16" fill="none" stroke="#667eea" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+</div>
+<div style="flex: 1;">
+<div style="font-size: 0.875rem; color: #1a1a1a; font-weight: 500;">{{ material.title }}</div>
+<div style="font-size: 0.75rem; color: #6b7280;">{{ material.uploaded_at|date:"M d, Y" }} - {{ material.get_material_type_display }}</div>
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 2rem;">
+<svg width="48" height="48" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" style="margin: 0 auto 1rem;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+<p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem;">No materials uploaded yet.</p>
+<a href="{% url 'upload_material' %}" class="btn-premium" style="display: inline-block; padding: 0.625rem 1.25rem; font-size: 0.875rem;">Upload Materials</a>
+</div>
+{% endif %}
+</div>
+
+</div>
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+}
+</script>
+
+<nav class="bottom-nav">
+<a href="{% url 'dashboard' %}" class="bottom-nav-item active">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+Home
+</a>
+<a href="{% url 'explore' %}" class="bottom-nav-item">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+Explore
+</a>
+<a href="{% url 'ai_chat' %}" class="bottom-nav-item">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+AI Tutor
+</a>
+<a href="{% url 'list_materials' %}" class="bottom-nav-item">
+<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+Materials
+</a>
+</nav>
+</body>
+</html>

@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ title }} - NEXA</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/mobile-fix.css' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #161616;
+            --bg-tertiary: #1e1e1e;
+            --bg-elevated: #252525;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #6b6b6b;
+            --border: #2a2a2a;
+            --border-light: #333333;
+            --accent: #ffffff;
+            --accent-hover: #e0e0e0;
+            --accent-glow: rgba(255, 255, 255, 0.1);
+            --sidebar-width: 240px;
+            --toolbar-width: 56px;
+            --header-height: 48px;
+            --success: #ffffff;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            line-height: 1.5;
+            font-size: 15px;
+        }
+        
+        /* Desktop: lock scroll to the editor panel */
+        @media (min-width: 769px) {
+            body { overflow: hidden; }
+        }
+        
+        /* Layout */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .sidebar-brand {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .brand-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #000;
+            font-weight: 700;
+        }
+        
+        .user-avatar {
+            width: 1.75rem;
+            height: 1.75rem;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            color: #000;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6875rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: #ffffff;
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .card-header svg {
+            width: 18px;
+            height: 18px;
+            color: #ffffff;
+        }
+        
+        .alert-success {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 0.75rem 0.5rem;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            margin-bottom: 2px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .nav-link.active {
+            background-color: var(--accent-glow);
+            color: var(--accent);
+        }
+        
+        .nav-link-icon {
+            font-size: 1rem;
+            font-weight: 600;
+            width: 1.25rem;
+            text-align: center;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-link-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .nav-divider {
+            height: 1px;
+            background-color: var(--border);
+            margin: 0.75rem 0;
+        }
+        
+        .nav-section-title {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.5rem 0.75rem 0.25rem;
+        }
+        
+        .nav-link.logout {
+            color: var(--text-tertiary);
+        }
+        
+        .nav-link.logout:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Workspace */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            flex-shrink: 0;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header-title {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.8125rem;
+            color: var(--text-tertiary);
+        }
+        
+        .breadcrumb-sep {
+            color: var(--text-tertiary);
+        }
+        
+        .breadcrumb-item {
+            color: var(--text-secondary);
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--text-primary);
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            padding: 0.375rem 0.75rem 0.375rem 2rem;
+            font-size: 0.8125rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            width: 200px;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: var(--bg-elevated);
+            width: 280px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.625rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        
+        .user-menu:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .user-avatar {
+            width: 1.75rem;
+            height: 1.75rem;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            color: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6875rem;
+            font-weight: 600;
+        }
+        
+        .user-name {
+            font-size: 0.8125rem;
+            color: var(--text-primary);
+        }
+        
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            width: var(--toolbar-width);
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem 0.5rem;
+            gap: 0.25rem;
+            flex-shrink: 0;
+        }
+        
+        .toolbar-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            text-decoration: none;
+            border: none;
+            background: transparent;
+        }
+        
+        .toolbar-btn:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .toolbar-btn.active {
+            background-color: var(--accent-glow);
+            color: var(--accent);
+        }
+        
+        .toolbar-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
+        
+        .editor-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        
+        .editor-content {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        
+        /* Page Title */
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+        
+        /* Card */
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.9375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-header svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent);
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Form */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.9375rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: var(--bg-elevated);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            padding-right: 2.5rem;
+        }
+        
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 0.375rem;
+        }
+        
+        /* File Input */
+        .file-input-wrapper {
+            position: relative;
+        }
+        
+        .file-input-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            background-color: var(--bg-tertiary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .file-input-label:hover {
+            border-color: var(--accent);
+            background-color: var(--accent-glow);
+        }
+        
+        .file-input-label svg {
+            width: 32px;
+            height: 32px;
+            color: var(--text-tertiary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .file-input-label span {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-name {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--bg-elevated);
+            border-color: var(--border-light);
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.375rem 0.625rem;
+        }
+        
+        .btn-ghost:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .alert svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+        
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+        }
+        
+        /* AI Panel (placeholder for consistency) */
+        .ai-panel {
+            display: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .ai-panel {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .sidebar-overlay.open {
+                display: block;
+            }
+
+            .menu-toggle {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Switch body to scrollable on mobile */
+            body { overflow: auto; }
+
+            .app-layout {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                display: flex;
+                position: fixed;
+                width: 280px;
+                height: 100vh;
+                top: 0; left: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .workspace {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                padding-bottom: 70px;
+            }
+
+            /* Toolbar becomes a horizontal strip */
+            .content-area {
+                flex-direction: column;
+                overflow: visible;
+            }
+
+            .toolbar {
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                height: auto !important;
+                padding: 0.5rem 1rem !important;
+                gap: 0.5rem !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--border) !important;
+                overflow-x: auto !important;
+            }
+
+            .toolbar-btn {
+                width: 44px !important;
+                height: 44px !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Editor scrolls naturally */
+            .editor-area {
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .editor-scroll {
+                overflow: visible !important;
+                padding: 1rem;
+            }
+
+            .page-title { font-size: 1.25rem; }
+            .card { border-radius: 8px; }
+            .card-body { padding: 1rem; }
+            .breadcrumb { display: none; }
+            .header-title { font-size: 0.875rem; }
+            .search-input { display: none; }
+            .user-name { display: none; }
+            .btn-group { flex-direction: column; }
+            .btn-group .btn { width: 100%; }
+        }
+        
+        @media (max-width: 480px) {
+            .editor-scroll {
+                padding: 0.75rem;
+            }
+            
+            .form-input, .form-select {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        .menu-toggle:hover {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .menu-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 0.5rem;
+            z-index: 100;
+        }
+        
+        @media (max-width: 992px) {
+            .bottom-nav {
+                display: flex;
+                justify-content: space-around;
+            }
+            
+            .workspace {
+                padding-bottom: 60px;
+            }
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.625rem;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+        
+        .bottom-nav-item:hover,
+        .bottom-nav-item.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        
+        .bottom-nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="sidebar-brand">
+                    <span class="brand-icon">N</span>
+                    NEXA
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="{% url 'dashboard' %}" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                        </span>
+                        Dashboard
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'list_materials' %}" class="nav-link active">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                        </span>
+                        My Materials
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'ai_chat' %}" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </span>
+                        AI Tutor
+                    </a>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-section-title">Tools</div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'essay_request' %}" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                        </span>
+                        Essay Generator
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'assignment_list' %}" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                        </span>
+                        Assignments
+                    </a>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </span>
+                        Settings
+                    </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link logout">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                        </span>
+                        Log out
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Workspace -->
+        <div class="workspace">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">Upload Material</div>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">NEXA</span>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-item">My Materials</span>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-item active">Upload</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <span class="search-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                        </span>
+                        <input type="text" class="search-input" placeholder="Search...">
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                        <span class="user-name">{{ user.username }}</span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <a href="{% url 'list_materials' %}" class="toolbar-btn" data-tooltip="Back to Materials">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"/>
+                            <polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                    </a>
+                    
+                    <a href="{% url 'upload_material' %}" class="toolbar-btn active" data-tooltip="Upload">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Editor Area -->
+                <div class="editor-area">
+                    <div class="editor-scroll">
+                        <div class="editor-content">
+                            <div class="page-header">
+                                <h1 class="page-title">Upload Study Material</h1>
+                            </div>
+                            
+                            <!-- Messages -->
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert {% if message.tags %}{% if message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% endif %}{% endif %}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            {% if message.tags == 'success' %}
+                                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                                <polyline points="22 4 12 14.01 9 11.01"/>
+                                            {% elif message.tags == 'warning' %}
+                                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                            {% endif %}
+                                        </svg>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <!-- Upload Form -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    Upload Study Material
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" enctype="multipart/form-data" action="{% url 'upload_material' %}">
+                                        {% csrf_token %}
+                                        
+                                        <div class="form-group">
+                                            <label for="id_title" class="form-label">Title</label>
+                                            <input type="text" class="form-input" id="id_title" name="title" 
+                                                   placeholder="Enter material title" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">File</label>
+                                            <div class="file-input-wrapper">
+                                                <label class="file-input-label" id="fileLabel">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                        <polyline points="17 8 12 3 7 8"/>
+                                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                                    </svg>
+                                                    <span>Click to upload or drag and drop</span>
+                                                </label>
+                                                <input type="file" class="file-input" id="id_file" name="file" 
+                                                       accept=".pdf,.docx,.pptx" required
+                                                       onchange="handleFileSelect(this)">
+                                            </div>
+                                            <div class="form-hint">Supported: PDF, Word (.docx), PowerPoint (.pptx)</div>
+                                            <div class="file-name" id="fileName" style="display: none;">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                                    <polyline points="20 6 9 17 4 12"/>
+                                                </svg>
+                                                <span></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="id_material_type" class="form-label">Material Type</label>
+                                            <select class="form-select" id="id_material_type" name="material_type" required>
+                                                <option value="">Select type...</option>
+                                                <option value="PDF">PDF</option>
+                                                <option value="Word">Word</option>
+                                                <option value="PowerPoint">PowerPoint</option>
+                                                <option value="Slides">Slides</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="id_subject" class="form-label">Subject (Optional)</label>
+                                            <input type="text" class="form-input" id="id_subject" name="subject" 
+                                                   placeholder="Enter subject">
+                                        </div>
+                                        
+                                        <div class="btn-group">
+                                            <button type="submit" class="btn btn-primary">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                    <polyline points="17 8 12 3 7 8"/>
+                                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                                </svg>
+                                                Upload Material
+                                            </button>
+                                            <a href="{% url 'list_materials' %}" class="btn btn-secondary">
+                                                Cancel
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="{% url 'dashboard' %}" class="bottom-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Home
+            </a>
+            <a href="{% url 'list_materials' %}" class="bottom-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                Materials
+            </a>
+            <a href="{% url 'upload_material' %}" class="bottom-nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Upload
+            </a>
+            <a href="{% url 'ai_chat' %}" class="bottom-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                AI Tutor
+            </a>
+        </nav>
+    </div>
+    
+    <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+        
+        function handleFileSelect(input) {
+            const fileName = document.getElementById('fileName');
+            const fileLabel = document.getElementById('fileLabel');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                fileName.querySelector('span').textContent = file.name;
+                fileName.style.display = 'flex';
+                fileLabel.querySelector('span').textContent = 'Click to change file';
+            } else {
+                fileName.style.display = 'none';
+                fileLabel.querySelector('span').textContent = 'Click to upload or drag and drop';
+            }
+        }
+    </script>
+</body>
+</html>

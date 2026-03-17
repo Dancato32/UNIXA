@@ -1,0 +1,649 @@
+{% extends "base.html" %}
+
+{% block title %}NEXA - AI-Powered Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Elegant Dark Gray & White Color Scheme */
+    :root {
+        --black: #1a1a1a;
+        --dark: #2d2d2d;
+        --white: #ffffff;
+        --gray-50: #fafafa;
+        --gray-100: #f5f5f5;
+        --gray-200: #e5e5e5;
+        --gray-300: #d4d4d4;
+        --gray-400: #a3a3a3;
+        --gray-500: #737373;
+        --gray-600: #525252;
+        --gray-700: #404040;
+        --gray-800: #2d2d2d;
+        --gray-900: #1a1a1a;
+    }
+    
+    body {
+        background: var(--white);
+        color: var(--black);
+    }
+    
+    /* Navigation */
+    .navbar {
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1.25rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .navbar-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+    }
+    
+    .logo {
+        width: 40px;
+        height: 40px;
+        background: var(--gray-900);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: var(--white);
+        font-size: 1.25rem;
+    }
+    
+    .brand-text {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--gray-900);
+        letter-spacing: -0.02em;
+    }
+    
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .btn-login {
+        padding: 0.625rem 1.5rem;
+        background: var(--white);
+        color: var(--gray-900);
+        border: 2px solid var(--gray-900);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-login:hover {
+        background: var(--gray-900);
+        color: var(--white);
+    }
+    
+    /* Hero Section */
+    .hero {
+        background: var(--gray-900);
+        color: var(--white);
+        padding: 6rem 0 8rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero::before {
+        content: 'NEXA';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20rem;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.03);
+        letter-spacing: -0.05em;
+        z-index: 0;
+        white-space: nowrap;
+    }
+    
+    .hero-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-content h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.03em;
+    }
+    
+    .hero-content p {
+        font-size: 1.125rem;
+        color: var(--gray-300);
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+    }
+    
+    .hero-form {
+        display: flex;
+        gap: 0.75rem;
+        max-width: 500px;
+    }
+    
+    .hero-input {
+        flex: 1;
+        padding: 1rem 1.25rem;
+        border: 2px solid var(--gray-700);
+        background: var(--gray-900);
+        color: var(--white);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+    
+    .hero-input:focus {
+        outline: none;
+        border-color: var(--white);
+        background: var(--gray-800);
+    }
+    
+    .hero-input::placeholder {
+        color: var(--gray-500);
+    }
+    
+    .btn-register {
+        padding: 1rem 2rem;
+        background: var(--white);
+        color: var(--gray-900);
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .btn-register:hover {
+        background: var(--gray-100);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+    }
+    
+    .hero-image {
+        position: relative;
+        height: 500px;
+        background: var(--gray-900);
+        border-radius: 16px;
+        border: 2px solid var(--gray-800);
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    
+    .mockup-screen {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        background: var(--white);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .mockup-header {
+        display: flex;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .mockup-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--gray-300);
+    }
+    
+    .mockup-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .mockup-line {
+        height: 12px;
+        background: var(--gray-200);
+        border-radius: 6px;
+    }
+    
+    .mockup-line.short {
+        width: 60%;
+    }
+    
+    .mockup-line.medium {
+        width: 80%;
+    }
+    
+    .mockup-box {
+        height: 100px;
+        background: var(--gray-100);
+        border-radius: 8px;
+        border: 1px solid var(--gray-200);
+    }
+    
+    /* About Section */
+    .about {
+        padding: 6rem 0;
+        background: var(--white);
+        text-align: center;
+    }
+    
+    .section-badge {
+        display: inline-block;
+        padding: 0.5rem 1.25rem;
+        background: var(--gray-900);
+        color: var(--white);
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 50px;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+    
+    .section-title {
+        font-size: 2.75rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+        color: var(--gray-900);
+    }
+    
+    .section-description {
+        font-size: 1.125rem;
+        color: var(--gray-600);
+        max-width: 700px;
+        margin: 0 auto 4rem;
+        line-height: 1.7;
+    }
+    
+    /* Features Section */
+    .features {
+        padding: 6rem 0;
+        background: var(--gray-50);
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+    }
+    
+    .features-image {
+        position: relative;
+    }
+    
+    .illustration {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        display: block;
+    }
+    
+    .illustration-placeholder {
+        width: 100%;
+        height: 400px;
+        background: var(--white);
+        border-radius: 16px;
+        border: 2px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .illustration-icon {
+        width: 120px;
+        height: 120px;
+        background: var(--gray-900);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .illustration-icon svg {
+        width: 60px;
+        height: 60px;
+        stroke: var(--white);
+    }
+    
+    .features-content h2 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.02em;
+    }
+    
+    .feature-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .feature-item {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--gray-900);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .feature-icon svg {
+        width: 24px;
+        height: 24px;
+        stroke: var(--white);
+    }
+    
+    .feature-text h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--gray-900);
+    }
+    
+    .feature-text p {
+        color: var(--gray-600);
+        line-height: 1.6;
+        font-size: 0.9375rem;
+    }
+    
+    .btn-messenger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        background: var(--gray-900);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        text-decoration: none;
+        margin-top: 2rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-messenger:hover {
+        background: var(--gray-800);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Stats Section */
+    .stats {
+        padding: 4rem 0;
+        background: var(--gray-900);
+        color: var(--white);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3rem;
+        text-align: center;
+    }
+    
+    .stat-item h3 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-item p {
+        color: var(--gray-400);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    /* Footer */
+    footer {
+        padding: 3rem 0;
+        background: var(--white);
+        border-top: 1px solid var(--gray-200);
+        text-align: center;
+    }
+    
+    footer p {
+        color: var(--gray-600);
+        font-size: 0.9375rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .hero-container,
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+        
+        .hero-image {
+            height: 400px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .hero-form {
+            flex-direction: column;
+        }
+        
+        .btn-register {
+            width: 100%;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .hero::before {
+            font-size: 8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="container navbar-content">
+        <a href="{% url 'landing' %}" class="navbar-brand">
+            <div class="logo">N</div>
+            <span class="brand-text">NEXA</span>
+        </a>
+        <div class="nav-actions">
+            <a href="{% url 'login' %}" class="btn-login">Login</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Find Your Spark,<br>Live Your Passions</h1>
+                <p>Communicate to make a real deal. Sign up to unlock the power of AI-driven learning and achieve your academic goals.</p>
+                <form class="hero-form" action="{% url 'register' %}" method="get">
+                    <input type="email" class="hero-input" placeholder="Enter an Email" name="email">
+                    <button type="submit" class="btn-register">Register</button>
+                </form>
+            </div>
+            
+            <div class="hero-image">
+                <div class="mockup-screen">
+                    <div class="mockup-header">
+                        <div class="mockup-dot"></div>
+                        <div class="mockup-dot"></div>
+                        <div class="mockup-dot"></div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-line short"></div>
+                        <div class="mockup-line medium"></div>
+                        <div class="mockup-line"></div>
+                        <div class="mockup-box"></div>
+                        <div class="mockup-line medium"></div>
+                        <div class="mockup-line short"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about">
+    <div class="container">
+        <span class="section-badge">Who are we</span>
+        <h2 class="section-title">The world leading learning platform</h2>
+        <p class="section-description">
+            We create a space for students, educators, and learners to communicate and innovate new ideas and achieve high goals with AI-powered tools.
+        </p>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="features-grid">
+            <div class="features-image">
+                <div class="illustration-placeholder">
+                    <div class="illustration-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="features-content">
+                <h2>Connect</h2>
+                <p style="font-size: 1.5rem; font-weight: 600; margin-bottom: 2rem; color: var(--gray-900);">
+                    Our enterprise level learning platform
+                </p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <h3>AI-Powered Learning</h3>
+                            <p>Platform brings people around the globe to make conversation that leads to innovation and academic excellence.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Comprehensive Resources</h3>
+                            <p>We enable you to build a culture among students, educators, and learners with organized materials and AI assistance.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="{% url 'register' %}" class="btn-messenger">
+                    Get Started
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>10K+</h3>
+                <p>Active Students</p>
+            </div>
+            <div class="stat-item">
+                <h3>50K+</h3>
+                <p>Materials Uploaded</p>
+            </div>
+            <div class="stat-item">
+                <h3>100K+</h3>
+                <p>AI Conversations</p>
+            </div>
+            <div class="stat-item">
+                <h3>98%</h3>
+                <p>Satisfaction Rate</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>&copy; 2026 NEXA Learning Platform. All rights reserved.</p>
+    </div>
+</footer>
+{% endblock %}

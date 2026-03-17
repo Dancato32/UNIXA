@@ -1,0 +1,7 @@
+Django>=4.2,<5.0
+django-jazzmin>=2.6.0
+openai>=1.0.0
+PyPDF2>=3.0.0
+python-docx>=0.8.11
+python-pptx>=0.6.21
+Pillow>=10.0.0

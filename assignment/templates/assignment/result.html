@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{{ assignment.title }} — NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% if assignment.status == 'processing' %}<meta http-equiv="refresh" content="5">{% endif %}
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root { --bg: #0a0a0a; --surface: #111; --surface2: #1a1a1a; --border: #222; --border2: #2e2e2e; --text: #f0f0f0; --text2: #888; --text3: #555; --accent: #6366f1; --sidebar: 220px; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: var(--sidebar); background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; display: flex; flex-direction: column; transition: transform 0.25s; }
+.sidebar-logo { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+.sidebar-logo a { font-size: 1rem; font-weight: 800; color: var(--text); text-decoration: none; }
+.sidebar-nav { flex: 1; padding: 0.625rem; overflow-y: auto; }
+.nav-link { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.75rem; color: var(--text2); text-decoration: none; font-size: 0.8125rem; border-radius: 7px; transition: all 0.15s; margin-bottom: 1px; }
+.nav-link:hover { background: var(--surface2); color: var(--text); }
+.nav-link.active { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+.nav-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+.main { flex: 1; margin-left: var(--sidebar); display: flex; flex-direction: column; }
+.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; flex-shrink: 0; }
+.topbar-left { display: flex; align-items: center; gap: 0.75rem; }
+.menu-btn { display: none; width: 36px; height: 36px; align-items: center; justify-content: center; background: none; border: none; color: var(--text2); cursor: pointer; border-radius: 6px; }
+.menu-btn svg { width: 20px; height: 20px; }
+.topbar-title { font-size: 0.875rem; font-weight: 600; color: var(--text2); }
+.avatar { width: 30px; height: 30px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text2); }
+.page { padding: 1.75rem 2rem; max-width: 860px; }
+.back-link { display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text2); text-decoration: none; font-size: 0.8125rem; margin-bottom: 1.25rem; transition: color 0.15s; }
+.back-link:hover { color: var(--text); }
+.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 600; border-radius: 7px; text-decoration: none; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #4f52d9; }
+.btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+.btn-ghost:hover { color: var(--text); border-color: #444; }
+.btn-danger { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+.btn-danger:hover { background: rgba(239,68,68,0.18); }
+.result-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; overflow: hidden; }
+.result-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.result-title { font-size: 1.125rem; font-weight: 700; }
+.result-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; flex-shrink: 0; }
+.result-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-bottom: 1px solid var(--border); }
+.meta-cell { padding: 0.875rem 1.5rem; border-right: 1px solid var(--border); }
+.meta-cell:last-child { border-right: none; }
+.meta-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 0.25rem; }
+.meta-value { font-size: 0.875rem; font-weight: 500; }
+.result-body { padding: 1.5rem; white-space: pre-wrap; line-height: 1.8; font-size: 0.9rem; color: #ccc; max-height: 560px; overflow-y: auto; }
+.result-body::-webkit-scrollbar { width: 4px; }
+.result-body::-webkit-scrollbar-track { background: transparent; }
+.result-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.materials-row { padding: 0.875rem 1.5rem; background: var(--surface2); border-top: 1px solid var(--border); font-size: 0.8125rem; color: var(--text2); }
+.materials-row strong { color: var(--text); }
+.dl-group { display: flex; gap: 0.375rem; }
+.dl-btn { padding: 0.45rem 0.75rem; font-size: 0.775rem; }
+.humanized-badge { display: flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1.5rem; background: rgba(99,102,241,0.06); border-bottom: 1px solid rgba(99,102,241,0.15); font-size: 0.75rem; color: #a5b4fc; }
+.display-toolbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1.25rem; background: var(--surface2); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.toolbar-group { display: flex; align-items: center; gap: 0.375rem; }
+.toolbar-label { font-size: 0.6875rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.toolbar-select { padding: 0.3rem 0.5rem; font-size: 0.75rem; background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: inherit; cursor: pointer; }
+.toolbar-select:focus { outline: none; border-color: var(--accent); }
+.align-btns { display: flex; gap: 2px; }
+.align-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border2); border-radius: 5px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.align-btn:hover { color: var(--text); border-color: #444; }
+.align-btn.active { background: rgba(99,102,241,0.15); border-color: var(--accent); color: #a5b4fc; }
+.toolbar-spacer { flex: 1; }
+.toolbar-edit-btn, .toolbar-save-btn { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
+.toolbar-edit-btn { background: var(--surface); border: 1px solid var(--border2); color: var(--text2); }
+.toolbar-edit-btn:hover { color: var(--text); border-color: #444; }
+.toolbar-save-btn { background: var(--accent); color: #fff; }
+.toolbar-save-btn:hover { background: #4f52d9; }
+.result-editor { width: 100%; min-height: 400px; padding: 1.5rem; background: var(--surface2); border: none; border-top: 1px solid var(--border); color: #ccc; font-family: inherit; font-size: 0.9rem; line-height: 1.8; resize: vertical; outline: none; }
+.state-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 3.5rem 2rem; text-align: center; }
+.state-icon { width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
+.state-icon.processing { background: rgba(99,102,241,0.12); }
+.state-icon.failed { background: rgba(239,68,68,0.12); }
+.state-icon svg { width: 28px; height: 28px; }
+.state-icon.processing svg { color: #a5b4fc; }
+.state-icon.failed svg { color: #f87171; }
+.state-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; }
+.state-sub { font-size: 0.875rem; color: var(--text2); margin-bottom: 1.75rem; line-height: 1.6; max-width: 400px; margin-left: auto; margin-right: auto; }
+.spinner { width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--border2); border-top-color: var(--accent); animation: spin 0.8s linear infinite; margin: 0 auto 1.25rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 199; }
+.overlay.open { display: block; }
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.5rem; z-index: 100; justify-content: space-around; }
+.bn-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.4rem 0.75rem; color: var(--text3); text-decoration: none; font-size: 0.6rem; border-radius: 6px; }
+.bn-item svg { width: 20px; height: 20px; }
+.bn-item.active { color: var(--accent); }
+@media (max-width: 900px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main { margin-left: 0; } .menu-btn { display: flex; } .bottom-nav { display: flex; } .page { padding-bottom: 5rem; } }
+@media (max-width: 700px) { .page { padding: 1rem; padding-bottom: 5rem; } .topbar { padding: 0 1rem; } .result-meta { grid-template-columns: 1fr 1fr; } .result-header { flex-direction: column; } .meta-cell { border-right: none; border-bottom: 1px solid var(--border); } .meta-cell:last-child { border-bottom: none; } .display-toolbar { gap: .375rem; } }
+@media (max-width: 400px) { .result-meta { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><a href="{% url 'dashboard' %}">NEXA</a></div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'dashboard' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+      <a href="{% url 'list_materials' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>My Materials</a>
+      <a href="{% url 'ai_chat' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Tutor</a>
+      <div class="nav-divider"></div>
+      <a href="{% url 'essay_request' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Essay Generator</a>
+      <a href="{% url 'assignment_list' %}" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Assignments</a>
+      <div class="nav-divider"></div>
+      <a href="{% url 'logout' %}" class="nav-link" style="color:var(--text3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log out</a>
+    </nav>
+  </aside>
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <span class="topbar-title">Assignment Result</span>
+      </div>
+      <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+    </div>
+    <div class="page">
+      <a href="{% url 'assignment_list' %}" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Assignments
+      </a>
+
+      {% if assignment.status == 'completed' %}
+      <div class="result-card">
+        <div class="result-header">
+          <h1 class="result-title">{{ assignment.title }}</h1>
+          <div class="result-actions">
+            <div class="dl-group">
+              <a href="{% url 'download_result' assignment.id %}?fmt=pdf" class="btn btn-ghost dl-btn" title="Download PDF">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                PDF
+              </a>
+              <a href="{% url 'download_result' assignment.id %}?fmt=word" class="btn btn-ghost dl-btn" title="Download Word">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Word
+              </a>
+              <a href="{% url 'download_result' assignment.id %}?fmt=powerpoint" class="btn btn-primary dl-btn" title="Download PowerPoint">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Slides
+              </a>
+            </div>
+            <a href="{% url 'assignment_delete' assignment.id %}" class="btn btn-danger">Delete</a>
+          </div>
+        </div>
+        <div class="result-meta">
+          <div class="meta-cell"><div class="meta-label">Task Type</div><div class="meta-value">{{ assignment.get_task_type_display }}</div></div>
+          <div class="meta-cell"><div class="meta-label">Format</div><div class="meta-value">{{ assignment.get_output_format_display }}</div></div>
+          <div class="meta-cell"><div class="meta-label">Created</div><div class="meta-value">{{ assignment.created_at|date:"M d, Y" }}</div></div>
+        </div>
+        <div class="humanized-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Humanized by NEXA AI
+        </div>
+
+        <!-- Display options toolbar -->
+        <div class="display-toolbar">
+          <div class="toolbar-group">
+            <label class="toolbar-label">Font</label>
+            <select class="toolbar-select" id="rt_font" onchange="applyFormatting()">
+              <option value="inter" {% if display_opts.font_style == 'inter' %}selected{% endif %}>Inter</option>
+              <option value="georgia" {% if display_opts.font_style == 'georgia' %}selected{% endif %}>Georgia</option>
+              <option value="times" {% if display_opts.font_style == 'times' %}selected{% endif %}>Times New Roman</option>
+              <option value="mono" {% if display_opts.font_style == 'mono' %}selected{% endif %}>Monospace</option>
+            </select>
+          </div>
+          <div class="toolbar-group">
+            <label class="toolbar-label">Size</label>
+            <select class="toolbar-select" id="rt_size" onchange="applyFormatting()">
+              <option value="12" {% if display_opts.font_size == '12' %}selected{% endif %}>12pt</option>
+              <option value="14" {% if display_opts.font_size == '14' or not display_opts.font_size %}selected{% endif %}>14pt</option>
+              <option value="16" {% if display_opts.font_size == '16' %}selected{% endif %}>16pt</option>
+              <option value="18" {% if display_opts.font_size == '18' %}selected{% endif %}>18pt</option>
+            </select>
+          </div>
+          <div class="toolbar-group">
+            <label class="toolbar-label">Spacing</label>
+            <select class="toolbar-select" id="rt_spacing" onchange="applyFormatting()">
+              <option value="1.4" {% if display_opts.line_spacing == '1.4' %}selected{% endif %}>Compact</option>
+              <option value="1.6" {% if display_opts.line_spacing == '1.6' or not display_opts.line_spacing %}selected{% endif %}>Normal</option>
+              <option value="1.8" {% if display_opts.line_spacing == '1.8' %}selected{% endif %}>Relaxed</option>
+              <option value="2.0" {% if display_opts.line_spacing == '2.0' %}selected{% endif %}>Double</option>
+            </select>
+          </div>
+          <div class="toolbar-group">
+            <label class="toolbar-label">Align</label>
+            <div class="align-btns">
+              <button type="button" class="align-btn {% if display_opts.text_align == 'left' or not display_opts.text_align %}active{% endif %}" onclick="setAlign('left')" title="Left">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+              </button>
+              <button type="button" class="align-btn {% if display_opts.text_align == 'justify' %}active{% endif %}" onclick="setAlign('justify')" title="Justify">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </button>
+              <button type="button" class="align-btn {% if display_opts.text_align == 'center' %}active{% endif %}" onclick="setAlign('center')" title="Center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="toolbar-spacer"></div>
+          <button type="button" class="toolbar-edit-btn" id="editToggleBtn" onclick="toggleEdit()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Edit
+          </button>
+          <button type="button" class="toolbar-save-btn" id="saveBtn" onclick="saveEdits()" style="display:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Save
+          </button>
+        </div>
+
+        <!-- Read-only view -->
+        <div class="result-body" id="resultView">{{ assignment.result.content }}</div>
+
+        <!-- Editable textarea (hidden by default) -->
+        <textarea class="result-editor" id="resultEditor" style="display:none">{{ assignment.result.content }}</textarea>
+
+        {% if assignment.result.used_materials %}
+        <div class="materials-row"><strong>Materials used:</strong> {{ assignment.result.used_materials }}</div>
+        {% endif %}
+      </div>
+
+      {% elif assignment.status == 'processing' %}
+      <div class="state-card">
+        <div class="spinner"></div>
+        <div class="state-title">Processing Assignment</div>
+        <div class="state-sub">AI is analyzing your assignment and generating content. This page will refresh automatically.</div>
+        <div class="state-actions"><a href="{% url 'assignment_list' %}" class="btn btn-ghost">Back to List</a></div>
+      </div>
+
+      {% else %}
+      <div class="state-card">
+        <div class="state-icon failed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <div class="state-title">Processing Failed</div>
+        <div class="state-sub">{{ assignment.error_message|default:"An error occurred while processing your assignment." }}</div>
+        <div class="state-actions">
+          <a href="{% url 'retry_assignment' assignment.id %}" class="btn btn-primary">Retry</a>
+          <a href="{% url 'assignment_list' %}" class="btn btn-ghost">Back to List</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+<nav class="bottom-nav">
+  <a href="{% url 'dashboard' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
+  <a href="{% url 'ai_chat' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI</a>
+  <a href="{% url 'list_materials' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Materials</a>
+  <a href="{% url 'assignment_list' %}" class="bn-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks</a>
+</nav>
+<script>
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+// ── Font map ──
+const fontMap = {
+  inter: "'Inter', sans-serif",
+  georgia: "Georgia, serif",
+  times: "'Times New Roman', Times, serif",
+  mono: "'Courier New', Courier, monospace"
+};
+
+let currentAlign = '{{ display_opts.text_align|default:"left" }}';
+
+function applyFormatting() {
+  const font = document.getElementById('rt_font').value;
+  const size = document.getElementById('rt_size').value;
+  const spacing = document.getElementById('rt_spacing').value;
+  const targets = [document.getElementById('resultView'), document.getElementById('resultEditor')];
+  targets.forEach(el => {
+    if (!el) return;
+    el.style.fontFamily = fontMap[font] || fontMap.inter;
+    el.style.fontSize = size + 'px';
+    el.style.lineHeight = spacing;
+    el.style.textAlign = currentAlign;
+  });
+}
+
+function setAlign(align) {
+  currentAlign = align;
+  document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  applyFormatting();
+}
+
+// ── Edit / Save toggle ──
+let editMode = false;
+
+function toggleEdit() {
+  editMode = !editMode;
+  const view = document.getElementById('resultView');
+  const editor = document.getElementById('resultEditor');
+  const editBtn = document.getElementById('editToggleBtn');
+  const saveBtn = document.getElementById('saveBtn');
+
+  if (editMode) {
+    editor.value = view.textContent;
+    view.style.display = 'none';
+    editor.style.display = 'block';
+    editBtn.style.display = 'none';
+    saveBtn.style.display = '';
+    applyFormatting();
+  } else {
+    view.textContent = editor.value;
+    view.style.display = '';
+    editor.style.display = 'none';
+    editBtn.style.display = '';
+    saveBtn.style.display = 'none';
+  }
+}
+
+async function saveEdits() {
+  const editor = document.getElementById('resultEditor');
+  const saveBtn = document.getElementById('saveBtn');
+  const content = editor.value;
+
+  saveBtn.textContent = 'Saving…';
+  saveBtn.disabled = true;
+
+  const displayOpts = {
+    font_style: document.getElementById('rt_font').value,
+    font_size: document.getElementById('rt_size').value,
+    line_spacing: document.getElementById('rt_spacing').value,
+    text_align: currentAlign,
+  };
+
+  try {
+    const resp = await fetch('{% url "save_assignment_edits" assignment.id %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+      body: JSON.stringify({ content, display_opts: displayOpts })
+    });
+    if (resp.ok) {
+      // Switch back to view mode with updated content
+      document.getElementById('resultView').textContent = content;
+      document.getElementById('resultView').style.display = '';
+      editor.style.display = 'none';
+      document.getElementById('editToggleBtn').style.display = '';
+      editMode = false;
+      saveBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Saved';
+      setTimeout(() => {
+        saveBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save';
+        saveBtn.style.display = 'none';
+        saveBtn.disabled = false;
+      }, 1500);
+    }
+  } catch(e) {
+    saveBtn.textContent = 'Error';
+    saveBtn.disabled = false;
+  }
+}
+
+// Apply formatting on load
+window.addEventListener('DOMContentLoaded', applyFormatting);
+</script>
+</body>
+</html>

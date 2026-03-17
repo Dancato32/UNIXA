@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }} - NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0d0d0d; color: #e8e8e8; min-height: 100vh; padding: 1.5rem; padding-bottom: 3rem; }
+.header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.back-btn { display: flex; align-items: center; gap: 0.5rem; color: #a0a0a0; text-decoration: none; font-size: 0.875rem; padding: 0.5rem 0.75rem; border: 1px solid #2a2a2a; border-radius: 8px; transition: all 0.15s; }
+.back-btn:hover { color: #e8e8e8; border-color: #444; }
+h1 { font-size: 1.25rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: rgba(59,130,246,0.2); color: #60a5fa; white-space: nowrap; }
+.card { background: #161616; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; max-width: 800px; margin: 0 auto; }
+.card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: space-between; }
+.card-header-left { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+.card-body { padding: 1.5rem; }
+
+/* States */
+.state { display: none; }
+.state.active { display: block; }
+
+/* Idle */
+.idle-desc { color: #6b6b6b; margin-bottom: 1.5rem; font-size: 0.9rem; }
+.generate-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.generate-btn:hover { background: #2563eb; }
+.generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Loading */
+.loading-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2.5rem 0; }
+.spinner { width: 40px; height: 40px; border: 3px solid #2a2a2a; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: #a0a0a0; font-size: 0.9rem; }
+
+/* Result */
+.summary-text { line-height: 1.85; color: #d0d0d0; font-size: 0.9375rem; white-space: pre-wrap; }
+.result-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+.action-btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #333; background: #252525; color: #a0a0a0; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+.action-btn:hover { color: #e8e8e8; border-color: #555; }
+.action-btn.primary { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+.action-btn.primary:hover { background: #2563eb; }
+
+/* Error */
+.error-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 1rem; color: #f87171; font-size: 0.875rem; }
+
+/* Bottom nav */
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #161616; border-top: 1px solid #2a2a2a; padding: 0.5rem; z-index: 100; justify-content: space-around; }
+.bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.5rem; color: #6b6b6b; text-decoration: none; font-size: 0.625rem; border-radius: 8px; }
+.bottom-nav-item svg { width: 20px; height: 20px; }
+.bottom-nav-item.active { color: #60a5fa; }
+
+@media (max-width: 900px) {
+    body { padding: 1rem; padding-bottom: 5rem; }
+    .bottom-nav { display: flex; }
+    h1 { font-size: 1rem; }
+    .card-body { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+    <a href="{% url 'select_material_for_action' 'summarize' %}" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+    </a>
+    <h1>{{ material.title }}</h1>
+    <span class="badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Summarize
+    </span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-header-left">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            AI Summary
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Idle -->
+        <div class="state active" id="stateIdle">
+            <p class="idle-desc">Generate an AI-powered summary of <strong style="color:#e8e8e8">{{ material.title }}</strong>.</p>
+            <button class="generate-btn" onclick="generate()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Generate Summary
+            </button>
+        </div>
+        <!-- Loading -->
+        <div class="state" id="stateLoading">
+            <div class="loading-wrap">
+                <div class="spinner"></div>
+                <p class="loading-text">Generating summary with AI...</p>
+            </div>
+        </div>
+        <!-- Result -->
+        <div class="state" id="stateResult">
+            <div class="summary-text" id="summaryText"></div>
+            <div class="result-actions">
+                <button class="action-btn" onclick="copyText()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span id="copyLabel">Copy</span>
+                </button>
+                <button class="action-btn primary" onclick="generate()">Regenerate</button>
+            </div>
+        </div>
+        <!-- Error -->
+        <div class="state" id="stateError">
+            <div class="error-box" id="errorMsg"></div>
+            <div class="result-actions" style="margin-top:1rem">
+                <button class="action-btn primary" onclick="generate()">Try Again</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const AJAX_URL = '{% url "summarize_ajax" material.pk %}';
+const CSRF = '{{ csrf_token }}';
+
+function setState(id) {
+    ['stateIdle','stateLoading','stateResult','stateError'].forEach(s => {
+        document.getElementById(s).classList.toggle('active', s === id);
+    });
+}
+
+async function generate() {
+    setState('stateLoading');
+    try {
+        const res = await fetch(AJAX_URL, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('summaryText').textContent = data.result;
+            setState('stateResult');
+        } else {
+            document.getElementById('errorMsg').textContent = data.error || 'Something went wrong.';
+            setState('stateError');
+        }
+    } catch (e) {
+        document.getElementById('errorMsg').textContent = 'Network error: ' + e.message;
+        setState('stateError');
+    }
+}
+
+function copyText() {
+    const text = document.getElementById('summaryText').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const lbl = document.getElementById('copyLabel');
+        lbl.textContent = 'Copied!';
+        setTimeout(() => lbl.textContent = 'Copy', 2000);
+    });
+}
+
+// Auto-generate on load
+generate();
+</script>
+
+<nav class="bottom-nav">
+    <a href="{% url 'dashboard' %}" class="bottom-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Home
+    </a>
+    <a href="{% url 'explore' %}" class="bottom-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Explore
+    </a>
+    <a href="{% url 'ai_chat' %}" class="bottom-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI
+    </a>
+    <a href="{% url 'list_materials' %}" class="bottom-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Materials
+    </a>
+</nav>
+</body>
+</html>
