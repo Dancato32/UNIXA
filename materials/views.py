@@ -123,7 +123,7 @@ def upload_material_ajax(request):
 
         material.extracted_text = extracted_text
         material.save(update_fields=['extracted_text'])
-        return JsonResponse({'success': True, 'redirect': '/materials/'})
+        return JsonResponse({'success': True, 'redirect': '/materials/list/'})
     return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
 
