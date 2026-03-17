@@ -23,8 +23,8 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_ENV.split(',')]
 
-# Always allow Render domains automatically
-ALLOWED_HOSTS += ['unixa.onrender.com', '.onrender.com']
+# Always allow all Render subdomains + any custom domain
+ALLOWED_HOSTS += ['unixa.onrender.com', '.onrender.com', '*']
 
 # ── API Keys ──────────────────────────────────────────────────────────────────
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
