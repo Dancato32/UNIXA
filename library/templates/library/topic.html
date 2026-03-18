@@ -711,14 +711,41 @@ function getPreferredVoice() {
       || null;
 }
 
-// Split text into ~200-word chunks so iOS doesn't cut off
-function splitIntoChunks(text, wordsPerChunk = 200) {
+// Split text into ~150-word chunks — small enough for both iOS and Android Chrome
+function splitIntoChunks(text, wordsPerChunk = 150) {
   const words = text.split(/\s+/);
   const chunks = [];
   for (let i = 0; i < words.length; i += wordsPerChunk) {
     chunks.push(words.slice(i, i + wordsPerChunk).join(' '));
   }
   return chunks;
+}
+
+// Watchdog: Android Chrome stops speaking after ~14s without firing onend.
+// We detect a stall and advance to the next chunk manually.
+let _watchdogTimer = null;
+let _chunkStartTime = 0;
+
+function startWatchdog(index) {
+  clearTimeout(_watchdogTimer);
+  _chunkStartTime = Date.now();
+  // Each 150-word chunk at 0.95 rate ≈ ~60s max, but Android stalls at ~14s.
+  // Poll every 2s; if speechSynthesis is no longer speaking but we haven't
+  // received onend, advance manually.
+  _watchdogTimer = setInterval(() => {
+    if (!podcastPlaying) { clearInterval(_watchdogTimer); return; }
+    if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+      // Speech stopped without onend — Android bug. Advance chunk.
+      clearInterval(_watchdogTimer);
+      podcastChunkIndex = index + 1;
+      setTimeout(() => speakChunk(podcastChunkIndex), 150);
+    }
+  }, 2000);
+}
+
+function stopWatchdog() {
+  clearInterval(_watchdogTimer);
+  _watchdogTimer = null;
 }
 
 async function generatePodcast() {
@@ -789,10 +816,11 @@ function podcastPlay() {
 
 function speakChunk(index) {
   if (index >= podcastChunks.length || !podcastPlaying) {
-    // All done
     podcastPlaying = false;
     podcastPaused = false;
     podcastChunkIndex = 0;
+    stopWatchdog();
+    clearInterval(window._ttsKeepAlive);
     updatePodcastControls();
     stopWave();
     return;
@@ -805,23 +833,26 @@ function speakChunk(index) {
   const voice = getPreferredVoice();
   if (voice) utt.voice = voice;
 
+  utt.onstart = () => { startWatchdog(index); };
+
   utt.onend = () => {
     if (!podcastPlaying) return;
+    stopWatchdog();
     podcastChunkIndex = index + 1;
-    // Small delay between chunks prevents iOS from stopping
     setTimeout(() => speakChunk(podcastChunkIndex), 100);
   };
+
   utt.onerror = (e) => {
-    // Retry once on error (common on mobile)
-    if (e.error !== 'interrupted') {
-      setTimeout(() => speakChunk(index), 300);
+    stopWatchdog();
+    if (e.error !== 'interrupted' && e.error !== 'canceled') {
+      setTimeout(() => speakChunk(index), 400);
     }
   };
 
   podcastCurrentUtterance = utt;
   window.speechSynthesis.speak(utt);
 
-  // iOS workaround: speechSynthesis stops after ~15s without this keepalive
+  // iOS keepalive: pause/resume every 10s to prevent iOS killing TTS
   if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
     clearInterval(window._ttsKeepAlive);
     window._ttsKeepAlive = setInterval(() => {
@@ -837,8 +868,9 @@ function speakChunk(index) {
 function podcastPause() {
   podcastPlaying = false;
   podcastPaused = true;
-  window.speechSynthesis.cancel(); // iOS doesn't support pause reliably
+  stopWatchdog();
   clearInterval(window._ttsKeepAlive);
+  window.speechSynthesis.cancel();
   updatePodcastControls();
   stopWave();
 }
@@ -847,8 +879,9 @@ function podcastStop() {
   podcastPlaying = false;
   podcastPaused = false;
   podcastChunkIndex = 0;
-  window.speechSynthesis.cancel();
+  stopWatchdog();
   clearInterval(window._ttsKeepAlive);
+  window.speechSynthesis.cancel();
   updatePodcastControls();
   stopWave();
 }
