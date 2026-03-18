@@ -683,10 +683,43 @@ function handleKey(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMe
 
 // ── Podcast ──
 let podcastScript = '';
-let podcastUtterance = null;
 let podcastPlaying = false;
 let podcastPaused = false;
 let scriptVisible = false;
+
+// Chunked TTS state (fixes iOS/Android mobile speechSynthesis bugs)
+let podcastChunks = [];
+let podcastChunkIndex = 0;
+let podcastCurrentUtterance = null;
+
+// Pre-load voices as early as possible (iOS needs this)
+let cachedVoices = [];
+function loadVoices() {
+  cachedVoices = window.speechSynthesis.getVoices();
+}
+loadVoices();
+if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function getPreferredVoice() {
+  const voices = cachedVoices.length ? cachedVoices : window.speechSynthesis.getVoices();
+  return voices.find(v => /google us english|samantha|karen|daniel|moira|fiona/i.test(v.name))
+      || voices.find(v => v.lang && v.lang.startsWith('en') && v.localService)
+      || voices.find(v => v.lang && v.lang.startsWith('en'))
+      || voices[0]
+      || null;
+}
+
+// Split text into ~200-word chunks so iOS doesn't cut off
+function splitIntoChunks(text, wordsPerChunk = 200) {
+  const words = text.split(/\s+/);
+  const chunks = [];
+  for (let i = 0; i < words.length; i += wordsPerChunk) {
+    chunks.push(words.slice(i, i + wordsPerChunk).join(' '));
+  }
+  return chunks;
+}
 
 async function generatePodcast() {
   const btn = document.getElementById("podcastBtn");
@@ -731,41 +764,93 @@ async function generatePodcast() {
 
 function podcastPlay() {
   if (!podcastScript) return;
-  if (podcastPaused && window.speechSynthesis.paused) {
-    window.speechSynthesis.resume();
+
+  // Resume if paused
+  if (podcastPaused) {
     podcastPaused = false;
     podcastPlaying = true;
     updatePodcastControls();
+    startWave();
+    // Re-speak from current chunk (iOS doesn't support resume reliably)
+    speakChunk(podcastChunkIndex);
     return;
   }
+
+  // Fresh start
   window.speechSynthesis.cancel();
-  podcastUtterance = new SpeechSynthesisUtterance(podcastScript);
-  podcastUtterance.rate = 0.95;
-  podcastUtterance.pitch = 1.0;
-  podcastUtterance.volume = 1.0;
-  // Pick a natural-sounding voice
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v =>
-    /google us english|samantha|karen|daniel|moira|fiona/i.test(v.name)
-  ) || voices.find(v => v.lang === 'en-US' && !v.name.includes('Google')) || voices[0];
-  if (preferred) podcastUtterance.voice = preferred;
-  podcastUtterance.onstart = () => { podcastPlaying=true; podcastPaused=false; updatePodcastControls(); startWave(); };
-  podcastUtterance.onend = () => { podcastPlaying=false; podcastPaused=false; updatePodcastControls(); stopWave(); };
-  podcastUtterance.onpause = () => { podcastPaused=true; stopWave(); };
-  podcastUtterance.onresume = () => { podcastPaused=false; startWave(); };
-  window.speechSynthesis.speak(podcastUtterance);
+  podcastChunks = splitIntoChunks(podcastScript);
+  podcastChunkIndex = 0;
+  podcastPlaying = true;
+  podcastPaused = false;
+  updatePodcastControls();
+  startWave();
+  speakChunk(0);
+}
+
+function speakChunk(index) {
+  if (index >= podcastChunks.length || !podcastPlaying) {
+    // All done
+    podcastPlaying = false;
+    podcastPaused = false;
+    podcastChunkIndex = 0;
+    updatePodcastControls();
+    stopWave();
+    return;
+  }
+
+  const utt = new SpeechSynthesisUtterance(podcastChunks[index]);
+  utt.rate = 0.95;
+  utt.pitch = 1.0;
+  utt.volume = 1.0;
+  const voice = getPreferredVoice();
+  if (voice) utt.voice = voice;
+
+  utt.onend = () => {
+    if (!podcastPlaying) return;
+    podcastChunkIndex = index + 1;
+    // Small delay between chunks prevents iOS from stopping
+    setTimeout(() => speakChunk(podcastChunkIndex), 100);
+  };
+  utt.onerror = (e) => {
+    // Retry once on error (common on mobile)
+    if (e.error !== 'interrupted') {
+      setTimeout(() => speakChunk(index), 300);
+    }
+  };
+
+  podcastCurrentUtterance = utt;
+  window.speechSynthesis.speak(utt);
+
+  // iOS workaround: speechSynthesis stops after ~15s without this keepalive
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+    clearInterval(window._ttsKeepAlive);
+    window._ttsKeepAlive = setInterval(() => {
+      if (!podcastPlaying) { clearInterval(window._ttsKeepAlive); return; }
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 10000);
+  }
 }
 
 function podcastPause() {
-  window.speechSynthesis.pause();
-  podcastPaused = true; podcastPlaying = false;
-  updatePodcastControls(); stopWave();
+  podcastPlaying = false;
+  podcastPaused = true;
+  window.speechSynthesis.cancel(); // iOS doesn't support pause reliably
+  clearInterval(window._ttsKeepAlive);
+  updatePodcastControls();
+  stopWave();
 }
 
 function podcastStop() {
+  podcastPlaying = false;
+  podcastPaused = false;
+  podcastChunkIndex = 0;
   window.speechSynthesis.cancel();
-  podcastPlaying = false; podcastPaused = false;
-  updatePodcastControls(); stopWave();
+  clearInterval(window._ttsKeepAlive);
+  updatePodcastControls();
+  stopWave();
 }
 
 function updatePodcastControls() {
