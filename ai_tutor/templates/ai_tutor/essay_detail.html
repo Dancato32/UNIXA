@@ -8,16 +8,16 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--surface3:#222;--border:#222;--border2:#2e2e2e;--text:#f0f0f0;--text2:#888;--text3:#444;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-.topnav{display:flex;align-items:center;justify-content:space-between;height:56px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:200;}
-.topnav-logo{font-size:1rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.02em;}
-.topnav-links{display:flex;align-items:center;gap:.25rem;}
-.topnav-link{display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;color:var(--text2);text-decoration:none;font-size:.8125rem;font-weight:500;border-radius:7px;transition:all .15s;white-space:nowrap;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+.topnav{display:flex;align-items:center;justify-content:space-between;height:52px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.25rem;position:sticky;top:0;z-index:200;flex-shrink:0;}
+.topnav-logo{font-size:.9375rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.02em;}
+.topnav-links{display:flex;align-items:center;gap:.125rem;}
+.topnav-link{display:flex;align-items:center;gap:.35rem;padding:.35rem .65rem;color:var(--text2);text-decoration:none;font-size:.775rem;font-weight:500;border-radius:6px;transition:all .15s;white-space:nowrap;}
 .topnav-link:hover{background:var(--surface2);color:var(--text);}
 .topnav-link.active{background:rgba(255,255,255,.07);color:var(--text);}
-.topnav-link svg{width:14px;height:14px;flex-shrink:0;}
-.topnav-right{display:flex;align-items:center;gap:.75rem;}
-.avatar{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--text2);}
+.topnav-link svg{width:13px;height:13px;flex-shrink:0;}
+.topnav-right{display:flex;align-items:center;gap:.5rem;}
+.avatar{width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--text2);}
 .mobile-topbar{display:none;height:52px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200;}
 .menu-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text2);cursor:pointer;border-radius:6px;}
 .menu-btn svg{width:20px;height:20px;}
@@ -33,74 +33,85 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .nav-divider{height:1px;background:var(--border);margin:.5rem 0;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;}
 .overlay.open{display:block;}
-.page{padding:2rem;max-width:820px;margin:0 auto;}
-.back-link{display:inline-flex;align-items:center;gap:.375rem;color:var(--text2);text-decoration:none;font-size:.8125rem;margin-bottom:1.25rem;transition:color .15s;}
+</style>
+</head>
+<body>
+<style>
+/* ── Two-panel layout ── */
+.workspace{display:flex;flex:1;height:calc(100vh - 52px);overflow:hidden;}
+/* ── Left info panel ── */
+.info-panel{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.info-panel::-webkit-scrollbar{width:4px;}
+.info-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.panel-header{padding:1rem 1.25rem .875rem;border-bottom:1px solid var(--border);}
+.back-link{display:inline-flex;align-items:center;gap:.375rem;color:var(--text2);text-decoration:none;font-size:.775rem;transition:color .15s;margin-bottom:.75rem;}
 .back-link:hover{color:var(--text);}
-.back-link svg{width:14px;height:14px;}
-.result-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;overflow:hidden;}
-.result-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;}
-.result-title{font-size:1.125rem;font-weight:700;line-height:1.4;}
-.header-actions{display:flex;gap:.5rem;flex-shrink:0;}
-.result-meta{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
-.meta-cell{padding:.875rem 1.5rem;border-right:1px solid var(--border);}
-.meta-cell:last-child{border-right:none;}
-.meta-label{font-size:.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.25rem;}
-.meta-value{font-size:.875rem;font-weight:500;}
-.humanized-badge{display:flex;align-items:center;gap:.375rem;padding:.5rem 1.5rem;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);font-size:.75rem;color:var(--text2);}
-.humanized-badge svg{width:12px;height:12px;}
-
-/* Toolbar */
-.display-toolbar{display:flex;align-items:center;gap:.75rem;padding:.625rem 1.25rem;background:var(--surface2);border-bottom:1px solid var(--border);flex-wrap:wrap;}
-.toolbar-group{display:flex;align-items:center;gap:.375rem;}
-.toolbar-label{font-size:.6875rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
-.toolbar-select{padding:.3rem .5rem;font-size:.75rem;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:inherit;cursor:pointer;}
+.back-link svg{width:13px;height:13px;}
+.doc-title{font-size:.875rem;font-weight:700;line-height:1.4;color:var(--text);}
+.panel-body{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:1rem;}
+.meta-row{display:flex;flex-direction:column;gap:.2rem;}
+.meta-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);}
+.meta-value{font-size:.8125rem;font-weight:500;color:var(--text2);}
+.humanized-badge{display:flex;align-items:center;gap:.375rem;padding:.5rem .75rem;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:8px;font-size:.7rem;color:var(--text2);}
+.humanized-badge svg{width:11px;height:11px;color:#f87171;}
+.panel-divider{height:1px;background:var(--border);}
+/* Download buttons in sidebar */
+.dl-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.5rem;}
+.dl-list{display:flex;flex-direction:column;gap:.375rem;}
+.dl-btn{display:flex;align-items:center;gap:.5rem;padding:.55rem .75rem;font-size:.775rem;font-weight:600;border-radius:7px;cursor:pointer;border:none;font-family:inherit;transition:all .15s;background:var(--surface2);color:var(--text2);border:1px solid var(--border2);width:100%;}
+.dl-btn:hover{color:var(--text);border-color:#444;}
+.dl-btn:disabled{opacity:.5;cursor:not-allowed;}
+.dl-btn svg{width:13px;height:13px;flex-shrink:0;}
+.dl-btn-primary{background:#fff;color:#000;border-color:#fff;}
+.dl-btn-primary:hover{background:#e8e8e8;border-color:#e8e8e8;}
+.danger-btn{display:flex;align-items:center;gap:.5rem;padding:.55rem .75rem;font-size:.775rem;font-weight:600;border-radius:7px;cursor:pointer;border:1px solid rgba(239,68,68,.2);font-family:inherit;transition:all .15s;background:rgba(239,68,68,.06);color:#f87171;width:100%;text-decoration:none;}
+.danger-btn:hover{background:rgba(239,68,68,.12);}
+.danger-btn svg{width:13px;height:13px;}
+/* ── Right document panel ── */
+.doc-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+/* Formatting toolbar */
+.doc-toolbar{display:flex;align-items:center;gap:.375rem;padding:.5rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.toolbar-sep{width:1px;height:18px;background:var(--border2);margin:0 .125rem;}
+.toolbar-select{padding:.275rem .45rem;font-size:.7rem;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:inherit;cursor:pointer;}
 .toolbar-select:focus{outline:none;border-color:#555;}
-.align-btns{display:flex;gap:2px;}
-.align-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border2);border-radius:5px;color:var(--text2);cursor:pointer;transition:all .15s;}
-.align-btn:hover{color:var(--text);border-color:#444;}
-.align-btn.active{background:rgba(255,255,255,.1);border-color:#555;color:#fff;}
+.align-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid transparent;border-radius:4px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.align-btn:hover{color:var(--text);border-color:var(--border2);}
+.align-btn.active{background:rgba(255,255,255,.08);border-color:var(--border2);color:#fff;}
+.align-btn svg{width:12px;height:12px;}
 .toolbar-spacer{flex:1;}
-.toolbar-edit-btn,.toolbar-save-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .75rem;font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
-.toolbar-edit-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text2);}
+.toolbar-action-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .65rem;font-size:.7rem;font-weight:600;border-radius:5px;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
+.toolbar-edit-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);}
 .toolbar-edit-btn:hover{color:var(--text);border-color:#444;}
 .toolbar-save-btn{background:#fff;color:#000;}
 .toolbar-save-btn:hover{background:#e8e8e8;}
-
-.result-body{padding:1.5rem;white-space:pre-wrap;line-height:1.8;font-size:.9375rem;color:#ccc;max-height:600px;overflow-y:auto;}
-.result-body::-webkit-scrollbar{width:4px;}
-.result-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.result-editor{width:100%;min-height:400px;padding:1.5rem;background:var(--surface2);border:none;border-top:1px solid var(--border);color:#ccc;font-family:inherit;font-size:.9375rem;line-height:1.8;resize:vertical;outline:none;display:none;}
-
-/* Download section */
-.dl-section{padding:1.25rem 1.5rem;border-top:1px solid var(--border);background:var(--surface2);}
-.dl-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.875rem;}
-.dl-btns{display:flex;gap:.625rem;flex-wrap:wrap;}
-.dl-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;font-size:.8125rem;font-weight:600;border-radius:8px;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
-.dl-btn:hover{transform:translateY(-1px);}
-.dl-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.dl-pdf{background:var(--surface3);color:var(--text);border:1px solid var(--border2);}
-.dl-word{background:var(--surface3);color:var(--text);border:1px solid var(--border2);}
-.dl-ppt{background:var(--surface3);color:var(--text);border:1px solid var(--border2);}
-.dl-txt{background:#fff;color:#000;}
-.dl-btn svg{width:14px;height:14px;}
-
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .875rem;font-size:.8125rem;font-weight:600;border-radius:7px;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
-.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-.btn-ghost:hover{color:var(--text);border-color:#444;}
-.btn-danger{background:rgba(239,68,68,.08);color:#f87171;border:1px solid rgba(239,68,68,.15);}
-.btn-danger:hover{background:rgba(239,68,68,.15);}
-
+/* Document body */
+.doc-body{flex:1;overflow-y:auto;padding:3rem 4rem;}
+.doc-body::-webkit-scrollbar{width:5px;}
+.doc-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.doc-sheet{max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:3rem;min-height:500px;}
+.doc-sheet-title{font-size:1.375rem;font-weight:700;margin-bottom:1.5rem;line-height:1.3;color:var(--text);}
+.essay-view{white-space:pre-wrap;line-height:1.8;font-size:.9375rem;color:#ccc;}
+.essay-editor{width:100%;min-height:400px;padding:0;background:transparent;border:none;color:#ccc;font-family:inherit;font-size:.9375rem;line-height:1.8;resize:none;outline:none;display:none;}
+/* Bottom nav */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:.5rem;z-index:100;justify-content:space-around;}
 .bn-item{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.4rem .75rem;color:var(--text3);text-decoration:none;font-size:.6rem;border-radius:6px;}
 .bn-item svg{width:20px;height:20px;}
 .bn-item.active{color:var(--text);}
-
-@media(max-width:900px){.topnav{display:none;}.mobile-topbar{display:flex;}.bottom-nav{display:flex;}.page{padding:1rem;padding-bottom:5rem;}}
-@media(max-width:700px){.result-meta{grid-template-columns:1fr 1fr;}.meta-cell{border-right:none;border-bottom:1px solid var(--border);}.meta-cell:last-child{border-bottom:none;}.result-header{flex-direction:column;}.header-actions{width:100%;}.dl-btns{flex-direction:column;}.dl-btn{width:100%;justify-content:center;}.display-toolbar{gap:.5rem;}}
-@media(max-width:480px){.page{padding:.75rem;padding-bottom:5rem;}}</style>
-</head>
-<body>
-
+@media(max-width:900px){
+  .topnav{display:none;}
+  .mobile-topbar{display:flex;}
+  .bottom-nav{display:flex;}
+  .workspace{flex-direction:column;height:auto;overflow:visible;}
+  .info-panel{width:100%;border-right:none;border-bottom:1px solid var(--border);}
+  .doc-body{padding:1.25rem;}
+  .doc-sheet{padding:1.5rem;padding-bottom:5rem;}
+}
+@media(max-width:600px){
+  .doc-body{padding:.75rem;}
+  .doc-sheet{padding:1.25rem;padding-bottom:5rem;}
+  .doc-toolbar{gap:.25rem;}
+}
+</style>
 <!-- Desktop top navbar -->
 <nav class="topnav">
   <a href="{% url 'dashboard' %}" class="topnav-logo">NEXA</a>
@@ -118,14 +129,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
   </div>
 </nav>
-
 <!-- Mobile topbar -->
 <div class="mobile-topbar">
   <button class="menu-btn" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
   <span style="font-size:.875rem;font-weight:600;color:var(--text2);">Essay</span>
   <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
 </div>
-
 <!-- Mobile sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo"><a href="{% url 'dashboard' %}">NEXA</a></div>
@@ -142,113 +151,117 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   </nav>
 </aside>
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-<div class="page">
-  <a href="{% url 'essay_request' %}" class="back-link">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-    Back to Essays
-  </a>
-
-  <div class="result-card">
-    <div class="result-header">
-      <h1 class="result-title">{{ essay.topic }}</h1>
-      <div class="header-actions">
-        <a href="{% url 'delete_essay' essay.id %}" class="btn btn-danger">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-          Delete
-        </a>
-      </div>
+<!-- Two-panel workspace -->
+<div class="workspace">
+  <!-- Left: Info / metadata panel -->
+  <aside class="info-panel">
+    <div class="panel-header">
+      <a href="{% url 'essay_request' %}" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        All Essays
+      </a>
+      <div class="doc-title">{{ essay.topic }}</div>
     </div>
-
-    <div class="result-meta">
-      <div class="meta-cell"><div class="meta-label">Created</div><div class="meta-value">{{ essay.created_at|date:"M d, Y" }}</div></div>
-      <div class="meta-cell"><div class="meta-label">Length</div><div class="meta-value">{{ essay.word_count|default:"500" }} words</div></div>
-      <div class="meta-cell"><div class="meta-label">Research</div><div class="meta-value">{% if essay.research_done %}Enabled{% else %}Disabled{% endif %}</div></div>
-    </div>
-
-    <div class="humanized-badge">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      Humanized by NEXA AI
-    </div>
-
-    <!-- Display toolbar -->
-    <div class="display-toolbar">
-      <div class="toolbar-group">
-        <span class="toolbar-label">Font</span>
-        <select class="toolbar-select" id="rt_font" onchange="applyFormatting()">
-          <option value="inter">Inter</option>
-          <option value="georgia">Georgia</option>
-          <option value="times">Times New Roman</option>
-          <option value="mono">Monospace</option>
-        </select>
+    <div class="panel-body">
+      <!-- Metadata -->
+      <div class="meta-row"><div class="meta-label">Created</div><div class="meta-value">{{ essay.created_at|date:"M d, Y" }}</div></div>
+      <div class="meta-row"><div class="meta-label">Length</div><div class="meta-value">{{ essay.word_count|default:"500" }} words</div></div>
+      <div class="meta-row"><div class="meta-label">Format</div><div class="meta-value">{{ essay.get_output_format_display }}</div></div>
+      <div class="meta-row"><div class="meta-label">Research</div><div class="meta-value">{% if essay.research_done %}Web research enabled{% else %}No web research{% endif %}</div></div>
+      <div class="humanized-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Humanized by NEXA AI
       </div>
-      <div class="toolbar-group">
-        <span class="toolbar-label">Size</span>
-        <select class="toolbar-select" id="rt_size" onchange="applyFormatting()">
-          <option value="12">12pt</option>
-          <option value="14" selected>14pt</option>
-          <option value="16">16pt</option>
-          <option value="18">18pt</option>
-        </select>
-      </div>
-      <div class="toolbar-group">
-        <span class="toolbar-label">Spacing</span>
-        <select class="toolbar-select" id="rt_spacing" onchange="applyFormatting()">
-          <option value="1.4">Compact</option>
-          <option value="1.6" selected>Normal</option>
-          <option value="1.8">Relaxed</option>
-          <option value="2.0">Double</option>
-        </select>
-      </div>
-      <div class="toolbar-group">
-        <span class="toolbar-label">Align</span>
-        <div class="align-btns">
-          <button type="button" class="align-btn active" onclick="setAlign('left',this)" title="Left"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
-          <button type="button" class="align-btn" onclick="setAlign('justify',this)" title="Justify"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-          <button type="button" class="align-btn" onclick="setAlign('center',this)" title="Center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
+      <div class="panel-divider"></div>
+      <!-- Downloads -->
+      <div>
+        <div class="dl-label">Download As</div>
+        <div class="dl-list">
+          <button class="dl-btn dl-btn-primary" onclick="downloadEssay('text')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Plain Text
+          </button>
+          <button class="dl-btn" onclick="downloadEssay('pdf')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            PDF
+          </button>
+          <button class="dl-btn" onclick="downloadEssay('word')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Word (.docx)
+          </button>
+          <button class="dl-btn" onclick="downloadEssay('powerpoint')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            PowerPoint
+          </button>
         </div>
       </div>
+      <div class="panel-divider"></div>
+      <!-- AI Restyle -->
+      <div>
+        <div class="dl-label">AI Style Editor</div>
+        <textarea id="styleInstructions" placeholder="e.g. Make it more formal, add an introduction, write in bullet points, use a persuasive tone…" style="width:100%;padding:.6rem .75rem;font-size:.75rem;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:inherit;resize:vertical;min-height:72px;outline:none;line-height:1.5;" onfocus="this.style.borderColor='#555'" onblur="this.style.borderColor='var(--border2)'"></textarea>
+        <button onclick="restyleEssay()" id="restyleBtn" class="dl-btn" style="margin-top:.5rem;justify-content:center;background:var(--surface3);color:var(--text);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Apply AI Style
+        </button>
+      </div>
+      <div class="panel-divider"></div>
+      <a href="{% url 'delete_essay' essay.id %}" class="danger-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Delete Essay
+      </a>
+    </div>
+  </aside>
+
+  <!-- Right: Document editor panel -->
+  <div class="doc-panel">
+    <!-- Formatting toolbar -->
+    <div class="doc-toolbar">
+      <select class="toolbar-select" id="rt_font" onchange="applyFormatting()">
+        <option value="inter">Inter</option>
+        <option value="georgia">Georgia</option>
+        <option value="times">Times New Roman</option>
+        <option value="mono">Monospace</option>
+      </select>
+      <div class="toolbar-sep"></div>
+      <select class="toolbar-select" id="rt_size" onchange="applyFormatting()">
+        <option value="13">13px</option>
+        <option value="15" selected>15px</option>
+        <option value="17">17px</option>
+        <option value="19">19px</option>
+      </select>
+      <div class="toolbar-sep"></div>
+      <select class="toolbar-select" id="rt_spacing" onchange="applyFormatting()">
+        <option value="1.4">Compact</option>
+        <option value="1.7" selected>Normal</option>
+        <option value="2.0">Double</option>
+      </select>
+      <div class="toolbar-sep"></div>
+      <button type="button" class="align-btn active" onclick="setAlign('left',this)" title="Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
+      <button type="button" class="align-btn" onclick="setAlign('justify',this)" title="Justify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <button type="button" class="align-btn" onclick="setAlign('center',this)" title="Center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
       <div class="toolbar-spacer"></div>
-      <button type="button" class="toolbar-edit-btn" id="editBtn" onclick="toggleEdit()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <button type="button" class="toolbar-action-btn toolbar-edit-btn" id="editBtn" onclick="toggleEdit()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         Edit
       </button>
-      <button type="button" class="toolbar-save-btn" id="saveBtn" onclick="saveEdits()" style="display:none">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <button type="button" class="toolbar-action-btn toolbar-save-btn" id="saveBtn" onclick="saveEdits()" style="display:none">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
         Save
       </button>
     </div>
-
-    <!-- Read view -->
-    <div class="result-body" id="essayView">{{ essay.essay_text }}</div>
-    <!-- Edit view -->
-    <textarea class="result-editor" id="essayEditor">{{ essay.essay_text }}</textarea>
-
-    <!-- Downloads -->
-    <div class="dl-section">
-      <div class="dl-label">Download As</div>
-      <div class="dl-btns">
-        <button class="dl-btn dl-pdf" onclick="downloadEssay('pdf')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          PDF
-        </button>
-        <button class="dl-btn dl-word" onclick="downloadEssay('word')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Word
-        </button>
-        <button class="dl-btn dl-ppt" onclick="downloadEssay('powerpoint')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          PowerPoint
-        </button>
-        <button class="dl-btn dl-txt" onclick="downloadEssay('text')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="14" x2="3" y2="14"/></svg>
-          Plain Text
-        </button>
+    <!-- Document sheet -->
+    <div class="doc-body">
+      <div class="doc-sheet">
+        <div class="doc-sheet-title">{{ essay.topic }}</div>
+        <div class="essay-view" id="essayView">{{ essay.essay_text }}</div>
+        <textarea class="essay-editor" id="essayEditor">{{ essay.essay_text }}</textarea>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Bottom nav -->
 <nav class="bottom-nav">
   <a href="{% url 'dashboard' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
   <a href="{% url 'list_materials' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Materials</a>
@@ -266,13 +279,13 @@ const fontMap = {inter:"'Inter',sans-serif",georgia:"Georgia,serif",times:"'Time
 let currentAlign = 'left';
 
 function applyFormatting(){
-  const font = document.getElementById('rt_font').value;
-  const size = document.getElementById('rt_size').value;
+  const font = fontMap[document.getElementById('rt_font').value];
+  const size = document.getElementById('rt_size').value + 'px';
   const spacing = document.getElementById('rt_spacing').value;
   [document.getElementById('essayView'), document.getElementById('essayEditor')].forEach(el => {
     if(!el) return;
-    el.style.fontFamily = fontMap[font];
-    el.style.fontSize = size + 'px';
+    el.style.fontFamily = font;
+    el.style.fontSize = size;
     el.style.lineHeight = spacing;
     el.style.textAlign = currentAlign;
   });
@@ -324,13 +337,45 @@ async function saveEdits(){
       document.getElementById('editBtn').style.display = '';
       editMode = false;
       saveBtn.innerHTML = '✓ Saved';
-      setTimeout(() => { saveBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save'; saveBtn.style.display='none'; saveBtn.disabled=false; }, 1500);
+      setTimeout(() => {
+        saveBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save';
+        saveBtn.style.display = 'none';
+        saveBtn.disabled = false;
+      }, 1500);
     }
-  } catch(e){ saveBtn.textContent='Error'; saveBtn.disabled=false; }
+  } catch(e){ saveBtn.textContent = 'Error'; saveBtn.disabled = false; }
 }
 
-// Downloads
 const essayTopic = `{{ essay.topic|escapejs }}`;
+
+async function restyleEssay(){
+  const instructions = document.getElementById('styleInstructions').value.trim();
+  if(!instructions){ alert('Please describe how you want the essay styled.'); return; }
+  const btn = document.getElementById('restyleBtn');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = 'Restyling…';
+  const currentText = document.getElementById('essayView').textContent;
+  try {
+    const resp = await fetch('{% url "essay_restyle" essay.id %}', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+      body: JSON.stringify({instructions, current_text: currentText})
+    });
+    const data = await resp.json();
+    if(data.ok){
+      document.getElementById('essayView').textContent = data.text;
+      document.getElementById('essayEditor').value = data.text;
+      document.getElementById('styleInstructions').value = '';
+      btn.textContent = '✓ Done';
+      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+      btn.innerHTML = orig; btn.disabled = false;
+    }
+  } catch(e){ alert('Request failed'); btn.innerHTML = orig; btn.disabled = false; }
+}
+
 async function downloadEssay(format){
   const btn = event.target.closest('.dl-btn');
   const orig = btn.innerHTML;
@@ -339,8 +384,8 @@ async function downloadEssay(format){
   const content = document.getElementById('essayView').textContent;
   try {
     const resp = await fetch('{% url "export_essay" %}', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
       body: JSON.stringify({essay_text: content, format, topic: essayTopic})
     });
     if(resp.ok){

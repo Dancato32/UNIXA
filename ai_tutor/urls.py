@@ -14,6 +14,14 @@ urlpatterns = [
     path('essay/<int:essay_id>/', views.essay_detail, name='essay_detail'),
     path('essay/<int:essay_id>/delete/', views.delete_essay, name='delete_essay'),
     path('essay/<int:essay_id>/save-edits/', views.essay_save_edits, name='essay_save_edits'),
+    path('essay/<int:essay_id>/restyle/', views.essay_restyle, name='essay_restyle'),
+    path('essay/guidance/', views.essay_guidance, name='essay_guidance'),
+    path('essay/improve/', views.essay_improve, name='essay_improve'),
     path('essay/export/', views.export_essay, name='export_essay'),
+    path('essay/editor/', views.essay_editor, name='essay_editor'),
+    path('essay/<int:essay_id>/editor/', views.essay_editor, name='essay_editor_existing'),
+    path('essay/<int:essay_id>/editor-save/', views.essay_editor_save, name='essay_editor_save'),
+    path('essay/autocomplete/', views.essay_autocomplete, name='essay_autocomplete'),
+    path('essay/copilot/', views.essay_copilot, name='essay_copilot'),
 ]
 

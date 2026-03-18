@@ -123,10 +123,14 @@ def essay_request(request):
             topic = form.cleaned_data['topic']
             output_format = form.cleaned_data.get('output_format', 'text')
             word_count = int(form.cleaned_data.get('word_count') or 500)
-            
+            writing_style = request.POST.get('writing_style', 'argumentative')
+
+            # Build topic string with style hint for the generator
+            styled_topic = f"{topic} [Style: {writing_style}]"
+
             # Generate essay with research
-            essay_text, sources = generate_essay_with_sources(topic, user=request.user, word_count=word_count)
-            
+            essay_text, sources = generate_essay_with_sources(styled_topic, user=request.user, word_count=word_count)
+
             # Save essay request
             essay = EssayRequest.objects.create(
                 user=request.user,
@@ -136,7 +140,7 @@ def essay_request(request):
                 essay_text=essay_text,
                 output_format=output_format
             )
-            
+
             messages.success(request, f'Essay generated on "{topic}"!')
             return redirect('essay_detail', essay_id=essay.id)
     else:
@@ -391,6 +395,194 @@ def clear_conversations(request):
 
 
 @login_required
+def essay_guidance(request):
+    """Smart Essay Guidance — topic breakdown, thesis, outline before writing."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+        topic = data.get('topic', '').strip()
+        action = data.get('action', 'all')  # breakdown | thesis | outline | all
+        if not topic:
+            return JsonResponse({'error': 'Topic required'}, status=400)
+
+        from .ai_utils import get_openai_client
+        client = get_openai_client()
+
+        prompts = {
+            'breakdown': (
+                f"A student wants to write an essay on: \"{topic}\"\n\n"
+                "Give a clear topic breakdown:\n"
+                "1. What the question is really asking (in plain language)\n"
+                "2. Key concepts and terms they must understand\n"
+                "3. Common mistakes students make on this topic\n"
+                "4. What a strong essay on this topic must include\n\n"
+                "Be concise, practical, and student-friendly. No markdown."
+            ),
+            'thesis': (
+                f"Topic: \"{topic}\"\n\n"
+                "Generate exactly 3 strong thesis statements for this essay topic.\n"
+                "Each thesis should:\n"
+                "- Make a clear, arguable claim\n"
+                "- Be one sentence\n"
+                "- Be suitable for an academic essay\n\n"
+                "Format:\nThesis 1: ...\nThesis 2: ...\nThesis 3: ...\n\nNo extra commentary."
+            ),
+            'outline': (
+                f"Topic: \"{topic}\"\n\n"
+                "Build a detailed essay outline with:\n"
+                "Introduction: Hook idea, background context, thesis placeholder\n"
+                "Body Paragraph 1: Main point, supporting evidence, explanation\n"
+                "Body Paragraph 2: Main point, supporting evidence, explanation\n"
+                "Body Paragraph 3: Main point, supporting evidence, explanation\n"
+                "Conclusion: Restate thesis, summarise points, closing thought\n\n"
+                "Be specific to this topic. No markdown symbols."
+            ),
+        }
+
+        if action == 'all':
+            # Run all three and combine
+            results = {}
+            for key, prompt in prompts.items():
+                resp = client.chat.completions.create(
+                    model="openai/gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are an expert academic writing coach helping students plan essays. Be clear, practical, and encouraging."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=600, temperature=0.6,
+                )
+                results[key] = resp.choices[0].message.content.strip()
+            return JsonResponse({'ok': True, 'results': results})
+        else:
+            prompt = prompts.get(action, prompts['breakdown'])
+            resp = client.chat.completions.create(
+                model="openai/gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are an expert academic writing coach. Be clear, practical, and encouraging."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=600, temperature=0.6,
+            )
+            return JsonResponse({'ok': True, 'result': resp.choices[0].message.content.strip(), 'action': action})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def essay_improve(request):
+    """Essay Improver — grammar, vocabulary, clarity, tone adjustment."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+        essay_text = data.get('essay_text', '').strip()
+        improvements = data.get('improvements', ['grammar', 'clarity'])
+        tone = data.get('tone', '')
+        if not essay_text:
+            return JsonResponse({'error': 'Essay text required'}, status=400)
+
+        improvement_instructions = []
+        if 'grammar' in improvements:
+            improvement_instructions.append("Fix all grammar, punctuation, and spelling errors")
+        if 'vocabulary' in improvements:
+            improvement_instructions.append("Upgrade vocabulary with more precise and varied word choices")
+        if 'clarity' in improvements:
+            improvement_instructions.append("Improve sentence clarity and flow — break up run-ons, vary sentence length")
+        if 'structure' in improvements:
+            improvement_instructions.append("Improve paragraph structure and logical flow between ideas")
+        if tone:
+            improvement_instructions.append(f"Adjust the tone to be {tone}")
+
+        instructions_text = "\n".join(f"- {i}" for i in improvement_instructions)
+
+        from .ai_utils import get_openai_client
+        client = get_openai_client()
+        resp = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an expert essay editor and writing coach. "
+                        "Improve the student's essay according to the instructions. "
+                        "Preserve their voice and all their ideas. "
+                        "Output ONLY the improved essay — no commentary, no labels, no markdown."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Improvement instructions:\n{instructions_text}\n\nStudent's essay:\n{essay_text}"
+                }
+            ],
+            max_tokens=2000, temperature=0.6,
+        )
+        improved = resp.choices[0].message.content.strip()
+
+        # Also generate a brief feedback summary
+        feedback_resp = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a writing coach. Give brief, encouraging feedback."},
+                {
+                    "role": "user",
+                    "content": (
+                        f"Original essay:\n{essay_text[:1000]}\n\n"
+                        f"Improved essay:\n{improved[:1000]}\n\n"
+                        "In 2-3 sentences, summarise the key improvements made. Be specific and encouraging."
+                    )
+                }
+            ],
+            max_tokens=150, temperature=0.5,
+        )
+        feedback = feedback_resp.choices[0].message.content.strip()
+        return JsonResponse({'ok': True, 'improved': improved, 'feedback': feedback})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def essay_restyle(request, essay_id):
+    """AI restyle: rewrite essay text based on user style instructions."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    essay = get_object_or_404(EssayRequest, id=essay_id, user=request.user)
+    try:
+        data = json.loads(request.body)
+        instructions = data.get('instructions', '').strip()
+        current_text = data.get('current_text', essay.essay_text).strip()
+        if not instructions:
+            return JsonResponse({'error': 'No instructions provided'}, status=400)
+
+        from .ai_utils import get_openai_client
+        client = get_openai_client()
+        response = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an expert essay editor. The user will give you an essay and styling instructions. "
+                        "Rewrite the essay following those instructions exactly. "
+                        "Output ONLY the rewritten essay — no commentary, no headings, no markdown. "
+                        "Preserve all facts and arguments. Only change style, tone, structure, or format as instructed."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Style instructions: {instructions}\n\nEssay to restyle:\n{current_text}"
+                }
+            ],
+            max_tokens=2000,
+            temperature=0.75,
+        )
+        new_text = response.choices[0].message.content.strip()
+        return JsonResponse({'ok': True, 'text': new_text})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
 def essay_save_edits(request, essay_id):
     """Save user edits to essay text."""
     if request.method != 'POST':
@@ -470,43 +662,193 @@ def export_essay(request):
             
             elif output_format == 'powerpoint':
                 from pptx import Presentation
-                from pptx.util import Inches, Pt
-                
+                from pptx.util import Inches, Pt, Emu
+                from pptx.dml.color import RGBColor
+                from pptx.enum.text import PP_ALIGN
+                import urllib.request
+                import urllib.parse
+                import re as _re
+
+                # ── AI: generate structured slide outline ──────────────────
+                from .ai_utils import get_openai_client
+                ai_client = get_openai_client()
+                outline_resp = ai_client.chat.completions.create(
+                    model="openai/gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a professional presentation designer. "
+                                "Given an essay, produce a JSON array of slides. "
+                                "Each slide: {\"title\": str, \"bullets\": [str, ...], \"image_query\": str}. "
+                                "image_query is a short 2-4 word Unsplash search term for a relevant photo. "
+                                "First slide is the title slide with no bullets. "
+                                "Produce 6-8 slides total. Output ONLY valid JSON, no markdown."
+                            )
+                        },
+                        {"role": "user", "content": f"Topic: {topic}\n\nEssay:\n{essay_text[:3000]}"}
+                    ],
+                    max_tokens=1200,
+                    temperature=0.5,
+                )
+                raw_json = outline_resp.choices[0].message.content.strip()
+                # strip markdown code fences if present
+                raw_json = _re.sub(r'^```[a-z]*\n?', '', raw_json)
+                raw_json = _re.sub(r'\n?```$', '', raw_json)
+                try:
+                    slides_data = json.loads(raw_json)
+                except Exception:
+                    # fallback: split essay into sections
+                    sections = [s.strip() for s in essay_text.split('\n\n') if s.strip()]
+                    slides_data = [{"title": topic, "bullets": [], "image_query": topic}]
+                    for sec in sections[:7]:
+                        lines = sec.split('\n')
+                        slides_data.append({
+                            "title": lines[0][:60],
+                            "bullets": [l.strip() for l in lines[1:4] if l.strip()],
+                            "image_query": topic
+                        })
+
+                # ── Helper: fetch image bytes from Unsplash source ─────────
+                def fetch_image(query):
+                    try:
+                        safe = urllib.parse.quote(query)
+                        url = f"https://source.unsplash.com/1280x720/?{safe}"
+                        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                        with urllib.request.urlopen(req, timeout=8) as r:
+                            return r.read()
+                    except Exception:
+                        return None
+
+                # ── Design constants ───────────────────────────────────────
+                DARK_BG   = RGBColor(0x0D, 0x0D, 0x0D)
+                ACCENT    = RGBColor(0x6C, 0x63, 0xFF)   # purple
+                WHITE     = RGBColor(0xFF, 0xFF, 0xFF)
+                LIGHT_TXT = RGBColor(0xCC, 0xCC, 0xCC)
+                W = Inches(13.33)
+                H = Inches(7.5)
+
                 prs = Presentation()
-                prs.slide_width = Inches(10)
-                prs.slide_height = Inches(7.5)
-                
-                title_slide_layout = prs.slide_layouts[0]
-                slide = prs.slides.add_slide(title_slide_layout)
-                title = slide.shapes.title
-                subtitle = slide.placeholders[1]
-                title.text = topic
-                subtitle.text = "Generated by Nexa AI"
-                
-                bullet_slide_layout = prs.slide_layouts[1]
-                
-                sections = essay_text.split('\n\n')
-                for section in sections[:8]:
-                    if section.strip():
-                        slide = prs.slides.add_slide(bullet_slide_layout)
-                        title = slide.shapes.title
-                        body = slide.placeholders[1]
-                        tf = body.text_frame
-                        tf.clear()
-                        
-                        lines = section.strip().split('\n')
-                        if lines:
-                            title.text = lines[0][:50]
-                            for line in lines[1:]:
-                                if line.strip():
-                                    p = tf.add_paragraph()
-                                    p.text = line.strip()
-                                    p.level = 0
-                
+                prs.slide_width  = W
+                prs.slide_height = H
+
+                def add_bg(slide, color=DARK_BG):
+                    """Fill slide background with solid color."""
+                    fill = slide.background.fill
+                    fill.solid()
+                    fill.fore_color.rgb = color
+
+                def add_textbox(slide, text, left, top, width, height,
+                                font_size=24, bold=False, color=WHITE,
+                                align=PP_ALIGN.LEFT, wrap=True):
+                    txb = slide.shapes.add_textbox(left, top, width, height)
+                    tf  = txb.text_frame
+                    tf.word_wrap = wrap
+                    p   = tf.paragraphs[0]
+                    p.alignment = align
+                    run = p.add_run()
+                    run.text = text
+                    run.font.size = Pt(font_size)
+                    run.font.bold = bold
+                    run.font.color.rgb = color
+                    return txb
+
+                def add_accent_bar(slide, top=Inches(0.55)):
+                    """Thin horizontal accent line."""
+                    bar = slide.shapes.add_shape(
+                        1,  # MSO_SHAPE_TYPE.RECTANGLE
+                        Inches(0.5), top, Inches(12.33), Inches(0.04)
+                    )
+                    bar.fill.solid()
+                    bar.fill.fore_color.rgb = ACCENT
+                    bar.line.fill.background()
+
+                # ── Slide 1: Title slide ───────────────────────────────────
+                title_data = slides_data[0] if slides_data else {"title": topic, "image_query": topic}
+                img_bytes = fetch_image(title_data.get("image_query", topic))
+
+                blank_layout = prs.slide_layouts[6]  # completely blank
+                slide = prs.slides.add_slide(blank_layout)
+                add_bg(slide)
+
+                # Background image (dimmed)
+                if img_bytes:
+                    from io import BytesIO as _BIO
+                    pic = slide.shapes.add_picture(_BIO(img_bytes), Inches(0), Inches(0), W, H)
+                    # Send image to back
+                    slide.shapes._spTree.remove(pic._element)
+                    slide.shapes._spTree.insert(2, pic._element)
+                    # Dark overlay
+                    overlay = slide.shapes.add_shape(1, Inches(0), Inches(0), W, H)
+                    overlay.fill.solid()
+                    overlay.fill.fore_color.rgb = RGBColor(0x00, 0x00, 0x00)
+                    overlay.line.fill.background()
+                    overlay.fill.fore_color.theme_color = None
+                    # set transparency via XML
+                    from lxml import etree
+                    solidFill = overlay.fill._xPr.find('.//{http://schemas.openxmlformats.org/drawingml/2006/main}solidFill')
+                    if solidFill is not None:
+                        srgb = solidFill.find('{http://schemas.openxmlformats.org/drawingml/2006/main}srgbClr')
+                        if srgb is not None:
+                            alpha = etree.SubElement(srgb, '{http://schemas.openxmlformats.org/drawingml/2006/main}alpha')
+                            alpha.set('val', '75000')  # 75% opacity overlay
+
+                add_accent_bar(slide, top=Inches(3.1))
+                add_textbox(slide, title_data["title"], Inches(0.8), Inches(2.0),
+                            Inches(11.5), Inches(1.2), font_size=44, bold=True,
+                            color=WHITE, align=PP_ALIGN.LEFT)
+                add_textbox(slide, "Generated by Nexa AI", Inches(0.8), Inches(3.3),
+                            Inches(6), Inches(0.5), font_size=16, color=LIGHT_TXT)
+
+                # ── Content slides ─────────────────────────────────────────
+                for sd in slides_data[1:]:
+                    slide = prs.slides.add_slide(blank_layout)
+                    add_bg(slide)
+
+                    img_bytes = fetch_image(sd.get("image_query", topic))
+                    if img_bytes:
+                        from io import BytesIO as _BIO2
+                        # Right-side image panel
+                        pic = slide.shapes.add_picture(_BIO2(img_bytes),
+                                                       Inches(7.5), Inches(0), Inches(5.83), H)
+                        slide.shapes._spTree.remove(pic._element)
+                        slide.shapes._spTree.insert(2, pic._element)
+                        # Gradient overlay on image side
+                        grad = slide.shapes.add_shape(1, Inches(6.5), Inches(0), Inches(6.83), H)
+                        grad.fill.solid()
+                        grad.fill.fore_color.rgb = DARK_BG
+                        grad.line.fill.background()
+
+                    # Accent bar
+                    add_accent_bar(slide, top=Inches(1.1))
+
+                    # Slide title
+                    add_textbox(slide, sd.get("title", ""), Inches(0.5), Inches(0.2),
+                                Inches(7.0), Inches(0.85), font_size=28, bold=True,
+                                color=WHITE)
+
+                    # Bullet points
+                    bullets = sd.get("bullets", [])
+                    y = Inches(1.35)
+                    for bullet in bullets[:5]:
+                        txb = slide.shapes.add_textbox(Inches(0.5), y, Inches(6.8), Inches(0.7))
+                        tf  = txb.text_frame
+                        tf.word_wrap = True
+                        p   = tf.paragraphs[0]
+                        run = p.add_run()
+                        run.text = f"• {bullet}"
+                        run.font.size = Pt(17)
+                        run.font.color.rgb = LIGHT_TXT
+                        y += Inches(0.75)
+
+                    # Slide number
+                    add_textbox(slide, str(prs.slides.index(slide) + 1),
+                                Inches(12.5), Inches(7.1), Inches(0.5), Inches(0.3),
+                                font_size=11, color=RGBColor(0x55, 0x55, 0x55))
+
                 buffer = BytesIO()
                 prs.save(buffer)
                 buffer.seek(0)
-                
                 response = HttpResponse(
                     buffer.getvalue(),
                     content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation'
@@ -551,6 +893,146 @@ def ai_material_action(request):
         return JsonResponse({'success': False, 'error': 'Invalid request data'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def essay_editor(request, essay_id=None):
+    """Render the manual essay editor page, optionally pre-loading an existing essay."""
+    essay = None
+    if essay_id:
+        essay = get_object_or_404(EssayRequest, id=essay_id, user=request.user)
+    return render(request, 'ai_tutor/essay_editor.html', {'essay': essay})
+
+
+@login_required
+def essay_autocomplete(request):
+    """Return a short AI continuation suggestion for ghost-text autocomplete."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        context = data.get('context', '').strip()
+        if len(context) < 20:
+            return JsonResponse({'ok': False, 'suggestion': ''})
+        from .ai_utils import get_openai_client
+        client = get_openai_client()
+        resp = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an essay writing assistant. "
+                        "Continue the text the user has written with 1-2 natural sentences. "
+                        "Match their tone and style exactly. "
+                        "Output ONLY the continuation — no quotes, no commentary."
+                    )
+                },
+                {"role": "user", "content": context}
+            ],
+            max_tokens=80,
+            temperature=0.7,
+        )
+        suggestion = resp.choices[0].message.content.strip()
+        return JsonResponse({'ok': True, 'suggestion': suggestion})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
+
+
+@login_required
+def essay_copilot(request):
+    """Copilot actions: complete, expand, shorten, rephrase, fix, custom."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        action = data.get('action', 'complete')
+        selected_text = data.get('selected_text', '').strip()
+        context = data.get('context', '').strip()
+        custom_prompt = data.get('custom_prompt', '').strip()
+
+        from .ai_utils import get_openai_client
+        client = get_openai_client()
+
+        prompts = {
+            'complete': (
+                "You are an expert essay writer. "
+                "Continue writing from where the text ends. Write 2-4 paragraphs that flow naturally. "
+                "Output ONLY the continuation.",
+                context or selected_text
+            ),
+            'expand': (
+                "You are an expert essay editor. "
+                "Expand the following text with more detail, examples, and explanation. "
+                "Keep the same tone. Output ONLY the expanded version.",
+                selected_text or context
+            ),
+            'shorten': (
+                "You are an expert essay editor. "
+                "Shorten the following text while keeping all key ideas. "
+                "Output ONLY the shortened version.",
+                selected_text or context
+            ),
+            'rephrase': (
+                "You are an expert essay editor. "
+                "Rephrase the following text to sound more polished and varied. "
+                "Output ONLY the rephrased version.",
+                selected_text or context
+            ),
+            'fix': (
+                "You are an expert proofreader. "
+                "Fix all grammar, spelling, and punctuation errors in the following text. "
+                "Output ONLY the corrected text.",
+                selected_text or context
+            ),
+            'custom': (
+                f"You are an expert essay writing assistant. {custom_prompt}. "
+                "Output ONLY the result — no commentary.",
+                selected_text or context
+            ),
+        }
+
+        system_msg, user_content = prompts.get(action, prompts['complete'])
+        if not user_content:
+            return JsonResponse({'ok': False, 'error': 'No text to work with'})
+
+        resp = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": user_content}
+            ],
+            max_tokens=800,
+            temperature=0.7,
+        )
+        result = resp.choices[0].message.content.strip()
+        return JsonResponse({'ok': True, 'result': result})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
+
+
+@login_required
+def essay_editor_save(request, essay_id):
+    """Save editor content (HTML) back to the essay record."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    essay = get_object_or_404(EssayRequest, id=essay_id, user=request.user)
+    try:
+        data = json.loads(request.body)
+        content = data.get('content', '').strip()
+        title = data.get('title', '').strip()
+        if content:
+            # Strip HTML tags for plain text storage
+            import re
+            plain = re.sub(r'<[^>]+>', ' ', content)
+            plain = re.sub(r'\s+', ' ', plain).strip()
+            essay.essay_text = plain
+        if title:
+            essay.topic = title
+        essay.save()
+        return JsonResponse({'ok': True})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
 
 
 def build_material_prompt(action, material_title, extracted_text, data=None):

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Essay Editor - NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:Inter,sans-serif;background:#0a0a0a;color:#f0f0f0;display:flex;flex-direction:column;}
+.appbar{display:flex;align-items:center;height:48px;background:#111;border-bottom:1px solid #222;padding:0 1rem;gap:.625rem;flex-shrink:0;}
+.appbar-logo{font-size:.875rem;font-weight:800;color:#f0f0f0;text-decoration:none;}
+.ab-sep{width:1px;height:18px;background:#2e2e2e;}
+.doc-name{background:none;border:none;color:#f0f0f0;font-family:inherit;font-size:.875rem;font-weight:600;outline:none;min-width:100px;max-width:240px;}
+.doc-name::placeholder{color:#444;}
+.ab-space{flex:1;}
+.ab-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .7rem;font-size:.72rem;font-weight:600;border-radius:6px;cursor:pointer;border:none;font-family:inherit;transition:all .15s;white-space:nowrap;}
+.ab-ghost{background:#1a1a1a;color:#888;border:1px solid #2e2e2e;}
+.ab-ghost:hover{color:#f0f0f0;border-color:#444;}
+.ab-save{background:#fff;color:#000;}
+.ab-save:hover{background:#e8e8e8;}
+.ab-copilot{background:rgba(167,139,250,.14);color:#a78bfa;border:1px solid rgba(167,139,250,.28);}
+.ab-copilot:hover,.ab-copilot.on{background:rgba(167,139,250,.24);border-color:#a78bfa;}
+.wc-badge{font-size:.68rem;color:#555;padding:.2rem .45rem;background:#1a1a1a;border-radius:4px;border:1px solid #2e2e2e;}
+.avatar{width:26px;height:26px;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#888;}
+.toolbar{display:flex;align-items:center;gap:1px;padding:.3rem .875rem;background:#111;border-bottom:1px solid #222;flex-shrink:0;flex-wrap:wrap;row-gap:.2rem;}
+.tb-sep{width:1px;height:17px;background:#2e2e2e;margin:0 .2rem;}
+.tb-btn{min-width:27px;height:27px;padding:0 4px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid transparent;border-radius:4px;color:#888;cursor:pointer;font-family:inherit;font-size:.72rem;font-weight:700;transition:all .1s;}
+.tb-btn:hover{background:#1a1a1a;color:#f0f0f0;border-color:#2e2e2e;}
+.tb-btn.on{background:rgba(255,255,255,.09);border-color:#2e2e2e;color:#fff;}
+.tb-sel{padding:.22rem .4rem;font-size:.7rem;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:4px;color:#f0f0f0;font-family:inherit;cursor:pointer;outline:none;}
+.editor-wrap{display:flex;flex:1;overflow:hidden;}
+.doc-area{flex:1;overflow-y:auto;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 5rem;}
+.doc-area::-webkit-scrollbar{width:5px;}
+.doc-area::-webkit-scrollbar-thumb{background:#2e2e2e;border-radius:3px;}
+.doc-page{width:100%;max-width:740px;background:#111;border:1px solid #2e2e2e;border-radius:12px;padding:3rem 3.5rem;min-height:560px;position:relative;}
+.doc-title-input{width:100%;background:none;border:none;border-bottom:1px solid #222;color:#f0f0f0;font-family:inherit;font-size:1.5rem;font-weight:700;outline:none;padding-bottom:.625rem;margin-bottom:1.5rem;}
+.doc-title-input::placeholder{color:#333;}
+#editor{min-height:380px;outline:none;font-size:15px;line-height:1.85;color:#ccc;caret-color:#fff;position:relative;word-break:break-word;}
+#editor:empty::before{content:attr(data-placeholder);color:#333;pointer-events:none;position:absolute;}
+#editor p{margin-bottom:.7rem;}
+#editor h1{font-size:1.5rem;font-weight:700;color:#f0f0f0;margin-bottom:.7rem;}
+#editor h2{font-size:1.2rem;font-weight:700;color:#f0f0f0;margin-bottom:.6rem;}
+#editor h3{font-size:1rem;font-weight:600;color:#f0f0f0;margin-bottom:.5rem;}
+#editor ul,#editor ol{padding-left:1.5rem;margin-bottom:.7rem;}
+#editor li{margin-bottom:.2rem;}
+#editor blockquote{border-left:3px solid #a78bfa;padding-left:1rem;color:#888;font-style:italic;margin:.7rem 0;}
+.ghost-text{color:#444;pointer-events:none;font-style:italic;}
+#sel-toolbar{position:fixed;display:none;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:.25rem .3rem;gap:.15rem;align-items:center;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.6);}
+#sel-toolbar.show{display:flex;}
+.sel-btn{min-width:26px;height:26px;padding:0 6px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:5px;color:#888;cursor:pointer;font-size:.7rem;font-weight:700;font-family:inherit;transition:all .1s;white-space:nowrap;}
+.sel-btn:hover{background:#2e2e2e;color:#f0f0f0;}
+.sel-btn.purple{color:#a78bfa;}
+.sel-btn.purple:hover{background:rgba(167,139,250,.15);}
+.copilot-panel{width:280px;flex-shrink:0;background:#111;border-left:1px solid #222;display:flex;flex-direction:column;overflow:hidden;transition:width .2s;}
+.copilot-panel.hidden{width:0;border-left:none;overflow:hidden;}
+.cp-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid #222;flex-shrink:0;}
+.cp-title{font-size:.8rem;font-weight:700;color:#a78bfa;}
+.cp-close{background:none;border:none;color:#555;cursor:pointer;font-size:1.1rem;line-height:1;padding:0 .2rem;}
+.cp-close:hover{color:#f0f0f0;}
+.cp-body{flex:1;overflow-y:auto;padding:.75rem;}
+.cp-body::-webkit-scrollbar{width:4px;}
+.cp-body::-webkit-scrollbar-thumb{background:#2e2e2e;border-radius:2px;}
+.cp-section{margin-bottom:1rem;}
+.cp-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#444;margin-bottom:.4rem;}
+.cp-action-btn{width:100%;padding:.5rem .75rem;font-size:.75rem;font-weight:600;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:7px;color:#888;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem;}
+.cp-action-btn:hover{background:#222;color:#f0f0f0;border-color:#333;}
+.cp-action-btn.primary{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:#a78bfa;}
+.cp-action-btn.primary:hover{background:rgba(167,139,250,.2);}
+.cp-textarea{width:100%;padding:.5rem .65rem;font-size:.775rem;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:7px;color:#f0f0f0;font-family:inherit;resize:none;outline:none;line-height:1.5;}
+.cp-textarea:focus{border-color:#444;}
+.cp-textarea::placeholder{color:#444;}
+.cp-send-btn{width:100%;margin-top:.4rem;padding:.5rem;font-size:.75rem;font-weight:700;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);border-radius:7px;color:#a78bfa;cursor:pointer;font-family:inherit;transition:all .15s;}
+.cp-send-btn:hover{background:rgba(167,139,250,.25);}
+.cp-result{background:#1a1a1a;border:1px solid #2e2e2e;border-radius:7px;padding:.625rem .75rem;font-size:.775rem;line-height:1.65;color:#ccc;white-space:pre-wrap;max-height:220px;overflow-y:auto;margin-top:.5rem;}
+.cp-insert-btn{width:100%;margin-top:.35rem;padding:.4rem;font-size:.72rem;font-weight:600;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:6px;color:#888;cursor:pointer;font-family:inherit;transition:all .15s;}
+.cp-insert-btn:hover{color:#f0f0f0;border-color:#444;}
+.statusbar{display:flex;align-items:center;gap:1rem;height:26px;background:#0d0d0d;border-top:1px solid #1a1a1a;padding:0 1rem;flex-shrink:0;}
+.sb-item{font-size:.65rem;color:#444;}
+.sb-item.saving{color:#f97316;}
+.sb-item.saved{color:#22c55e;}
+@media(max-width:700px){.doc-page{padding:1.5rem 1.25rem;}.copilot-panel{position:fixed;right:0;top:0;bottom:0;z-index:500;width:260px!important;transform:translateX(100%);transition:transform .25s;}.copilot-panel.mobile-open{transform:translateX(0);}.toolbar{padding:.25rem .5rem;}}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <a href="/ai/essay/" class="appbar-logo">NEXA</a>
+  <div class="ab-sep"></div>
+  <input class="doc-name" id="docTitle" placeholder="Untitled Essay" value="{{ essay.topic|default:'' }}">
+  <div class="ab-space"></div>
+  <span class="wc-badge" id="wcBadge">0 words</span>
+  <button class="ab-btn ab-ghost" onclick="exportDoc('word')">Export Word</button>
+  <button class="ab-btn ab-ghost" onclick="exportDoc('pdf')">Export PDF</button>
+  <button class="ab-btn ab-copilot" id="copilotToggleBtn" onclick="toggleCopilot()">Copilot</button>
+  <button class="ab-btn ab-save" id="saveBtn" onclick="saveDoc()">Save</button>
+  <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+</header>
+<div class="toolbar">
+  <select class="tb-sel" onchange="execCmd('fontName',this.value)" title="Font">
+    <option value="Inter">Inter</option><option value="Georgia">Georgia</option>
+    <option value="Times New Roman">Times New Roman</option><option value="Courier New">Courier New</option>
+  </select>
+  <select class="tb-sel" onchange="execCmd('fontSize',this.value)" title="Size" style="width:46px;">
+    <option value="1">10</option><option value="2">12</option><option value="3" selected>14</option>
+    <option value="4">16</option><option value="5">18</option><option value="6">24</option><option value="7">32</option>
+  </select>
+  <div class="tb-sep"></div>
+  <select class="tb-sel" onchange="applyHeading(this.value)" title="Heading">
+    <option value="p">Normal</option><option value="h1">Heading 1</option>
+    <option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Quote</option>
+  </select>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="execCmd('bold')" title="Bold"><b>B</b></button>
+  <button class="tb-btn" onclick="execCmd('italic')" title="Italic"><i>I</i></button>
+  <button class="tb-btn" onclick="execCmd('underline')" title="Underline"><u>U</u></button>
+  <button class="tb-btn" onclick="execCmd('strikeThrough')" title="Strikethrough" style="text-decoration:line-through;">S</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="execCmd('justifyLeft')" title="Left">L</button>
+  <button class="tb-btn" onclick="execCmd('justifyCenter')" title="Center">C</button>
+  <button class="tb-btn" onclick="execCmd('justifyRight')" title="Right">R</button>
+  <button class="tb-btn" onclick="execCmd('justifyFull')" title="Justify">J</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="execCmd('insertUnorderedList')" title="Bullet">&#8226;</button>
+  <button class="tb-btn" onclick="execCmd('insertOrderedList')" title="Numbered">1.</button>
+  <button class="tb-btn" onclick="execCmd('indent')" title="Indent">&rarr;</button>
+  <button class="tb-btn" onclick="execCmd('outdent')" title="Outdent">&larr;</button>
+  <div class="tb-sep"></div>
+  <label class="tb-btn" title="Text Color" style="position:relative;overflow:hidden;">A
+    <input type="color" id="txtColor" style="position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;" onchange="execCmd('foreColor',this.value)">
+  </label>
+  <label class="tb-btn" title="Highlight" style="position:relative;overflow:hidden;">H
+    <input type="color" id="hlColor" value="#a78bfa" style="position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;" onchange="execCmd('hiliteColor',this.value)">
+  </label>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="insertLink()" title="Link">&#128279;</button>
+  <button class="tb-btn" onclick="execCmd('undo')" title="Undo">&#8617;</button>
+  <button class="tb-btn" onclick="execCmd('redo')" title="Redo">&#8618;</button>
+</div>
+<div id="sel-toolbar">
+  <button class="sel-btn" onclick="execCmd('bold')"><b>B</b></button>
+  <button class="sel-btn" onclick="execCmd('italic')"><i>I</i></button>
+  <button class="sel-btn" onclick="execCmd('underline')"><u>U</u></button>
+  <div style="width:1px;height:16px;background:#333;margin:0 2px;"></div>
+  <button class="sel-btn purple" onclick="copilotSelection('complete')">Complete</button>
+  <button class="sel-btn purple" onclick="copilotSelection('expand')">Expand</button>
+  <button class="sel-btn purple" onclick="copilotSelection('shorten')">Shorten</button>
+  <button class="sel-btn purple" onclick="copilotSelection('rephrase')">Rephrase</button>
+  <button class="sel-btn purple" onclick="copilotSelection('fix')">Fix</button>
+</div>
+<div class="editor-wrap">
+  <div class="doc-area" id="docArea">
+    <div class="doc-page">
+      <input class="doc-title-input" id="docTitlePage" placeholder="Essay Title..." value="{{ essay.topic|default:'' }}">
+      <div id="editor" contenteditable="true" data-placeholder="Start writing... or press Tab to accept AI suggestions.">{% if essay %}{{ essay.essay_text|linebreaks }}{% endif %}</div>
+    </div>
+  </div>
+  <aside class="copilot-panel hidden" id="copilotPanel">
+    <div class="cp-header">
+      <span class="cp-title">Nexa Copilot</span>
+      <button class="cp-close" onclick="toggleCopilot()">x</button>
+    </div>
+    <div class="cp-body">
+      <div class="cp-section">
+        <div class="cp-label">Quick Actions</div>
+        <button class="cp-action-btn primary" onclick="runCopilot('complete')">Complete from cursor</button>
+        <button class="cp-action-btn" onclick="runCopilot('expand')">Expand selection</button>
+        <button class="cp-action-btn" onclick="runCopilot('shorten')">Shorten selection</button>
+        <button class="cp-action-btn" onclick="runCopilot('rephrase')">Rephrase selection</button>
+        <button class="cp-action-btn" onclick="runCopilot('fix')">Fix grammar</button>
+      </div>
+      <div class="cp-section">
+        <div class="cp-label">Custom Prompt</div>
+        <textarea class="cp-textarea" id="cpCustomPrompt" rows="3" placeholder="e.g. Make this more persuasive..."></textarea>
+        <button class="cp-send-btn" onclick="runCopilot('custom')">Ask Copilot</button>
+      </div>
+      <div class="cp-section" id="cpResultSection" style="display:none;">
+        <div class="cp-label">Copilot Response</div>
+        <div class="cp-result" id="cpResult"></div>
+        <button class="cp-insert-btn" id="cpInsertBtn" onclick="insertCopilotResult()" style="display:none;">Insert at cursor</button>
+        <button class="cp-insert-btn" id="cpReplaceBtn" onclick="replaceCopilotResult()" style="margin-top:.2rem;display:none;">Replace selection</button>
+      </div>
+    </div>
+  </aside>
+</div>
+<div class="statusbar">
+  <span class="sb-item" id="saveIndicator">All changes saved</span>
+  <span class="sb-item" id="sbWords">0 words</span>
+  <span class="sb-item" id="sbChars">0 chars</span>
+  <span class="sb-item" id="sbReadTime">0 min read</span>
+</div>
+<script>
+var CSRF = '{{ csrf_token }}';
+var ESSAY_ID = '{{ essay.id|default:"" }}';
+var AUTOCOMPLETE_URL = '{% url "essay_autocomplete" %}';
+var COPILOT_URL = '{% url "essay_copilot" %}';
+var SAVE_URL = ESSAY_ID ? ('/ai/essay/' + ESSAY_ID + '/editor-save/') : null;
+
+var editor = document.getElementById('editor');
+var wcBadge = document.getElementById('wcBadge');
+var sbWords = document.getElementById('sbWords');
+var sbChars = document.getElementById('sbChars');
+var sbReadTime = document.getElementById('sbReadTime');
+var saveIndicator = document.getElementById('saveIndicator');
+
+function updateWordCount(){
+  var text = editor.innerText.trim();
+  var words = text ? text.split(/\s+/).length : 0;
+  var chars = text.length;
+  wcBadge.textContent = words + ' words';
+  sbWords.textContent = words + ' words';
+  sbChars.textContent = chars + ' chars';
+  sbReadTime.textContent = Math.max(1, Math.ceil(words / 200)) + ' min read';
+}
+
+function execCmd(cmd, val){
+  editor.focus();
+  document.execCommand(cmd, false, val || null);
+}
+
+function applyHeading(tag){
+  editor.focus();
+  document.execCommand('formatBlock', false, tag);
+}
+
+function insertLink(){
+  var url = prompt('Enter URL:');
+  if(url) execCmd('createLink', url);
+}
+
+document.getElementById('docTitlePage').addEventListener('input', function(){
+  document.getElementById('docTitle').value = this.value;
+});
+document.getElementById('docTitle').addEventListener('input', function(){
+  document.getElementById('docTitlePage').value = this.value;
+});
+
+var saveTimer = null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveIndicator.textContent = 'Saving...';
+  saveIndicator.className = 'sb-item saving';
+  saveTimer = setTimeout(saveDoc, 2000);
+}
+
+async function saveDoc(){
+  if(!SAVE_URL){ saveIndicator.textContent = 'No essay linked'; return; }
+  var title = document.getElementById('docTitle').value.trim();
+  var content = editor.innerHTML;
+  try {
+    var r = await fetch(SAVE_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({content: content, title: title})
+    });
+    var d = await r.json();
+    if(d.ok){
+      saveIndicator.textContent = 'Saved';
+      saveIndicator.className = 'sb-item saved';
+      setTimeout(function(){ saveIndicator.textContent='All changes saved'; saveIndicator.className='sb-item'; }, 2000);
+    }
+  } catch(e){ saveIndicator.textContent = 'Save failed'; }
+}
+
+editor.addEventListener('input', function(){ updateWordCount(); scheduleSave(); });
+
+async function exportDoc(fmt){
+  var topic = document.getElementById('docTitle').value || 'Essay';
+  var text = editor.innerText;
+  var r = await fetch('{% url "export_essay" %}', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+    body: JSON.stringify({essay_text: text, format: fmt, topic: topic})
+  });
+  if(r.ok){
+    var blob = await r.blob();
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = topic.slice(0,30) + (fmt==='word' ? '.docx' : '.pdf');
+    a.click();
+  }
+}
+
+function toggleCopilot(){
+  var panel = document.getElementById('copilotPanel');
+  var btn = document.getElementById('copilotToggleBtn');
+  var isMobile = window.innerWidth <= 700;
+  if(isMobile){
+    panel.classList.toggle('mobile-open');
+    panel.classList.remove('hidden');
+  } else {
+    panel.classList.toggle('hidden');
+  }
+  btn.classList.toggle('on', !panel.classList.contains('hidden'));
+}
+
+function getSelectionText(){
+  var sel = window.getSelection();
+  return sel ? sel.toString().trim() : '';
+}
+
+function getTextBeforeCursor(maxChars){
+  maxChars = maxChars || 800;
+  var sel = window.getSelection();
+  if(!sel || !sel.rangeCount) return editor.innerText.slice(-maxChars);
+  var range = sel.getRangeAt(0).cloneRange();
+  range.setStart(editor, 0);
+  var frag = range.cloneContents();
+  var div = document.createElement('div');
+  div.appendChild(frag);
+  var txt = div.innerText || div.textContent || '';
+  return txt.slice(-maxChars);
+}
+
+var lastCopilotResult = '';
+var lastSelRange = null;
+
+async function runCopilot(action){
+  var selText = getSelectionText();
+  var context = getTextBeforeCursor();
+  var customPrompt = document.getElementById('cpCustomPrompt').value.trim();
+  var sel = window.getSelection();
+  if(sel && sel.rangeCount) lastSelRange = sel.getRangeAt(0).cloneRange();
+  var resultEl = document.getElementById('cpResult');
+  var sectionEl = document.getElementById('cpResultSection');
+  var insertBtn = document.getElementById('cpInsertBtn');
+  var replaceBtn = document.getElementById('cpReplaceBtn');
+  sectionEl.style.display = 'block';
+  resultEl.textContent = 'Thinking...';
+  insertBtn.style.display = 'none';
+  replaceBtn.style.display = 'none';
+  try {
+    var r = await fetch(COPILOT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({action:action, selected_text:selText, context:context, custom_prompt:customPrompt})
+    });
+    var d = await r.json();
+    if(!d.ok) throw new Error(d.error || 'Error');
+    lastCopilotResult = d.result;
+    resultEl.textContent = d.result;
+    if(action === 'complete'){ insertBtn.style.display = 'block'; }
+    else if(selText){ replaceBtn.style.display = 'block'; }
+    else { insertBtn.style.display = 'block'; }
+  } catch(e){ resultEl.textContent = 'Error: ' + e.message; }
+}
+
+function insertCopilotResult(){
+  if(!lastCopilotResult) return;
+  editor.focus();
+  var sel = window.getSelection();
+  if(lastSelRange){ sel.removeAllRanges(); sel.addRange(lastSelRange); }
+  document.execCommand('insertText', false, lastCopilotResult);
+  updateWordCount(); scheduleSave();
+}
+
+function replaceCopilotResult(){
+  if(!lastCopilotResult || !lastSelRange) return;
+  editor.focus();
+  var sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(lastSelRange);
+  document.execCommand('insertText', false, lastCopilotResult);
+  updateWordCount(); scheduleSave();
+}
+
+var selToolbar = document.getElementById('sel-toolbar');
+document.addEventListener('mouseup', function(){
+  setTimeout(function(){
+    var sel = window.getSelection();
+    if(sel && sel.toString().trim().length > 0 && editor.contains(sel.anchorNode)){
+      var rect = sel.getRangeAt(0).getBoundingClientRect();
+      selToolbar.style.left = Math.max(4, rect.left + rect.width/2 - 140) + 'px';
+      selToolbar.style.top = (rect.top + window.scrollY - 44) + 'px';
+      selToolbar.classList.add('show');
+    } else {
+      selToolbar.classList.remove('show');
+    }
+  }, 10);
+});
+document.addEventListener('mousedown', function(e){
+  if(!selToolbar.contains(e.target)) selToolbar.classList.remove('show');
+});
+
+function copilotSelection(action){
+  selToolbar.classList.remove('show');
+  var panel = document.getElementById('copilotPanel');
+  if(panel.classList.contains('hidden')) toggleCopilot();
+  runCopilot(action);
+}
+
+var acTimer = null;
+var ghostNode = null;
+var ghostText = '';
+
+function clearGhost(){
+  if(ghostNode){ ghostNode.remove(); ghostNode = null; }
+  ghostText = '';
+}
+
+async function triggerAutocomplete(){
+  clearGhost();
+  var context = getTextBeforeCursor(600);
+  if(context.trim().length < 20) return;
+  try {
+    var r = await fetch(AUTOCOMPLETE_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({context: context})
+    });
+    var d = await r.json();
+    if(!d.ok || !d.suggestion) return;
+    ghostText = d.suggestion;
+    var sel = window.getSelection();
+    if(!sel || !sel.rangeCount) return;
+    var range = sel.getRangeAt(0);
+    ghostNode = document.createElement('span');
+    ghostNode.className = 'ghost-text';
+    ghostNode.contentEditable = 'false';
+    ghostNode.textContent = ghostText;
+    range.insertNode(ghostNode);
+    range.setStartBefore(ghostNode);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch(e){ /* silent */ }
+}
+
+editor.addEventListener('keydown', function(e){
+  if(ghostNode && e.key === 'Tab'){
+    e.preventDefault();
+    var text = ghostText;
+    clearGhost();
+    document.execCommand('insertText', false, text);
+    updateWordCount(); scheduleSave();
+    return;
+  }
+  if(ghostNode && e.key !== 'Tab') clearGhost();
+  clearTimeout(acTimer);
+  if(e.key !== 'Tab' && e.key !== 'Escape'){
+    acTimer = setTimeout(triggerAutocomplete, 1400);
+  }
+});
+
+editor.addEventListener('keyup', updateWordCount);
+updateWordCount();
+editor.focus();
+</script>
+</body>
+</html>

@@ -7,26 +7,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--surface3:#222;--border:#222;--border2:#2e2e2e;--text:#f0f0f0;--text2:#888;--text3:#444;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-
-/* ── Desktop top navbar ── */
-.topnav{display:flex;align-items:center;justify-content:space-between;height:56px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:200;}
-.topnav-logo{font-size:1rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.02em;}
-.topnav-links{display:flex;align-items:center;gap:.25rem;}
-.topnav-link{display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;color:var(--text2);text-decoration:none;font-size:.8125rem;font-weight:500;border-radius:7px;transition:all .15s;white-space:nowrap;}
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--surface3:#222;
+  --border:#222;--border2:#2e2e2e;--text:#f0f0f0;--text2:#888;--text3:#444;
+  --blue:#3b82f6;--green:#22c55e;--purple:#a78bfa;--orange:#f97316;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+.topnav{display:flex;align-items:center;justify-content:space-between;height:52px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.25rem;position:sticky;top:0;z-index:200;flex-shrink:0;}
+.topnav-logo{font-size:.9375rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.02em;}
+.topnav-links{display:flex;align-items:center;gap:.125rem;}
+.topnav-link{display:flex;align-items:center;gap:.35rem;padding:.35rem .65rem;color:var(--text2);text-decoration:none;font-size:.775rem;font-weight:500;border-radius:6px;transition:all .15s;white-space:nowrap;}
 .topnav-link:hover{background:var(--surface2);color:var(--text);}
 .topnav-link.active{background:rgba(255,255,255,.07);color:var(--text);}
-.topnav-link svg{width:14px;height:14px;flex-shrink:0;}
-.topnav-right{display:flex;align-items:center;gap:.75rem;}
-.avatar{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--text2);}
-
-/* ── Mobile topbar ── */
+.topnav-link svg{width:13px;height:13px;flex-shrink:0;}
+.topnav-right{display:flex;align-items:center;gap:.5rem;}
+.avatar{width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--text2);}
 .mobile-topbar{display:none;height:52px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200;}
 .menu-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text2);cursor:pointer;border-radius:6px;}
 .menu-btn svg{width:20px;height:20px;}
-
-/* ── Mobile sidebar ── */
 .sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:300;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .25s;}
 .sidebar.open{transform:translateX(0);}
 .sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);}
@@ -39,116 +37,143 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .nav-divider{height:1px;background:var(--border);margin:.5rem 0;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;}
 .overlay.open{display:block;}
-
-/* ── Page ── */
-.page{padding:2rem;max-width:820px;margin:0 auto;}
-.page-head{text-align:center;margin-bottom:2rem;}
-.page-title{font-size:1.75rem;font-weight:800;margin-bottom:.375rem;}
-.page-sub{font-size:.9rem;color:var(--text2);}
-
-/* ── Form card ── */
-.form-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;overflow:hidden;margin-bottom:2rem;}
-.form-section{padding:1.5rem;}
-.form-section+.form-section{border-top:1px solid var(--border);}
-.section-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
-.section-label svg{width:13px;height:13px;}
-
-/* Topic input */
-.topic-input{width:100%;padding:.875rem 1rem;font-size:1rem;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;transition:border-color .15s;}
-.topic-input:focus{outline:none;border-color:#555;}
-.topic-input::placeholder{color:var(--text3);}
-.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.875rem;}
-.chip{padding:.35rem .75rem;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:.75rem;color:var(--text2);cursor:pointer;transition:all .15s;}
+</style>
+</head>
+<body>
+<style>
+.workspace{display:flex;flex:1;height:calc(100vh - 52px);overflow:hidden;}
+/* Left panel */
+.settings-panel{width:300px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+/* Mode tabs */
+.mode-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.mode-tab{flex:1;padding:.6rem .2rem;font-size:.65rem;font-weight:700;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:.2rem;border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.04em;}
+.mode-tab svg{width:13px;height:13px;}
+.mode-tab:hover{color:var(--text2);}
+.mode-tab.active.tab-generate{border-bottom-color:#3b82f6;color:#3b82f6;}
+.mode-tab.active.tab-guidance{border-bottom-color:#22c55e;color:#22c55e;}
+.mode-tab.active.tab-improver{border-bottom-color:#a78bfa;color:#a78bfa;}
+.mode-tab.tab-write{color:var(--text3);}
+.mode-tab.tab-write:hover{color:#f97316;}
+/* Panel panes */
+.panel-pane{display:none;flex:1;overflow-y:auto;flex-direction:column;}
+.panel-pane.active{display:flex;}
+.panel-pane::-webkit-scrollbar{width:4px;}
+.panel-pane::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.panel-body{padding:1rem 1.125rem;display:flex;flex-direction:column;gap:.875rem;}
+.field-label{font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.375rem;}
+.field-input{width:100%;padding:.625rem .875rem;font-size:.8375rem;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;transition:border-color .15s;}
+.field-input:focus{outline:none;border-color:#555;}
+.field-input::placeholder{color:var(--text3);}
+textarea.field-input{resize:none;}
+.field-select{width:100%;padding:.575rem .875rem;font-size:.8375rem;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;}
+.field-select:focus{outline:none;border-color:#555;}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.375rem;}
+.chip{padding:.2rem .55rem;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:.65rem;color:var(--text2);cursor:pointer;transition:all .15s;}
 .chip:hover{background:var(--surface3);color:var(--text);border-color:#444;}
-
-/* Format cards */
-.format-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;}
+/* Format grid */
+.format-grid{display:grid;grid-template-columns:1fr 1fr;gap:.375rem;}
 .format-card{cursor:pointer;}
 .format-card input{display:none;}
-.format-inner{display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1rem .75rem;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;transition:all .15s;text-align:center;}
+.format-inner{display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;transition:all .15s;}
 .format-card:hover .format-inner{border-color:#444;}
 .format-card input:checked+.format-inner{border-color:#fff;background:rgba(255,255,255,.05);}
-.format-icon{width:36px;height:36px;border-radius:9px;background:var(--surface3);display:flex;align-items:center;justify-content:center;}
-.format-icon svg{width:18px;height:18px;color:var(--text2);}
-.format-card input:checked+.format-inner .format-icon{background:rgba(255,255,255,.1);}
+.format-icon{width:22px;height:22px;border-radius:5px;background:var(--surface3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.format-icon svg{width:11px;height:11px;color:var(--text2);}
 .format-card input:checked+.format-inner .format-icon svg{color:#fff;}
-.format-name{font-size:.8rem;font-weight:600;}
-.format-desc{font-size:.7rem;color:var(--text2);}
-
-/* Word count chips */
-.wc-chips{display:flex;flex-wrap:wrap;gap:.5rem;}
-.wc-chip{cursor:pointer;}
-.wc-chip input{display:none;}
-.wc-inner{padding:.4rem .875rem;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:.8rem;color:var(--text2);transition:all .15s;}
-.wc-chip:hover .wc-inner{border-color:#444;color:var(--text);}
-.wc-chip input:checked+.wc-inner{background:var(--text);color:#000;border-color:var(--text);}
-
-/* Research toggle */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
-.toggle-info h4{font-size:.875rem;font-weight:600;margin-bottom:.2rem;}
-.toggle-info p{font-size:.75rem;color:var(--text2);}
-.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.format-name{font-size:.7rem;font-weight:600;}
+/* Style pills */
+.style-pills{display:flex;flex-wrap:wrap;gap:.3rem;}
+.style-pill{cursor:pointer;}
+.style-pill input{display:none;}
+.style-inner{padding:.275rem .6rem;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:.7rem;font-weight:500;color:var(--text2);transition:all .15s;}
+.style-pill:hover .style-inner{border-color:#444;color:var(--text);}
+.style-pill input:checked+.style-inner{background:rgba(59,130,246,.12);border-color:#3b82f6;color:#3b82f6;}
+/* Toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
+.toggle-info h4{font-size:.775rem;font-weight:600;margin-bottom:.1rem;}
+.toggle-info p{font-size:.65rem;color:var(--text2);}
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
 .toggle input{opacity:0;width:0;height:0;}
-.toggle-track{position:absolute;inset:0;background:var(--surface3);border-radius:12px;cursor:pointer;transition:background .2s;border:1px solid var(--border2);}
+.toggle-track{position:absolute;inset:0;background:var(--surface3);border-radius:10px;cursor:pointer;transition:background .2s;border:1px solid var(--border2);}
 .toggle input:checked+.toggle-track{background:#fff;}
-.toggle-track::after{content:'';position:absolute;width:18px;height:18px;background:var(--text2);border-radius:50%;top:2px;left:2px;transition:transform .2s;}
-.toggle input:checked+.toggle-track::after{transform:translateX(20px);background:#000;}
-
-/* Generate button */
-.gen-btn{width:100%;padding:.875rem;font-size:.9375rem;font-weight:700;background:#fff;color:#000;border:none;border-radius:10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.625rem;transition:all .15s;}
-.gen-btn:hover{background:#e8e8e8;transform:translateY(-1px);}
-.gen-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.gen-btn svg{width:18px;height:18px;}
-
+.toggle-track::after{content:'';position:absolute;width:14px;height:14px;background:var(--text2);border-radius:50%;top:2px;left:2px;transition:transform .2s;}
+.toggle input:checked+.toggle-track::after{transform:translateX(16px);background:#000;}
+/* Improvement checkboxes */
+.improve-checks{display:flex;flex-direction:column;gap:.375rem;}
+.improve-check{display:flex;align-items:center;gap:.5rem;cursor:pointer;}
+.improve-check input{width:14px;height:14px;accent-color:#a78bfa;cursor:pointer;}
+.improve-check span{font-size:.775rem;color:var(--text2);}
+/* Action buttons */
+.action-btn{width:100%;padding:.75rem;font-size:.8375rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .15s;}
+.action-btn svg{width:14px;height:14px;}
+.btn-generate{background:#fff;color:#000;}
+.btn-generate:hover{background:#e8e8e8;}
+.btn-guidance{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
+.btn-guidance:hover{background:rgba(34,197,94,.22);}
+.btn-improve{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.25);}
+.btn-improve:hover{background:rgba(167,139,250,.22);}
+.action-btn:disabled{opacity:.5;cursor:not-allowed;}
 /* Loading */
-.loading-overlay{display:none;padding:3rem;text-align:center;}
-.loading-overlay.active{display:block;}
-.spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;}
+.loading-state{display:none;padding:1.5rem 1.125rem;text-align:center;}
+.loading-state.active{display:block;}
+.spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.loading-text{font-size:.9375rem;font-weight:600;margin-bottom:.375rem;}
-.loading-sub{font-size:.8125rem;color:var(--text2);}
-
-/* Past essays */
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
-.sec-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);}
-.essays-list{display:flex;flex-direction:column;gap:.625rem;}
-.essay-item{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;text-decoration:none;color:inherit;transition:all .15s;}
+.loading-text{font-size:.8125rem;font-weight:600;margin-bottom:.2rem;}
+.loading-sub{font-size:.7rem;color:var(--text2);}
+/* Right panel */
+.doc-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+.doc-toolbar{display:flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.doc-toolbar-title{font-size:.8125rem;font-weight:600;color:var(--text2);}
+.doc-toolbar-spacer{flex:1;}
+.doc-content{flex:1;overflow-y:auto;padding:2rem 2.5rem;}
+.doc-content::-webkit-scrollbar{width:5px;}
+.doc-content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* Welcome state */
+.welcome-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;}
+.welcome-icon{width:52px;height:52px;background:var(--surface);border:1px solid var(--border2);border-radius:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.125rem;}
+.welcome-icon svg{width:24px;height:24px;color:var(--text3);}
+.welcome-title{font-size:1.125rem;font-weight:700;margin-bottom:.4rem;}
+.welcome-sub{font-size:.8125rem;color:var(--text2);max-width:320px;line-height:1.6;}
+/* Essays list */
+.essays-list{display:flex;flex-direction:column;gap:.5rem;}
+.essay-item{display:flex;align-items:center;gap:.875rem;padding:.875rem 1rem;background:var(--surface);border:1px solid var(--border2);border-radius:10px;transition:all .15s;}
 .essay-item:hover{background:var(--surface2);border-color:#333;}
-.essay-icon{width:38px;height:38px;border-radius:9px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.essay-icon svg{width:17px;height:17px;color:var(--text2);}
+.essay-icon{width:32px;height:32px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.essay-icon svg{width:14px;height:14px;color:var(--text2);}
 .essay-info{flex:1;min-width:0;}
-.essay-title{font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.essay-meta{font-size:.75rem;color:var(--text2);margin-top:.15rem;}
-.essay-actions{display:flex;gap:.375rem;flex-shrink:0;}
-.btn-sm{display:inline-flex;align-items:center;padding:.35rem .75rem;font-size:.75rem;font-weight:600;border-radius:6px;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
+.essay-title{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.essay-meta{font-size:.675rem;color:var(--text2);margin-top:.1rem;}
+.essay-actions{display:flex;gap:.3rem;flex-shrink:0;}
+.btn-sm{display:inline-flex;align-items:center;padding:.275rem .6rem;font-size:.675rem;font-weight:600;border-radius:5px;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
 .btn-view{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
 .btn-view:hover{color:var(--text);border-color:#444;}
 .btn-del{background:rgba(239,68,68,.08);color:#f87171;border:1px solid rgba(239,68,68,.15);}
 .btn-del:hover{background:rgba(239,68,68,.15);}
-.empty-state{text-align:center;padding:2.5rem;color:var(--text2);font-size:.875rem;}
-
+.empty-state{text-align:center;padding:2rem;color:var(--text2);font-size:.8125rem;}
+/* Guidance / Improver result cards */
+.result-section{margin-bottom:1.5rem;}
+.result-section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:.625rem;display:flex;align-items:center;gap:.4rem;}
+.result-section-title svg{width:12px;height:12px;}
+.result-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1rem 1.125rem;font-size:.8375rem;line-height:1.75;color:#ccc;white-space:pre-wrap;}
+.feedback-card{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:.875rem 1.125rem;font-size:.8rem;line-height:1.65;color:#c4b5fd;}
+.improved-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1.25rem;font-size:.875rem;line-height:1.8;color:#ccc;white-space:pre-wrap;max-height:600px;overflow-y:auto;}
+.improved-card::-webkit-scrollbar{width:4px;}
+.improved-card::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.copy-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;font-size:.7rem;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:inherit;transition:all .15s;margin-top:.625rem;}
+.copy-btn:hover{color:var(--text);border-color:#444;}
 /* Bottom nav */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:.5rem;z-index:100;justify-content:space-around;}
 .bn-item{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.4rem .75rem;color:var(--text3);text-decoration:none;font-size:.6rem;border-radius:6px;}
 .bn-item svg{width:20px;height:20px;}
 .bn-item.active{color:var(--text);}
-
 @media(max-width:900px){
-  .topnav{display:none;}
-  .mobile-topbar{display:flex;}
-  .bottom-nav{display:flex;}
-  .page{padding:1rem;padding-bottom:5rem;}
-  .format-grid{grid-template-columns:repeat(2,1fr);}
+  .topnav{display:none;}.mobile-topbar{display:flex;}.bottom-nav{display:flex;}
+  .workspace{flex-direction:column;height:auto;overflow:visible;}
+  .settings-panel{width:100%;border-right:none;border-bottom:1px solid var(--border);}
+  .doc-panel{min-height:400px;}.doc-content{padding:1.25rem;}
 }
-@media(max-width:600px){
-  .page-title{font-size:1.375rem;}
-  .format-grid{grid-template-columns:repeat(2,1fr);}
-  .essay-actions{flex-direction:column;}
-}
+@media(max-width:600px){.format-grid{grid-template-columns:1fr 1fr;}.essay-actions{flex-direction:column;}}
 </style>
-</head>
-<body>
-
 <!-- Desktop top navbar -->
 <nav class="topnav">
   <a href="{% url 'dashboard' %}" class="topnav-logo">NEXA</a>
@@ -166,15 +191,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
   </div>
 </nav>
-
-<!-- Mobile topbar -->
 <div class="mobile-topbar">
   <button class="menu-btn" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
   <span style="font-size:.875rem;font-weight:600;color:var(--text2);">Essay Generator</span>
   <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
 </div>
-
-<!-- Mobile sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo"><a href="{% url 'dashboard' %}">NEXA</a></div>
   <nav class="sidebar-nav">
@@ -190,144 +211,236 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   </nav>
 </aside>
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+<!-- Two-panel workspace -->
+<div class="workspace">
+  <!-- Left: Settings panel with 3 mode tabs -->
+  <aside class="settings-panel">
+    <div class="mode-tabs">
+      <button class="mode-tab tab-generate active" onclick="switchMode('generate',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Generate
+      </button>
+      <button class="mode-tab tab-guidance" onclick="switchMode('guidance',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Guidance
+      </button>
+      <button class="mode-tab tab-improver" onclick="switchMode('improver',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Improver
+      </button>
+      <a href="{% url 'essay_editor' %}" class="mode-tab tab-write" style="text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Write
+      </a>
+    </div>
 
-<div class="page">
-  <div class="page-head">
-    <h1 class="page-title">Essay Generator</h1>
-    <p class="page-sub">AI-powered essays with web research, humanized to sound natural</p>
-  </div>
-
-  <!-- Generator form -->
-  <div class="form-card" id="formCard">
-    <form method="POST" id="essayForm">
-      {% csrf_token %}
-
-      <!-- Topic -->
-      <div class="form-section">
-        <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Essay Topic</div>
-        <input type="text" name="topic" id="topicInput" class="topic-input" placeholder="e.g. The impact of AI on modern education…" required>
-        <div class="chips">
-          <span class="chip" onclick="setTopic('The impact of artificial intelligence on education')">AI in Education</span>
-          <span class="chip" onclick="setTopic('Climate change and its effects on biodiversity')">Climate Change</span>
-          <span class="chip" onclick="setTopic('The history and evolution of the internet')">History of Internet</span>
-          <span class="chip" onclick="setTopic('The importance of mental health awareness')">Mental Health</span>
-          <span class="chip" onclick="setTopic('Renewable energy sources and their future')">Renewable Energy</span>
-          <span class="chip" onclick="setTopic('Social media and its impact on society')">Social Media</span>
-        </div>
-      </div>
-
-      <!-- Output format -->
-      <div class="form-section">
-        <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Output Format</div>
-        <div class="format-grid">
-          <label class="format-card">
-            <input type="radio" name="output_format" value="text" checked>
-            <div class="format-inner">
-              <div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="14" x2="3" y2="14"/><line x1="15" y1="18" x2="3" y2="18"/></svg></div>
-              <div class="format-name">Plain Text</div>
-              <div class="format-desc">Read online</div>
+    <!-- PANE 1: Generate -->
+    <div class="panel-pane active" id="pane-generate">
+      <form method="POST" id="essayForm">
+        {% csrf_token %}
+        <div class="panel-body">
+          <div>
+            <div class="field-label">Essay Topic</div>
+            <textarea name="topic" id="topicInput" class="field-input" rows="3" placeholder="e.g. The impact of AI on modern education…" required></textarea>
+            <div class="chips">
+              <span class="chip" onclick="setTopic('The impact of artificial intelligence on education')">AI in Education</span>
+              <span class="chip" onclick="setTopic('Climate change and its effects on biodiversity')">Climate Change</span>
+              <span class="chip" onclick="setTopic('The history and evolution of the internet')">History of Internet</span>
+              <span class="chip" onclick="setTopic('The importance of mental health awareness')">Mental Health</span>
+              <span class="chip" onclick="setTopic('Renewable energy sources and their future')">Renewable Energy</span>
+              <span class="chip" onclick="setTopic('Social media and its impact on society')">Social Media</span>
             </div>
-          </label>
-          <label class="format-card">
-            <input type="radio" name="output_format" value="pdf">
-            <div class="format-inner">
-              <div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-              <div class="format-name">PDF</div>
-              <div class="format-desc">Print-ready</div>
-            </div>
-          </label>
-          <label class="format-card">
-            <input type="radio" name="output_format" value="word">
-            <div class="format-inner">
-              <div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-              <div class="format-name">Word</div>
-              <div class="format-desc">Editable .docx</div>
-            </div>
-          </label>
-          <label class="format-card">
-            <input type="radio" name="output_format" value="powerpoint">
-            <div class="format-inner">
-              <div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-              <div class="format-name">Slides</div>
-              <div class="format-desc">PowerPoint</div>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Word count -->
-      <div class="form-section">
-        <div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>Essay Length</div>
-        <div class="wc-chips">
-          <label class="wc-chip"><input type="radio" name="word_count" value="250"><div class="wc-inner">250 words</div></label>
-          <label class="wc-chip"><input type="radio" name="word_count" value="500" checked><div class="wc-inner">500 words</div></label>
-          <label class="wc-chip"><input type="radio" name="word_count" value="750"><div class="wc-inner">750 words</div></label>
-          <label class="wc-chip"><input type="radio" name="word_count" value="1000"><div class="wc-inner">1000 words</div></label>
-          <label class="wc-chip"><input type="radio" name="word_count" value="1500"><div class="wc-inner">1500 words</div></label>
-          <label class="wc-chip"><input type="radio" name="word_count" value="2000"><div class="wc-inner">2000 words</div></label>
-          <label class="wc-chip"><input type="radio" name="word_count" value="3000"><div class="wc-inner">3000 words</div></label>
-        </div>
-      </div>
-
-      <!-- Research toggle -->
-      <div class="form-section">
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <h4>Web Research</h4>
-            <p>AI searches the web for up-to-date sources and facts</p>
           </div>
-          <label class="toggle">
-            <input type="checkbox" name="research_done" checked>
-            <span class="toggle-track"></span>
-          </label>
+          <div>
+            <div class="field-label">Writing Style</div>
+            <div class="style-pills">
+              <label class="style-pill"><input type="radio" name="writing_style" value="argumentative" checked><span class="style-inner">Argumentative</span></label>
+              <label class="style-pill"><input type="radio" name="writing_style" value="narrative"><span class="style-inner">Narrative</span></label>
+              <label class="style-pill"><input type="radio" name="writing_style" value="descriptive"><span class="style-inner">Descriptive</span></label>
+              <label class="style-pill"><input type="radio" name="writing_style" value="expository"><span class="style-inner">Expository</span></label>
+            </div>
+          </div>
+          <div>
+            <div class="field-label">Essay Length</div>
+            <select name="word_count" class="field-select">
+              <option value="250">250 words</option>
+              <option value="500" selected>500 words</option>
+              <option value="750">750 words</option>
+              <option value="1000">1000 words</option>
+              <option value="1500">1500 words</option>
+              <option value="2000">2000 words</option>
+              <option value="3000">3000 words</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">Output Format</div>
+            <div class="format-grid">
+              <label class="format-card"><input type="radio" name="output_format" value="text" checked><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="14" x2="3" y2="14"/></svg></div><div class="format-name">Plain Text</div></div></label>
+              <label class="format-card"><input type="radio" name="output_format" value="pdf"><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="format-name">PDF</div></div></label>
+              <label class="format-card"><input type="radio" name="output_format" value="word"><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="format-name">Word</div></div></label>
+              <label class="format-card"><input type="radio" name="output_format" value="powerpoint"><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div><div class="format-name">Slides</div></div></label>
+            </div>
+          </div>
+          <div>
+            <div class="toggle-row">
+              <div class="toggle-info"><h4>Web Research</h4><p>Search web for up-to-date sources</p></div>
+              <label class="toggle"><input type="checkbox" name="research_done" checked><span class="toggle-track"></span></label>
+            </div>
+          </div>
+          <button type="submit" class="action-btn btn-generate" id="genBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Generate Essay
+          </button>
         </div>
+      </form>
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <div class="loading-text">Writing your essay…</div>
+        <div class="loading-sub">Researching sources and generating content</div>
       </div>
+    </div>
 
-      <!-- Generate button -->
-      <div class="form-section">
-        <button type="submit" class="gen-btn" id="genBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          Generate Essay
+    <!-- PANE 2: Guidance -->
+    <div class="panel-pane" id="pane-guidance">
+      <div class="panel-body">
+        <div>
+          <div class="field-label">Your Essay Topic</div>
+          <textarea id="guidanceTopic" class="field-input" rows="3" placeholder="e.g. The causes and effects of World War I…"></textarea>
+          <div class="chips">
+            <span class="chip" onclick="setGuidanceTopic('The causes and effects of World War I')">WW1</span>
+            <span class="chip" onclick="setGuidanceTopic('The role of technology in modern education')">Tech in Education</span>
+            <span class="chip" onclick="setGuidanceTopic('Effects of social media on teenagers')">Social Media</span>
+            <span class="chip" onclick="setGuidanceTopic('Climate change solutions')">Climate Change</span>
+          </div>
+        </div>
+        <div>
+          <div class="field-label">What do you need?</div>
+          <select id="guidanceAction" class="field-select">
+            <option value="all">Everything (Breakdown + Thesis + Outline)</option>
+            <option value="breakdown">Topic Breakdown only</option>
+            <option value="thesis">Thesis Statements only</option>
+            <option value="outline">Essay Outline only</option>
+          </select>
+        </div>
+        <button onclick="runGuidance()" id="guidanceBtn" class="action-btn btn-guidance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Get Guidance
         </button>
       </div>
-    </form>
-
-    <!-- Loading state (hidden by default) -->
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="spinner"></div>
-      <div class="loading-text">Writing your essay…</div>
-      <div class="loading-sub">Researching sources and generating content</div>
     </div>
-  </div>
 
-  <!-- Past essays -->
-  <div>
-    <div class="sec-head">
-      <span class="sec-title">Your Essays</span>
-    </div>
-    <div class="essays-list">
-      {% if essays %}
-        {% for essay in essays %}
-        <div class="essay-item">
-          <div class="essay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="essay-info">
-            <div class="essay-title">{{ essay.topic }}</div>
-            <div class="essay-meta">{{ essay.created_at|date:"M d, Y" }} · {{ essay.word_count|default:"500" }} words · {{ essay.get_output_format_display }}</div>
-          </div>
-          <div class="essay-actions">
-            <a href="{% url 'essay_detail' essay.id %}" class="btn-sm btn-view">View</a>
-            <a href="{% url 'delete_essay' essay.id %}" class="btn-sm btn-del">Delete</a>
+    <!-- PANE 3: Improver -->
+    <div class="panel-pane" id="pane-improver">
+      <div class="panel-body">
+        <div>
+          <div class="field-label">Paste Your Essay</div>
+          <textarea id="improverText" class="field-input" rows="6" placeholder="Paste your essay here and the AI will improve it…"></textarea>
+        </div>
+        <div>
+          <div class="field-label">Improvements to Apply</div>
+          <div style="display:flex;flex-direction:column;gap:.35rem;">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_grammar" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Grammar &amp; spelling</span></label>
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_vocab" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Better vocabulary</span></label>
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_clarity" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Clarity &amp; flow</span></label>
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_structure" style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Paragraph structure</span></label>
           </div>
         </div>
-        {% endfor %}
-      {% else %}
-        <div class="empty-state">No essays yet. Generate your first one above.</div>
-      {% endif %}
+        <div>
+          <div class="field-label">Tone Adjustment (optional)</div>
+          <select id="improverTone" class="field-select">
+            <option value="">Keep original tone</option>
+            <option value="formal and academic">Formal / Academic</option>
+            <option value="persuasive">Persuasive</option>
+            <option value="concise and direct">Concise &amp; Direct</option>
+            <option value="friendly and conversational">Friendly / Conversational</option>
+          </select>
+        </div>
+        <button onclick="runImprover()" id="improverBtn" class="action-btn btn-improve">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Improve My Essay
+        </button>
+      </div>
+    </div>
+  </aside>
+  <!-- Right: Document panel -->
+  <div class="doc-panel">
+    <div class="doc-toolbar">
+      <span class="doc-toolbar-title" id="rightPanelTitle">Your Essays</span>
+      <div class="doc-toolbar-spacer"></div>
+      <span style="font-size:.7rem;color:var(--text3);" id="rightPanelMeta">{{ essays|length }} document{% if essays|length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="doc-content" id="rightPanelContent">
+
+      <!-- Essays list (default view) -->
+      <div id="view-essays">
+        {% if essays %}
+          <div class="essays-list">
+            {% for essay in essays %}
+            <div class="essay-item">
+              <div class="essay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="essay-info">
+                <div class="essay-title">{{ essay.topic }}</div>
+                <div class="essay-meta">{{ essay.created_at|date:"M d, Y" }} · {{ essay.word_count|default:"500" }} words · {{ essay.get_output_format_display }}</div>
+              </div>
+              <div class="essay-actions">
+                <a href="{% url 'essay_detail' essay.id %}" class="btn-sm btn-view">Open</a>
+                <a href="{% url 'delete_essay' essay.id %}" class="btn-sm btn-del">Delete</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="welcome-state">
+            <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+            <div class="welcome-title">Start writing</div>
+            <div class="welcome-sub">Choose a mode on the left. Generate a full essay, get guidance before writing, or improve your own work.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Guidance results view (hidden by default) -->
+      <div id="view-guidance" style="display:none;">
+        <div style="margin-bottom:1.25rem;">
+          <div style="font-size:1rem;font-weight:700;margin-bottom:.25rem;" id="guidanceTopicDisplay"></div>
+          <div style="font-size:.75rem;color:var(--text2);">Smart Essay Guidance</div>
+        </div>
+        <div id="guidance-breakdown" class="result-section" style="display:none;">
+          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Topic Breakdown</div>
+          <div class="result-card" id="breakdown-text"></div>
+        </div>
+        <div id="guidance-thesis" class="result-section" style="display:none;">
+          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Thesis Statements</div>
+          <div class="result-card" id="thesis-text"></div>
+        </div>
+        <div id="guidance-outline" class="result-section" style="display:none;">
+          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Essay Outline</div>
+          <div class="result-card" id="outline-text"></div>
+        </div>
+      </div>
+
+      <!-- Improver results view (hidden by default) -->
+      <div id="view-improver" style="display:none;">
+        <div style="margin-bottom:1.25rem;">
+          <div style="font-size:1rem;font-weight:700;margin-bottom:.25rem;">Improved Essay</div>
+          <div style="font-size:.75rem;color:var(--text2);">AI-enhanced version of your work</div>
+        </div>
+        <div id="improver-feedback-section" style="display:none;margin-bottom:1rem;">
+          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>What was improved</div>
+          <div class="feedback-card" id="improver-feedback"></div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-title" style="justify-content:space-between;">
+            <span style="display:flex;align-items:center;gap:.4rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Improved Text</span>
+            <button class="copy-btn" onclick="copyImproved()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+          </div>
+          <div class="improved-card" id="improver-result"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- Bottom nav -->
 <nav class="bottom-nav">
   <a href="{% url 'dashboard' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
   <a href="{% url 'list_materials' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Materials</a>
@@ -336,18 +449,182 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </nav>
 
 <script>
+const CSRF = '{{ csrf_token }}';
+
 function toggleMenu(){
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('open');
 }
 function setTopic(t){ document.getElementById('topicInput').value = t; }
+function setGuidanceTopic(t){ document.getElementById('guidanceTopic').value = t; }
 
+// Mode switching
+function switchMode(mode, btn){
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-' + mode).classList.add('active');
+
+  // Update right panel
+  const titles = {generate:'Your Essays', guidance:'Essay Guidance', improver:'Essay Improver'};
+  document.getElementById('rightPanelTitle').textContent = titles[mode];
+
+  if(mode === 'generate'){
+    document.getElementById('view-essays').style.display = '';
+    document.getElementById('view-guidance').style.display = 'none';
+    document.getElementById('view-improver').style.display = 'none';
+    document.getElementById('rightPanelMeta').style.display = '';
+  } else if(mode === 'guidance'){
+    document.getElementById('view-essays').style.display = 'none';
+    document.getElementById('view-guidance').style.display = '';
+    document.getElementById('view-improver').style.display = 'none';
+    document.getElementById('rightPanelMeta').style.display = 'none';
+    // Show placeholder if no results yet
+    const hasResults = document.getElementById('breakdown-text').textContent ||
+                       document.getElementById('thesis-text').textContent;
+    if(!hasResults){
+      document.getElementById('view-guidance').innerHTML = `
+        <div class="welcome-state">
+          <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="welcome-title">Plan before you write</div>
+          <div class="welcome-sub">Enter your topic on the left and get a breakdown, thesis ideas, and a full outline — before writing a single word.</div>
+        </div>`;
+    }
+  } else {
+    document.getElementById('view-essays').style.display = 'none';
+    document.getElementById('view-guidance').style.display = 'none';
+    document.getElementById('view-improver').style.display = '';
+    document.getElementById('rightPanelMeta').style.display = 'none';
+    if(!document.getElementById('improver-result').textContent){
+      document.getElementById('view-improver').innerHTML = `
+        <div class="welcome-state">
+          <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+          <div class="welcome-title">Improve your writing</div>
+          <div class="welcome-sub">Paste your essay on the left, choose what to fix, and get a polished version instantly.</div>
+        </div>`;
+    }
+  }
+}
+
+// Generate form submit
 document.getElementById('essayForm').addEventListener('submit', function(){
   document.getElementById('genBtn').disabled = true;
-  document.getElementById('genBtn').innerHTML = '<div style="width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .8s linear infinite"></div> Generating…';
-  document.querySelector('.form-card form').style.display = 'none';
-  document.getElementById('loadingOverlay').classList.add('active');
+  document.getElementById('genBtn').innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .8s linear infinite"></div> Generating…';
+  document.querySelector('#pane-generate form .panel-body').style.display = 'none';
+  document.getElementById('loadingState').classList.add('active');
 });
+
+// Guidance
+async function runGuidance(){
+  const topic = document.getElementById('guidanceTopic').value.trim();
+  if(!topic){ alert('Please enter a topic.'); return; }
+  const action = document.getElementById('guidanceAction').value;
+  const btn = document.getElementById('guidanceBtn');
+  btn.disabled = true;
+  btn.textContent = 'Thinking…';
+
+  // Switch right panel to guidance view
+  document.getElementById('view-essays').style.display = 'none';
+  document.getElementById('view-improver').style.display = 'none';
+  const gv = document.getElementById('view-guidance');
+  gv.style.display = '';
+  gv.innerHTML = '<div style="padding:2rem;text-align:center;"><div style="width:28px;height:28px;border:2px solid var(--border2);border-top-color:#22c55e;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;"></div><div style="font-size:.8125rem;color:var(--text2);">Analysing your topic…</div></div>';
+
+  try {
+    const resp = await fetch('{% url "essay_guidance" %}', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({topic, action})
+    });
+    const data = await resp.json();
+    if(!data.ok){ throw new Error(data.error || 'Error'); }
+
+    gv.innerHTML = `<div style="margin-bottom:1.25rem;"><div style="font-size:1rem;font-weight:700;margin-bottom:.25rem;">${topic}</div><div style="font-size:.75rem;color:var(--text2);">Smart Essay Guidance</div></div>`;
+
+    const sections = action === 'all'
+      ? [['breakdown','Topic Breakdown',data.results.breakdown],['thesis','Thesis Statements',data.results.thesis],['outline','Essay Outline',data.results.outline]]
+      : [[action, action.charAt(0).toUpperCase()+action.slice(1), data.result]];
+
+    sections.forEach(([key, label, text]) => {
+      const sec = document.createElement('div');
+      sec.className = 'result-section';
+      sec.innerHTML = `<div class="result-section-title">${label}</div><div class="result-card">${text}</div>`;
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.innerHTML = 'Copy';
+      copyBtn.onclick = () => { navigator.clipboard.writeText(text); copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1500); };
+      sec.appendChild(copyBtn);
+      gv.appendChild(sec);
+    });
+  } catch(e){
+    gv.innerHTML = `<div style="padding:1.5rem;color:#f87171;font-size:.8125rem;">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Get Guidance';
+}
+
+// Improver
+async function runImprover(){
+  const text = document.getElementById('improverText').value.trim();
+  if(!text){ alert('Please paste your essay first.'); return; }
+  const improvements = [];
+  if(document.getElementById('imp_grammar').checked) improvements.push('grammar');
+  if(document.getElementById('imp_vocab').checked) improvements.push('vocabulary');
+  if(document.getElementById('imp_clarity').checked) improvements.push('clarity');
+  if(document.getElementById('imp_structure').checked) improvements.push('structure');
+  const tone = document.getElementById('improverTone').value;
+
+  const btn = document.getElementById('improverBtn');
+  btn.disabled = true;
+  btn.textContent = 'Improving…';
+
+  document.getElementById('view-essays').style.display = 'none';
+  document.getElementById('view-guidance').style.display = 'none';
+  const iv = document.getElementById('view-improver');
+  iv.style.display = '';
+  iv.innerHTML = '<div style="padding:2rem;text-align:center;"><div style="width:28px;height:28px;border:2px solid var(--border2);border-top-color:#a78bfa;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;"></div><div style="font-size:.8125rem;color:var(--text2);">Improving your essay…</div></div>';
+
+  try {
+    const resp = await fetch('{% url "essay_improve" %}', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({essay_text: text, improvements, tone})
+    });
+    const data = await resp.json();
+    if(!data.ok){ throw new Error(data.error || 'Error'); }
+
+    iv.innerHTML = `
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:.25rem;">Improved Essay</div>
+        <div style="font-size:.75rem;color:var(--text2);">AI-enhanced version of your work</div>
+      </div>
+      <div class="result-section">
+        <div class="result-section-title">What was improved</div>
+        <div class="feedback-card">${data.feedback}</div>
+      </div>
+      <div class="result-section" style="margin-top:1rem;">
+        <div class="result-section-title" style="justify-content:space-between;">
+          <span>Improved Text</span>
+          <button class="copy-btn" id="copyImprovedBtn">Copy</button>
+        </div>
+        <div class="improved-card" id="improver-result-text">${data.improved}</div>
+      </div>`;
+    document.getElementById('copyImprovedBtn').onclick = () => {
+      navigator.clipboard.writeText(data.improved);
+      document.getElementById('copyImprovedBtn').textContent = 'Copied!';
+      setTimeout(()=>document.getElementById('copyImprovedBtn').textContent='Copy',1500);
+    };
+  } catch(e){
+    iv.innerHTML = `<div style="padding:1.5rem;color:#f87171;font-size:.8125rem;">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Improve My Essay';
+}
+
+function copyImproved(){
+  const el = document.getElementById('improver-result-text');
+  if(el){ navigator.clipboard.writeText(el.textContent); }
+}
 </script>
 </body>
 </html>
