@@ -76,32 +76,34 @@ def register_view(request):
                 email=email,
                 password=password
             )
-            # Send signup notification to admin
-            try:
-                from django.core.mail import send_mail
-                from django.conf import settings
-                from django.utils import timezone
-                send_mail(
-                    subject=f'New signup: {username}',
-                    message=(
-                        f'A new user just signed up on Nexa!\n\n'
-                        f'Username: {username}\n'
-                        f'Email:    {email}\n'
-                        f'Time:     {timezone.now().strftime("%Y-%m-%d %H:%M UTC")}\n\n'
-                        f'Total users: {User.objects.count()}\n'
-                    ),
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[settings.ADMIN_NOTIFICATION_EMAIL],
-                    fail_silently=True,
-                )
-            except Exception:
-                pass
+            # Fire-and-forget email — runs in background thread so it never blocks the response
+            import threading
+            def _send_notification():
+                try:
+                    from django.core.mail import send_mail
+                    from django.conf import settings
+                    from django.utils import timezone
+                    send_mail(
+                        subject=f'New signup: {username}',
+                        message=(
+                            f'A new user just signed up on Nexa!\n\n'
+                            f'Username: {username}\n'
+                            f'Email:    {email}\n'
+                            f'Time:     {timezone.now().strftime("%Y-%m-%d %H:%M UTC")}\n'
+                        ),
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[settings.ADMIN_NOTIFICATION_EMAIL],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+            threading.Thread(target=_send_notification, daemon=True).start()
+
             # Authenticate then login so Django sets the backend correctly
             auth_user = authenticate(request, username=username, password=password)
             if auth_user is not None:
                 login(request, auth_user)
             else:
-                # Fallback: set backend manually and login
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
             return redirect('dashboard')
