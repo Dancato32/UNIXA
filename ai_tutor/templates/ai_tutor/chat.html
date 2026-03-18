@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -135,9 +135,24 @@
         .br-text { color: var(--text2); line-height: 1.7; margin-bottom: 3px; font-size: 14px; }
         .br-math { text-align: center; color: var(--text); padding: 4px 0; font-size: 15px; }
         .br-math-block { text-align: center; color: var(--text); padding: 4px 0; font-size: 15px; }
+        .br-math-display { text-align: center; padding: 10px 0; overflow-x: auto; }
         .br-bullets { list-style: disc; padding-left: 20px; color: var(--text2); line-height: 1.8; margin: 6px 0; font-size: 14px; }
         .br-final-header { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
         .br-check { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: #22c55e; border-radius: 4px; font-size: 10px; color: #fff; flex-shrink: 0; }
+        /* Markdown output styles */
+        .msg-text p { margin: 0 0 8px; line-height: 1.7; color: var(--text2); font-size: 14px; }
+        .msg-text p:last-child { margin-bottom: 0; }
+        .msg-text h1, .msg-text h2, .msg-text h3 { color: var(--text); font-weight: 700; margin: 12px 0 6px; }
+        .msg-text h1 { font-size: 16px; } .msg-text h2 { font-size: 15px; } .msg-text h3 { font-size: 14px; }
+        .msg-text ol, .msg-text ul { padding-left: 22px; margin: 6px 0; color: var(--text2); font-size: 14px; line-height: 1.8; }
+        .msg-text li { margin-bottom: 4px; }
+        .msg-text strong { color: var(--text); font-weight: 600; }
+        .msg-text em { font-style: italic; }
+        .msg-text code { background: var(--border-light); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--text); }
+        .msg-text pre { background: var(--border-light); padding: 10px 14px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
+        .msg-text pre code { background: none; padding: 0; font-size: 13px; }
+        .msg-text blockquote { border-left: 3px solid var(--border); padding-left: 12px; color: var(--text2); margin: 8px 0; font-style: italic; }
+        .katex-display { overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
 
         /* Loading dots */
         .loading-indicator { display: none; align-items: center; gap: 6px; padding: 16px 0; }
@@ -846,9 +861,6 @@ const NexaChat = {
         el.innerHTML = NexaChat.renderBoardHTML(fullText);
         if (wrap) wrap.dataset.plain = fullText;
         document.getElementById('actions-' + msgId).style.display = '';
-        if (typeof renderMathInElement === 'function') {
-            try { renderMathInElement(el, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError: false }); } catch(e) {}
-        }
         NexaUI.scrollToBottom();
     },
 
@@ -886,70 +898,83 @@ const NexaChat = {
         const element = document.getElementById(msgId);
         if (element) {
             element.innerHTML = NexaChat.renderBoardHTML(text);
-            if (typeof renderMathInElement === 'function') {
-                try { renderMathInElement(element, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError: false }); } catch(e) {}
-            }
         }
         NexaUI.scrollToBottom();
     },
 
     renderBoardHTML(raw) {
-        let text = raw
-            .replace(/\\\(/g, '$').replace(/\\\)/g, '$')
-            .replace(/\\\[/g, '$').replace(/\\\]/g, '$');
-        text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-        const lines = text.split('\n');
-        const sections = [];
-        let current = null;
-        const isStepHeader = (line) => line.replace(/<[^>]+>/g,'').trim().match(/^(step\s*\d+[\s:\-]*|problem[\s:\-]*|final\s*answer[\s:\-]*|question[\s:\-]*)/i);
-        for (let i = 0; i < lines.length; i++) {
-            const raw_line = lines[i];
-            const stripped = raw_line.replace(/<[^>]+>/g,'').trim();
-            if (!stripped) { if (current) current.lines.push(''); continue; }
-            if (isStepHeader(raw_line)) {
-                if (current) sections.push(current);
-                const isFinal = /^(<strong>)?final/i.test(raw_line.trim());
-                current = { title: raw_line.trim(), isFinal, lines: [] };
-            } else if (current) {
-                current.lines.push(raw_line);
-            } else {
-                if (!sections.length || sections[sections.length-1].type !== 'intro') sections.push({ type: 'intro', lines: [] });
-                sections[sections.length-1].lines.push(raw_line);
-            }
-        }
-        if (current) sections.push(current);
-        if (sections.length === 0) return '<div class="br-plain">' + this.renderLines(lines) + '</div>';
-        let html = '';
-        sections.forEach((sec, idx) => {
-            if (sec.type === 'intro') { html += `<div class="br-intro">${this.renderLines(sec.lines)}</div>`; return; }
-            const delay = idx * 0.15;
-            if (sec.isFinal) {
-                html += `<div class="br-section" style="animation-delay:${delay}s"><div class="br-final-header"><span class="br-check">✓</span> Final Answer</div><div class="br-math-block">${this.renderLines(sec.lines)}</div></div>`;
-            } else {
-                html += `<div class="br-section" style="animation-delay:${delay}s"><div class="br-step-title">${sec.title}</div><div class="br-step-body">${this.renderLines(sec.lines)}</div></div>`;
-            }
+        if (!raw) return '';
+
+        var text = raw;
+
+        // Normalise \( \) -> $  and  \[ \] -> $$
+        text = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+        text = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+
+        // Promote lone $...$ on its own line to display $$...$$
+        // This handles AI output that uses $ for both inline and display
+        text = text.replace(/(^|\n)\$([^$\n]+)\$(\n|$)/g, function(_, pre, m, post) {
+            return (pre || '\n') + '$$' + m + '$$' + (post || '\n');
         });
+
+        // Extract math BEFORE markdown parsing
+        var mathStore = [];
+
+        // Display math $$...$$ (multiline safe)
+        text = text.replace(/\$\$([\s\S]+?)\$\$/g, function(_, m) {
+            var i = mathStore.length;
+            mathStore.push({ display: true, src: m.trim() });
+            return '\n\nNEXAMATH_D_' + i + '_END\n\n';
+        });
+
+        // Inline math $...$ (single line only)
+        text = text.replace(/\$([^$\n]+?)\$/g, function(_, m) {
+            var i = mathStore.length;
+            mathStore.push({ display: false, src: m.trim() });
+            return 'NEXAMATH_I_' + i + '_END';
+        });
+
+        // Render markdown
+        var html = '';
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({ breaks: true, gfm: true });
+            html = marked.parse(text);
+        } else {
+            html = '<p>' + text.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+        }
+
+        // Restore display math (marked may wrap in <p>)
+        html = html.replace(/<p>\s*NEXAMATH_D_(\d+)_END\s*<\/p>/g, function(_, i) {
+            return NexaChat._katex(mathStore[parseInt(i)]);
+        });
+        html = html.replace(/NEXAMATH_D_(\d+)_END/g, function(_, i) {
+            return NexaChat._katex(mathStore[parseInt(i)]);
+        });
+
+        // Restore inline math
+        html = html.replace(/NEXAMATH_I_(\d+)_END/g, function(_, i) {
+            return NexaChat._katex(mathStore[parseInt(i)]);
+        });
+
         return html;
     },
 
-    renderLines(lines) {
-        let html = '';
-        let inBullets = false;
-        for (const line of lines) {
-            const t = line.trim();
-            if (!t) { if (inBullets) { html += '</ul>'; inBullets = false; } continue; }
-            if (/^[•\-\*]\s/.test(t)) {
-                if (!inBullets) { html += '<ul class="br-bullets">'; inBullets = true; }
-                html += `<li>${t.replace(/^[•\-\*]\s*/,'')}</li>`;
-            } else {
-                if (inBullets) { html += '</ul>'; inBullets = false; }
-                const isMathLine = /^\$/.test(t) || /^\\/.test(t);
-                html += isMathLine ? `<div class="br-math">${line}</div>` : `<div class="br-text">${line}</div>`;
-            }
+    _katex(m) {
+        if (typeof katex === 'undefined') {
+            return m.display
+                ? '<div class="br-math-display">$$' + m.src + '$$</div>'
+                : '$' + m.src + '$';
         }
-        if (inBullets) html += '</ul>';
-        return html;
+        try {
+            var out = katex.renderToString(m.src, { displayMode: m.display, throwOnError: false });
+            return m.display ? '<div class="br-math-display">' + out + '</div>' : out;
+        } catch(e) {
+            return m.display ? '<div class="br-math-display">$$' + m.src + '$$</div>' : '$' + m.src + '$';
+        }
+    },
+
+    renderLines(lines) {
+        return this.renderBoardHTML(lines.join('\n'));
     }
 };
 
@@ -1101,9 +1126,6 @@ const NexaVoice = {
             }
         });
         content.innerHTML = html;
-        if (typeof renderMathInElement === 'function') {
-            try { renderMathInElement(content, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError: false }); } catch(e) {}
-        }
     }
 };
 
@@ -1188,12 +1210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Render KaTeX on existing messages
-    if (typeof renderMathInElement === 'function') {
-        document.querySelectorAll('.board-render').forEach(el => {
-            try { renderMathInElement(el, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError: false }); } catch(e) {}
-        });
-    }
+
 });
 </script>
 </div>

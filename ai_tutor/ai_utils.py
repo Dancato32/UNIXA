@@ -62,25 +62,26 @@ Problem
 
 Step 1: [Title]
 [Brief explanation]
-$[math expression]$
+$$[math expression]$$
 
 Step 2: [Title]
 [Brief explanation]
-$[math expression]$
+$$[math expression]$$
 
 Final Answer
-$[result]$
+$$[result]$$
 
 📋 CRITICAL FORMATTING RULES:
 
 1. MATH FORMATTING (MANDATORY)
 ALWAYS use LaTeX for all mathematical expressions:
-- Inline: $expression$
-- Display: $expression$
+- Inline math (inside a sentence): $expression$
+- Display math (on its own line, centred): $$expression$$
 - Fractions: $\\frac{a}{b}$
 - Powers: $x^2$
 - Square roots: $\\sqrt{x}$
 - NEVER write raw math like 1/2, x^2, or sqrt(x)
+- NEVER use \\( \\) or \\[ \\] — only $ and $$ delimiters
 
 2. STEP SEPARATION
 Each step MUST be separated by blank lines for proper display.
@@ -225,14 +226,14 @@ Problem
 
 Step 1: [Title]
 [Brief explanation]
-$[math expression]$
+$$[math expression]$$
 
 Step 2: [Title]
 [Brief explanation]
-$[math expression]$
+$$[math expression]$$
 
 Final Answer
-$[result]$
+$$[result]$$
 
 📋 CRITICAL FORMATTING RULES:
 
