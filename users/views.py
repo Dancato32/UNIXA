@@ -82,7 +82,7 @@ def register_view(request):
                 from django.conf import settings
                 from django.utils import timezone
                 send_mail(
-                    subject=f'🎉 New signup: {username}',
+                    subject=f'New signup: {username}',
                     message=(
                         f'A new user just signed up on Nexa!\n\n'
                         f'Username: {username}\n'
@@ -92,11 +92,18 @@ def register_view(request):
                     ),
                     from_email=settings.EMAIL_HOST_USER,
                     recipient_list=[settings.ADMIN_NOTIFICATION_EMAIL],
-                    fail_silently=True,  # never crash signup if email fails
+                    fail_silently=True,
                 )
             except Exception:
-                pass  # email is best-effort
-            login(request, user)
+                pass
+            # Authenticate then login so Django sets the backend correctly
+            auth_user = authenticate(request, username=username, password=password)
+            if auth_user is not None:
+                login(request, auth_user)
+            else:
+                # Fallback: set backend manually and login
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
             return redirect('dashboard')
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')
