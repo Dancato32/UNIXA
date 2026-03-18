@@ -170,10 +170,6 @@ def delete_material(request, pk):
     material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
     
     if request.method == 'POST':
-        # Delete the file from storage
-        if material.file:
-            if os.path.isfile(material.file.path):
-                os.remove(material.file.path)
         material.delete()
         messages.success(request, 'Material deleted successfully.')
         return redirect('list_materials')

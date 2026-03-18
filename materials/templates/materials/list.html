@@ -1565,7 +1565,7 @@
                                                         <span class="material-meta-item">{{ material.subject }}</span>
                                                     {% endif %}
                                                     <span class="material-meta-item">{{ material.uploaded_at|date:"M d, Y" }}</span>
-                                                    <span class="material-meta-item">{{ material.file.size|filesizeformat }}</span>
+                                                    <span class="material-meta-item">{{ material.file_size|filesizeformat }}</span>
                                                 </div>
                                                 
                                                 <div class="material-actions" onclick="event.stopPropagation()">
@@ -1856,7 +1856,7 @@
                 title: "{{ material.title|escapejs }}",
                 type: "{{ material.get_material_type_display|escapejs }}",
                 date: "{{ material.uploaded_at|date:"M d, Y" }}",
-                size: "{{ material.file.size|filesizeformat }}",
+                size: "{{ material.file_size|filesizeformat }}",
                 fileUrl: "{{ material.file.url }}",
                 extractedText: {% if material.extracted_text %}"{{ material.extracted_text|escapejs }}"{% else %}null{% endif %},
                 {% if material.subject %}subject: "{{ material.subject|escapejs }}",{% endif %}

@@ -25,6 +25,14 @@ class StudyMaterial(models.Model):
         verbose_name = 'Study Material'
         verbose_name_plural = 'Study Materials'
     
+    @property
+    def file_size(self):
+        """Return file size safely — works with both local and Cloudinary storage."""
+        try:
+            return self.file.size
+        except Exception:
+            return None
+
     def __str__(self):
         return self.title
 
