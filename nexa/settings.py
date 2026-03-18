@@ -161,6 +161,11 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
 
 # ── Security Headers (production only) ───────────────────────────────────────
+CSRF_TRUSTED_ORIGINS = [
+    'https://unixa.onrender.com',
+    'https://*.onrender.com',
+]
+
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
