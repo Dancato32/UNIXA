@@ -68,14 +68,14 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
       {% endif %}
     </div>
     <div class="level-title">{{ level_name }}</div>
-    <div class="level-sub">{{ topics|length }} topics &mdash; click any topic to start learning</div>
+    <div class="level-sub">{{ topic_list|length }} topics &mdash; click any topic to start learning</div>
   </div>
 
   <div class="topics-grid">
-    {% for topic in topics %}
-    <a href="{% url 'library_topic' subject_key topic|lower|slugify %}" class="topic-item">
+    {% for t in topic_list %}
+    <a href="{% url 'library_topic' subject_key t.slug %}" class="topic-item">
       <span class="topic-num">{{ forloop.counter }}</span>
-      <span class="topic-name">{{ topic }}</span>
+      <span class="topic-name">{{ t.name }}</span>
       <span class="topic-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
     </a>
     {% endfor %}

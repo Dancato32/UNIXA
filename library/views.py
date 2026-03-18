@@ -107,12 +107,18 @@ def level_page(request, subject_key, level_slug):
         raise Http404
     books = SubjectBook.objects.filter(subject=subject_key)
     meta = SUBJECT_META.get(subject_key, {})
+    # Build topic list with pre-computed slugs
+    topic_list_with_slugs = []
+    for t in topics:
+        slug = t.lower().replace(' ', '-').replace("'", '').replace('&', 'and').replace('(', '').replace(')', '').replace('/', '-')
+        topic_list_with_slugs.append({'name': t, 'slug': slug})
     return render(request, 'library/level.html', {
         'subject_key': subject_key,
         'subject_label': subject_label,
         'level_name': level_name,
         'level_slug': level_slug,
         'topics': topics,
+        'topic_list': topic_list_with_slugs,
         'books': books,
         'meta': meta,
     })
