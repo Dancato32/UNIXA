@@ -76,6 +76,26 @@ def register_view(request):
                 email=email,
                 password=password
             )
+            # Send signup notification to admin
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                from django.utils import timezone
+                send_mail(
+                    subject=f'🎉 New signup: {username}',
+                    message=(
+                        f'A new user just signed up on Nexa!\n\n'
+                        f'Username: {username}\n'
+                        f'Email:    {email}\n'
+                        f'Time:     {timezone.now().strftime("%Y-%m-%d %H:%M UTC")}\n\n'
+                        f'Total users: {User.objects.count()}\n'
+                    ),
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[settings.ADMIN_NOTIFICATION_EMAIL],
+                    fail_silently=True,  # never crash signup if email fails
+                )
+            except Exception:
+                pass  # email is best-effort
             login(request, user)
             return redirect('dashboard')
         except Exception as e:
