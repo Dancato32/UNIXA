@@ -313,6 +313,74 @@ Format your answer in clear steps or paragraphs as appropriate. Use LaTeX for an
 
 
 @login_required
+def chat_stream(request):
+    """SSE streaming endpoint — streams AI response token by token."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        use_rag = data.get('use_rag', True)
+        learning_mode = data.get('learning_mode', 'explain')
+
+        if not message:
+            return JsonResponse({'error': 'Empty message'}, status=400)
+
+        from .ai_utils import get_openai_client, get_study_materials_for_rag, build_system_prompt
+        from django.http import StreamingHttpResponse
+
+        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:10]
+        history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
+
+        client = get_openai_client()
+        system_message = build_system_prompt(learning_mode, use_rag, request.user)
+
+        messages_list = [{"role": "system", "content": system_message}]
+        for h in history:
+            messages_list.append({"role": "user", "content": h['message']})
+            messages_list.append({"role": "assistant", "content": h['response']})
+        messages_list.append({"role": "user", "content": message})
+
+        def event_stream():
+            full_response = []
+            try:
+                stream = client.chat.completions.create(
+                    model="openai/gpt-4o-mini",
+                    messages=messages_list,
+                    max_tokens=1000,
+                    temperature=0.7,
+                    stream=True,
+                )
+                for chunk in stream:
+                    token = chunk.choices[0].delta.content or ''
+                    if token:
+                        full_response.append(token)
+                        # SSE format: data: <token>\n\n
+                        yield f"data: {json.dumps({'token': token})}\n\n"
+
+                # Save full response to DB
+                complete = ''.join(full_response)
+                Conversation.objects.create(
+                    user=request.user,
+                    message=message,
+                    response=complete,
+                )
+                yield f"data: {json.dumps({'done': True})}\n\n"
+
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+        response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+        response['Cache-Control'] = 'no-cache'
+        response['X-Accel-Buffering'] = 'no'
+        return response
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
 def clear_conversations(request):
     """Clear all chat conversations for the user."""
     if request.method == 'POST':

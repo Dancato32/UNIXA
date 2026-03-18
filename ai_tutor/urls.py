@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path('chat/', views.chat_ai, name='ai_chat'),
     path('chat/ajax/', views.chat_ajax, name='ai_chat_ajax'),
+    path('chat/stream/', views.chat_stream, name='ai_chat_stream'),
     path('chat/tts/', views.text_to_speech_view, name='ai_tts'),
     path('chat/clear/', views.clear_conversations, name='clear_conversations'),
     path('chat/image/', views.chat_with_image, name='ai_chat_image'),

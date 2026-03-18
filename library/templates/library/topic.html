@@ -54,6 +54,8 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
 .msg{padding:.875rem 1rem;border-radius:10px;font-size:.875rem;line-height:1.7;word-break:break-word}
 .msg-user{background:#1a1a1a;color:#f0f0f0;align-self:flex-end;max-width:85%;border:1px solid #222}
 .msg-ai{background:#0d0d0d;color:#ccc;align-self:flex-start;max-width:100%;border:1px solid #1a1a1a}
+.stream-cursor{display:inline-block;width:2px;height:1em;background:#ccc;margin-left:1px;vertical-align:text-bottom;animation:blink .7s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .msg-label{font-size:.6875rem;font-weight:600;color:#555;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em}
 .msg-ai p{margin-bottom:.5rem}
 .msg-ai p:last-child{margin-bottom:0}
@@ -443,6 +445,38 @@ function appendMsg(role, rawText) {
   }
   wrap.scrollTop=wrap.scrollHeight;
 }
+
+// Streaming typewriter version for AI messages
+function appendMsgStream(role, onDone) {
+  const wrap = document.getElementById("aiMessages");
+  const div = document.createElement("div"); div.className="msg msg-"+role;
+  const label = document.createElement("div"); label.className="msg-label";
+  label.textContent = "Nexa"; div.appendChild(label);
+  const body = document.createElement("div"); body.className="board-render";
+  body.innerHTML = '<span class="stream-cursor">▋</span>';
+  div.appendChild(body);
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  // Return a function that streams text into this bubble
+  return function streamInto(fullText) {
+    const words = fullText.split(' ');
+    let i = 0; let built = '';
+    function next() {
+      if (i < words.length) {
+        built += (i > 0 ? ' ' : '') + words[i++];
+        body.innerHTML = BoardRender.render(built) + '<span class="stream-cursor">▋</span>';
+        wrap.scrollTop = wrap.scrollHeight;
+        setTimeout(next, 28);
+      } else {
+        body.innerHTML = BoardRender.render(fullText);
+        setTimeout(() => renderKatex(body), 80);
+        wrap.scrollTop = wrap.scrollHeight;
+        if (onDone) onDone();
+      }
+    }
+    next();
+  };
+}
 function showTyping(){const w=document.getElementById("aiMessages");const d=document.createElement("div");d.className="msg msg-ai";d.id="typingDot";d.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';w.appendChild(d);w.scrollTop=w.scrollHeight;}
 function removeTyping(){const t=document.getElementById("typingDot");if(t)t.remove();}
 function setLoading(on){["startBtn","quizBtn","sendBtn","submitBtn"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=on;});}
@@ -462,12 +496,12 @@ async function startLearn() {
   let data;
   if (currentMode==="ai") {
     data = await callAPI("{% url 'api_ai_teach' %}",{subject:SUBJECT,topic:TOPIC,question:"Teach me this topic thoroughly"});
-    appendMsg("ai", data.response||data.error||"Something went wrong.");
+    const stream = appendMsgStream("ai"); stream(data.response||data.error||"Something went wrong.");
   } else {
     const bookId=document.getElementById("bookSelect").value;
     if(!bookId){alert("Please select a book first.");setLoading(false);removeTyping();return;}
     data = await callAPI("{% url 'api_book_teach' %}",{subject:SUBJECT,topic:TOPIC,book_id:bookId,question:"Teach me this topic using the book"});
-    appendMsg("ai", data.response||data.error||"Something went wrong.");
+    const stream = appendMsgStream("ai"); stream(data.response||data.error||"Something went wrong.");
   }
 }
 
@@ -642,7 +676,7 @@ async function sendMessage() {
   let data;
   if(currentMode==="ai"||!bookId) data=await callAPI("{% url 'api_ai_teach' %}",{subject:SUBJECT,topic:TOPIC,question:q});
   else data=await callAPI("{% url 'api_book_teach' %}",{subject:SUBJECT,topic:TOPIC,book_id:bookId,question:q});
-  appendMsg("ai",data.response||data.error||"Something went wrong.");
+  const stream = appendMsgStream("ai"); stream(data.response||data.error||"Something went wrong.");
 }
 
 function handleKey(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}
