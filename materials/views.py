@@ -213,14 +213,14 @@ def generate_podcast_ajax(request):
         word_count = len(podcast_script.split())
         duration_mins = round(word_count / 130)
 
-        # Generate Resemble.ai audio
+        # Generate Resemble.ai audio — returns base64 data URL directly
         audio_url = None
         print(f"[PODCAST] Generating Resemble audio for material {material_id}, script length: {len(podcast_script)}")
-        audio_filename = generate_podcast_audio_elevenlabs(podcast_script, material_id)
-        print(f"[PODCAST] audio_filename result: {audio_filename}")
-        if audio_filename:
-            audio_url = f'/materials/podcast/audio/{material_id}/{audio_filename}'
-        print(f"[PODCAST] audio_url: {audio_url}")
+        audio_data_url = generate_podcast_audio_elevenlabs(podcast_script, material_id)
+        print(f"[PODCAST] audio_data_url result: {bool(audio_data_url)}")
+        if audio_data_url:
+            audio_url = audio_data_url
+        print(f"[PODCAST] audio_url set: {bool(audio_url)}")
 
         return JsonResponse({
             'success': True,
@@ -300,11 +300,10 @@ def _get_resemble_voice_uuid(api_key):
 
 
 def generate_podcast_audio_elevenlabs(script_text, material_id):
-    """Generate podcast audio using Resemble.ai TTS API."""
+    """Generate podcast audio using Resemble.ai TTS API. Returns base64 data URL (no file system needed)."""
     try:
         import os
         import requests
-        import base64
 
         api_key = os.environ.get("RESEMBLE_API_KEY") or os.getenv("RESEMBLE_API_KEY") or getattr(settings, 'RESEMBLE_API_KEY', None)
         print(f"[RESEMBLE] api_key present: {bool(api_key)}, value starts: {api_key[:8] if api_key else 'NONE'}")
@@ -323,11 +322,6 @@ def generate_podcast_audio_elevenlabs(script_text, material_id):
         voice_uuid = _get_resemble_voice_uuid(api_key)
         print(f"[RESEMBLE] using voice_uuid: {voice_uuid}")
 
-        audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcasts')
-        os.makedirs(audio_dir, exist_ok=True)
-        filename = f"podcast_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
-        filepath = os.path.join(audio_dir, filename)
-
         print(f"[RESEMBLE] calling synthesize API...")
         response = requests.post(
             "https://f.cluster.resemble.ai/synthesize",
@@ -341,10 +335,10 @@ def generate_podcast_audio_elevenlabs(script_text, material_id):
             audio_b64 = response.json().get("audio_content")
             print(f"[RESEMBLE] audio_content present: {bool(audio_b64)}")
             if audio_b64:
-                with open(filepath, 'wb') as f:
-                    f.write(base64.b64decode(audio_b64))
-                print(f"[RESEMBLE] saved to: {filepath}")
-                return filename
+                # Return as base64 data URL — no file system, works on iOS/Android
+                data_url = f"data:audio/mpeg;base64,{audio_b64}"
+                print(f"[RESEMBLE] returning data URL (length: {len(data_url)})")
+                return data_url
         print(f"[RESEMBLE] API Error {response.status_code}: {response.text[:300]}")
         return None
 
@@ -625,25 +619,22 @@ Provide a clear, concise answer (2-3 sentences) that directly addresses their qu
         answer = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
         
         # Generate audio for the answer using the same TTS system
-        audio_filename = None
+        audio_url = None
         
-        # Try ElevenLabs first
+        # Try Resemble TTS first (returns data URL directly)
         try:
-            audio_filename = generate_answer_audio_elevenlabs(answer, material_id)
+            audio_url = generate_answer_audio_elevenlabs(answer, material_id)
         except Exception as e:
-            print(f"ElevenLabs TTS failed: {e}")
+            print(f"Resemble TTS failed: {e}")
         
-        # Fall back to OpenAI TTS
-        if not audio_filename:
+        # Fall back to OpenAI TTS (saves file, build URL)
+        if not audio_url:
             try:
                 audio_filename = generate_answer_audio_openai(answer, material_id)
+                if audio_filename:
+                    audio_url = f'/materials/podcast/answer-audio/{material_id}/{audio_filename}'
             except Exception as e:
                 print(f"OpenAI TTS failed: {e}")
-        
-        # Build audio URL
-        audio_url = None
-        if audio_filename:
-            audio_url = f'/materials/podcast/answer-audio/{material_id}/{audio_filename}'
         
         return JsonResponse({
             'success': True,
@@ -656,11 +647,10 @@ Provide a clear, concise answer (2-3 sentences) that directly addresses their qu
 
 
 def generate_answer_audio_elevenlabs(answer_text, material_id):
-    """Generate answer audio using Resemble.ai TTS."""
+    """Generate answer audio using Resemble.ai TTS. Returns base64 data URL (no file system needed)."""
     try:
         import os
         import requests
-        import base64
 
         api_key = os.environ.get("RESEMBLE_API_KEY") or os.getenv("RESEMBLE_API_KEY") or getattr(settings, 'RESEMBLE_API_KEY', None)
         if not api_key:
@@ -672,11 +662,6 @@ def generate_answer_audio_elevenlabs(answer_text, material_id):
 
         voice_uuid = _get_resemble_voice_uuid(api_key)
 
-        audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcast_answers')
-        os.makedirs(audio_dir, exist_ok=True)
-        filename = f"answer_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
-        filepath = os.path.join(audio_dir, filename)
-
         response = requests.post(
             "https://f.cluster.resemble.ai/synthesize",
             headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
@@ -687,9 +672,7 @@ def generate_answer_audio_elevenlabs(answer_text, material_id):
         if response.status_code == 200:
             audio_b64 = response.json().get("audio_content")
             if audio_b64:
-                with open(filepath, 'wb') as f:
-                    f.write(base64.b64decode(audio_b64))
-                return filename
+                return f"data:audio/mpeg;base64,{audio_b64}"
         print(f"Resemble answer TTS Error {response.status_code}: {response.text[:200]}")
         return None
 
