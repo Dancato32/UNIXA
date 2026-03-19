@@ -1,0 +1,517 @@
+"""
+Community app models.
+All models use UUID PKs for scalability.
+Fully self-contained — no modifications to existing apps required.
+"""
+
+import uuid
+from django.conf import settings
+from django.db import models
+from django.utils.text import slugify
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _uuid():
+    return uuid.uuid4()
+
+
+# ── School (Official) Community ───────────────────────────────────────────────
+
+class SchoolCommunity(models.Model):
+    """
+    Official, verified school communities (e.g. University of Ghana).
+    Pre-seeded via data migration. Not deletable by normal users.
+    """
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='community/school/logos/', null=True, blank=True)
+    banner = models.ImageField(upload_to='community/school/banners/', null=True, blank=True)
+    verified = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'School Community'
+        verbose_name_plural = 'School Communities'
+        ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+# ── Community Membership ──────────────────────────────────────────────────────
+
+class CommunityMembership(models.Model):
+    """Tracks which users belong to which SchoolCommunity and their role."""
+
+    ROLE_MEMBER = 'member'
+    ROLE_MOD = 'mod'
+    ROLE_ADMIN = 'admin'
+    ROLE_CHOICES = [
+        (ROLE_MEMBER, 'Member'),
+        (ROLE_MOD, 'Moderator'),
+        (ROLE_ADMIN, 'Admin'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='community_memberships',
+    )
+    community = models.ForeignKey(
+        SchoolCommunity,
+        on_delete=models.CASCADE,
+        related_name='memberships',
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_MEMBER)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    notifications_enabled = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('user', 'community')
+        verbose_name = 'Community Membership'
+        verbose_name_plural = 'Community Memberships'
+
+    def __str__(self):
+        return f'{self.user} → {self.community} ({self.role})'
+
+
+# ── Custom (User-Created) Community ──────────────────────────────────────────
+
+class CustomCommunity(models.Model):
+    """User-created communities with public/private privacy settings."""
+
+    PRIVACY_PUBLIC = 'public'
+    PRIVACY_PRIVATE = 'private'
+    PRIVACY_CHOICES = [
+        (PRIVACY_PUBLIC, 'Public'),
+        (PRIVACY_PRIVATE, 'Private'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_communities',
+    )
+    privacy = models.CharField(
+        max_length=10, choices=PRIVACY_CHOICES, default=PRIVACY_PUBLIC
+    )
+    logo = models.ImageField(upload_to='community/custom/logos/', null=True, blank=True)
+    banner = models.ImageField(upload_to='community/custom/banners/', null=True, blank=True)
+    rules = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Custom Community'
+        verbose_name_plural = 'Custom Communities'
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.name)
+            slug = base
+            n = 1
+            while CustomCommunity.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base}-{n}'
+                n += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+# ── Post ──────────────────────────────────────────────────────────────────────
+
+class Post(models.Model):
+    """
+    A post inside either a SchoolCommunity or a CustomCommunity.
+    Exactly one of school_community / custom_community should be set.
+    Denormalized counts avoid expensive COUNT queries on hot paths.
+    """
+
+    MEDIA_IMAGE = 'image'
+    MEDIA_VIDEO = 'video'
+    MEDIA_FILE = 'file'
+    MEDIA_NONE = 'none'
+    MEDIA_TYPE_CHOICES = [
+        (MEDIA_IMAGE, 'Image'),
+        (MEDIA_VIDEO, 'Video'),
+        (MEDIA_FILE, 'File'),
+        (MEDIA_NONE, 'None'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='community_posts',
+    )
+    school_community = models.ForeignKey(
+        SchoolCommunity,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='posts',
+    )
+    custom_community = models.ForeignKey(
+        CustomCommunity,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='posts',
+    )
+    # feed_only=True means the post is not tied to any community (global feed post)
+    feed_only = models.BooleanField(default=False, db_index=True)
+    title = models.CharField(max_length=300, blank=True)
+    content = models.TextField()
+    media = models.FileField(upload_to='community/posts/media/', null=True, blank=True)
+    media_type = models.CharField(
+        max_length=10, choices=MEDIA_TYPE_CHOICES, default=MEDIA_NONE
+    )
+    category = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    # Denormalized counters — updated via signals
+    like_count = models.PositiveIntegerField(default=0)
+    comment_count = models.PositiveIntegerField(default=0)
+    share_count = models.PositiveIntegerField(default=0)
+    is_deleted = models.BooleanField(default=False, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['school_community', 'created_at']),
+            models.Index(fields=['custom_community', 'created_at']),
+            models.Index(fields=['author', 'created_at']),
+            models.Index(fields=['is_deleted', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f'Post by {self.author} @ {self.created_at:%Y-%m-%d %H:%M}'
+
+
+# ── Post Like ─────────────────────────────────────────────────────────────────
+
+class PostLike(models.Model):
+    """One like per user per post. Signals update Post.like_count."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='post_likes',
+    )
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+        indexes = [models.Index(fields=['post', 'created_at'])]
+
+    def __str__(self):
+        return f'{self.user} likes {self.post_id}'
+
+
+# ── Comment ───────────────────────────────────────────────────────────────────
+
+class Comment(models.Model):
+    """Threaded comments. parent=None means top-level."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='community_comments',
+    )
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies',
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    like_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Comment by {self.author} on {self.post_id}'
+
+
+# ── Follow ────────────────────────────────────────────────────────────────────
+
+class Follow(models.Model):
+    """User-to-user follow graph."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    follower = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='following_set',
+    )
+    following = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='followers_set',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'following')
+
+    def __str__(self):
+        return f'{self.follower} → {self.following}'
+
+
+# ── Conversation (DMs) ────────────────────────────────────────────────────────
+
+class Conversation(models.Model):
+    """A DM thread between 2+ users. Supports group chats."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='conversations',
+        blank=True,
+    )
+    is_group = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'Conversation {self.id}'
+
+
+# ── Message ───────────────────────────────────────────────────────────────────
+
+class Message(models.Model):
+    """A single message inside a Conversation. Optimised for chat."""
+
+    TYPE_TEXT = 'text'
+    TYPE_IMAGE = 'image'
+    TYPE_FILE = 'file'
+    TYPE_VOICE = 'voice'
+    TYPE_VIDEO = 'video'
+    TYPE_CHOICES = [
+        (TYPE_TEXT, 'Text'),
+        (TYPE_IMAGE, 'Image'),
+        (TYPE_FILE, 'File'),
+        (TYPE_VOICE, 'Voice Note'),
+        (TYPE_VIDEO, 'Video'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.CASCADE, related_name='messages'
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_messages',
+    )
+    content = models.TextField(blank=True)
+    media = models.FileField(upload_to='community/messages/', null=True, blank=True)
+    voice_note = models.FileField(upload_to='community/voice_notes/', null=True, blank=True)
+    message_type = models.CharField(
+        max_length=10, choices=TYPE_CHOICES, default=TYPE_TEXT
+    )
+    is_read = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['conversation', 'created_at']),
+            models.Index(fields=['sender', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f'Message {self.id} in {self.conversation_id}'
+
+
+# ── Space (Voice/Video Room) ──────────────────────────────────────────────────
+
+class Space(models.Model):
+    """
+    Metadata for a live voice/video room.
+    Actual real-time transport is handled externally (e.g. WebRTC/Channels).
+    """
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    host = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='hosted_spaces',
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    school_community = models.ForeignKey(
+        SchoolCommunity,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='spaces',
+    )
+    custom_community = models.ForeignKey(
+        CustomCommunity,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='spaces',
+    )
+    is_live = models.BooleanField(default=False)
+    allow_video = models.BooleanField(default=False)
+    max_participants = models.PositiveIntegerField(default=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Space: {self.title}'
+
+
+# ── Notification ──────────────────────────────────────────────────────────────
+
+class Notification(models.Model):
+    """In-app notifications. Designed to be extended for push/WS later."""
+
+    TYPE_LIKE = 'like'
+    TYPE_COMMENT = 'comment'
+    TYPE_REPLY = 'reply'
+    TYPE_COMMENT_LIKE = 'comment_like'
+    TYPE_FOLLOW = 'follow'
+    TYPE_MENTION = 'mention'
+    TYPE_JOIN = 'join'
+    TYPE_CHOICES = [
+        (TYPE_LIKE, 'Like'),
+        (TYPE_COMMENT, 'Comment'),
+        (TYPE_REPLY, 'Reply'),
+        (TYPE_COMMENT_LIKE, 'Comment Like'),
+        (TYPE_FOLLOW, 'Follow'),
+        (TYPE_MENTION, 'Mention'),
+        (TYPE_JOIN, 'Join'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='community_notifications',
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='community_actions',
+    )
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications'
+    )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='notifications',
+    )
+    is_read = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Notification({self.type}) → {self.recipient}'
+
+
+# ── Comment Like ─────────────────────────────────────────────────────────────
+
+class CommentLike(models.Model):
+    """One like per user per comment."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='comment_likes',
+    )
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'comment')
+
+    def __str__(self):
+        return f'{self.user} likes comment {self.comment_id}'
+
+
+# ── Community Profile ─────────────────────────────────────────────────────────
+
+class CommunityProfile(models.Model):
+    """Per-user profile visible in the community section."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='community_profile',
+    )
+    bio = models.TextField(blank=True, max_length=500)
+    avatar = models.ImageField(upload_to='community/profiles/avatars/', null=True, blank=True)
+    banner = models.ImageField(upload_to='community/profiles/banners/', null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'CommunityProfile({self.user})'
+
+
+# ── Block ─────────────────────────────────────────────────────────────────────
+
+class Block(models.Model):
+    """User blocking. Blocked users are excluded from feeds and DMs."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    blocker = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='blocking',
+    )
+    blocked = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='blocked_by',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+
+    def __str__(self):
+        return f'{self.blocker} blocked {self.blocked}'

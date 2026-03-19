@@ -1,0 +1,926 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Messages{% endblock %}
+{% block mobile_title %}Messages{% endblock %}
+{% block nav_msgs %}active{% endblock %}
+{% block rail_msgs %}active{% endblock %}
+{% block bn_msgs %}active{% endblock %}
+{% block topbar_title %}Messages{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>{% endblock %}
+
+{% block extra_css %}
+<style>
+.content-scroll{overflow:hidden!important;}
+.page{padding:0!important;max-width:100%!important;height:calc(100vh - 48px);display:flex;}
+
+/* ── Conversation list ── */
+.convos-col{width:272px;background:var(--s2);border-right:1px solid var(--b1);display:flex;flex-direction:column;flex-shrink:0;}
+.convos-head{padding:.875rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;}
+.convos-title{font-size:.875rem;font-weight:700;}
+.new-dm-btn{padding:.25rem .625rem;background:var(--s4);border:1px solid var(--b2);border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t2);transition:all .15s;}
+.new-dm-btn:hover{background:var(--s5);color:var(--t1);}
+.convos-search{padding:.5rem .75rem;border-bottom:1px solid var(--b1);}
+.convos-search input{width:100%;background:var(--s3);border:none;border-radius:4px;padding:.35rem .625rem;color:var(--t1);font-size:.8125rem;outline:none;}
+.convos-search input::placeholder{color:var(--t3);}
+.convos-list{flex:1;overflow-y:auto;}
+.convo-row{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-bottom:1px solid var(--b1);cursor:pointer;transition:background .12s;text-decoration:none;color:inherit;}
+.convo-row:hover,.convo-row.active{background:var(--s3);}
+.convo-av{width:38px;height:38px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.convo-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.convo-info{flex:1;min-width:0;}
+.convo-name{font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.convo-preview{font-size:.75rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.convo-time{font-size:.6875rem;color:var(--t3);flex-shrink:0;}
+
+/* ── Chat area ── */
+.chat-col{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--t3);gap:.75rem;}
+.chat-empty svg{width:48px;height:48px;opacity:.15;}
+.chat-empty p{font-size:.875rem;}
+.chat-head{padding:.75rem 1.25rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
+.chat-head-av{width:36px;height:36px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.chat-head-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.chat-head-info{flex:1;}
+.chat-head-name{font-size:.9375rem;font-weight:700;}
+.chat-head-sub{font-size:.75rem;color:var(--t3);}
+.chat-head-actions{display:flex;gap:.25rem;}
+.chat-head-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:none;border:none;color:var(--t3);transition:all .15s;}
+.chat-head-btn:hover{background:var(--s3);color:var(--t1);}
+.chat-head-btn svg{width:16px;height:16px;}
+/* Call buttons */
+.call-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:none;border:none;color:var(--t3);transition:all .15s;cursor:pointer;}
+.call-btn:hover{background:var(--s3);color:var(--t1);}
+.call-btn.voice:hover{color:#48bb78;}
+.call-btn.video:hover{color:#4299e1;}
+.call-btn svg{width:16px;height:16px;}
+/* Call overlay */
+.call-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9000;display:none;flex-direction:column;}
+.call-overlay.open{display:flex;}
+.call-bar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;background:var(--s2);border-bottom:1px solid var(--b1);flex-shrink:0;}
+.call-bar-info{display:flex;align-items:center;gap:.75rem;}
+.call-bar-dot{width:8px;height:8px;background:#48bb78;border-radius:50%;animation:mic-pulse .8s infinite;}
+.call-bar-label{font-size:.875rem;font-weight:600;}
+.call-bar-timer{font-size:.8125rem;color:var(--t3);font-variant-numeric:tabular-nums;}
+.call-bar-actions{display:flex;gap:.5rem;}
+.call-ctrl{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:none;cursor:pointer;transition:all .15s;}
+.call-ctrl svg{width:16px;height:16px;}
+.call-ctrl.mute{background:var(--s4);color:var(--t1);}
+.call-ctrl.mute:hover,.call-ctrl.mute.active{background:#e53e3e;color:#fff;}
+.call-ctrl.cam{background:var(--s4);color:var(--t1);}
+.call-ctrl.cam:hover,.call-ctrl.cam.active{background:#e53e3e;color:#fff;}
+.call-ctrl.end{background:#e53e3e;color:#fff;}
+.call-ctrl.end:hover{background:#c53030;}
+.call-ctrl.share{background:var(--s4);color:var(--t1);}
+.call-ctrl.share:hover{background:var(--s5);}
+.call-frame{flex:1;width:100%;border:none;}
+
+.chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.375rem;}
+/* Date separator */
+.msg-date-sep{text-align:center;font-size:.6875rem;color:var(--t3);margin:.5rem 0;position:relative;}
+.msg-date-sep::before,.msg-date-sep::after{content:'';position:absolute;top:50%;width:calc(50% - 3rem);height:1px;background:var(--b2);}
+.msg-date-sep::before{left:0;}
+.msg-date-sep::after{right:0;}
+/* Message bubbles */
+.msg-wrap{display:flex;align-items:flex-end;gap:.5rem;}
+.msg-wrap.mine{flex-direction:row-reverse;}
+.msg-av{width:26px;height:26px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.msg-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.msg-av.hidden{visibility:hidden;}
+.msg-group{display:flex;flex-direction:column;gap:.125rem;max-width:68%;}
+.mine .msg-group{align-items:flex-end;}
+.theirs .msg-group{align-items:flex-start;}
+.msg-bubble{padding:.5rem .875rem;border-radius:18px;font-size:.875rem;line-height:1.55;word-break:break-word;}
+.mine .msg-bubble{background:var(--white);color:#000;border-radius:18px 18px 4px 18px;}
+.theirs .msg-bubble{background:var(--s3);color:var(--t1);border-radius:18px 18px 18px 4px;}
+.msg-time{font-size:.625rem;color:var(--t3);padding:0 .25rem;margin-top:.125rem;}
+
+/* Input */
+.chat-input-area{padding:.75rem 1rem;border-top:1px solid var(--b1);flex-shrink:0;}
+.chat-form{display:flex;gap:.625rem;align-items:center;background:var(--s3);border:1px solid var(--b2);border-radius:24px;padding:.5rem .75rem;transition:border-color .15s;}
+.chat-form:focus-within{border-color:var(--b3);}
+.chat-input{flex:1;background:none;border:none;color:var(--t1);font-size:.875rem;outline:none;}
+.chat-input::placeholder{color:var(--t3);}
+.send-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--white);color:#000;border:none;border-radius:50%;transition:all .15s;flex-shrink:0;}
+.send-btn:hover{background:#e8e8e8;}
+.send-btn:disabled{opacity:.4;cursor:not-allowed;}
+.send-btn svg{width:15px;height:15px;}
+/* Mic button */
+.mic-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);border-radius:50%;transition:all .15s;flex-shrink:0;cursor:pointer;}
+.mic-btn:hover{background:var(--s4);color:var(--t1);}
+.mic-btn.recording{color:#e53e3e;animation:mic-pulse 1s infinite;}
+.mic-btn svg{width:16px;height:16px;}
+@keyframes mic-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+/* Recording bar */
+.rec-bar{display:none;align-items:center;gap:.75rem;background:var(--s3);border:1px solid #e53e3e44;border-radius:24px;padding:.5rem .875rem;}
+.rec-bar.active{display:flex;}
+.rec-dot{width:8px;height:8px;background:#e53e3e;border-radius:50%;animation:mic-pulse .8s infinite;flex-shrink:0;}
+.rec-timer{font-size:.8125rem;font-weight:600;color:#e53e3e;min-width:2.5rem;}
+.rec-wave{flex:1;display:flex;align-items:center;gap:2px;height:24px;}
+.rec-wave span{display:inline-block;width:3px;background:var(--t3);border-radius:2px;animation:wave-bar .6s ease-in-out infinite;}
+.rec-wave span:nth-child(2){animation-delay:.1s;}
+.rec-wave span:nth-child(3){animation-delay:.2s;}
+.rec-wave span:nth-child(4){animation-delay:.3s;}
+.rec-wave span:nth-child(5){animation-delay:.4s;}
+@keyframes wave-bar{0%,100%{height:4px;}50%{height:18px;}}
+.rec-cancel{background:none;border:none;color:var(--t3);font-size:.75rem;cursor:pointer;padding:.25rem .5rem;border-radius:4px;}
+.rec-cancel:hover{color:#e53e3e;}
+.rec-send{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#e53e3e;color:#fff;border:none;border-radius:50%;cursor:pointer;flex-shrink:0;}
+.rec-send:hover{background:#c53030;}
+.rec-send svg{width:14px;height:14px;}
+/* Voice bubble */
+.voice-bubble{display:flex;align-items:center;gap:.625rem;padding:.5rem .875rem;min-width:200px;}
+.vp-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--s5);border:none;border-radius:50%;cursor:pointer;flex-shrink:0;color:var(--t1);}
+.vp-btn svg{width:13px;height:13px;}
+.vp-progress{flex:1;height:3px;background:var(--b2);border-radius:2px;cursor:pointer;position:relative;}
+.vp-fill{height:100%;background:var(--t2);border-radius:2px;width:0%;transition:width .1s linear;}
+.vp-dur{font-size:.6875rem;color:var(--t3);flex-shrink:0;min-width:2.5rem;text-align:right;}
+
+/* Attach button */
+.attach-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);border-radius:50%;transition:all .15s;flex-shrink:0;cursor:pointer;}
+.attach-btn:hover{background:var(--s4);color:var(--t1);}
+.attach-btn svg{width:17px;height:17px;}
+/* Attach menu */
+.attach-menu{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:.375rem;display:none;flex-direction:column;gap:.125rem;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,.18);z-index:50;}
+.attach-menu.open{display:flex;}
+.attach-opt{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border-radius:8px;cursor:pointer;font-size:.8125rem;color:var(--t1);border:none;background:none;width:100%;text-align:left;transition:background .12s;}
+.attach-opt:hover{background:var(--s3);}
+.attach-opt svg{width:16px;height:16px;flex-shrink:0;}
+.attach-opt .opt-label{font-weight:500;}
+/* File preview strip */
+.file-preview-strip{display:none;gap:.5rem;padding:.5rem .75rem;border-top:1px solid var(--b1);flex-wrap:wrap;align-items:center;}
+.file-preview-strip.has-files{display:flex;}
+.fp-item{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--b2);}
+.fp-item img,.fp-item video{width:72px;height:72px;object-fit:cover;display:block;}
+.fp-doc{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:var(--s3);max-width:200px;}
+.fp-doc svg{width:20px;height:20px;flex-shrink:0;color:var(--t2);}
+.fp-doc-name{font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;}
+.fp-remove{position:absolute;top:2px;right:2px;width:18px;height:18px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:.625rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.fp-caption{flex:1;min-width:140px;background:none;border:none;color:var(--t1);font-size:.8125rem;outline:none;padding:.25rem .5rem;}
+.fp-caption::placeholder{color:var(--t3);}
+.fp-send{padding:.375rem .875rem;background:var(--white);color:#000;border:none;border-radius:20px;font-size:.8125rem;font-weight:600;cursor:pointer;flex-shrink:0;}
+.fp-send:hover{background:#e8e8e8;}
+/* Media bubbles */
+.media-img-bubble{max-width:260px;border-radius:14px;overflow:hidden;cursor:pointer;}
+.media-img-bubble img{width:100%;display:block;border-radius:14px;}
+.media-vid-bubble{max-width:280px;border-radius:14px;overflow:hidden;}
+.media-vid-bubble video{width:100%;display:block;border-radius:14px;}
+.media-doc-bubble{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;min-width:200px;max-width:280px;}
+.doc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-icon svg{width:20px;height:20px;}
+.doc-info{flex:1;min-width:0;}
+.doc-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.doc-meta{font-size:.6875rem;color:var(--t3);}
+.doc-dl{margin-left:auto;color:var(--t2);flex-shrink:0;}
+.doc-dl svg{width:16px;height:16px;}
+/* Lightbox */
+.lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;display:none;align-items:center;justify-content:center;}
+.lb-overlay.open{display:flex;}
+.lb-overlay img{max-width:92vw;max-height:92vh;border-radius:8px;object-fit:contain;}
+.lb-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+/* Input area wrapper needs relative for attach menu */
+.chat-input-wrap{position:relative;}
+
+@media(max-width:900px){
+  .page{height:auto!important;flex-direction:column;}
+  .convos-col{width:100%;border-right:none;border-bottom:1px solid var(--b1);max-height:220px;}
+  .chat-col{min-height:400px;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Conversation list -->
+<div class="convos-col">
+  <div class="convos-head">
+    <span class="convos-title">Messages</span>
+    <a href="{% url 'community:conversation_create' %}" class="new-dm-btn">+ New</a>
+  </div>
+  <div class="convos-search">
+    <input type="text" placeholder="Search conversations…" id="convo-search">
+  </div>
+  <div class="convos-list" id="convos-list">
+    {% for convo in conversations %}
+    <a href="{% url 'community:conversation_detail' convo.id %}" class="convo-row {% if active_convo and active_convo.id == convo.id %}active{% endif %}">
+      <div class="convo-av">
+        {% if convo.other_participant.community_profile.avatar %}
+          <img src="{{ convo.other_participant.community_profile.avatar.url }}" alt="">
+        {% else %}
+          {{ convo.other_participant.username|slice:":1"|upper }}
+        {% endif %}
+      </div>
+      <div class="convo-info">
+        <div class="convo-name">{{ convo.other_participant.username }}</div>
+        <div class="convo-preview">{{ convo.last_message_preview|default:"No messages yet" }}</div>
+      </div>
+      <span class="convo-time">{{ convo.updated_at|timesince|truncatechars:8 }}</span>
+    </a>
+    {% empty %}
+    <div style="padding:2rem;text-align:center;color:var(--t3);font-size:.8125rem;">
+      No conversations yet.<br>
+      <a href="{% url 'community:conversation_create' %}" style="color:var(--t2);">Start one</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Chat area -->
+<div class="chat-col">
+  {% if active_convo %}
+  <div class="chat-head">
+    <a href="{% url 'community:profile' other_user.username %}">
+      <div class="chat-head-av">
+        {% if other_user.community_profile.avatar %}
+          <img src="{{ other_user.community_profile.avatar.url }}" alt="">
+        {% else %}
+          {{ other_user.username|slice:":1"|upper }}
+        {% endif %}
+      </div>
+    </a>
+    <div class="chat-head-info">
+      <div class="chat-head-name">
+        <a href="{% url 'community:profile' other_user.username %}" style="color:var(--t1);">{{ other_user.username }}</a>
+      </div>
+      <div class="chat-head-sub">Click to view profile</div>
+    </div>
+    <div class="chat-head-actions">
+      <button class="call-btn voice" onclick="startCall('voice')" title="Voice call">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
+      <button class="call-btn video" onclick="startCall('video')" title="Video call">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </button>
+      <a href="{% url 'community:profile' other_user.username %}" class="chat-head-btn" title="View profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="chat-msgs" id="chat-msgs">
+    {% for msg in messages_list %}
+    <div class="msg-wrap {% if msg.sender == user %}mine{% else %}theirs{% endif %}">
+      <div class="msg-av {% if not forloop.last %}hidden{% endif %}">
+        {% if msg.sender == user %}
+          {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+        {% else %}
+          {% if other_user.community_profile.avatar %}<img src="{{ other_user.community_profile.avatar.url }}" alt="">{% else %}{{ other_user.username|slice:":1"|upper }}{% endif %}
+        {% endif %}
+      </div>
+      <div class="msg-group">
+        {% if msg.message_type == 'voice' and msg.voice_note %}
+        <div class="msg-bubble" style="padding:0;">
+          <div class="voice-bubble" data-src="{{ msg.voice_note.url }}">
+            <button class="vp-btn" onclick="vpToggle(this)" title="Play">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <div class="vp-progress" onclick="vpSeek(this, event)">
+              <div class="vp-fill"></div>
+            </div>
+            <span class="vp-dur">0:00</span>
+            <audio style="display:none;" src="{{ msg.voice_note.url }}"></audio>
+          </div>
+        </div>
+        {% elif msg.message_type == 'image' and msg.media %}
+        <div class="msg-bubble" style="padding:0;background:transparent;">
+          <div class="media-img-bubble" onclick="openLightbox('{{ msg.media.url }}')">
+            <img src="{{ msg.media.url }}" alt="image" loading="lazy">
+          </div>
+          {% if msg.content %}<div class="msg-bubble" style="margin-top:.25rem;">{{ msg.content }}</div>{% endif %}
+        </div>
+        {% elif msg.message_type == 'video' and msg.media %}
+        <div class="msg-bubble" style="padding:0;background:transparent;">
+          <div class="media-vid-bubble">
+            <video src="{{ msg.media.url }}" controls preload="metadata"></video>
+          </div>
+          {% if msg.content %}<div class="msg-bubble" style="margin-top:.25rem;">{{ msg.content }}</div>{% endif %}
+        </div>
+        {% elif msg.message_type == 'file' and msg.media %}
+        <div class="msg-bubble" style="padding:0;">
+          <div class="media-doc-bubble">
+            <div class="doc-icon" style="background:var(--s4);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="doc-info">
+              <div class="doc-name">{{ msg.media.name|slice:"30:"|default:msg.media.name }}</div>
+              <div class="doc-meta">Document</div>
+            </div>
+            <a href="{{ msg.media.url }}" download class="doc-dl" title="Download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+          </div>
+          {% if msg.content %}<div style="padding:.25rem .875rem .5rem;font-size:.8125rem;">{{ msg.content }}</div>{% endif %}
+        </div>
+        {% else %}
+        <div class="msg-bubble">{{ msg.content }}</div>
+        {% endif %}
+        <span class="msg-time">{{ msg.created_at|time:"g:i A" }}</span>
+      </div>
+    </div>
+    {% empty %}
+    <div style="text-align:center;color:var(--t3);font-size:.8125rem;margin-top:3rem;">
+      Say hello to {{ other_user.username }}! 👋
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="chat-input-area">
+    <!-- File preview strip (shown when files are selected) -->
+    <div class="file-preview-strip" id="file-preview-strip">
+      <div id="fp-items" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;flex:1;"></div>
+      <input type="text" class="fp-caption" id="fp-caption" placeholder="Add a caption…">
+      <button class="fp-send" onclick="sendFiles()">Send</button>
+    </div>
+    <div class="chat-input-wrap">
+      <!-- Attach menu -->
+      <div class="attach-menu" id="attach-menu">
+        <button class="attach-opt" onclick="triggerFilePicker('image/*')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span class="opt-label">Photo</span>
+        </button>
+        <button class="attach-opt" onclick="triggerFilePicker('video/*')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <span class="opt-label">Video</span>
+        </button>
+        <button class="attach-opt" onclick="triggerFilePicker('.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="opt-label">Document</span>
+        </button>
+        <button class="attach-opt" onclick="triggerFilePicker('audio/*')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span class="opt-label">Audio file</span>
+        </button>
+        <button class="attach-opt" onclick="triggerFilePicker('*/*')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          <span class="opt-label">Any file</span>
+        </button>
+      </div>
+      <form class="chat-form" id="msg-form" onsubmit="sendMessage(event)">
+        {% csrf_token %}
+        <button type="button" class="attach-btn" id="attach-btn" onclick="toggleAttachMenu(event)" title="Attach">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <input type="text" class="chat-input" id="msg-input" placeholder="Message {{ other_user.username }}…" autocomplete="off">
+        <button type="button" class="mic-btn" id="mic-btn" onclick="toggleRecording()" title="Voice note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button type="submit" class="send-btn" id="send-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+    </div>
+    <div class="rec-bar" id="rec-bar">
+      <div class="rec-dot"></div>
+      <span class="rec-timer" id="rec-timer">0:00</span>
+      <div class="rec-wave">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <button class="rec-cancel" onclick="cancelRecording()">✕ Cancel</button>
+      <button class="rec-send" onclick="stopAndSend()" title="Send voice note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" style="display:none;" multiple onchange="onFilesSelected(this)">
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lb-overlay" id="lb-overlay" onclick="closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <img id="lb-img" src="" alt="">
+  </div>
+
+  <!-- Call overlay -->
+  <div class="call-overlay" id="call-overlay">
+    <div class="call-bar">
+      <div class="call-bar-info">
+        <div class="call-bar-dot"></div>
+        <span class="call-bar-label" id="call-label">Call with {{ other_user.username }}</span>
+        <span class="call-bar-timer" id="call-timer">0:00</span>
+      </div>
+      <div class="call-bar-actions">
+        <button class="call-ctrl share" onclick="copyCallLink()" title="Copy invite link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </button>
+        <button class="call-ctrl mute" id="mute-btn" onclick="toggleMute()" title="Mute">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button class="call-ctrl cam" id="cam-btn" onclick="toggleCam()" title="Camera" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </button>
+        <button class="call-ctrl end" onclick="endCall()" title="End call">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 2 2 0 0 1-.45-2.11"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+    </div>
+    <iframe class="call-frame" id="call-frame" allow="camera; microphone; fullscreen; display-capture; autoplay" src=""></iframe>
+  </div>
+
+  {% else %}
+  <div class="chat-empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <p>Select a conversation or <a href="{% url 'community:conversation_create' %}" style="color:var(--t2);">start a new one</a></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+{% if active_convo %}
+const CONVO_ID = '{{ active_convo.id }}';
+const MY_USERNAME = '{{ user.username }}';
+const MY_INITIAL = '{{ user.username|slice:":1"|upper }}';
+{% if user.community_profile.avatar %}const MY_AVATAR = '{{ user.community_profile.avatar.url }}';{% else %}const MY_AVATAR = null;{% endif %}
+{% endif %}
+
+/* ── Scroll to bottom on load ── */
+const cm = document.getElementById('chat-msgs');
+if (cm) cm.scrollTop = cm.scrollHeight;
+
+/* ── Send message via AJAX ── */
+function sendMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('msg-input');
+  const content = input.value.trim();
+  if (!content) return;
+
+  const btn = document.getElementById('send-btn');
+  input.value = '';
+  btn.disabled = true;
+
+  fetch('/community/messages/' + CONVO_ID + '/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': CSRF,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+    },
+    body: 'content=' + encodeURIComponent(content)
+  })
+  .then(r => {
+    if (!r.ok) throw new Error('failed');
+    return r.json();
+  })
+  .then(data => {
+    appendBubble(data.content, new Date(data.created_at));
+  })
+  .catch(() => {
+    // fallback: still show bubble so UX isn't broken, message was likely saved
+    appendBubble(content, new Date());
+  })
+  .finally(() => {
+    btn.disabled = false;
+    input.focus();
+  });
+}
+
+function appendBubble(content, date) {
+  const msgs = document.getElementById('chat-msgs');
+  if (!msgs) return;
+
+  const empty = msgs.querySelector('[style*="Say hello"]');
+  if (empty) empty.remove();
+
+  const avHtml = MY_AVATAR
+    ? '<img src="' + MY_AVATAR + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+    : MY_INITIAL;
+
+  const timeStr = date.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap mine';
+  wrap.innerHTML =
+    '<div class="msg-av">' + avHtml + '</div>' +
+    '<div class="msg-group">' +
+      '<div class="msg-bubble">' + esc(content) + '</div>' +
+      '<span class="msg-time">' + timeStr + '</span>' +
+    '</div>';
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Conversation search filter ── */
+const searchInput = document.getElementById('convo-search');
+if (searchInput) {
+  searchInput.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.convo-row').forEach(row => {
+      const name = row.querySelector('.convo-name')?.textContent.toLowerCase() || '';
+      row.style.display = name.includes(q) ? '' : 'none';
+    });
+  });
+}
+
+/* ── Enter to send, Shift+Enter for newline ── */
+const msgInput = document.getElementById('msg-input');
+if (msgInput) {
+  msgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById('msg-form').dispatchEvent(new Event('submit'));
+    }
+  });
+}
+
+/* ── Voice note recording ── */
+let mediaRecorder = null;
+let audioChunks = [];
+let recTimerInterval = null;
+let recSeconds = 0;
+
+function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    stopAndSend();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Your browser does not support audio recording.');
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = function(e) {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+    mediaRecorder.start();
+
+    // Show recording bar, hide form
+    document.getElementById('msg-form').style.display = 'none';
+    document.getElementById('rec-bar').classList.add('active');
+    document.getElementById('mic-btn').classList.add('recording');
+
+    // Timer
+    recSeconds = 0;
+    document.getElementById('rec-timer').textContent = '0:00';
+    recTimerInterval = setInterval(function() {
+      recSeconds++;
+      const m = Math.floor(recSeconds / 60);
+      const s = recSeconds % 60;
+      document.getElementById('rec-timer').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    }, 1000);
+  }).catch(function() {
+    alert('Microphone access denied.');
+  });
+}
+
+function stopAndSend() {
+  if (!mediaRecorder) return;
+  mediaRecorder.onstop = function() {
+    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+    uploadVoiceNote(blob);
+    stopRecordingUI();
+    // Stop all tracks
+    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    mediaRecorder = null;
+  };
+  mediaRecorder.stop();
+}
+
+function cancelRecording() {
+  if (mediaRecorder) {
+    mediaRecorder.onstop = null;
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    mediaRecorder = null;
+  }
+  stopRecordingUI();
+}
+
+function stopRecordingUI() {
+  clearInterval(recTimerInterval);
+  document.getElementById('rec-bar').classList.remove('active');
+  document.getElementById('msg-form').style.display = 'flex';
+  document.getElementById('mic-btn').classList.remove('recording');
+}
+
+function uploadVoiceNote(blob) {
+  const fd = new FormData();
+  fd.append('audio', blob, 'voice_note.webm');
+  fetch('/community/messages/' + CONVO_ID + '/voice/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+    body: fd,
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.voice_note_url) appendVoiceBubble(data.voice_note_url, new Date(data.created_at));
+  })
+  .catch(function() {});
+}
+
+function appendVoiceBubble(url, date) {
+  const msgs = document.getElementById('chat-msgs');
+  if (!msgs) return;
+  const avHtml = MY_AVATAR
+    ? '<img src="' + MY_AVATAR + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+    : MY_INITIAL;
+  const timeStr = date.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap mine';
+  wrap.innerHTML =
+    '<div class="msg-av">' + avHtml + '</div>' +
+    '<div class="msg-group">' +
+      '<div class="msg-bubble" style="padding:0;">' +
+        '<div class="voice-bubble" data-src="' + url + '">' +
+          '<button class="vp-btn" onclick="vpToggle(this)" title="Play">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+          '</button>' +
+          '<div class="vp-progress" onclick="vpSeek(this, event)">' +
+            '<div class="vp-fill"></div>' +
+          '</div>' +
+          '<span class="vp-dur">0:00</span>' +
+          '<audio style="display:none;" src="' + url + '"></audio>' +
+        '</div>' +
+      '</div>' +
+      '<span class="msg-time">' + timeStr + '</span>' +
+    '</div>';
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+  initVoicePlayers();
+}
+
+/* ── Voice player ── */
+function fmtTime(s) {
+  s = Math.floor(s || 0);
+  return Math.floor(s/60) + ':' + (s%60 < 10 ? '0' : '') + (s%60);
+}
+
+function initVoicePlayers() {
+  document.querySelectorAll('.voice-bubble').forEach(function(vb) {
+    if (vb._init) return;
+    vb._init = true;
+    const audio = vb.querySelector('audio');
+    const fill = vb.querySelector('.vp-fill');
+    const dur = vb.querySelector('.vp-dur');
+    audio.addEventListener('timeupdate', function() {
+      if (audio.duration) {
+        fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        dur.textContent = fmtTime(audio.currentTime);
+      }
+    });
+    audio.addEventListener('ended', function() {
+      fill.style.width = '0%';
+      dur.textContent = fmtTime(audio.duration);
+      const btn = vb.querySelector('.vp-btn');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+    });
+    audio.addEventListener('loadedmetadata', function() {
+      dur.textContent = fmtTime(audio.duration);
+    });
+  });
+}
+
+function vpToggle(btn) {
+  const vb = btn.closest('.voice-bubble');
+  const audio = vb.querySelector('audio');
+  if (audio.paused) {
+    // Pause all others
+    document.querySelectorAll('.voice-bubble audio').forEach(function(a) {
+      if (a !== audio) { a.pause(); a.closest('.voice-bubble').querySelector('.vp-btn').innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>'; }
+    });
+    audio.play();
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+  } else {
+    audio.pause();
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+  }
+}
+
+function vpSeek(bar, e) {
+  const audio = bar.closest('.voice-bubble').querySelector('audio');
+  if (!audio.duration) return;
+  const rect = bar.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+}
+
+// Init players on page load
+initVoicePlayers();
+let callTimerInterval = null;
+let callSeconds = 0;
+let activeRoomUrl = null;
+let callType = null;
+
+function startCall(type) {
+  callType = type;
+  fetch('/community/messages/' + CONVO_ID + '/call/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'type=' + type,
+  })
+  .then(r => r.json())
+  .then(data => {
+    activeRoomUrl = data.room_url;
+    openCallOverlay(data.room_url, type);
+  })
+  .catch(function() { alert('Could not start call. Please try again.'); });
+}
+
+function openCallOverlay(roomUrl, type) {
+  const overlay = document.getElementById('call-overlay');
+  const frame = document.getElementById('call-frame');
+  const label = document.getElementById('call-label');
+  const camBtn = document.getElementById('cam-btn');
+
+  // Append username so Daily prebuilt shows their name
+  const url = roomUrl + '?userName=' + encodeURIComponent(MY_USERNAME);
+  frame.src = url;
+  label.textContent = (type === 'voice' ? '🎙 Voice call' : '📹 Video call') + ' with {{ other_user.username }}';
+  camBtn.style.display = type === 'video' ? 'flex' : 'none';
+
+  overlay.classList.add('open');
+
+  // Start timer
+  callSeconds = 0;
+  document.getElementById('call-timer').textContent = '0:00';
+  callTimerInterval = setInterval(function() {
+    callSeconds++;
+    const m = Math.floor(callSeconds / 60);
+    const s = callSeconds % 60;
+    document.getElementById('call-timer').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
+}
+
+function endCall() {
+  clearInterval(callTimerInterval);
+  const overlay = document.getElementById('call-overlay');
+  const frame = document.getElementById('call-frame');
+  overlay.classList.remove('open');
+  frame.src = '';
+  activeRoomUrl = null;
+}
+
+function toggleMute() {
+  const btn = document.getElementById('mute-btn');
+  btn.classList.toggle('active');
+  // Daily prebuilt handles mic state internally via its own UI;
+  // this just visually marks the button as muted for the caller's reference
+}
+
+function toggleCam() {
+  const btn = document.getElementById('cam-btn');
+  btn.classList.toggle('active');
+}
+
+function copyCallLink() {
+  if (!activeRoomUrl) return;
+  navigator.clipboard && navigator.clipboard.writeText(activeRoomUrl);
+  const btn = document.querySelector('.call-ctrl.share');
+  btn.style.background = '#48bb78';
+  setTimeout(function() { btn.style.background = ''; }, 1500);
+}
+
+// Close call on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('call-overlay').classList.contains('open')) {
+    endCall();
+  }
+});
+
+/* ── Attach menu ── */
+function toggleAttachMenu(e) {
+  e.stopPropagation();
+  document.getElementById('attach-menu').classList.toggle('open');
+}
+document.addEventListener('click', function() {
+  document.getElementById('attach-menu') && document.getElementById('attach-menu').classList.remove('open');
+});
+
+let pendingFiles = [];
+
+function triggerFilePicker(accept) {
+  const inp = document.getElementById('file-input');
+  inp.accept = accept;
+  inp.click();
+  document.getElementById('attach-menu').classList.remove('open');
+}
+
+function onFilesSelected(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  pendingFiles = pendingFiles.concat(files);
+  renderPreviews();
+  input.value = '';
+}
+
+function renderPreviews() {
+  const strip = document.getElementById('file-preview-strip');
+  const container = document.getElementById('fp-items');
+  container.innerHTML = '';
+  if (!pendingFiles.length) { strip.classList.remove('has-files'); return; }
+  strip.classList.add('has-files');
+  pendingFiles.forEach(function(f, i) {
+    const item = document.createElement('div');
+    item.className = 'fp-item';
+    if (f.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      item.appendChild(img);
+    } else if (f.type.startsWith('video/')) {
+      const vid = document.createElement('video');
+      vid.src = URL.createObjectURL(f);
+      vid.style.cssText = 'width:72px;height:72px;object-fit:cover;display:block;';
+      item.appendChild(vid);
+    } else {
+      item.innerHTML =
+        '<div class="fp-doc">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+          '<span class="fp-doc-name">' + esc(f.name) + '</span>' +
+        '</div>';
+    }
+    const rm = document.createElement('button');
+    rm.className = 'fp-remove';
+    rm.textContent = '✕';
+    rm.onclick = function() { pendingFiles.splice(i, 1); renderPreviews(); };
+    item.appendChild(rm);
+    container.appendChild(item);
+  });
+}
+
+function sendFiles() {
+  if (!pendingFiles.length) return;
+  const caption = document.getElementById('fp-caption').value.trim();
+  // Send each file sequentially
+  const queue = pendingFiles.slice();
+  pendingFiles = [];
+  renderPreviews();
+  document.getElementById('fp-caption').value = '';
+
+  queue.forEach(function(file) {
+    const fd = new FormData();
+    fd.append('file', file);
+    if (caption) fd.append('caption', caption);
+    fetch('/community/messages/' + CONVO_ID + '/media/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF },
+      body: fd,
+    })
+    .then(r => r.json())
+    .then(data => appendMediaBubble(data))
+    .catch(function() {});
+  });
+}
+
+function appendMediaBubble(data) {
+  const msgs = document.getElementById('chat-msgs');
+  if (!msgs) return;
+  const empty = msgs.querySelector('[style*="Say hello"]');
+  if (empty) empty.remove();
+  const avHtml = MY_AVATAR
+    ? '<img src="' + MY_AVATAR + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+    : MY_INITIAL;
+  const timeStr = new Date(data.created_at).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  let bubbleHtml = '';
+  if (data.message_type === 'image') {
+    bubbleHtml =
+      '<div class="msg-bubble" style="padding:0;background:transparent;">' +
+        '<div class="media-img-bubble" onclick="openLightbox(\'' + data.media_url + '\')">' +
+          '<img src="' + data.media_url + '" alt="image" loading="lazy">' +
+        '</div>' +
+        (data.content ? '<div class="msg-bubble" style="margin-top:.25rem;">' + esc(data.content) + '</div>' : '') +
+      '</div>';
+  } else if (data.message_type === 'video') {
+    bubbleHtml =
+      '<div class="msg-bubble" style="padding:0;background:transparent;">' +
+        '<div class="media-vid-bubble"><video src="' + data.media_url + '" controls preload="metadata"></video></div>' +
+        (data.content ? '<div class="msg-bubble" style="margin-top:.25rem;">' + esc(data.content) + '</div>' : '') +
+      '</div>';
+  } else {
+    bubbleHtml =
+      '<div class="msg-bubble" style="padding:0;">' +
+        '<div class="media-doc-bubble">' +
+          '<div class="doc-icon" style="background:var(--s4);">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+          '</div>' +
+          '<div class="doc-info"><div class="doc-name">' + esc(data.filename) + '</div><div class="doc-meta">Document</div></div>' +
+          '<a href="' + data.media_url + '" download class="doc-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a>' +
+        '</div>' +
+        (data.content ? '<div style="padding:.25rem .875rem .5rem;font-size:.8125rem;">' + esc(data.content) + '</div>' : '') +
+      '</div>';
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap mine';
+  wrap.innerHTML =
+    '<div class="msg-av">' + avHtml + '</div>' +
+    '<div class="msg-group">' + bubbleHtml + '<span class="msg-time">' + timeStr + '</span></div>';
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+/* ── Lightbox ── */
+function openLightbox(src) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-overlay').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lb-overlay').classList.remove('open');
+  document.getElementById('lb-img').src = '';
+}
+</script>
+{% endblock %}

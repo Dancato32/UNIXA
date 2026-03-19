@@ -1,0 +1,286 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{% block title %}Community{% endblock %}  NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0a;--s1:#111;--s2:#161616;--s3:#1c1c1c;--s4:#222;--s5:#2a2a2a;
+  --b1:#1a1a1a;--b2:#242424;--b3:#303030;
+  --t1:#f0f0f0;--t2:#aaa;--t3:#666;--t4:#3a3a3a;
+  --white:#fff;--red:#ef4444;--green:#22c55e;--blue:#5865f2;
+  --rail:72px;--sidebar:240px;--topbar:48px;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea,select{font-family:inherit;}
+
+/*  3-column Discord shell  */
+.shell{display:flex;height:100vh;overflow:hidden;}
+
+/* Col 1: server/app icon rail */
+.rail{width:var(--rail);background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.375rem;flex-shrink:0;border-right:1px solid var(--b1);overflow-y:auto;}
+.rail-icon{width:48px;height:48px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:800;color:var(--t2);transition:all .2s;cursor:pointer;position:relative;flex-shrink:0;}
+.rail-icon:hover,.rail-icon.active{border-radius:16px;background:var(--white);color:#000;}
+.rail-icon.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:4px;height:40px;background:var(--white);border-radius:0 4px 4px 0;}
+.rail-icon svg{width:22px;height:22px;}
+.rail-sep{width:32px;height:1px;background:var(--b2);margin:.25rem 0;flex-shrink:0;}
+.rail-icon.nexa{background:var(--white);color:#000;border-radius:16px;font-size:.75rem;letter-spacing:-.02em;}
+
+/* Col 2: channel/DM sidebar */
+.sidebar{width:var(--sidebar);background:var(--s2);display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid var(--b1);}
+.sidebar-head{height:var(--topbar);display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--b1);font-size:.9375rem;font-weight:700;flex-shrink:0;gap:.5rem;}
+.sidebar-head svg{width:16px;height:16px;color:var(--t3);}
+.sidebar-search{padding:.625rem .75rem;border-bottom:1px solid var(--b1);}
+.sidebar-search input{width:100%;background:var(--s3);border:none;border-radius:4px;padding:.375rem .625rem;color:var(--t1);font-size:.8125rem;outline:none;}
+.sidebar-search input::placeholder{color:var(--t3);}
+.sidebar-scroll{flex:1;overflow-y:auto;padding:.5rem 0;}
+.sidebar-section{padding:.75rem .75rem .25rem;}
+.sidebar-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);display:flex;align-items:center;justify-content:space-between;}
+.sidebar-label button{background:none;border:none;color:var(--t3);width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:color .15s;}
+.sidebar-label button:hover{color:var(--t1);}
+.sidebar-label button svg{width:14px;height:14px;}
+.ch-item{display:flex;align-items:center;gap:.5rem;padding:.35rem .75rem;border-radius:4px;color:var(--t3);font-size:.875rem;font-weight:500;transition:all .12s;margin:1px .5rem;cursor:pointer;}
+.ch-item:hover{background:var(--s3);color:var(--t2);}
+.ch-item.active{background:var(--s4);color:var(--t1);}
+.ch-item svg{width:16px;height:16px;flex-shrink:0;}
+.ch-item .ch-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:8px;min-width:16px;text-align:center;}
+.dm-item{display:flex;align-items:center;gap:.625rem;padding:.35rem .75rem;border-radius:4px;color:var(--t3);font-size:.875rem;transition:all .12s;margin:1px .5rem;cursor:pointer;}
+.dm-item:hover{background:var(--s3);color:var(--t2);}
+.dm-item.active{background:var(--s4);color:var(--t1);}
+.dm-av{width:32px;height:32px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;position:relative;}
+.dm-av .status{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--s2);}
+.dm-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sidebar-user{height:52px;background:var(--s3);border-top:1px solid var(--b1);display:flex;align-items:center;padding:0 .75rem;gap:.5rem;flex-shrink:0;}
+.user-av{width:32px;height:32px;background:var(--s5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;position:relative;}
+.user-av .status{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--s3);}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:.8125rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-tag{font-size:.6875rem;color:var(--t3);}
+.user-actions{display:flex;gap:.125rem;}
+.user-action-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:none;border:none;color:var(--t3);transition:all .15s;}
+.user-action-btn:hover{background:var(--s4);color:var(--t1);}
+.user-action-btn svg{width:16px;height:16px;}
+
+/* Col 3: main content + optional right panel */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:var(--topbar);background:var(--s2);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 1rem;gap:.75rem;flex-shrink:0;}
+.topbar-icon{color:var(--t3);}
+.topbar-icon svg{width:20px;height:20px;}
+.topbar-title{font-size:.9375rem;font-weight:700;}
+.topbar-sep{width:1px;height:20px;background:var(--b2);}
+.topbar-desc{font-size:.8125rem;color:var(--t3);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.25rem;}
+.tb-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:none;border:none;color:var(--t3);transition:all .15s;}
+.tb-btn:hover{color:var(--t1);}
+.tb-btn svg{width:18px;height:18px;}
+.content-scroll{flex:1;overflow-y:auto;}
+.page{padding:1.5rem 2rem;max-width:860px;width:100%;margin:0 auto;}
+
+/*  Shared components  */
+.btn{display:inline-flex;align-items:center;gap:.375rem;padding:.4rem .875rem;border-radius:3px;font-size:.875rem;font-weight:500;border:none;transition:all .15s;cursor:pointer;white-space:nowrap;}
+.btn-primary{background:var(--white);color:#000;}
+.btn-primary:hover{background:#e8e8e8;}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--b3);}
+.btn-ghost:hover{background:var(--s3);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-sm{padding:.3rem .625rem;font-size:.8125rem;}
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:3px;font-size:.6875rem;font-weight:600;}
+.badge-green{background:rgba(34,197,94,.12);color:var(--green);}
+.badge-blue{background:rgba(88,101,242,.15);color:var(--blue);}
+.badge-gray{background:var(--s4);color:var(--t2);}
+.card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;}
+.empty-state{text-align:center;padding:4rem 1rem;color:var(--t3);}
+.empty-state svg{width:48px;height:48px;margin:0 auto 1rem;opacity:.15;display:block;}
+.empty-state p{font-size:.875rem;margin-bottom:1.25rem;}
+
+/*  Mobile  */
+.mobile-bar{display:none;height:52px;background:var(--s2);border-bottom:1px solid var(--b1);align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200;}
+.mob-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t2);cursor:pointer;border-radius:4px;}
+.mob-btn svg{width:20px;height:20px;}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:399;}
+.mob-overlay.open{display:block;}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s2);border-top:1px solid var(--b1);padding:.375rem .5rem;z-index:100;justify-content:space-around;}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.4rem .625rem;color:var(--t4);font-size:.6rem;border-radius:4px;}
+.bn-item svg{width:20px;height:20px;}
+.bn-item.active{color:var(--t1);}
+
+@media(max-width:900px){
+  .shell{flex-direction:column;height:auto;overflow:visible;}
+  .rail{display:none;}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:400;transform:translateX(-100%);transition:transform .25s;width:280px;}
+  .sidebar.open{transform:translateX(0);}
+  .main-area{height:auto;overflow:visible;}
+  .content-scroll{overflow:visible;}
+  .topbar{display:none;}
+  .mobile-bar{display:flex;}
+  .bottom-nav{display:flex;}
+  .page{padding:1rem;padding-bottom:5rem;}
+}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="shell">
+
+  <!-- Rail: app icons -->
+  <div class="rail">
+    <a href="{% url 'dashboard' %}" class="rail-icon nexa" title="NEXA Dashboard">N</a>
+    <div class="rail-sep"></div>
+    <a href="{% url 'community:feed' %}" class="rail-icon {% block rail_feed %}{% endblock %}" title="Feed">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    </a>
+    <a href="{% url 'community:schools' %}" class="rail-icon {% block rail_schools %}{% endblock %}" title="Schools">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </a>
+    <a href="{% url 'community:custom_list' %}" class="rail-icon {% block rail_communities %}{% endblock %}" title="Communities">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </a>
+    <div class="rail-sep"></div>
+    <a href="{% url 'community:messages' %}" class="rail-icon {% block rail_msgs %}{% endblock %}" title="Messages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </a>
+    <a href="{% url 'community:notifications' %}" class="rail-icon {% block rail_notifs %}{% endblock %}" title="Notifications" style="position:relative;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      {% if unread_notif_count %}<span style="position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:.55rem;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;">{{ unread_notif_count }}</span>{% endif %}
+    </a>
+  </div>
+
+  <!-- Sidebar: channels/DMs -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Community
+    </div>
+    <div class="sidebar-search">
+      <input type="text" placeholder="Find or start a conversation" id="sidebar-search-input">
+    </div>
+    <div class="sidebar-scroll">
+      <div class="sidebar-section">
+        <div class="sidebar-label">
+          Channels
+          <a href="{% url 'community:post_create' %}"><button title="New Post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></a>
+        </div>
+      </div>
+      <a href="{% url 'community:feed' %}" class="ch-item {% block nav_feed %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg># feed</a>
+      <a href="{% url 'community:schools' %}" class="ch-item {% block nav_schools %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg># schools</a>
+      <a href="{% url 'community:custom_list' %}" class="ch-item {% block nav_communities %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg># communities</a>
+      <a href="{% url 'community:post_create' %}" class="ch-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg># new-post</a>
+      <div class="sidebar-section" style="margin-top:.5rem;">
+        <div class="sidebar-label">
+          Direct Messages
+          <a href="{% url 'community:conversation_create' %}"><button title="New DM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></a>
+        </div>
+      </div>
+      <a href="{% url 'community:messages' %}" class="dm-item {% block nav_msgs %}{% endblock %}">
+        <div class="dm-av">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="dm-name">All Messages</span>
+      </a>
+      <a href="{% url 'community:notifications' %}" class="dm-item {% block nav_notifs %}{% endblock %}">
+        <div class="dm-av">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <span class="dm-name">Notifications</span>
+        {% if unread_notif_count %}<span class="ch-badge">{{ unread_notif_count }}</span>{% endif %}
+      </a>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-av">
+        {% if user.community_profile.avatar %}
+          <img src="{{ user.community_profile.avatar.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+        {% else %}
+          {{ user.username|slice:":1"|upper }}
+        {% endif %}
+        <div class="status"></div>
+      </div>
+      <div class="user-info">
+        <a href="{% url 'community:profile' username=user.username %}" style="text-decoration:none;">
+          <div class="user-name">{{ user.username }}</div>
+        </a>
+        <div class="user-tag">Online</div>
+      </div>
+      <div class="user-actions">
+        <a href="{% url 'community:messages' %}" class="user-action-btn" title="Messages">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </a>
+        <a href="{% url 'logout' %}" class="user-action-btn" title="Log out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main area -->
+  <div class="main-area">
+    <!-- Desktop topbar -->
+    <div class="topbar">
+      <span class="topbar-icon">{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>{% endblock %}</span>
+      <span class="topbar-title">{% block topbar_title %}feed{% endblock %}</span>
+      <div class="topbar-sep"></div>
+      <span class="topbar-desc">{% block topbar_desc %}{% endblock %}</span>
+      <div class="topbar-right">
+        <a href="{% url 'community:notifications' %}" class="tb-btn" title="Notifications" style="position:relative;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          {% if unread_notif_count %}<span style="position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-size:.5rem;font-weight:700;min-width:13px;height:13px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;line-height:1;">{{ unread_notif_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'dashboard' %}" class="tb-btn" title="Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Mobile topbar -->
+    <div class="mobile-bar">
+      <button class="mob-btn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span style="font-size:.875rem;font-weight:700;">{% block mobile_title %}Community{% endblock %}</span>
+      <div class="user-av" style="width:28px;height:28px;font-size:.6875rem;">{{ user.username|slice:":1"|upper }}</div>
+    </div>
+
+    <div class="content-scroll">
+      {% block pre_content %}{% endblock %}
+      <div class="page">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mob-overlay" id="mob-overlay" onclick="toggleSidebar()"></div>
+
+<nav class="bottom-nav">
+  <a href="{% url 'dashboard' %}" class="bn-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
+  <a href="{% url 'community:feed' %}" class="bn-item {% block bn_feed %}{% endblock %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Feed</a>
+  <a href="{% url 'community:schools' %}" class="bn-item {% block bn_schools %}{% endblock %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Schools</a>
+  <a href="{% url 'community:messages' %}" class="bn-item {% block bn_msgs %}{% endblock %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>DMs</a>
+  <a href="{% url 'community:notifications' %}" class="bn-item {% block bn_notifs %}{% endblock %}" style="position:relative;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    {% if unread_notif_count %}<span style="position:absolute;top:2px;right:8px;background:var(--red);color:#fff;font-size:.5rem;font-weight:700;min-width:13px;height:13px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;line-height:1;">{{ unread_notif_count }}</span>{% endif %}
+    Alerts</a>
+</nav>
+
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('mob-overlay').classList.toggle('open');
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -24,6 +24,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('materials/', include('materials.urls')),
     path('ai-tutor/', include('ai_tutor.urls')),
+    path('community/', include('community.urls')),
 ]
 
 # Serve media files in development

@@ -27,6 +27,7 @@ urlpatterns = [
     path('ai-tutor/', include('ai_tutor.urls')),
     path('assignments/', include('assignment.urls')),
     path('nexa-library/', include('library.urls')),
+    path('community/', include('community.urls')),
 ]
 
 # Serve media files in development

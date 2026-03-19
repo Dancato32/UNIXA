@@ -1,0 +1,111 @@
+{% extends "community/base.html" %}
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+{% block mobile_title %}Profile{% endblock %}
+{% block topbar_title %}profile{% endblock %}
+{% block topbar_desc %}{{ profile_user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-banner{width:100%;height:160px;background:linear-gradient(135deg,var(--s4),var(--s5));border-radius:8px 8px 0 0;overflow:hidden;position:relative;}
+.profile-banner img{width:100%;height:100%;object-fit:cover;}
+.profile-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;margin-bottom:1rem;}
+.profile-info{padding:1rem 1.25rem 1.25rem;position:relative;}
+.profile-av{width:72px;height:72px;border-radius:50%;background:var(--s4);border:3px solid var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;overflow:hidden;margin-top:-36px;margin-bottom:.75rem;}
+.profile-av img{width:100%;height:100%;object-fit:cover;}
+.profile-name{font-size:1.125rem;font-weight:700;margin-bottom:.25rem;}
+.profile-bio{font-size:.875rem;color:var(--t2);line-height:1.6;margin-bottom:.75rem;}
+.profile-meta{display:flex;gap:1.25rem;font-size:.8125rem;color:var(--t3);}
+.profile-meta strong{color:var(--t1);}
+.edit-btn{position:absolute;top:1rem;right:1.25rem;}
+
+.posts-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:.75rem;}
+.post-card{background:var(--s2);border:1px solid var(--b2);border-radius:6px;margin-bottom:.5rem;display:flex;overflow:hidden;transition:border-color .15s;}
+.post-card:hover{border-color:var(--b3);}
+.vote-col{width:40px;background:var(--s3);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.2rem;flex-shrink:0;}
+.v-count{font-size:.6875rem;font-weight:700;color:var(--t2);}
+.post-body{flex:1;padding:.75rem .875rem;min-width:0;}
+.post-top{display:flex;align-items:center;gap:.375rem;margin-bottom:.375rem;flex-wrap:wrap;}
+.post-community-tag{font-size:.75rem;font-weight:700;color:var(--t1);background:var(--s4);border:1px solid var(--b2);padding:.1rem .45rem;border-radius:3px;}
+.post-dot{color:var(--t4);font-size:.75rem;}
+.post-when{font-size:.75rem;color:var(--t3);}
+.post-title{font-size:.9375rem;font-weight:600;color:var(--t1);margin-bottom:.375rem;}
+.post-text{font-size:.875rem;color:var(--t2);max-height:80px;overflow:hidden;}
+.post-actions{display:flex;gap:.125rem;margin-top:.5rem;}
+.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .5rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;}
+.pa:hover{background:var(--s3);color:var(--t2);}
+.pa svg{width:13px;height:13px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:680px;">
+  <!-- Profile card -->
+  <div class="profile-card">
+    <div class="profile-banner">
+      {% if profile.banner %}<img src="{{ profile.banner.url }}" alt="">{% endif %}
+    </div>
+    <div class="profile-info">
+      <div class="profile-av">
+        {% if profile.avatar %}
+          <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}">
+        {% else %}
+          {{ profile_user.username|slice:":1"|upper }}
+        {% endif %}
+      </div>
+      {% if is_own %}
+      <a href="{% url 'community:profile_edit' %}" class="btn btn-ghost btn-sm edit-btn">Edit Profile</a>
+      {% else %}
+      <div class="edit-btn" style="display:flex;gap:.5rem;">
+        <a href="{% url 'community:dm_start' profile_user.username %}" class="btn btn-primary btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Message
+        </a>
+      </div>
+      {% endif %}
+      <div class="profile-name">{{ profile_user.username }}</div>
+      {% if profile.bio %}
+      <div class="profile-bio">{{ profile.bio }}</div>
+      {% endif %}
+      <div class="profile-meta">
+        <span><strong>{{ posts.count }}</strong> posts</span>
+        <span>Joined {{ profile_user.date_joined|date:"N Y" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Posts -->
+  <div class="posts-title">Posts by {{ profile_user.username }}</div>
+  {% for post in posts %}
+  <div class="post-card">
+    <div class="vote-col">
+      <span class="v-count">{{ post.like_count }}</span>
+    </div>
+    <div class="post-body">
+      <div class="post-top">
+        {% if post.school_community %}
+          <span class="post-community-tag">{{ post.school_community.name }}</span>
+          <span class="post-dot">•</span>
+        {% elif post.custom_community %}
+          <span class="post-community-tag">{{ post.custom_community.name }}</span>
+          <span class="post-dot">•</span>
+        {% else %}
+          <span class="post-community-tag">Feed</span>
+          <span class="post-dot">•</span>
+        {% endif %}
+        <span class="post-when">{{ post.created_at|timesince }} ago</span>
+      </div>
+      {% if post.title %}<div class="post-title">{{ post.title }}</div>{% endif %}
+      <div class="post-text">{{ post.content|truncatechars:200 }}</div>
+      <div class="post-actions">
+        <a href="{% url 'community:post_detail' post.id %}" class="pa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          {{ post.comment_count }} Comments
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state"><p>No posts yet.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

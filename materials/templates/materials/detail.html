@@ -1253,6 +1253,20 @@
                     </a>
                 </div>
                 
+                <div class="nav-item">
+                    <a href="{% url 'community:feed' %}" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </span>
+                        Community
+                    </a>
+                </div>
+                
                 <div class="nav-divider"></div>
                 
                 <div class="nav-item">
@@ -1592,6 +1606,10 @@
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
                 AI Tutor
+            </a>
+            <a href="{% url 'community:feed' %}" class="bottom-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                Community
             </a>
         </nav>
     </div>

@@ -1,0 +1,75 @@
+{% extends "community/base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block mobile_title %}Notifications{% endblock %}
+{% block nav_notifs %}active{% endblock %}
+{% block rail_notifs %}active{% endblock %}
+{% block bn_notifs %}active{% endblock %}
+{% block topbar_title %}notifications{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>{% endblock %}
+{% block topbar_desc %}Your activity{% endblock %}
+
+{% block extra_css %}
+<style>
+.notifs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.notifs-title{font-size:1rem;font-weight:700;}
+.notif-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.875rem;transition:border-color .15s;}
+.notif-card.unread{border-color:var(--b3);background:var(--s3);}
+.notif-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;}
+.notif-icon.like{background:rgba(239,68,68,.1);}
+.notif-icon.comment{background:rgba(88,101,242,.12);}
+.notif-icon.follow{background:rgba(34,197,94,.1);}
+.notif-body{flex:1;min-width:0;}
+.notif-text{font-size:.875rem;line-height:1.5;color:var(--t2);}
+.notif-text strong{color:var(--t1);}
+.notif-time{font-size:.75rem;color:var(--t3);margin-top:.2rem;}
+.unread-dot{width:8px;height:8px;background:var(--blue);border-radius:50%;flex-shrink:0;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notifs-head">
+  <span class="notifs-title">Notifications</span>
+  {% if notifications %}
+  <form method="post" action="{% url 'community:notifications_mark_read' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-ghost btn-sm">Mark all read</button>
+  </form>
+  {% endif %}
+</div>
+
+{% for notif in notifications %}
+<div class="notif-card {% if not notif.is_read %}unread{% endif %}">
+  <div class="notif-icon {{ notif.type }}">
+    {% if notif.type == 'like' %}❤️
+    {% elif notif.type == 'comment_like' %}❤️
+    {% elif notif.type == 'comment' %}💬
+    {% elif notif.type == 'reply' %}↩️
+    {% elif notif.type == 'follow' %}👤
+    {% elif notif.type == 'mention' %}@
+    {% else %}🔔{% endif %}
+  </div>
+  <div class="notif-body">
+    <div class="notif-text">
+      <strong>{{ notif.actor.username }}</strong>
+      {% if notif.type == 'like' %} liked your post
+      {% elif notif.type == 'comment' %} commented on your post
+      {% elif notif.type == 'reply' %} replied to your comment
+      {% elif notif.type == 'comment_like' %} liked your comment
+      {% elif notif.type == 'follow' %} started following you
+      {% elif notif.type == 'mention' %} mentioned you
+      {% else %} sent you a notification{% endif %}
+      {% if notif.post %}
+        — <a href="{% url 'community:post_detail' notif.post.id %}{% if notif.comment %}#comment-{{ notif.comment.id }}{% endif %}" style="color:var(--t2);">view</a>
+      {% endif %}
+    </div>
+    <div class="notif-time">{{ notif.created_at|timesince }} ago</div>
+  </div>
+  {% if not notif.is_read %}<div class="unread-dot"></div>{% endif %}
+</div>
+{% empty %}
+<div class="empty-state card">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  <p>No notifications yet.</p>
+</div>
+{% endfor %}
+{% endblock %}

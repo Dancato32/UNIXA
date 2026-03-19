@@ -38,12 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party
     'django_jazzmin',
+    'rest_framework',
+    'django_filters',
     # Local apps
     'users',
     'dashboard',
     'materials',
     'ai_tutor',
     'assignment',
+    'community',
 ]
 
 # ── Middleware ────────────────────────────────────────────────────────────────
@@ -77,6 +80,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'community.context_processors.unread_notifications',
             ],
         },
     },
@@ -135,8 +139,9 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
 
 # ── File Upload Limits ────────────────────────────────────────────────────────
-DATA_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200   # 200 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648   # 2 GB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2147483648   # 2 GB
+FILE_UPLOAD_TEMP_DIR = None  # use system default temp dir
 
 # ── Security Headers (production only) ───────────────────────────────────────
 if not DEBUG:
@@ -151,3 +156,20 @@ if not DEBUG:
 
 # ── Default Primary Key ───────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ── Django REST Framework ─────────────────────────────────────────────────────
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+}

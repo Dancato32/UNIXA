@@ -1,0 +1,78 @@
+{% extends "community/base.html" %}
+{% block title %}School Communities{% endblock %}
+{% block mobile_title %}Schools{% endblock %}
+{% block nav_schools %}active{% endblock %}
+{% block rail_schools %}active{% endblock %}
+{% block bn_schools %}active{% endblock %}
+{% block topbar_title %}schools{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>{% endblock %}
+{% block topbar_desc %}Browse and join school communities{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.page-title{font-size:1rem;font-weight:700;}
+.search-bar{display:flex;align-items:center;gap:.5rem;background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.45rem .75rem;margin-bottom:1.25rem;}
+.search-bar svg{width:15px;height:15px;color:var(--t3);flex-shrink:0;}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:.875rem;}
+.search-bar input::placeholder{color:var(--t3);}
+.schools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem;}
+.school-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;transition:border-color .15s;}
+.school-card:hover{border-color:var(--b3);}
+.school-banner{height:72px;background:linear-gradient(135deg,var(--s3),var(--s4));display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:var(--t4);}
+.school-body{padding:.875rem;}
+.school-name-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.375rem;}
+.school-card-name{font-size:.9375rem;font-weight:700;}
+.school-desc{font-size:.8125rem;color:var(--t2);line-height:1.5;margin-bottom:.875rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.school-footer{display:flex;align-items:center;justify-content:space-between;}
+.member-count{font-size:.75rem;color:var(--t3);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <span class="page-title">School Communities</span>
+</div>
+
+<form method="get" class="search-bar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input type="text" name="q" value="{{ query }}" placeholder="Search schools…" autofocus>
+</form>
+
+<div class="schools-grid">
+  {% for sc in schools %}
+  <div class="school-card">
+    <div class="school-banner">
+      {% if sc.banner %}<img src="{{ sc.banner.url }}" style="width:100%;height:100%;object-fit:cover;">
+      {% else %}{{ sc.name|slice:":1" }}{% endif %}
+    </div>
+    <div class="school-body">
+      <div class="school-name-row">
+        <span class="school-card-name">{{ sc.name }}</span>
+        {% if sc.verified %}<span class="badge badge-blue">✓ Verified</span>{% endif %}
+      </div>
+      <p class="school-desc">{{ sc.description|default:"Official school community." }}</p>
+      <div class="school-footer">
+        <span class="member-count">{{ sc.memberships.count }} members</span>
+        <div style="display:flex;gap:.5rem;">
+          <a href="{% url 'community:school_detail' sc.slug %}" class="btn btn-ghost btn-sm">View</a>
+          {% if sc.id in joined_ids %}
+            <form method="post" action="{% url 'community:school_leave' sc.slug %}">
+              {% csrf_token %}<button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);">Leave</button>
+            </form>
+          {% else %}
+            <form method="post" action="{% url 'community:school_join' sc.slug %}">
+              {% csrf_token %}<button type="submit" class="btn btn-primary btn-sm">Join</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state" style="grid-column:1/-1;">
+    <p>No schools found{% if query %} for "{{ query }}"{% endif %}.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

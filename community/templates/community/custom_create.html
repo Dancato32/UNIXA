@@ -1,0 +1,58 @@
+{% extends "community/base.html" %}
+{% block title %}Create Community{% endblock %}
+{% block mobile_title %}Create Community{% endblock %}
+{% block nav_communities %}active{% endblock %}
+{% block rail_communities %}active{% endblock %}
+{% block topbar_title %}create community{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>{% endblock %}
+{% block topbar_desc %}Start a new community{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:1.5rem;max-width:560px;}
+.form-title{font-size:1rem;font-weight:700;margin-bottom:1.25rem;}
+.form-group{margin-bottom:1.125rem;}
+.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.4rem;}
+.form-control{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:.55rem .875rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;}
+.form-control:focus{border-color:var(--b3);}
+.form-control::placeholder{color:var(--t3);}
+textarea.form-control{resize:vertical;min-height:90px;line-height:1.6;}
+select.form-control option{background:var(--s3);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <div class="form-title">Create a Community</div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input type="text" name="name" class="form-control" placeholder="Community name" required maxlength="255">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea name="description" class="form-control" placeholder="What is this community about?"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Privacy</label>
+      <select name="privacy" class="form-control">
+        <option value="public">Public — anyone can see posts</option>
+        <option value="private">Private — members only</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Rules (optional)</label>
+      <textarea name="rules" class="form-control" placeholder="Community rules…"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Logo (optional)</label>
+      <input type="file" name="logo" class="form-control" accept="image/*">
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1.25rem;">
+      <button type="submit" class="btn btn-primary">Create Community</button>
+      <a href="{% url 'community:custom_list' %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

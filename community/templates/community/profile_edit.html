@@ -1,0 +1,50 @@
+{% extends "community/base.html" %}
+{% block title %}Edit Profile{% endblock %}
+{% block mobile_title %}Edit Profile{% endblock %}
+{% block topbar_title %}edit-profile{% endblock %}
+{% block topbar_desc %}Update your community profile{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:1.5rem;max-width:560px;}
+.form-group{margin-bottom:1.125rem;}
+.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.4rem;}
+.form-control{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:.55rem .875rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;}
+.form-control:focus{border-color:var(--b3);}
+textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
+.current-img{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:.5rem;display:block;}
+.current-banner{width:100%;height:80px;object-fit:cover;border-radius:4px;margin-bottom:.5rem;display:block;}
+.form-actions{display:flex;gap:.75rem;margin-top:1.25rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <div style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">Edit Community Profile</div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">Avatar</label>
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Current avatar" class="current-img">
+      {% endif %}
+      <input type="file" name="avatar" class="form-control" accept="image/*">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Banner Image</label>
+      {% if profile.banner %}
+        <img src="{{ profile.banner.url }}" alt="Current banner" class="current-banner">
+      {% endif %}
+      <input type="file" name="banner" class="form-control" accept="image/*">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Bio</label>
+      <textarea name="bio" class="form-control" maxlength="500" placeholder="Tell the community about yourself…">{{ profile.bio }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="{% url 'community:profile' username=request.user.username %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

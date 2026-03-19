@@ -1,0 +1,23 @@
+{% extends "community/base.html" %}
+{% block title %}Delete Post{% endblock %}
+{% block mobile_title %}Delete Post{% endblock %}
+{% block topbar_title %}delete post{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;">
+  <div class="card" style="padding:1.5rem;">
+    <div style="font-size:1rem;font-weight:700;margin-bottom:.75rem;">Delete this post?</div>
+    <p style="font-size:.875rem;color:var(--t2);margin-bottom:1.25rem;line-height:1.6;">
+      This action cannot be undone. The post will be permanently removed.
+    </p>
+    <div style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.875rem;margin-bottom:1.25rem;font-size:.875rem;color:var(--t2);line-height:1.6;">
+      {{ post.content|truncatechars:200 }}
+    </div>
+    <form method="post" style="display:flex;gap:.75rem;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Yes, delete</button>
+      <a href="{% url 'community:post_detail' post.id %}" class="btn btn-ghost">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
