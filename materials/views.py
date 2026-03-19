@@ -1049,7 +1049,7 @@ STRICT RULES:
         from ai_tutor.ai_utils import get_openai_client
         client = get_openai_client()
         completion = client.chat.completions.create(
-            model="google/gemini-2.0-flash-exp:free",
+            model="openai/gpt-4o-mini",
             messages=messages_payload,
             max_tokens=600,
             temperature=0.7,
