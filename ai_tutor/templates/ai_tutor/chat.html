@@ -1063,7 +1063,6 @@ const NexaVoice = {
     speak(text) {
         return new Promise(async (resolve) => {
             if (!text) { resolve(); return; }
-            // Stop any current audio
             const audioEl = document.getElementById('nexa-tts-audio');
             if (audioEl) { audioEl.pause(); audioEl.src = ''; }
             this.currentAudio = null;
@@ -1072,20 +1071,19 @@ const NexaVoice = {
                 const response = await fetch('{% url "ai_tts" %}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                    body: JSON.stringify({ text: text.substring(0, 2000), voice: 'alloy' })
+                    body: JSON.stringify({ text: text.substring(0, 2000) })
                 });
                 if (!response.ok) { await this.speakWithBrowserTTS(text); resolve(); return; }
 
-                const json = await response.json();
+                const data = await response.json();
 
-                if (json.use_browser_tts || !json.audio_url) {
+                if (data.use_browser_tts || !data.audio_url) {
                     await this.speakWithBrowserTTS(text); resolve(); return;
                 }
 
-                // Use direct URL — works on iOS Safari, Android Chrome, all mobile browsers
+                // data.audio_url is a base64 data URI — works on iOS/Android without any file serving
                 if (audioEl) {
-                    audioEl.src = json.audio_url;
-                    audioEl.load();
+                    audioEl.src = data.audio_url;
                     this.currentAudio = audioEl;
                     audioEl.onended = () => { audioEl.src = ''; this.currentAudio = null; resolve(); };
                     audioEl.onerror = () => { audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
@@ -1094,7 +1092,7 @@ const NexaVoice = {
                         this.speakWithBrowserTTS(text).then(resolve);
                     });
                 } else {
-                    const audio = new Audio(json.audio_url);
+                    const audio = new Audio(data.audio_url);
                     audio.setAttribute('playsinline', '');
                     this.currentAudio = audio;
                     audio.onended = () => { this.currentAudio = null; resolve(); };

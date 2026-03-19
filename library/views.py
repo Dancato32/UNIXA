@@ -245,12 +245,11 @@ def api_grade(request):
 
 @login_required
 def api_podcast(request):
-    """Generate a full podcast script and Resemble.ai audio."""
+    """Generate a full podcast script and Resemble.ai audio as base64 data URL."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
     try:
-        import os, requests as req, base64, uuid as _uuid
-        from django.conf import settings as django_settings
+        import os, requests as req, base64
 
         data = json.loads(request.body)
         subject = data.get('subject', '')
@@ -262,7 +261,7 @@ def api_podcast(request):
         word_count = len(script.split())
         duration_mins = round(word_count / 130)
 
-        # Generate Resemble.ai audio with custom NEXA voice
+        # Generate Resemble.ai audio — return as base64 data URL (no file system needed)
         audio_url = None
         try:
             api_key = os.environ.get('RESEMBLE_API_KEY', '')
@@ -277,13 +276,8 @@ def api_podcast(request):
                 if resp.status_code == 200:
                     audio_b64 = resp.json().get('audio_content')
                     if audio_b64:
-                        audio_dir = os.path.join(django_settings.MEDIA_ROOT, 'podcasts')
-                        os.makedirs(audio_dir, exist_ok=True)
-                        filename = f'podcast_lib_{_uuid.uuid4().hex[:8]}.mp3'
-                        with open(os.path.join(audio_dir, filename), 'wb') as f:
-                            f.write(base64.b64decode(audio_b64))
-                        audio_url = f'/materials/podcast/audio/0/{filename}'
-                        print(f'[RESEMBLE] library podcast audio saved: {filename}')
+                        audio_url = f'data:audio/mpeg;base64,{audio_b64}'
+                        print('[RESEMBLE] library podcast audio ready as data URL')
                 else:
                     print(f'[RESEMBLE] Error {resp.status_code}: {resp.text[:200]}')
         except Exception as e:
