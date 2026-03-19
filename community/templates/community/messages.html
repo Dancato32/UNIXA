@@ -584,11 +584,20 @@ function startRecording() {
   }
   navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
     audioChunks = [];
-    mediaRecorder = new MediaRecorder(stream);
+    // Pick best supported MIME type
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+          ? 'audio/ogg;codecs=opus'
+          : '';
+    const options = mimeType ? { mimeType } : {};
+    mediaRecorder = new MediaRecorder(stream, options);
     mediaRecorder.ondataavailable = function(e) {
-      if (e.data.size > 0) audioChunks.push(e.data);
+      if (e.data && e.data.size > 0) audioChunks.push(e.data);
     };
-    mediaRecorder.start();
+    mediaRecorder.start(100); // collect data every 100ms for reliability
 
     // Show recording bar, hide form
     document.getElementById('msg-form').style.display = 'none';
@@ -604,21 +613,24 @@ function startRecording() {
       const s = recSeconds % 60;
       document.getElementById('rec-timer').textContent = m + ':' + (s < 10 ? '0' : '') + s;
     }, 1000);
-  }).catch(function() {
-    alert('Microphone access denied.');
+  }).catch(function(err) {
+    alert('Microphone access denied. Please allow microphone access and try again.');
   });
 }
 
 function stopAndSend() {
   if (!mediaRecorder) return;
   mediaRecorder.onstop = function() {
-    const blob = new Blob(audioChunks, { type: 'audio/webm' });
-    uploadVoiceNote(blob);
+    const mimeType = mediaRecorder._mimeType || audioChunks[0]?.type || 'audio/webm';
+    const blob = new Blob(audioChunks, { type: mimeType });
+    const ext = mimeType.includes('ogg') ? 'ogg' : 'webm';
+    uploadVoiceNote(blob, ext);
     stopRecordingUI();
-    // Stop all tracks
     mediaRecorder.stream.getTracks().forEach(t => t.stop());
     mediaRecorder = null;
   };
+  // Store mime type before stopping
+  if (mediaRecorder) mediaRecorder._mimeType = mediaRecorder.mimeType;
   mediaRecorder.stop();
 }
 
@@ -629,6 +641,7 @@ function cancelRecording() {
     mediaRecorder.stream.getTracks().forEach(t => t.stop());
     mediaRecorder = null;
   }
+  audioChunks = [];
   stopRecordingUI();
 }
 
@@ -639,9 +652,10 @@ function stopRecordingUI() {
   document.getElementById('mic-btn').classList.remove('recording');
 }
 
-function uploadVoiceNote(blob) {
+function uploadVoiceNote(blob, ext) {
+  ext = ext || 'webm';
   const fd = new FormData();
-  fd.append('audio', blob, 'voice_note.webm');
+  fd.append('audio', blob, 'voice_note.' + ext);
   fetch('/community/messages/' + CONVO_ID + '/voice/', {
     method: 'POST',
     headers: { 'X-CSRFToken': CSRF },
@@ -698,8 +712,10 @@ function initVoicePlayers() {
     const audio = vb.querySelector('audio');
     const fill = vb.querySelector('.vp-fill');
     const dur = vb.querySelector('.vp-dur');
+    // Force load so metadata fires reliably
+    audio.load();
     audio.addEventListener('timeupdate', function() {
-      if (audio.duration) {
+      if (audio.duration && isFinite(audio.duration)) {
         fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
         dur.textContent = fmtTime(audio.currentTime);
       }
@@ -711,7 +727,10 @@ function initVoicePlayers() {
       btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
     });
     audio.addEventListener('loadedmetadata', function() {
-      dur.textContent = fmtTime(audio.duration);
+      if (isFinite(audio.duration)) dur.textContent = fmtTime(audio.duration);
+    });
+    audio.addEventListener('error', function() {
+      dur.textContent = '—';
     });
   });
 }

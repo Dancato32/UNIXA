@@ -482,7 +482,7 @@ def send_media(request, convo_id):
     if mime.startswith('image/'):
         msg_type = Message.TYPE_IMAGE
     elif mime.startswith('video/'):
-        msg_type = 'video'
+        msg_type = Message.TYPE_VIDEO
     else:
         msg_type = Message.TYPE_FILE
 
