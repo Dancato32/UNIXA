@@ -1049,7 +1049,7 @@ STRICT RULES:
         from ai_tutor.ai_utils import get_openai_client
         client = get_openai_client()
         completion = client.chat.completions.create(
-            model="meta-llama/llama-3.3-70b-instruct:free",
+            model="google/gemini-2.0-flash-exp:free",
             messages=messages_payload,
             max_tokens=600,
             temperature=0.7,

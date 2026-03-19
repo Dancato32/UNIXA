@@ -107,7 +107,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 <script>
 var MATERIAL_PK = {{ material.pk }};
 var CSRF = '{{ csrf_token }}';
-var history = [];
+var chatHistory = [];
 var isLoading = false;
 var msgCount = 0;
 
@@ -213,13 +213,13 @@ async function callAI(userMsg) {
     var res = await fetch('/materials/learn/'+MATERIAL_PK+'/ajax/', {
       method: 'POST',
       headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
-      body: JSON.stringify({message: userMsg, history: history})
+      body: JSON.stringify({message: userMsg, history: chatHistory})
     });
     var data = await res.json();
     hideTyping();
     if (data.success) {
-      if (userMsg) history.push({role:'user', content:userMsg});
-      history.push({role:'assistant', content:data.response});
+      if (userMsg) chatHistory.push({role:'user', content:userMsg});
+      chatHistory.push({role:'assistant', content:data.response});
       addMsg('ai', data.response);
       showChips(data.response);
     } else {
@@ -251,7 +251,7 @@ function sendMessage(text) {
 
 function resetChat() {
   if (!confirm('Restart this learning session?')) return;
-  history = []; msgCount = 0;
+  chatHistory = []; msgCount = 0;
   progressFill.style.width = '0%';
   chatArea.innerHTML = '';
   chipsArea.style.display = 'none';
