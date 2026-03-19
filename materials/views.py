@@ -989,6 +989,8 @@ def learn_ajax(request, pk):
         data = json.loads(request.body)
         user_message = data.get('message', '').strip()
         history = data.get('history', [])
+        if not isinstance(history, list):
+            history = []
 
         system_prompt = f"""You are NEXA Learn Mode, an AI tutor teaching the following study material in an interactive, step-by-step, Duolingo-style experience.
 The goal is NOT to lecture, but to actively guide the student through learning.
@@ -1034,7 +1036,10 @@ STRICT RULES:
 
         messages_payload = [{"role": "system", "content": system_prompt}]
         for h in history[-10:]:
-            messages_payload.append({"role": h['role'], "content": h['content']})
+            role = h.get('role', 'user')
+            content = h.get('content', '')
+            if role in ('user', 'assistant') and content:
+                messages_payload.append({"role": role, "content": str(content)})
         # If no user message (first load), inject a trigger so AI starts
         if user_message:
             messages_payload.append({"role": "user", "content": user_message})
