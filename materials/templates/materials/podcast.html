@@ -123,7 +123,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
       <span class="meta-chip">Resemble AI Voice</span>
       <span class="meta-chip">Transcript</span>
     </div>
-    <button class="gen-btn" id="genBtn" onclick="generate()">
+    <button class="gen-btn" id="genBtn" onclick="unlockAudio(); generate()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       Generate Podcast
     </button>
@@ -151,6 +151,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 <!-- Player -->
 <div class="screen" id="playerScreen">
+  <!-- Hidden audio element — required for iOS/Android autoplay -->
+  <audio id="podcast-audio-el" playsinline preload="none" style="display:none"></audio>
   <div class="watermark" aria-hidden="true"><span class="watermark-text">NEXA PODCAST</span></div>
 
   <div class="player-art">
@@ -181,7 +183,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="ctrl-btn" onclick="skipBack()" title="Back 30s" id="skipBackBtn" disabled>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
     </button>
-    <button class="ctrl-btn play" id="playBtn" onclick="togglePlay()">
+    <button class="ctrl-btn play" id="playBtn" onclick="unlockAudio(); togglePlay()">
       <svg id="playIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     </button>
     <button class="ctrl-btn" onclick="podcastStop()" title="Stop" id="stopBtn" disabled>
@@ -229,7 +231,23 @@ let isPaused = false;
 let currentSpeed = 1;
 let wordChunks = [];
 let currentChunk = 0;
-let audioEl = null;  // Resemble.ai audio element
+let audioEl = null;  // reference to DOM audio element when Resemble audio is active
+
+// Get the persistent DOM audio element (iOS/Android safe)
+function getPodcastAudioEl() {
+  return document.getElementById('podcast-audio-el');
+}
+
+// Unlock audio on user gesture — call synchronously inside click handlers
+function unlockAudio() {
+  const el = getPodcastAudioEl();
+  if (!el || el._unlocked) return;
+  el.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+  el.play().catch(() => {});
+  el.pause();
+  el.src = '';
+  el._unlocked = true;
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -253,11 +271,14 @@ async function generate() {
 
     // Use Resemble.ai audio if available
     if (data.audio_url) {
-      audioEl = new Audio(data.audio_url);
+      audioEl = getPodcastAudioEl();
+      audioEl.src = data.audio_url;
       audioEl.playbackRate = currentSpeed;
+      audioEl.load();
       audioEl.onended = () => { isPlaying = false; isPaused = false; updatePlayIcon(); setWave(false); };
       audioEl.onpause = () => { if (!audioEl.ended) { isPlaying = false; isPaused = true; updatePlayIcon(); setWave(false); } };
       audioEl.onplay = () => { isPlaying = true; isPaused = false; updatePlayIcon(); setWave(true); };
+      audioEl.onerror = () => { audioEl = null; };
     } else {
       // Fall back to browser TTS chunking
       audioEl = null;
@@ -292,11 +313,15 @@ function togglePlay() {
   if (!podcastScript) return;
 
   if (audioEl) {
-    // Resemble.ai audio
+    // Resemble.ai audio via DOM element
     if (isPlaying) {
       audioEl.pause();
     } else {
-      audioEl.play();
+      audioEl.play().catch(() => {
+        // Autoplay blocked — fall back to browser TTS
+        audioEl = null;
+        togglePlay();
+      });
     }
   } else {
     // Browser TTS fallback

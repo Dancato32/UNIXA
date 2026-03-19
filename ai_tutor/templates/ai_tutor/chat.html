@@ -575,6 +575,9 @@
     </div>
 </div>
 
+<!-- Hidden audio element — iOS/Android require a DOM <audio> for reliable playback -->
+<audio id="nexa-tts-audio" playsinline preload="none" style="display:none"></audio>
+
 <!-- VOICE OVERLAY -->
 <div class="voice-overlay" id="voice-overlay">
     <div class="voice-dual-panel">
@@ -1023,11 +1026,15 @@ const NexaVoice = {
         this.overlay.classList.add('active');
         this.userText.textContent = ''; this.aiText.textContent = '';
         this.updateStatus('Starting...', '');
-        // Unlock audio context on user gesture (required for autoplay policy)
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            ctx.resume().then(() => ctx.close());
-        } catch(e) {}
+        // Unlock audio on user gesture — required by iOS/Android autoplay policy.
+        // We do this synchronously inside the click handler by touching the DOM audio element.
+        const audioEl = document.getElementById('nexa-tts-audio');
+        if (audioEl) {
+            audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+            audioEl.play().catch(() => {});
+            audioEl.pause();
+            audioEl.src = '';
+        }
         setTimeout(() => { this.updateStatus('Listening...', 'listening'); this.startListening(); }, 300);
     },
     close() {
@@ -1056,7 +1063,11 @@ const NexaVoice = {
     speak(text) {
         return new Promise(async (resolve) => {
             if (!text) { resolve(); return; }
-            if (this.currentAudio) { this.currentAudio.pause(); this.currentAudio = null; }
+            // Stop any current audio
+            const audioEl = document.getElementById('nexa-tts-audio');
+            if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+            this.currentAudio = null;
+
             try {
                 const response = await fetch('{% url "ai_tts" %}', {
                     method: 'POST',
@@ -1065,37 +1076,46 @@ const NexaVoice = {
                 });
                 if (response.ok) {
                     const ct = response.headers.get('content-type') || '';
-                    console.log('[TTS] response content-type:', ct, 'status:', response.status);
                     if (ct.includes('application/json')) {
                         const json = await response.json();
-                        console.log('[TTS] json response:', json);
                         if (json.use_browser_tts) { await this.speakWithBrowserTTS(text); resolve(); return; }
                     }
                     const audioBlob = await response.blob();
-                    console.log('[TTS] blob size:', audioBlob.size, 'type:', audioBlob.type);
+                    if (!audioBlob || audioBlob.size < 100) {
+                        await this.speakWithBrowserTTS(text); resolve(); return;
+                    }
                     const audioUrl = URL.createObjectURL(audioBlob);
-                    this.currentAudio = new Audio(audioUrl);
-                    this.currentAudio.oncanplaythrough = () => console.log('[TTS] audio ready to play');
-                    this.currentAudio.onended = () => { console.log('[TTS] audio ended'); URL.revokeObjectURL(audioUrl); resolve(); };
-                    this.currentAudio.onerror = (e) => {
-                        console.error('[TTS] audio play error:', e, this.currentAudio.error);
-                        URL.revokeObjectURL(audioUrl);
-                        this.speakWithBrowserTTS(text).then(resolve);
-                    };
-                    const playPromise = this.currentAudio.play();
-                    if (playPromise) {
-                        playPromise.then(() => console.log('[TTS] playing Resemble audio')).catch(err => {
-                            console.error('[TTS] play() rejected:', err);
+
+                    // Use DOM <audio> element — required for iOS Safari autoplay
+                    if (audioEl) {
+                        audioEl.src = audioUrl;
+                        audioEl.load();
+                        this.currentAudio = audioEl;
+                        audioEl.onended = () => { URL.revokeObjectURL(audioUrl); audioEl.src = ''; this.currentAudio = null; resolve(); };
+                        audioEl.onerror = () => { URL.revokeObjectURL(audioUrl); audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
+                        audioEl.play().then(() => {
+                            this.updateStatus('Speaking...', 'speaking');
+                        }).catch(err => {
+                            console.warn('[TTS] play() blocked:', err);
                             URL.revokeObjectURL(audioUrl);
+                            audioEl.src = '';
+                            this.currentAudio = null;
                             this.speakWithBrowserTTS(text).then(resolve);
                         });
+                    } else {
+                        // Fallback: new Audio() for non-iOS
+                        const audio = new Audio(audioUrl);
+                        audio.setAttribute('playsinline', '');
+                        this.currentAudio = audio;
+                        audio.onended = () => { URL.revokeObjectURL(audioUrl); this.currentAudio = null; resolve(); };
+                        audio.onerror = () => { URL.revokeObjectURL(audioUrl); this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
+                        audio.play().catch(() => { URL.revokeObjectURL(audioUrl); this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); });
                     }
                 } else {
-                    console.warn('[TTS] response not ok:', response.status);
                     await this.speakWithBrowserTTS(text); resolve();
                 }
             } catch(error) {
-                console.error('[TTS] fetch error:', error);
+                console.warn('[TTS] fetch error:', error);
                 await this.speakWithBrowserTTS(text); resolve();
             }
         });
@@ -1112,7 +1132,10 @@ const NexaVoice = {
     },
     stopSpeaking() {
         if (this.synthesis) this.synthesis.cancel();
-        if (this.currentAudio) { this.currentAudio.pause(); this.currentAudio.currentTime = 0; this.currentAudio = null; }
+        const audioEl = document.getElementById('nexa-tts-audio');
+        if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+        if (this.currentAudio && this.currentAudio !== audioEl) { this.currentAudio.pause(); }
+        this.currentAudio = null;
     },
     toggleInput() { NexaVoice.open(); },
     toggleListening() { if (this.isListening) this.stopListening(); else this.startListening(); },

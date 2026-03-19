@@ -220,7 +220,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Generate Quiz
       </button>
-      <button class="btn btn-secondary" id="podcastBtn" onclick="generatePodcast()">
+      <button class="btn btn-secondary" id="podcastBtn" onclick="unlockAudio(); generatePodcast()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
         Generate Podcast
       </button>
@@ -253,6 +253,8 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
 
     <!-- Podcast Player Panel -->
     <div class="podcast-wrap" id="podcastWrap" style="display:none">
+      <!-- Hidden audio element for iOS/Android reliable playback -->
+      <audio id="podcast-audio-el" playsinline preload="none" style="display:none"></audio>
       <div class="podcast-header">
         <div class="podcast-icon">🎙</div>
         <div>
@@ -270,7 +272,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
       </div>
       <div id="podcastPlayer" style="display:none">
         <div class="podcast-controls">
-          <button class="btn btn-primary" id="podcastPlayBtn" onclick="podcastPlay()">
+          <button class="btn btn-primary" id="podcastPlayBtn" onclick="unlockAudio(); podcastPlay()">
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             Play
           </button>
@@ -686,7 +688,23 @@ let podcastScript = '';
 let podcastPlaying = false;
 let podcastPaused = false;
 let scriptVisible = false;
-let podcastAudioEl = null;  // Resemble.ai audio element
+let podcastAudioUrl = null;  // Resemble.ai audio URL
+
+// Get the persistent DOM audio element (iOS/Android safe)
+function getPodcastAudioEl() {
+  return document.getElementById('podcast-audio-el');
+}
+
+// Unlock audio on user gesture — must be called synchronously in a click handler
+function unlockAudio() {
+  const el = getPodcastAudioEl();
+  if (!el || el._unlocked) return;
+  el.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+  el.play().catch(() => {});
+  el.pause();
+  el.src = '';
+  el._unlocked = true;
+}
 
 // Chunked TTS state (fixes iOS/Android mobile speechSynthesis bugs)
 let podcastChunks = [];
@@ -784,12 +802,16 @@ async function generatePodcast() {
 
     // Use Resemble.ai audio if available, else fall back to browser TTS
     if (data.audio_url) {
-      podcastAudioEl = new Audio(data.audio_url);
-      podcastAudioEl.onended = () => { podcastPlaying = false; podcastPaused = false; updatePodcastControls(); stopWave(); };
-      podcastAudioEl.onpause = () => { if (!podcastAudioEl.ended) { podcastPlaying = false; podcastPaused = true; updatePodcastControls(); stopWave(); } };
-      podcastAudioEl.onplay  = () => { podcastPlaying = true; podcastPaused = false; updatePodcastControls(); startWave(); };
+      podcastAudioUrl = data.audio_url;
+      const audioEl = getPodcastAudioEl();
+      audioEl.src = podcastAudioUrl;
+      audioEl.load();
+      audioEl.onended = () => { podcastPlaying = false; podcastPaused = false; updatePodcastControls(); stopWave(); };
+      audioEl.onpause = () => { if (!audioEl.ended) { podcastPlaying = false; podcastPaused = true; updatePodcastControls(); stopWave(); } };
+      audioEl.onplay  = () => { podcastPlaying = true; podcastPaused = false; updatePodcastControls(); startWave(); };
+      audioEl.onerror = () => { podcastAudioUrl = null; };
     } else {
-      podcastAudioEl = null;
+      podcastAudioUrl = null;
     }
 
     appendMsg("ai", "Your podcast episode is ready! Press Play to listen. Duration: " + (data.duration_estimate || "~20 minutes"));
@@ -805,8 +827,23 @@ function podcastPlay() {
   if (!podcastScript) return;
 
   // Use Resemble.ai audio if available
-  if (podcastAudioEl) {
-    podcastAudioEl.play();
+  if (podcastAudioUrl) {
+    const audioEl = getPodcastAudioEl();
+    // Resume if paused
+    if (podcastPaused) {
+      audioEl.play().catch(() => {
+        // play() blocked — shouldn't happen since user just clicked, but fallback
+        podcastAudioUrl = null;
+        podcastPlay();
+      });
+      return;
+    }
+    // Fresh play
+    audioEl.currentTime = 0;
+    audioEl.play().catch(() => {
+      podcastAudioUrl = null;
+      podcastPlay(); // retry with browser TTS
+    });
     return;
   }
 
@@ -883,8 +920,8 @@ function speakChunk(index) {
 }
 
 function podcastPause() {
-  if (podcastAudioEl) {
-    podcastAudioEl.pause();
+  if (podcastAudioUrl) {
+    getPodcastAudioEl().pause();
     return;
   }
   podcastPlaying = false;
@@ -897,9 +934,10 @@ function podcastPause() {
 }
 
 function podcastStop() {
-  if (podcastAudioEl) {
-    podcastAudioEl.pause();
-    podcastAudioEl.currentTime = 0;
+  if (podcastAudioUrl) {
+    const audioEl = getPodcastAudioEl();
+    audioEl.pause();
+    audioEl.currentTime = 0;
   }
   podcastPlaying = false;
   podcastPaused = false;
