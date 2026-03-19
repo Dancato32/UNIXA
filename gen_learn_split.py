@@ -1,4 +1,8 @@
-{% load static %}
+import os
+path = os.path.join('materials', 'templates', 'materials', 'learn.html')
+parts = []
+
+parts.append(r"""{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,7 +157,9 @@ body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg);color:var
 </style>
 </head>
 <body>
+""")
 
+parts.append(r"""
 <div class="xp-toast" id="xpToast"></div>
 
 <div class="header">
@@ -213,7 +219,9 @@ body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg);color:var
     </div>
   </div>
 </div>
+""")
 
+parts.append(r"""
 <script>
 var MATERIAL_PK = {{ material.pk }};
 var CSRF = '{{ csrf_token }}';
@@ -509,7 +517,9 @@ function resetChat() {
   chatArea.appendChild(ws);
 }
 </script>
+""")
 
+parts.append(r"""
 <script>
 // ── QUIZ PANEL ──
 function updateScoreLabel() {
@@ -659,3 +669,8 @@ function renderQuizResult() {
 </script>
 </body>
 </html>
+""")
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(''.join(parts))
+print('Done!')

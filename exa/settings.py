@@ -26,6 +26,7 @@ ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_ENV.split(',')]
 # ── API Keys ──────────────────────────────────────────────────────────────────
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
+RESEMBLE_API_KEY = os.environ.get('RESEMBLE_API_KEY', '')
 
 # ── Installed Apps ────────────────────────────────────────────────────────────
 INSTALLED_APPS = [

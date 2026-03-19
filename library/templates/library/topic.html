@@ -686,6 +686,7 @@ let podcastScript = '';
 let podcastPlaying = false;
 let podcastPaused = false;
 let scriptVisible = false;
+let podcastAudioEl = null;  // Resemble.ai audio element
 
 // Chunked TTS state (fixes iOS/Android mobile speechSynthesis bugs)
 let podcastChunks = [];
@@ -780,6 +781,17 @@ async function generatePodcast() {
     document.getElementById("podcastScriptToggle").style.display = "block";
     document.getElementById("podcastMeta").textContent = data.duration_estimate + " · " + (data.word_count||0) + " words";
     document.getElementById("podcastScript").textContent = podcastScript;
+
+    // Use Resemble.ai audio if available, else fall back to browser TTS
+    if (data.audio_url) {
+      podcastAudioEl = new Audio(data.audio_url);
+      podcastAudioEl.onended = () => { podcastPlaying = false; podcastPaused = false; updatePodcastControls(); stopWave(); };
+      podcastAudioEl.onpause = () => { if (!podcastAudioEl.ended) { podcastPlaying = false; podcastPaused = true; updatePodcastControls(); stopWave(); } };
+      podcastAudioEl.onplay  = () => { podcastPlaying = true; podcastPaused = false; updatePodcastControls(); startWave(); };
+    } else {
+      podcastAudioEl = null;
+    }
+
     appendMsg("ai", "Your podcast episode is ready! Press Play to listen. Duration: " + (data.duration_estimate || "~20 minutes"));
   } catch(e) {
     document.getElementById("podcastGenerating").style.display = "none";
@@ -792,18 +804,23 @@ async function generatePodcast() {
 function podcastPlay() {
   if (!podcastScript) return;
 
-  // Resume if paused
+  // Use Resemble.ai audio if available
+  if (podcastAudioEl) {
+    podcastAudioEl.play();
+    return;
+  }
+
+  // Resume if paused (browser TTS fallback)
   if (podcastPaused) {
     podcastPaused = false;
     podcastPlaying = true;
     updatePodcastControls();
     startWave();
-    // Re-speak from current chunk (iOS doesn't support resume reliably)
     speakChunk(podcastChunkIndex);
     return;
   }
 
-  // Fresh start
+  // Fresh start (browser TTS fallback)
   window.speechSynthesis.cancel();
   podcastChunks = splitIntoChunks(podcastScript);
   podcastChunkIndex = 0;
@@ -866,6 +883,10 @@ function speakChunk(index) {
 }
 
 function podcastPause() {
+  if (podcastAudioEl) {
+    podcastAudioEl.pause();
+    return;
+  }
   podcastPlaying = false;
   podcastPaused = true;
   stopWatchdog();
@@ -876,6 +897,10 @@ function podcastPause() {
 }
 
 function podcastStop() {
+  if (podcastAudioEl) {
+    podcastAudioEl.pause();
+    podcastAudioEl.currentTime = 0;
+  }
   podcastPlaying = false;
   podcastPaused = false;
   podcastChunkIndex = 0;

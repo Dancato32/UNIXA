@@ -193,7 +193,7 @@ def podcast_view(request, pk):
 
 @login_required
 def generate_podcast_ajax(request):
-    """AJAX endpoint to generate podcast script — TTS handled client-side."""
+    """AJAX endpoint to generate podcast script and ElevenLabs audio."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST request required'}, status=405)
 
@@ -213,12 +213,22 @@ def generate_podcast_ajax(request):
         word_count = len(podcast_script.split())
         duration_mins = round(word_count / 130)
 
+        # Generate Resemble.ai audio
+        audio_url = None
+        print(f"[PODCAST] Generating Resemble audio for material {material_id}, script length: {len(podcast_script)}")
+        audio_filename = generate_podcast_audio_elevenlabs(podcast_script, material_id)
+        print(f"[PODCAST] audio_filename result: {audio_filename}")
+        if audio_filename:
+            audio_url = f'/materials/podcast/audio/{material_id}/{audio_filename}'
+        print(f"[PODCAST] audio_url: {audio_url}")
+
         return JsonResponse({
             'success': True,
             'raw_content': podcast_script,
             'material_title': material.title,
             'word_count': word_count,
             'duration_estimate': f'~{duration_mins} minutes',
+            'audio_url': audio_url,
         })
 
     except Exception as e:
@@ -284,71 +294,64 @@ def generate_podcast_audio_direct(script_text, material_id):
         return None
 
 
+def _get_resemble_voice_uuid(api_key):
+    """Returns the NEXA custom voice UUID."""
+    return "f644f59c"  # My Custom Voice NEXA
+
+
 def generate_podcast_audio_elevenlabs(script_text, material_id):
-    """Generate podcast audio using ElevenLabs TTS API for higher quality."""
+    """Generate podcast audio using Resemble.ai TTS API."""
     try:
         import os
         import requests
-        
-        # Get ElevenLabs API key
-        api_key = os.environ.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
+        import base64
+
+        api_key = os.environ.get("RESEMBLE_API_KEY") or os.getenv("RESEMBLE_API_KEY") or getattr(settings, 'RESEMBLE_API_KEY', None)
+        print(f"[RESEMBLE] api_key present: {bool(api_key)}, value starts: {api_key[:8] if api_key else 'NONE'}")
         if not api_key:
-            print("No ElevenLabs API key found in environment")
-            # Try to get from Django settings
-            api_key = getattr(settings, 'ELEVENLABS_API_KEY', None)
-            if not api_key:
-                print("No ElevenLabs API key found in settings either")
-                return None
-        
-        # Prepare full text for audio
+            print("[RESEMBLE] No Resemble API key found")
+            return None
+
         full_text = script_text
         if isinstance(script_text, dict):
             full_text = " ".join([seg['content'] for seg in script_text.get('segments', [])])
-        
-        full_text = full_text[:2500]
-        
+        full_text = full_text[:2000]
+        print(f"[RESEMBLE] text length after truncation: {len(full_text)}")
         if not full_text:
-            print("No text content for TTS")
             return None
-        
-        # Create audio directory
+
+        voice_uuid = _get_resemble_voice_uuid(api_key)
+        print(f"[RESEMBLE] using voice_uuid: {voice_uuid}")
+
         audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcasts')
         os.makedirs(audio_dir, exist_ok=True)
-        
-        # Generate unique filename
         filename = f"podcast_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
         filepath = os.path.join(audio_dir, filename)
-        
-        # ElevenLabs TTS API call - using a popular voice
-        # "Rachel" voice - most popular
-        voice_id = "21m00Tcm4TlvDq8ikWAM"
-        
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
-        
-        headers = {
-            "Accept": "audio/mpeg",
-            "Content-Type": "application/json",
-            "xi-api-key": api_key
-        }
-        
-        data = {
-            "text": full_text,
-            "model_id": "eleven_multilingual_v2"
-        }
-        
-        response = requests.post(url, json=data, headers=headers, timeout=120)
-        
+
+        print(f"[RESEMBLE] calling synthesize API...")
+        response = requests.post(
+            "https://f.cluster.resemble.ai/synthesize",
+            headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
+            json={"voice_uuid": voice_uuid, "data": full_text, "output_format": "mp3"},
+            timeout=120
+        )
+
+        print(f"[RESEMBLE] response status: {response.status_code}")
         if response.status_code == 200:
-            with open(filepath, 'wb') as f:
-                f.write(response.content)
-            print(f"ElevenLabs audio generated successfully: {filename}")
-            return filename
-        else:
-            print(f"ElevenLabs API Error {response.status_code}: {response.text[:200]}")
-            return None
-        
+            audio_b64 = response.json().get("audio_content")
+            print(f"[RESEMBLE] audio_content present: {bool(audio_b64)}")
+            if audio_b64:
+                with open(filepath, 'wb') as f:
+                    f.write(base64.b64decode(audio_b64))
+                print(f"[RESEMBLE] saved to: {filepath}")
+                return filename
+        print(f"[RESEMBLE] API Error {response.status_code}: {response.text[:300]}")
+        return None
+
     except Exception as e:
-        print(f"ElevenLabs TTS Exception: {e}")
+        print(f"[RESEMBLE] Exception: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
@@ -653,58 +656,45 @@ Provide a clear, concise answer (2-3 sentences) that directly addresses their qu
 
 
 def generate_answer_audio_elevenlabs(answer_text, material_id):
-    """Generate answer audio using ElevenLabs TTS."""
+    """Generate answer audio using Resemble.ai TTS."""
     try:
         import os
         import requests
-        
-        api_key = os.environ.get("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY")
+        import base64
+
+        api_key = os.environ.get("RESEMBLE_API_KEY") or os.getenv("RESEMBLE_API_KEY") or getattr(settings, 'RESEMBLE_API_KEY', None)
         if not api_key:
-            api_key = getattr(settings, 'ELEVENLABS_API_KEY', None)
-            if not api_key:
-                return None
-        
-        # Limit text length
-        text = answer_text[:1000]
-        
+            return None
+
+        text = answer_text[:2000]
         if not text:
             return None
-        
-        # Create audio directory
+
+        voice_uuid = _get_resemble_voice_uuid(api_key)
+
         audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcast_answers')
         os.makedirs(audio_dir, exist_ok=True)
-        
-        # Generate unique filename
         filename = f"answer_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
         filepath = os.path.join(audio_dir, filename)
-        
-        # ElevenLabs API call - using Rachel voice
-        voice_id = "21m00Tcm4TlvDq8ikWAM"
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
-        
-        headers = {
-            "Accept": "audio/mpeg",
-            "Content-Type": "application/json",
-            "xi-api-key": api_key
-        }
-        
-        data = {
-            "text": text,
-            "model_id": "eleven_multilingual_v2"
-        }
-        
-        response = requests.post(url, json=data, headers=headers, timeout=60)
-        
+
+        response = requests.post(
+            "https://f.cluster.resemble.ai/synthesize",
+            headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
+            json={"voice_uuid": voice_uuid, "data": text, "output_format": "mp3"},
+            timeout=60
+        )
+
         if response.status_code == 200:
-            with open(filepath, 'wb') as f:
-                f.write(response.content)
-            return filename
-        else:
-            print(f"ElevenLabs API Error {response.status_code}: {response.text[:200]}")
-            return None
-        
+            audio_b64 = response.json().get("audio_content")
+            if audio_b64:
+                with open(filepath, 'wb') as f:
+                    f.write(base64.b64decode(audio_b64))
+                return filename
+        print(f"Resemble answer TTS Error {response.status_code}: {response.text[:200]}")
+        return None
+
     except Exception as e:
-        print(f"ElevenLabs answer TTS Exception: {e}")
+        print(f"Resemble answer TTS Exception: {e}")
         return None
 
 
@@ -992,78 +982,87 @@ def learn_ajax(request, pk):
         if not isinstance(history, list):
             history = []
 
-        system_prompt = f"""You are NEXA Learn Mode, an AI tutor teaching study material interactively.
+        # Extract relevant section when user picks a topic
+        import re as _re
+        full_text = material.extracted_text[:6000]
+        topic_context = ""
+        if user_message and history:
+            for h in reversed(history):
+                if h.get('role') == 'assistant' and 'Topics you can learn' in h.get('content', ''):
+                    topic_match = _re.search(r'\d+\.\s*(.+)', user_message)
+                    if topic_match:
+                        topic_name = topic_match.group(1).strip().lower()
+                        keywords = [w for w in topic_name.split() if len(w) > 3]
+                        paragraphs = [p.strip() for p in full_text.split('\n') if len(p.strip()) > 40]
+                        relevant = [p for p in paragraphs if any(w in p.lower() for w in keywords)]
+                        if relevant:
+                            topic_context = "\n".join(relevant[:20])
+                    break
 
-STUDY MATERIAL: {material.title}
----
-{material.extracted_text[:4000]}
----
+        # Lean system prompt — material injected as a context message instead
+        system_prompt = """You are NEXA Learn Mode, an expert AI tutor. You will be given study material and must teach it interactively.
 
-== PHASE 1: TOPIC LIST (first message only) ==
-List all topics from the material as a numbered list:
+TEACHING RULES:
+- Always teach from the provided study material — quote and paraphrase it directly
+- Use your own knowledge only to add examples, analogies, and fill gaps
+- Never contradict the material
+- Math: use $expression$ for inline, $$expression$$ for display (own line, centred)
+- Bold key terms with **term**
+
+PHASE 1 — TOPIC LIST (first message only):
+Read the material. List ALL topics found:
 📚 Topics you can learn:
-1. [Topic Name]
-2. [Topic Name]
-Then say: Pick a topic number to start learning.
-STOP and wait.
+1. [Topic]
+2. [Topic]
+Say: "Pick a topic number to start learning." Then STOP.
 
-== PHASE 2: TEACH THE TOPIC ==
-When the user picks a topic number:
-- Say "Great choice! Lets learn about [Topic]."
-- Teach the FULL topic in clear numbered steps.
-- Each step: title + 2-4 sentence explanation + any formula using $$formula$$ for display math or $formula$ for inline.
-- Cover ALL subtopics thoroughly.
-- After ALL steps, say: "✅ Lesson complete! Ready for the quiz? Type yes to start."
+PHASE 2 — TEACH (when user picks a number):
+Say: "Great choice! Let's learn about [Topic]."
+Teach in numbered steps pulled from the material:
+- **Step title** + 3-5 sentence explanation + formulas
+- Quote key definitions from the material
+- Add real-world examples from your knowledge
+- Cover EVERY detail in the material for this topic
+End with: "✅ Lesson complete! Ready for the quiz? Type yes to start."
 
-== PHASE 3: QUIZ ==
-When user says yes or quiz or ready:
-Give a 5-question multiple choice quiz, ONE question at a time.
-Format EXACTLY like this:
-
+PHASE 3 — QUIZ (when user says yes):
+5 questions from the material, ONE at a time:
 **Question X of 5**
-[Question text]
+[question]
+A) [option]  B) [option]  C) [option]  D) [option]
+Reply A, B, C, or D. STOP and wait.
 
-A) [option]
-B) [option]
-C) [option]
-D) [option]
+PHASE 4 — FEEDBACK:
+Correct: "✅ Correct! [why]" then next question.
+Wrong: "❌ Not quite. Answer is [X]. [explanation from material]" then next question.
 
-Reply with A, B, C, or D.
+PHASE 5 — DONE:
+Score X/5, what to review, ask if they want another topic."""
 
-STOP and wait for their answer before showing the next question.
+        # Build messages — material as a separate context message (proper RAG pattern)
+        material_context = f"STUDY MATERIAL: {material.title}\n\n{full_text}"
+        if topic_context:
+            material_context += f"\n\n--- MOST RELEVANT SECTION FOR THIS TOPIC ---\n{topic_context}"
 
-== PHASE 4: QUIZ FEEDBACK ==
-After each answer:
-- If CORRECT: say "✅ Correct! [one sentence why]" then immediately show the next question.
-- If WRONG: say "❌ Not quite. The correct answer is [X]: [option text]." Then give a 2-3 sentence explanation of WHY that answer is correct and why theirs was wrong. Then show the next question.
+        messages_payload = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": material_context},
+            {"role": "assistant", "content": "I have read the study material carefully. I am ready to help you learn it. What would you like to do?"},
+        ]
 
-== PHASE 5: QUIZ COMPLETE ==
-After all 5 questions:
-- Show Score: X/5
-- Short summary of what to review
-- Ask: "Would you like to learn another topic? Type topics to see the list."
-
-== RULES ==
-- Use $$...$$ for display math, $...$ for inline math
-- Be encouraging and clear
-- Always wait for user input before continuing
-- Never skip steps"""
-
-        messages_payload = [{"role": "system", "content": system_prompt}]
-        for h in history[-10:]:
+        # Append conversation history (skip first exchange if it's the material injection)
+        for h in history[-8:]:
             role = h.get('role', 'user')
-            content = h.get('content', '')
-            if role in ('user', 'assistant') and content:
-                messages_payload.append({"role": role, "content": str(content)})
-        # If no user message (first load), inject a trigger so AI starts
+            msg_content = h.get('content', '')
+            if role in ('user', 'assistant') and msg_content:
+                messages_payload.append({"role": role, "content": str(msg_content)})
+
         if user_message:
             messages_payload.append({"role": "user", "content": user_message})
         else:
             messages_payload.append({"role": "user", "content": "Start — show me the topics I can learn from this material."})
 
-        from ai_tutor.ai_utils import get_openai_client
         from openai import OpenAI
-        # Use a dedicated materials API key if set, fallback to main key
         materials_key = os.getenv('OPENROUTER_API_KEY_MATERIALS') or os.getenv('OPENROUTER_API_KEY')
         if not materials_key:
             return JsonResponse({'error': 'No API key configured.'}, status=500)
@@ -1072,13 +1071,30 @@ After all 5 questions:
             base_url='https://openrouter.ai/api/v1',
             default_headers={'HTTP-Referer': 'http://localhost', 'X-Title': 'Nexa AI System'}
         )
-        completion = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=messages_payload,
-            max_tokens=600,
-            temperature=0.7,
-        )
-        response = completion.choices[0].message.content
-        return JsonResponse({'success': True, 'response': response})
+        free_models = [
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "mistralai/mistral-small-3.1-24b-instruct:free",
+            "google/gemma-3-27b-it:free",
+            "google/gemma-3-12b-it:free",
+        ]
+        last_error = None
+        for model in free_models:
+            try:
+                completion = client.chat.completions.create(
+                    model=model,
+                    messages=messages_payload,
+                    max_tokens=1200,
+                    temperature=0.7,
+                )
+                response = completion.choices[0].message.content
+                return JsonResponse({'success': True, 'response': response})
+            except Exception as e:
+                last_error = e
+                err_str = str(e)
+                # Only retry on rate-limit or unavailable errors
+                if '429' in err_str or '404' in err_str or 'rate' in err_str.lower():
+                    continue
+                raise
+        raise last_error
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

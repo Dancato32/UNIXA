@@ -1,0 +1,317 @@
+html = '''{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }} - NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;--surface:#161616;--surface2:#1e1e1e;--border:#2a2a2a;
+  --text:#e8e8e8;--text2:#a0a0a0;--text3:#6b6b6b;
+  --accent:#ffffff;--accent-dim:rgba(255,255,255,0.08);
+  --green:#22c55e;--blue:#3b82f6;--purple:#a855f7;
+}
+body{font-family:\'Inter\',-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Header */
+.header{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:0.75rem}
+.back-btn{display:flex;align-items:center;gap:0.375rem;color:var(--text2);text-decoration:none;font-size:0.8125rem;padding:0.375rem 0.625rem;border-radius:6px;transition:all 0.15s}
+.back-btn:hover{background:var(--surface2);color:var(--text)}
+.header-title{font-size:0.9375rem;font-weight:600;color:var(--text)}
+.material-badge{font-size:0.75rem;color:var(--text3);background:var(--surface2);padding:0.25rem 0.625rem;border-radius:9999px;border:1px solid var(--border);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.header-right{display:flex;align-items:center;gap:0.5rem}
+.reset-btn{display:flex;align-items:center;gap:0.375rem;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:0.8125rem;padding:0.375rem 0.75rem;border-radius:6px;cursor:pointer;transition:all 0.15s;font-family:inherit}
+.reset-btn:hover{color:var(--text);border-color:var(--text3)}
+
+/* Progress bar */
+.progress-bar{height:3px;background:var(--border);flex-shrink:0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));width:0%;transition:width 0.5s ease}
+
+/* Chat area */
+.chat-area{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;scroll-behavior:smooth}
+.chat-area::-webkit-scrollbar{width:4px}
+.chat-area::-webkit-scrollbar-track{background:transparent}
+.chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* Messages */
+.msg{display:flex;gap:0.75rem;max-width:780px;margin:0 auto;width:100%}
+.msg.user{flex-direction:row-reverse}
+.msg-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0}
+.msg.ai .msg-avatar{background:linear-gradient(135deg,#a855f7,#3b82f6);color:#fff}
+.msg.user .msg-avatar{background:#1a1a1a;color:var(--text);border:1px solid var(--border)}
+.msg-bubble{padding:0.875rem 1rem;border-radius:12px;font-size:0.9rem;line-height:1.7;max-width:calc(100% - 44px)}
+.msg.ai .msg-bubble{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.msg.user .msg-bubble{background:#1a1a1a;border:1px solid var(--border);color:var(--text);border-radius:12px 12px 4px 12px}
+
+/* Markdown inside bubbles */
+.msg-bubble p{margin:0 0 8px;color:var(--text2)}
+.msg-bubble p:last-child{margin-bottom:0}
+.msg-bubble strong{color:var(--text);font-weight:600}
+.msg-bubble ul,.msg-bubble ol{padding-left:20px;margin:6px 0;color:var(--text2)}
+.msg-bubble li{margin-bottom:4px}
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3{color:var(--text);font-weight:700;margin:10px 0 6px}
+.msg-bubble h1{font-size:1rem}.msg-bubble h2{font-size:0.9375rem}.msg-bubble h3{font-size:0.875rem}
+.msg-bubble code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:0.8125rem}
+.br-math-display{text-align:center;padding:10px 0;overflow-x:auto}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
+
+/* Typing indicator */
+.typing{display:flex;align-items:center;gap:4px;padding:0.75rem 1rem}
+.typing span{width:6px;height:6px;background:var(--text3);border-radius:50%;animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* Quick reply chips */
+.chips{display:flex;flex-wrap:wrap;gap:0.5rem;padding:0 1.5rem 0.75rem;max-width:780px;margin:0 auto;width:100%}
+.chip{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:0.8125rem;padding:0.375rem 0.875rem;border-radius:9999px;cursor:pointer;transition:all 0.15s;font-family:inherit}
+.chip:hover{border-color:var(--purple);color:var(--text);background:var(--accent-dim)}
+
+/* Input area */
+.input-area{padding:1rem 1.5rem;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.input-wrap{display:flex;gap:0.5rem;align-items:flex-end;max-width:780px;margin:0 auto;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem 0.5rem 0.5rem 1rem;transition:border-color 0.15s}
+.input-wrap:focus-within{border-color:var(--purple)}
+.chat-input{flex:1;background:transparent;border:none;color:var(--text);font-size:0.9rem;font-family:inherit;resize:none;outline:none;max-height:120px;line-height:1.5;padding:0.25rem 0}
+.chat-input::placeholder{color:var(--text3)}
+.send-btn{width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--blue));border:none;border-radius:8px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;flex-shrink:0}
+.send-btn:hover{opacity:0.85}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Welcome state */
+.welcome{text-align:center;padding:3rem 1rem;max-width:500px;margin:0 auto}
+.welcome-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.75rem}
+.welcome h2{font-size:1.25rem;font-weight:700;margin-bottom:0.5rem}
+.welcome p{color:var(--text2);font-size:0.9rem;margin-bottom:1.5rem;line-height:1.6}
+.start-btn{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border:none;padding:0.75rem 2rem;border-radius:10px;font-size:0.9375rem;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
+.start-btn:hover{opacity:0.85}
+
+@media(max-width:600px){
+  .chat-area{padding:1rem}
+  .chips{padding:0 1rem 0.75rem}
+  .input-area{padding:0.75rem 1rem}
+  .material-badge{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <a href="{% url 'list_materials' %}" class="back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <span class="header-title">Learn Mode</span>
+    <span class="material-badge">{{ material.title }}</span>
+  </div>
+  <div class="header-right">
+    <button class="reset-btn" onclick="resetChat()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Restart
+    </button>
+  </div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="chat-area" id="chatArea">
+  <div class="welcome" id="welcomeScreen">
+    <div class="welcome-icon">🎓</div>
+    <h2>Learn: {{ material.title }}</h2>
+    <p>I\'ll guide you through this material step by step, ask you questions, and make sure you actually understand it — not just read it.</p>
+    <button class="start-btn" onclick="startLearn()">Start Learning →</button>
+  </div>
+</div>
+
+<div class="chips" id="chipsArea" style="display:none"></div>
+
+<div class="input-area">
+  <div class="input-wrap">
+    <textarea class="chat-input" id="chatInput" placeholder="Type your answer or question..." rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const MATERIAL_PK = {{ material.pk }};
+const CSRF = '{{ csrf_token }}';
+let history = [];
+let isLoading = false;
+let messageCount = 0;
+
+const chatArea = document.getElementById('chatArea');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const chipsArea = document.getElementById('chipsArea');
+const progressFill = document.getElementById('progressFill');
+
+// Auto-resize textarea
+chatInput.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  sendBtn.disabled = !this.value.trim();
+});
+chatInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
+});
+
+function renderMath(raw) {
+  if (!raw) return '';
+  var text = raw;
+  text = text.replace(/\\\\\\(/g, '$').replace(/\\\\\\)/g, '$');
+  text = text.replace(/\\\\\\[/g, '$$').replace(/\\\\\\]/g, '$$');
+  // Promote lone $...$ on its own line to $$
+  text = text.replace(/(^|\\n)\\$([^$\\n]+)\\$(\\n|$)/g, function(_, pre, m, post) {
+    return (pre||'\\n') + '$$' + m + '$$' + (post||'\\n');
+  });
+  var mathStore = [];
+  text = text.replace(/\\$\\$([\\s\\S]+?)\\$\\$/g, function(_, m) {
+    var i = mathStore.length;
+    mathStore.push({ display: true, src: m.trim() });
+    return '\\n\\nNEXAMATH_D_' + i + '_END\\n\\n';
+  });
+  text = text.replace(/\\$([^$\\n]+?)\\$/g, function(_, m) {
+    var i = mathStore.length;
+    mathStore.push({ display: false, src: m.trim() });
+    return 'NEXAMATH_I_' + i + '_END';
+  });
+  var html = typeof marked !== 'undefined' ? marked.parse(text) : '<p>' + text.replace(/\\n/g,'<br>') + '</p>';
+  html = html.replace(/<p>\\s*NEXAMATH_D_(\\d+)_END\\s*<\\/p>/g, function(_, i) { return renderKatex(mathStore[parseInt(i)]); });
+  html = html.replace(/NEXAMATH_D_(\\d+)_END/g, function(_, i) { return renderKatex(mathStore[parseInt(i)]); });
+  html = html.replace(/NEXAMATH_I_(\\d+)_END/g, function(_, i) { return renderKatex(mathStore[parseInt(i)]); });
+  return html;
+}
+function renderKatex(m) {
+  if (typeof katex === 'undefined') return m.display ? '<div class="br-math-display">$$'+m.src+'$$</div>' : '$'+m.src+'$';
+  try {
+    var out = katex.renderToString(m.src, { displayMode: m.display, throwOnError: false });
+    return m.display ? '<div class="br-math-display">'+out+'</div>' : out;
+  } catch(e) { return m.display ? '<div class="br-math-display">$$'+m.src+'$$</div>' : '$'+m.src+'$'; }
+}
+
+function addMessage(role, content) {
+  var welcome = document.getElementById('welcomeScreen');
+  if (welcome) welcome.remove();
+  var initials = role === 'ai' ? 'N' : '{{ user.username|slice:":1"|upper }}';
+  var div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = '<div class="msg-avatar">' + initials + '</div><div class="msg-bubble">' + renderMath(content) + '</div>';
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  messageCount++;
+  progressFill.style.width = Math.min(messageCount * 4, 90) + '%';
+}
+
+function addTyping() {
+  var div = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<div class="msg-avatar">N</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+function removeTyping() {
+  var t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function showChips(options) {
+  chipsArea.innerHTML = '';
+  if (!options || !options.length) { chipsArea.style.display = 'none'; return; }
+  chipsArea.style.display = 'flex';
+  options.forEach(function(opt) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.textContent = opt;
+    btn.onclick = function() { sendMessage(opt); };
+    chipsArea.appendChild(btn);
+  });
+}
+
+function extractChips(text) {
+  // Extract numbered options like "1. Topic" or "A. Option" for quick reply chips
+  var chips = [];
+  var numbered = text.match(/^\\d+\\.\\s*.+/gm);
+  if (numbered && numbered.length >= 2 && numbered.length <= 8) {
+    chips = numbered.map(function(l) { return l.trim(); });
+  }
+  return chips;
+}
+
+async function callAI(userMsg) {
+  isLoading = true;
+  sendBtn.disabled = true;
+  chipsArea.style.display = 'none';
+  addTyping();
+  try {
+    var body = { message: userMsg, history: history };
+    var res = await fetch('/materials/learn/' + MATERIAL_PK + '/ajax/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    removeTyping();
+    if (data.success) {
+      history.push({ role: 'user', content: userMsg });
+      history.push({ role: 'assistant', content: data.response });
+      addMessage('ai', data.response);
+      var chips = extractChips(data.response);
+      showChips(chips);
+    } else {
+      addMessage('ai', 'Sorry, something went wrong: ' + (data.error || 'Unknown error'));
+    }
+  } catch(e) {
+    removeTyping();
+    addMessage('ai', 'Connection error. Please try again.');
+  } finally {
+    isLoading = false;
+    sendBtn.disabled = !chatInput.value.trim();
+  }
+}
+
+function startLearn() {
+  callAI('');
+  chatInput.focus();
+}
+
+function sendMessage(text) {
+  var msg = text || chatInput.value.trim();
+  if (!msg || isLoading) return;
+  addMessage('user', msg);
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+  sendBtn.disabled = true;
+  callAI(msg);
+}
+
+function resetChat() {
+  if (!confirm('Restart this learning session?')) return;
+  history = [];
+  messageCount = 0;
+  progressFill.style.width = '0%';
+  chatArea.innerHTML = '';
+  chipsArea.style.display = 'none';
+  // Re-add welcome
+  var welcome = document.createElement('div');
+  welcome.className = 'welcome';
+  welcome.id = 'welcomeScreen';
+  welcome.innerHTML = '<div class="welcome-icon">🎓</div><h2>Learn: {{ material.title|escapejs }}</h2><p>I\'ll guide you through this material step by step, ask you questions, and make sure you actually understand it.</p><button class="start-btn" onclick="startLearn()">Start Learning →</button>';
+  chatArea.appendChild(welcome);
+}
+</script>
+</body>
+</html>'''
+
+with open('materials/templates/materials/learn.html', 'w', encoding='utf-8') as f:
+    f.write(html)
+print('Done')

@@ -281,4 +281,14 @@ NEW_LEVELS = {
             'Prepositions & Conjunctions', 'Reading Comprehension',
             'Essay Writing in Arabic', 'Quranic Arabic - Surah Analysis',
             'Islamic History in Arabic', 'Arabic Literature Basics',
-            'Oral Communication', 'Vocabu
+            'Oral Communication', 'Vocabulary - Religion & Society',
+            'Vocabulary - Science & Technology', 'Dual & Plural Forms',
+            'Broken Plurals',
+        ],
+        'University / Advanced': [
+            'Classical Arabic Grammar - Nahw', 'Arabic Morphology - Sarf',
+            'Quranic Exegesis - Tafsir', 'Hadith Studies',
+            'Arabic Literature - Classical & Modern', 'Translation',
+            'Modern Standard Arabic', 'Arabic Linguistics',
+            'Islamic Jurisprudence - Fiqh', 'Arabic Calligraphy',
+        ]

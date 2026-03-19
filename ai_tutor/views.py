@@ -102,7 +102,8 @@ def text_to_speech_view(request):
             
             if audio_content:
                 response = HttpResponse(audio_content, content_type='audio/mpeg')
-                response['Content-Disposition'] = 'attachment; filename="speech.mp3"'
+                response['Content-Disposition'] = 'inline; filename="speech.mp3"'
+                response['Accept-Ranges'] = 'bytes'
                 return response
             else:
                 # No TTS available — tell frontend to use browser TTS

@@ -245,10 +245,13 @@ def api_grade(request):
 
 @login_required
 def api_podcast(request):
-    """Generate a full podcast script and return it — TTS is handled client-side."""
+    """Generate a full podcast script and Resemble.ai audio."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
     try:
+        import os, requests as req, base64, uuid as _uuid
+        from django.conf import settings as django_settings
+
         data = json.loads(request.body)
         subject = data.get('subject', '')
         topic = data.get('topic', '')
@@ -259,13 +262,37 @@ def api_podcast(request):
         word_count = len(script.split())
         duration_mins = round(word_count / 130)
 
-        safe_topic = topic.lower().replace(' ', '_').replace('/', '_')[:40]
-        filename = f'nexa_podcast_{safe_topic}.mp3'
+        # Generate Resemble.ai audio with custom NEXA voice
+        audio_url = None
+        try:
+            api_key = os.environ.get('RESEMBLE_API_KEY', '')
+            if api_key:
+                voice_uuid = 'f644f59c'  # My Custom Voice NEXA
+                resp = req.post(
+                    'https://f.cluster.resemble.ai/synthesize',
+                    headers={'Authorization': 'Bearer ' + api_key, 'Content-Type': 'application/json'},
+                    json={'voice_uuid': voice_uuid, 'data': script[:2000], 'output_format': 'mp3'},
+                    timeout=120
+                )
+                if resp.status_code == 200:
+                    audio_b64 = resp.json().get('audio_content')
+                    if audio_b64:
+                        audio_dir = os.path.join(django_settings.MEDIA_ROOT, 'podcasts')
+                        os.makedirs(audio_dir, exist_ok=True)
+                        filename = f'podcast_lib_{_uuid.uuid4().hex[:8]}.mp3'
+                        with open(os.path.join(audio_dir, filename), 'wb') as f:
+                            f.write(base64.b64decode(audio_b64))
+                        audio_url = f'/materials/podcast/audio/0/{filename}'
+                        print(f'[RESEMBLE] library podcast audio saved: {filename}')
+                else:
+                    print(f'[RESEMBLE] Error {resp.status_code}: {resp.text[:200]}')
+        except Exception as e:
+            print(f'[RESEMBLE] library podcast exception: {e}')
 
         return JsonResponse({
             'success': True,
             'script': script,
-            'filename': filename,
+            'audio_url': audio_url,
             'duration_estimate': f'~{duration_mins} minutes',
             'word_count': word_count,
         })

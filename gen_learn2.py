@@ -1,0 +1,269 @@
+content = r"""{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }} - NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;--surface:#161616;--surface2:#1e1e1e;--border:#2a2a2a;
+  --text:#e8e8e8;--text2:#a0a0a0;--text3:#6b6b6b;
+  --purple:#a855f7;--blue:#3b82f6;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;flex-shrink:0}
+.back-btn{display:flex;align-items:center;gap:6px;color:var(--text2);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:6px}
+.back-btn:hover{background:var(--surface2);color:var(--text)}
+.header-title{font-size:15px;font-weight:600}
+.material-name{font-size:12px;color:var(--text3);background:var(--surface2);padding:3px 10px;border-radius:20px;border:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reset-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:13px;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:inherit}
+.reset-btn:hover{color:var(--text)}
+.progress-bar{height:3px;background:var(--border);flex-shrink:0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));width:0%;transition:width 0.5s}
+.chat-area{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.chat-area::-webkit-scrollbar{width:4px}
+.chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.msg{display:flex;gap:10px;max-width:760px;margin:0 auto;width:100%}
+.msg.user{flex-direction:row-reverse}
+.avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.msg.ai .avatar{background:linear-gradient(135deg,#a855f7,#3b82f6);color:#fff}
+.msg.user .avatar{background:#1a1a1a;color:var(--text);border:1px solid var(--border)}
+.bubble{padding:12px 16px;border-radius:12px;font-size:14.5px;line-height:1.7;max-width:calc(100% - 44px)}
+.msg.ai .bubble{background:var(--surface);border:1px solid var(--border)}
+.msg.user .bubble{background:#1a1a1a;border:1px solid var(--border);border-radius:12px 12px 4px 12px}
+.bubble p{margin:0 0 8px;color:var(--text2)}.bubble p:last-child{margin-bottom:0}
+.bubble strong{color:var(--text);font-weight:600}
+.bubble ul,.bubble ol{padding-left:20px;margin:6px 0;color:var(--text2)}
+.bubble li{margin-bottom:4px}
+.bubble h1,.bubble h2,.bubble h3{color:var(--text);font-weight:700;margin:10px 0 6px;font-size:15px}
+.bubble code{background:var(--surface2);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:13px}
+.br-math-display{text-align:center;padding:10px 0;overflow-x:auto}
+.katex-display{overflow-x:auto;padding:4px 0}
+.typing{display:flex;align-items:center;gap:4px;padding:4px 0}
+.typing span{width:6px;height:6px;background:var(--text3);border-radius:50%;animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 10px;max-width:760px;margin:0 auto;width:100%}
+.chip{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:13px;padding:6px 14px;border-radius:20px;cursor:pointer;transition:all .15s;font-family:inherit}
+.chip:hover{border-color:var(--purple);color:var(--text)}
+.input-area{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.input-wrap{display:flex;gap:8px;align-items:flex-end;max-width:760px;margin:0 auto;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 8px 8px 14px;transition:border-color .15s}
+.input-wrap:focus-within{border-color:var(--purple)}
+.chat-input{flex:1;background:transparent;border:none;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;max-height:100px;line-height:1.5;padding:2px 0}
+.chat-input::placeholder{color:var(--text3)}
+.send-btn{width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--blue));border:none;border-radius:8px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+.send-btn:hover{opacity:.85}.send-btn:disabled{opacity:.35;cursor:not-allowed}
+.welcome{text-align:center;padding:40px 20px;max-width:480px;margin:auto}
+.welcome-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+.welcome h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.welcome p{color:var(--text2);font-size:14px;margin-bottom:24px;line-height:1.6}
+.start-btn{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.start-btn:hover{opacity:.85}
+@media(max-width:600px){.chat-area,.chips,.input-area{padding-left:12px;padding-right:12px}.material-name{display:none}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:10px">
+    <a href="{% url 'list_materials' %}" class="back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <span class="header-title">Learn Mode</span>
+    <span class="material-name">{{ material.title }}</span>
+  </div>
+  <button class="reset-btn" onclick="resetChat()">Restart</button>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="chat-area" id="chatArea">
+  <div class="welcome" id="welcomeScreen">
+    <div class="welcome-icon">&#127891;</div>
+    <h2>Learn: {{ material.title }}</h2>
+    <p>I'll guide you through this material step by step, ask questions, and make sure you actually understand it — not just read it.</p>
+    <button class="start-btn" id="startBtn" onclick="startLearn()">Start Learning &#8594;</button>
+  </div>
+</div>
+
+<div class="chips" id="chipsArea" style="display:none"></div>
+
+<div class="input-area">
+  <div class="input-wrap">
+    <textarea class="chat-input" id="chatInput" placeholder="Type your answer..." rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script>
+var MATERIAL_PK = {{ material.pk }};
+var CSRF = '{{ csrf_token }}';
+var history = [];
+var isLoading = false;
+var msgCount = 0;
+
+var chatArea = document.getElementById('chatArea');
+var chatInput = document.getElementById('chatInput');
+var sendBtn = document.getElementById('sendBtn');
+var chipsArea = document.getElementById('chipsArea');
+var progressFill = document.getElementById('progressFill');
+
+chatInput.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  sendBtn.disabled = !this.value.trim();
+});
+chatInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (this.value.trim()) sendMessage();
+  }
+});
+
+function renderContent(raw) {
+  if (!raw) return '';
+  var text = raw;
+  // Normalise delimiters
+  text = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+  text = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+  // Promote lone $...$ line to display
+  text = text.replace(/(^|\n)\$([^$\n]+)\$(\n|$)/g, function(m, a, b, c) {
+    return (a||'\n') + '$$' + b + '$$' + (c||'\n');
+  });
+  // Extract math
+  var store = [];
+  text = text.replace(/\$\$([\s\S]+?)\$\$/g, function(m, src) {
+    store.push({d:true, s:src.trim()});
+    return '\n\nNXMD_' + (store.length-1) + '_END\n\n';
+  });
+  text = text.replace(/\$([^$\n]+?)\$/g, function(m, src) {
+    store.push({d:false, s:src.trim()});
+    return 'NXMI_' + (store.length-1) + '_END';
+  });
+  // Markdown
+  var html = '';
+  try { html = marked.parse(text); } catch(e) { html = '<p>' + text.replace(/\n/g,'<br>') + '</p>'; }
+  // Restore math
+  function rk(m) {
+    try {
+      var out = katex.renderToString(m.s, {displayMode:m.d, throwOnError:false});
+      return m.d ? '<div class="br-math-display">'+out+'</div>' : out;
+    } catch(e) { return m.d ? '<div class="br-math-display">$$'+m.s+'$$</div>' : '$'+m.s+'$'; }
+  }
+  html = html.replace(/<p>\s*NXMD_(\d+)_END\s*<\/p>/g, function(m,i){return rk(store[+i]);});
+  html = html.replace(/NXMD_(\d+)_END/g, function(m,i){return rk(store[+i]);});
+  html = html.replace(/NXMI_(\d+)_END/g, function(m,i){return rk(store[+i]);});
+  return html;
+}
+
+function addMsg(role, content) {
+  var w = document.getElementById('welcomeScreen');
+  if (w) w.remove();
+  var d = document.createElement('div');
+  d.className = 'msg ' + role;
+  var initials = role === 'ai' ? 'N' : '{{ user.username|slice:":1"|upper }}';
+  d.innerHTML = '<div class="avatar">'+initials+'</div><div class="bubble">'+renderContent(content)+'</div>';
+  chatArea.appendChild(d);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  msgCount++;
+  progressFill.style.width = Math.min(msgCount*4, 90)+'%';
+}
+
+function showTyping() {
+  var d = document.createElement('div');
+  d.className = 'msg ai'; d.id = 'typing';
+  d.innerHTML = '<div class="avatar">N</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  chatArea.appendChild(d);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+function hideTyping() { var t=document.getElementById('typing'); if(t) t.remove(); }
+
+function showChips(text) {
+  chipsArea.innerHTML = '';
+  var matches = text.match(/^\d+\.\s*.+/gm);
+  if (matches && matches.length >= 2 && matches.length <= 8) {
+    chipsArea.style.display = 'flex';
+    matches.forEach(function(m) {
+      var b = document.createElement('button');
+      b.className = 'chip'; b.textContent = m.trim();
+      b.onclick = function() { sendMessage(m.trim()); };
+      chipsArea.appendChild(b);
+    });
+  } else {
+    chipsArea.style.display = 'none';
+  }
+}
+
+async function callAI(userMsg) {
+  if (isLoading) return;
+  isLoading = true;
+  sendBtn.disabled = true;
+  chipsArea.style.display = 'none';
+  showTyping();
+  try {
+    var res = await fetch('/materials/learn/'+MATERIAL_PK+'/ajax/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({message: userMsg, history: history})
+    });
+    var data = await res.json();
+    hideTyping();
+    if (data.success) {
+      if (userMsg) history.push({role:'user', content:userMsg});
+      history.push({role:'assistant', content:data.response});
+      addMsg('ai', data.response);
+      showChips(data.response);
+    } else {
+      addMsg('ai', 'Error: ' + (data.error || 'Something went wrong. Please try again.'));
+    }
+  } catch(e) {
+    hideTyping();
+    addMsg('ai', 'Connection error: ' + e.message + '. Please try again.');
+  }
+  isLoading = false;
+  sendBtn.disabled = !chatInput.value.trim();
+}
+
+function startLearn() {
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('startBtn').textContent = 'Loading...';
+  callAI('');
+}
+
+function sendMessage(text) {
+  var msg = (typeof text === 'string') ? text : chatInput.value.trim();
+  if (!msg || isLoading) return;
+  addMsg('user', msg);
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+  sendBtn.disabled = true;
+  callAI(msg);
+}
+
+function resetChat() {
+  if (!confirm('Restart this learning session?')) return;
+  history = []; msgCount = 0;
+  progressFill.style.width = '0%';
+  chatArea.innerHTML = '';
+  chipsArea.style.display = 'none';
+  var w = document.createElement('div');
+  w.className = 'welcome'; w.id = 'welcomeScreen';
+  w.innerHTML = '<div class="welcome-icon">&#127891;</div><h2>Learn: {{ material.title|escapejs }}</h2><p>I\'ll guide you through this material step by step.</p><button class="start-btn" id="startBtn" onclick="startLearn()">Start Learning &#8594;</button>';
+  chatArea.appendChild(w);
+}
+</script>
+</body>
+</html>"""
+
+with open('materials/templates/materials/learn.html', 'w', encoding='utf-8') as f:
+    f.write(content)
+print('Done -', len(content), 'chars')

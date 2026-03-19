@@ -29,6 +29,7 @@ ALLOWED_HOSTS += ['unixa.onrender.com', '.onrender.com', '*']
 # ── API Keys ──────────────────────────────────────────────────────────────────
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
+RESEMBLE_API_KEY = os.environ.get('RESEMBLE_API_KEY', '')
 
 # ── Installed Apps ────────────────────────────────────────────────────────────
 INSTALLED_APPS = [

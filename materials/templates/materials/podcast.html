@@ -120,7 +120,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="idle-desc">AI turns your study material into a spoken podcast episode. Listen at your own pace, control speed, and read the transcript.</div>
     <div class="idle-meta">
       <span class="meta-chip">AI Script</span>
-      <span class="meta-chip">Browser Voice</span>
+      <span class="meta-chip">Resemble AI Voice</span>
       <span class="meta-chip">Transcript</span>
     </div>
     <button class="gen-btn" id="genBtn" onclick="generate()">
@@ -229,6 +229,7 @@ let isPaused = false;
 let currentSpeed = 1;
 let wordChunks = [];
 let currentChunk = 0;
+let audioEl = null;  // Resemble.ai audio element
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -250,13 +251,23 @@ async function generate() {
     document.getElementById('transcriptBox').textContent = podcastScript || 'No transcript available.';
     document.getElementById('trackSub').textContent = (data.duration_estimate || '') + (data.word_count ? ' · ' + data.word_count + ' words' : '');
 
-    // Pre-chunk the script for skip support (~200 words per chunk)
-    const words = podcastScript.split(' ');
-    wordChunks = [];
-    for (let i = 0; i < words.length; i += 200) {
-      wordChunks.push(words.slice(i, i + 200).join(' '));
+    // Use Resemble.ai audio if available
+    if (data.audio_url) {
+      audioEl = new Audio(data.audio_url);
+      audioEl.playbackRate = currentSpeed;
+      audioEl.onended = () => { isPlaying = false; isPaused = false; updatePlayIcon(); setWave(false); };
+      audioEl.onpause = () => { if (!audioEl.ended) { isPlaying = false; isPaused = true; updatePlayIcon(); setWave(false); } };
+      audioEl.onplay = () => { isPlaying = true; isPaused = false; updatePlayIcon(); setWave(true); };
+    } else {
+      // Fall back to browser TTS chunking
+      audioEl = null;
+      const words = podcastScript.split(' ');
+      wordChunks = [];
+      for (let i = 0; i < words.length; i += 200) {
+        wordChunks.push(words.slice(i, i + 200).join(' '));
+      }
+      currentChunk = 0;
     }
-    currentChunk = 0;
 
     showScreen('playerScreen');
     setControlsEnabled(true);
@@ -267,10 +278,7 @@ async function generate() {
 }
 
 function regenerate() {
-  window.speechSynthesis.cancel();
-  isPlaying = false; isPaused = false;
-  updatePlayIcon();
-  setWave(false);
+  podcastStop();
   generate();
 }
 
@@ -280,6 +288,65 @@ function setControlsEnabled(on) {
 }
 
 // ── Playback ──
+function togglePlay() {
+  if (!podcastScript) return;
+
+  if (audioEl) {
+    // Resemble.ai audio
+    if (isPlaying) {
+      audioEl.pause();
+    } else {
+      audioEl.play();
+    }
+  } else {
+    // Browser TTS fallback
+    if (isPlaying) {
+      window.speechSynthesis.pause();
+      isPlaying = false; isPaused = true;
+      updatePlayIcon(); setWave(false);
+    } else if (isPaused && window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      isPlaying = true; isPaused = false;
+      updatePlayIcon(); setWave(true);
+    } else {
+      window.speechSynthesis.cancel();
+      speakChunk(currentChunk);
+    }
+  }
+}
+
+function podcastStop() {
+  if (audioEl) {
+    audioEl.pause();
+    audioEl.currentTime = 0;
+  }
+  window.speechSynthesis.cancel();
+  isPlaying = false; isPaused = false; currentChunk = 0;
+  updatePlayIcon(); setWave(false);
+}
+
+function skipBack() {
+  if (audioEl) {
+    audioEl.currentTime = Math.max(0, audioEl.currentTime - 30);
+  } else {
+    window.speechSynthesis.cancel();
+    speakChunk(Math.max(0, currentChunk - 1));
+  }
+}
+
+function setSpeed(s, btn) {
+  currentSpeed = s;
+  document.querySelectorAll('.spd-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (audioEl) {
+    audioEl.playbackRate = s;
+  } else if (utterance) {
+    utterance.rate = s;
+    if (isPlaying) { window.speechSynthesis.cancel(); speakChunk(currentChunk); }
+  }
+}
+
+// Browser TTS fallback
 function speakChunk(idx) {
   if (idx >= wordChunks.length) {
     isPlaying = false; isPaused = false;
@@ -292,61 +359,14 @@ function speakChunk(idx) {
   utterance.rate = currentSpeed;
   utterance.pitch = 1.0;
   utterance.volume = 1.0;
-
-  // Pick best voice
   const voices = window.speechSynthesis.getVoices();
   const preferred = voices.find(v => /google us english|samantha|karen|daniel|moira|fiona/i.test(v.name))
-    || voices.find(v => v.lang === 'en-US' && !v.name.toLowerCase().includes('google'))
-    || voices.find(v => v.lang && v.lang.startsWith('en'))
-    || voices[0];
+    || voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
   if (preferred) utterance.voice = preferred;
-
   utterance.onstart = () => { isPlaying = true; isPaused = false; updatePlayIcon(); setWave(true); };
   utterance.onend = () => { speakChunk(idx + 1); };
-  utterance.onerror = (e) => {
-    if (e.error !== 'interrupted') { isPlaying = false; updatePlayIcon(); setWave(false); }
-  };
+  utterance.onerror = (e) => { if (e.error !== 'interrupted') { isPlaying = false; updatePlayIcon(); setWave(false); } };
   window.speechSynthesis.speak(utterance);
-}
-
-function togglePlay() {
-  if (!podcastScript) return;
-  if (isPlaying) {
-    window.speechSynthesis.pause();
-    isPlaying = false; isPaused = true;
-    updatePlayIcon(); setWave(false);
-  } else if (isPaused && window.speechSynthesis.paused) {
-    window.speechSynthesis.resume();
-    isPlaying = true; isPaused = false;
-    updatePlayIcon(); setWave(true);
-  } else {
-    window.speechSynthesis.cancel();
-    speakChunk(currentChunk);
-  }
-}
-
-function podcastStop() {
-  window.speechSynthesis.cancel();
-  isPlaying = false; isPaused = false; currentChunk = 0;
-  updatePlayIcon(); setWave(false);
-}
-
-function skipBack() {
-  window.speechSynthesis.cancel();
-  const prev = Math.max(0, currentChunk - 1);
-  speakChunk(prev);
-}
-
-function setSpeed(s, btn) {
-  currentSpeed = s;
-  document.querySelectorAll('.spd-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  if (utterance) utterance.rate = s;
-  // Restart current chunk at new speed if playing
-  if (isPlaying) {
-    window.speechSynthesis.cancel();
-    speakChunk(currentChunk);
-  }
 }
 
 function updatePlayIcon() {
@@ -362,7 +382,6 @@ function setWave(on) {
   document.querySelectorAll('.wbar').forEach(b => b.style.animationPlayState = on ? 'running' : 'paused');
 }
 
-// Ensure voices are loaded (Chrome loads them async)
 window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 </body>

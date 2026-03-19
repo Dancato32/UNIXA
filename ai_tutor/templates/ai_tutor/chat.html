@@ -1023,6 +1023,11 @@ const NexaVoice = {
         this.overlay.classList.add('active');
         this.userText.textContent = ''; this.aiText.textContent = '';
         this.updateStatus('Starting...', '');
+        // Unlock audio context on user gesture (required for autoplay policy)
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            ctx.resume().then(() => ctx.close());
+        } catch(e) {}
         setTimeout(() => { this.updateStatus('Listening...', 'listening'); this.startListening(); }, 300);
     },
     close() {
@@ -1056,22 +1061,43 @@ const NexaVoice = {
                 const response = await fetch('{% url "ai_tts" %}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                    body: JSON.stringify({ text: text.substring(0, 2500), voice: 'alloy' })
+                    body: JSON.stringify({ text: text.substring(0, 2000), voice: 'alloy' })
                 });
                 if (response.ok) {
                     const ct = response.headers.get('content-type') || '';
+                    console.log('[TTS] response content-type:', ct, 'status:', response.status);
                     if (ct.includes('application/json')) {
                         const json = await response.json();
+                        console.log('[TTS] json response:', json);
                         if (json.use_browser_tts) { await this.speakWithBrowserTTS(text); resolve(); return; }
                     }
                     const audioBlob = await response.blob();
+                    console.log('[TTS] blob size:', audioBlob.size, 'type:', audioBlob.type);
                     const audioUrl = URL.createObjectURL(audioBlob);
                     this.currentAudio = new Audio(audioUrl);
-                    this.currentAudio.onended = () => { URL.revokeObjectURL(audioUrl); resolve(); };
-                    this.currentAudio.onerror = () => { URL.revokeObjectURL(audioUrl); this.speakWithBrowserTTS(text).then(resolve); };
-                    await this.currentAudio.play();
-                } else { await this.speakWithBrowserTTS(text); resolve(); }
-            } catch(error) { await this.speakWithBrowserTTS(text); resolve(); }
+                    this.currentAudio.oncanplaythrough = () => console.log('[TTS] audio ready to play');
+                    this.currentAudio.onended = () => { console.log('[TTS] audio ended'); URL.revokeObjectURL(audioUrl); resolve(); };
+                    this.currentAudio.onerror = (e) => {
+                        console.error('[TTS] audio play error:', e, this.currentAudio.error);
+                        URL.revokeObjectURL(audioUrl);
+                        this.speakWithBrowserTTS(text).then(resolve);
+                    };
+                    const playPromise = this.currentAudio.play();
+                    if (playPromise) {
+                        playPromise.then(() => console.log('[TTS] playing Resemble audio')).catch(err => {
+                            console.error('[TTS] play() rejected:', err);
+                            URL.revokeObjectURL(audioUrl);
+                            this.speakWithBrowserTTS(text).then(resolve);
+                        });
+                    }
+                } else {
+                    console.warn('[TTS] response not ok:', response.status);
+                    await this.speakWithBrowserTTS(text); resolve();
+                }
+            } catch(error) {
+                console.error('[TTS] fetch error:', error);
+                await this.speakWithBrowserTTS(text); resolve();
+            }
         });
     },
     speakWithBrowserTTS(text) {
