@@ -1054,11 +1054,11 @@ Score X/5, what to review, ask if they want another topic."""
             base_url='https://openrouter.ai/api/v1',
             default_headers={'HTTP-Referer': 'http://localhost', 'X-Title': 'Nexa AI System'}
         )
+        # Only models that support system prompts
         free_models = [
             "meta-llama/llama-3.3-70b-instruct:free",
             "mistralai/mistral-small-3.1-24b-instruct:free",
-            "google/gemma-3-27b-it:free",
-            "google/gemma-3-12b-it:free",
+            "openai/gpt-4o-mini",
         ]
         last_error = None
         for model in free_models:
@@ -1073,11 +1073,7 @@ Score X/5, what to review, ask if they want another topic."""
                 return JsonResponse({'success': True, 'response': response})
             except Exception as e:
                 last_error = e
-                err_str = str(e)
-                # Only retry on rate-limit or unavailable errors
-                if '429' in err_str or '404' in err_str or 'rate' in err_str.lower():
-                    continue
-                raise
+                continue  # try next model on any error
         raise last_error
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
