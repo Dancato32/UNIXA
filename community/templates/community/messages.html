@@ -9,8 +9,13 @@
 
 {% block extra_css %}
 <style>
+/* Hide bottom nav on messages page — it covers the chat input */
+@media(max-width:900px){
+  .bottom-nav{display:none!important;}
+  .page{padding-bottom:0!important;}
+}
 .content-scroll{overflow:hidden!important;}
-.page{padding:0!important;max-width:100%!important;height:calc(100vh - 48px);display:flex;}
+.page{padding:0!important;max-width:100%!important;height:calc(100dvh - 52px);height:calc(100vh - 52px);display:flex;}
 
 /* ── Conversation list ── */
 .convos-col{width:272px;background:var(--s2);border-right:1px solid var(--b1);display:flex;flex-direction:column;flex-shrink:0;}
@@ -188,11 +193,22 @@
 
 @media(max-width:900px){
   .content-scroll{overflow:hidden!important;}
-  .page{height:calc(100vh - 52px)!important;padding:0!important;flex-direction:row;}
+  /* Use dvh (dynamic viewport height) so keyboard shrinking is handled correctly */
+  .page{
+    height:calc(100dvh - 52px)!important;
+    max-height:calc(100dvh - 52px)!important;
+    padding:0!important;
+    flex-direction:row;
+  }
   /* Convo list slides in from left as a drawer */
   .convos-col{position:fixed;top:52px;left:0;bottom:60px;z-index:50;transform:translateX(-100%);transition:transform .25s;width:85%;max-width:320px;border-right:1px solid var(--b1);}
   .convos-col.mob-open{transform:translateX(0);}
-  .chat-col{width:100%;min-height:0;flex:1;}
+  /* Chat column fills remaining space and scrolls internally */
+  .chat-col{width:100%;min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  /* Messages area shrinks when keyboard opens */
+  .chat-msgs{flex:1;min-height:0;overflow-y:auto;}
+  /* Input area always stays visible above keyboard */
+  .chat-input-area{flex-shrink:0;position:relative;z-index:10;}
   .mob-back-btn{display:flex;}
   /* Attach menu full width */
   .attach-menu{left:0;right:0;min-width:unset;}
