@@ -280,13 +280,16 @@ async function callAI(userMsg) {
 }
 
 function startLearn() {
+  var welcome = document.getElementById('welcomeScreen');
+  if (welcome) welcome.remove();
   callAI('');
   chatInput.focus();
 }
 
 function sendMessage(text) {
-  var msg = text || chatInput.value.trim();
-  if (!msg || isLoading) return;
+  var msg = (text !== undefined && text !== null) ? text : chatInput.value.trim();
+  if (isLoading) return;
+  if (!msg && !text) return;
   addMessage('user', msg);
   chatInput.value = '';
   chatInput.style.height = 'auto';

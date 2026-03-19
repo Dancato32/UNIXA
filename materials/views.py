@@ -1035,8 +1035,11 @@ STRICT RULES:
         messages_payload = [{"role": "system", "content": system_prompt}]
         for h in history[-10:]:
             messages_payload.append({"role": h['role'], "content": h['content']})
+        # If no user message (first load), inject a trigger so AI starts
         if user_message:
             messages_payload.append({"role": "user", "content": user_message})
+        else:
+            messages_payload.append({"role": "user", "content": "Start — show me the topics I can learn from this material."})
 
         from .ai_utils import get_openai_client
         client = get_openai_client()
