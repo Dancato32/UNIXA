@@ -69,6 +69,7 @@ urlpatterns = [
     path('messages/<uuid:convo_id>/voice/', views.send_voice_note, name='send_voice_note'),
     path('messages/<uuid:convo_id>/media/', views.send_media, name='send_media'),
     path('messages/<uuid:convo_id>/call/', views.create_call, name='create_call'),
+    path('messages/<uuid:convo_id>/poll/', views.poll_messages, name='poll_messages'),
     path('messages/new/', views.conversation_create, name='conversation_create'),
     path('dm/<str:username>/', views.dm_start, name='dm_start'),
 

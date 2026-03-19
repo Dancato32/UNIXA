@@ -1009,5 +1009,120 @@ function closeLightbox() {
   document.getElementById('lb-overlay').classList.remove('open');
   document.getElementById('lb-img').src = '';
 }
+
+/* ── Live polling — receive new messages without refreshing ── */
+{% if active_convo %}
+(function() {
+  // Track the timestamp of the last message we've seen
+  let lastTs = null;
+  const msgs = document.getElementById('chat-msgs');
+
+  // Seed lastTs from the last rendered message timestamp
+  if (msgs) {
+    const times = msgs.querySelectorAll('.msg-time');
+    // We need the ISO timestamp, not the display time — use a data attr on wraps
+    // Fall back: use current time so we only get messages from now on
+    lastTs = new Date().toISOString();
+  }
+
+  // Track message IDs we've already rendered to avoid duplicates
+  const seenIds = new Set();
+  // Seed from server-rendered messages
+  document.querySelectorAll('.msg-wrap[data-id]').forEach(function(el) {
+    seenIds.add(el.dataset.id);
+  });
+
+  function buildBubble(msg) {
+    const avHtml = msg.sender_avatar
+      ? '<img src="' + msg.sender_avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+      : esc(msg.sender_username.slice(0,1).toUpperCase());
+    const timeStr = new Date(msg.created_at).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+    const side = msg.is_mine ? 'mine' : 'theirs';
+
+    let bubbleHtml = '';
+    if (msg.message_type === 'voice' && msg.voice_note_url) {
+      bubbleHtml =
+        '<div class="msg-bubble" style="padding:0;">' +
+          '<div class="voice-bubble" data-src="' + msg.voice_note_url + '">' +
+            '<button class="vp-btn" onclick="vpToggle(this)" title="Play">' +
+              '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+            '</button>' +
+            '<div class="vp-progress" onclick="vpSeek(this, event)"><div class="vp-fill"></div></div>' +
+            '<span class="vp-dur">0:00</span>' +
+            '<audio style="display:none;" src="' + msg.voice_note_url + '"></audio>' +
+          '</div>' +
+        '</div>';
+    } else if (msg.message_type === 'image' && msg.media_url) {
+      bubbleHtml =
+        '<div class="msg-bubble" style="padding:0;background:transparent;">' +
+          '<div class="media-img-bubble" onclick="openLightbox(\'' + msg.media_url + '\')">' +
+            '<img src="' + msg.media_url + '" alt="image" loading="lazy">' +
+          '</div>' +
+          (msg.content ? '<div class="msg-bubble" style="margin-top:.25rem;">' + esc(msg.content) + '</div>' : '') +
+        '</div>';
+    } else if (msg.message_type === 'video' && msg.media_url) {
+      bubbleHtml =
+        '<div class="msg-bubble" style="padding:0;background:transparent;">' +
+          '<div class="media-vid-bubble"><video src="' + msg.media_url + '" controls preload="metadata"></video></div>' +
+          (msg.content ? '<div class="msg-bubble" style="margin-top:.25rem;">' + esc(msg.content) + '</div>' : '') +
+        '</div>';
+    } else if (msg.message_type === 'file' && msg.media_url) {
+      bubbleHtml =
+        '<div class="msg-bubble" style="padding:0;">' +
+          '<div class="media-doc-bubble">' +
+            '<div class="doc-icon" style="background:var(--s4);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>' +
+            '<div class="doc-info"><div class="doc-name">' + esc(msg.media_name || 'File') + '</div><div class="doc-meta">Document</div></div>' +
+            '<a href="' + msg.media_url + '" download class="doc-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a>' +
+          '</div>' +
+        '</div>';
+    } else {
+      bubbleHtml = '<div class="msg-bubble">' + esc(msg.content) + '</div>';
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-wrap ' + side;
+    wrap.dataset.id = msg.id;
+    wrap.innerHTML =
+      '<div class="msg-av">' + avHtml + '</div>' +
+      '<div class="msg-group">' + bubbleHtml + '<span class="msg-time">' + timeStr + '</span></div>';
+    return wrap;
+  }
+
+  function poll() {
+    if (!lastTs) return;
+    fetch('/community/messages/' + CONVO_ID + '/poll/?since=' + encodeURIComponent(lastTs), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data || !data.messages.length) return;
+      const container = document.getElementById('chat-msgs');
+      if (!container) return;
+      // Remove "Say hello" placeholder if present
+      const placeholder = container.querySelector('[style*="Say hello"]');
+      if (placeholder) placeholder.remove();
+
+      let appended = false;
+      data.messages.forEach(function(msg) {
+        if (seenIds.has(msg.id)) return;
+        seenIds.add(msg.id);
+        lastTs = msg.created_at; // advance cursor
+        // Skip messages we sent ourselves (already appended optimistically)
+        if (msg.is_mine) return;
+        container.appendChild(buildBubble(msg));
+        appended = true;
+      });
+      if (appended) {
+        container.scrollTop = container.scrollHeight;
+        initVoicePlayers();
+      }
+    })
+    .catch(function() {}); // silently ignore network errors
+  }
+
+  // Poll every 2.5 seconds
+  setInterval(poll, 2500);
+})();
+{% endif %}
 </script>
 {% endblock %}

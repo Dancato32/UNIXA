@@ -448,6 +448,42 @@ def messages_view(request, convo_id=None):
 
 
 @login_required
+def poll_messages(request, convo_id):
+    """Return messages newer than ?since=<iso-timestamp> as JSON for live polling."""
+    convo = get_object_or_404(Conversation, id=convo_id, participants=request.user)
+    since_raw = request.GET.get('since')
+    qs = convo.messages.select_related('sender', 'sender__community_profile').order_by('created_at')
+    if since_raw:
+        from django.utils.dateparse import parse_datetime
+        since_dt = parse_datetime(since_raw)
+        if since_dt:
+            qs = qs.filter(created_at__gt=since_dt)
+
+    others = [p for p in convo.participants.all() if p != request.user]
+    other_user = others[0] if others else request.user
+
+    data = []
+    for msg in qs:
+        entry = {
+            'id': str(msg.id),
+            'content': msg.content,
+            'message_type': msg.message_type,
+            'created_at': msg.created_at.isoformat(),
+            'is_mine': msg.sender_id == request.user.id,
+            'sender_username': msg.sender.username,
+            'sender_avatar': msg.sender.community_profile.avatar.url if hasattr(msg.sender, 'community_profile') and msg.sender.community_profile.avatar else None,
+        }
+        if msg.message_type == Message.TYPE_VOICE and msg.voice_note:
+            entry['voice_note_url'] = msg.voice_note.url
+        if msg.message_type in (Message.TYPE_IMAGE, Message.TYPE_VIDEO, Message.TYPE_FILE) and msg.media:
+            entry['media_url'] = msg.media.url
+            entry['media_name'] = msg.media.name
+        data.append(entry)
+
+    return JsonResponse({'messages': data})
+
+
+@login_required
 @require_POST
 def send_voice_note(request, convo_id):
     convo = get_object_or_404(Conversation, id=convo_id, participants=request.user)
