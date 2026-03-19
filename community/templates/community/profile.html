@@ -34,6 +34,18 @@
 .pa{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .5rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;}
 .pa:hover{background:var(--s3);color:var(--t2);}
 .pa svg{width:13px;height:13px;}
+
+@media(max-width:600px){
+  .profile-banner{height:120px;border-radius:6px 6px 0 0;}
+  .profile-av{width:64px;height:64px;margin-top:-32px;border-width:3px;}
+  .profile-name{font-size:1.125rem;}
+  .profile-actions{flex-wrap:wrap;gap:.375rem;}
+  .profile-stats{gap:1rem;}
+  .post-card{border-radius:4px;}
+  .vote-col{display:none;}
+  .post-body{padding:.625rem .75rem;}
+  .pa{padding:.3rem .4rem;font-size:.7rem;}
+}
 </style>
 {% endblock %}
 

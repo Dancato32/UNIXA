@@ -26,6 +26,17 @@
 .privacy-badge{font-size:.6875rem;font-weight:600;padding:.15rem .45rem;border-radius:3px;}
 .privacy-public{background:rgba(34,197,94,.1);color:var(--green);}
 .privacy-private{background:rgba(239,68,68,.1);color:var(--red);}
+
+@media(max-width:600px){
+  .communities-grid{grid-template-columns:1fr 1fr;gap:.625rem;}
+  .community-card{padding:.75rem;}
+  .community-name{font-size:.875rem;}
+  .community-desc{font-size:.75rem;-webkit-line-clamp:2;}
+  .page-head{flex-wrap:wrap;gap:.5rem;}
+}
+@media(max-width:380px){
+  .communities-grid{grid-template-columns:1fr;}
+}
 </style>
 {% endblock %}
 

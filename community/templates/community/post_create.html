@@ -73,7 +73,21 @@
 .rule-item:last-child{border-bottom:none;}
 .rule-num{font-weight:700;color:var(--t3);flex-shrink:0;width:16px;}
 
-@media(max-width:900px){.create-shell{flex-direction:column;}.create-right{display:none;}}
+@media(max-width:900px){
+  .create-shell{flex-direction:column;}
+  .create-right{display:none;}
+}
+@media(max-width:600px){
+  .tab{padding:.5rem .625rem;font-size:.75rem;}
+  .tab svg{width:13px;height:13px;}
+  .post-body{padding:.75rem;}
+  .title-input{font-size:.9375rem;}
+  .body-input{font-size:.875rem;min-height:120px;}
+  .editor-toolbar{padding:.375rem .5rem;}
+  .et-btn{width:26px;height:26px;}
+  .post-footer{padding:.625rem .75rem;}
+  .dest-bar{padding:.5rem .75rem;}
+}
 /* Upload progress */
 .upload-progress{display:none;padding:.75rem 1rem;border-top:1px solid var(--b2);}
 .upload-progress.show{display:block;}

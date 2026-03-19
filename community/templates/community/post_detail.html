@@ -91,6 +91,23 @@
 /* ── New comment highlight ── */
 @keyframes fadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
 .comment-new{animation:fadeIn .3s ease;}
+
+@media(max-width:600px){
+  .post-card{border-radius:0;border-left:none;border-right:none;margin:0 -.625rem;}
+  .vote-col{display:none;}
+  .post-body{padding:.75rem;}
+  .post-title{font-size:.9375rem;}
+  .post-text{font-size:.8125rem;}
+  .post-actions{gap:0;}
+  .pa{padding:.3rem .4rem;font-size:.7rem;}
+  .comment-card{padding:.625rem .75rem;}
+  .comment-actions{gap:.1rem;}
+  .ca-btn{padding:.2rem .4rem;font-size:.7rem;}
+  .vote-pill{padding:.2rem .5rem;}
+  .reply-box{padding:.5rem .75rem;}
+  .reply-input{font-size:.8125rem;}
+  .more-menu{right:0;left:auto;}
+}
 </style>
 {% endblock %}
 

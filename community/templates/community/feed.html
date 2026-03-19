@@ -149,8 +149,23 @@
 .feed-empty svg{width:40px;height:40px;margin:0 auto 1rem;opacity:.1;display:block;}
 .feed-empty p{font-size:.875rem;color:var(--t3);margin-bottom:1.25rem;}
 
-@media(max-width:900px){.feed-shell{flex-direction:column;}.feed-right{display:none;}}
-@media(max-width:600px){.vote-col{display:none;}.post-body{padding:.625rem .75rem;}}
+@media(max-width:900px){
+  .feed-shell{flex-direction:column;}
+  .feed-right{display:none;}
+  .sort-bar{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
+}
+@media(max-width:600px){
+  .vote-col{display:none;}
+  .post-body{padding:.625rem .75rem;}
+  .post-actions{gap:0;}
+  .pa{padding:.3rem .4rem;font-size:.7rem;}
+  .composer{padding:.5rem .75rem;}
+  .c-av{width:32px;height:32px;font-size:.75rem;}
+  .post-title{font-size:.875rem;}
+  .post-text{font-size:.8125rem;}
+  .ic-item-actions{gap:.1rem;}
+  .ic-act{padding:.15rem .3rem;font-size:.65rem;}
+}
 </style>
 {% endblock %}
 

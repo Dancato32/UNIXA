@@ -26,6 +26,18 @@
 .school-desc{font-size:.8125rem;color:var(--t2);line-height:1.5;margin-bottom:.875rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .school-footer{display:flex;align-items:center;justify-content:space-between;}
 .member-count{font-size:.75rem;color:var(--t3);}
+
+@media(max-width:600px){
+  .schools-grid{grid-template-columns:1fr 1fr;gap:.625rem;}
+  .school-card{padding:.75rem;}
+  .school-name{font-size:.875rem;}
+  .school-desc{font-size:.75rem;-webkit-line-clamp:2;}
+  .page-head{flex-wrap:wrap;gap:.5rem;}
+  .page-head .btn{font-size:.75rem;}
+}
+@media(max-width:380px){
+  .schools-grid{grid-template-columns:1fr;}
+}
 </style>
 {% endblock %}
 
