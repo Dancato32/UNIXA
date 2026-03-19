@@ -23,6 +23,8 @@ urlpatterns = [
     path('flashcards/<int:pk>/ajax/', views.flashcards_ajax, name='flashcards_ajax'),
     path('select/<str:action>/', views.select_material_for_action, name='select_material_for_action'),
     path('wiki-image/', views.wiki_image_ajax, name='wiki_image_ajax'),
+    path('learn/<int:pk>/', views.learn_view, name='learn_material'),
+    path('learn/<int:pk>/ajax/', views.learn_ajax, name='learn_ajax'),
 ]
 
 

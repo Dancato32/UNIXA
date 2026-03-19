@@ -965,3 +965,88 @@ def wiki_image_ajax(request):
     except Exception as e:
         # Silently fail — image is optional
         return JsonResponse({'image_url': None})
+
+
+@login_required
+def learn_view(request, pk):
+    """Duolingo-style interactive learn mode for a study material."""
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    return render(request, 'materials/learn.html', {
+        'material': material, 'title': f'Learn: {material.title}'
+    })
+
+
+@login_required
+def learn_ajax(request, pk):
+    """AJAX: interactive learn mode chat endpoint."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    if not material.extracted_text:
+        return JsonResponse({'error': 'No text could be extracted from this material.'}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        user_message = data.get('message', '').strip()
+        history = data.get('history', [])
+
+        system_prompt = f"""You are NEXA Learn Mode, an AI tutor teaching the following study material in an interactive, step-by-step, Duolingo-style experience.
+The goal is NOT to lecture, but to actively guide the student through learning.
+
+STUDY MATERIAL: {material.title}
+---
+{material.extracted_text[:4000]}
+---
+
+PHASE 1 — If this is the first message (no history), analyze the material:
+- Extract all important topics and subtopics
+- Display them as a numbered list like:
+  📚 Topics you can learn:
+  1. [Topic Name]
+  2. [Topic Name]
+  Then ask: 👉 "Pick a topic number to start learning."
+  STOP and wait.
+
+PHASE 2 — When user picks a topic, start a structured lesson:
+- Break into SMALL steps (micro-lessons), ONE idea at a time (2-4 sentences max)
+- After each explanation, ask ONE quick question (multiple choice OR short answer)
+- WAIT for user response before continuing
+
+PHASE 3 — Feedback:
+- If correct: short praise ("Correct! 🔥", "Nice one!") then move to next step
+- If incorrect: kindly correct, explain simply, ask a similar question again
+
+PHASE 4 — Progression language:
+- "Level 1 complete ✅", "Next challenge 🎯", "You're getting it! 💪"
+- Keep it fun but not childish
+
+PHASE 5 — After finishing a topic:
+- Give a short summary
+- Give a mini quiz (3-5 questions)
+- Ask: 👉 "Do you want to try another topic?"
+
+STRICT RULES:
+- NEVER explain everything at once
+- ALWAYS wait for user input after asking a question
+- Keep responses SHORT and engaging
+- Use $inline math$ and $$display math$$ for any equations
+- Teach like a friendly human tutor"""
+
+        messages_payload = [{"role": "system", "content": system_prompt}]
+        for h in history[-10:]:
+            messages_payload.append({"role": h['role'], "content": h['content']})
+        if user_message:
+            messages_payload.append({"role": "user", "content": user_message})
+
+        from .ai_utils import get_openai_client
+        client = get_openai_client()
+        completion = client.chat.completions.create(
+            model="meta-llama/llama-3.3-70b-instruct:free",
+            messages=messages_payload,
+            max_tokens=600,
+            temperature=0.7,
+        )
+        response = completion.choices[0].message.content
+        return JsonResponse({'success': True, 'response': response})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
