@@ -635,8 +635,11 @@ def community_profile_edit(request):
             profile.avatar = request.FILES['avatar']
         if 'banner' in request.FILES:
             profile.banner = request.FILES['banner']
-        profile.save()
-        django_messages.success(request, 'Profile updated.')
+        try:
+            profile.save()
+            django_messages.success(request, 'Profile updated.')
+        except Exception:
+            django_messages.error(request, 'Could not save profile. Please try again.')
         return redirect('community:profile', username=request.user.username)
     return render(request, 'community/profile_edit.html', {'profile': profile})
 
