@@ -189,6 +189,22 @@ function hideTyping() { var t=document.getElementById('typing'); if(t) t.remove(
 
 function showChips(text) {
   chipsArea.innerHTML = '';
+  // If it looks like a quiz question (has A) B) C) D) options), show ABCD chips
+  var isQuiz = /^A\)/m.test(text) && /^B\)/m.test(text);
+  if (isQuiz) {
+    chipsArea.style.display = 'flex';
+    ['A', 'B', 'C', 'D'].forEach(function(letter) {
+      var b = document.createElement('button');
+      b.className = 'chip';
+      // Extract the option text for the label
+      var match = text.match(new RegExp('^' + letter + '\\)\\s*(.+)', 'm'));
+      b.textContent = letter + ') ' + (match ? match[1].trim() : letter);
+      b.onclick = function() { sendMessage(letter); };
+      chipsArea.appendChild(b);
+    });
+    return;
+  }
+  // Topic list chips
   var matches = text.match(/^\d+\.\s*.+/gm);
   if (matches && matches.length >= 2 && matches.length <= 8) {
     chipsArea.style.display = 'flex';
