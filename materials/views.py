@@ -1046,7 +1046,7 @@ STRICT RULES:
         else:
             messages_payload.append({"role": "user", "content": "Start — show me the topics I can learn from this material."})
 
-        from .ai_utils import get_openai_client
+        from ai_tutor.ai_utils import get_openai_client
         client = get_openai_client()
         completion = client.chat.completions.create(
             model="meta-llama/llama-3.3-70b-instruct:free",
