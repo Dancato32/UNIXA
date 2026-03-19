@@ -1062,7 +1062,16 @@ After all 5 questions:
             messages_payload.append({"role": "user", "content": "Start — show me the topics I can learn from this material."})
 
         from ai_tutor.ai_utils import get_openai_client
-        client = get_openai_client()
+        from openai import OpenAI
+        # Use a dedicated materials API key if set, fallback to main key
+        materials_key = os.getenv('OPENROUTER_API_KEY_MATERIALS') or os.getenv('OPENROUTER_API_KEY')
+        if not materials_key:
+            return JsonResponse({'error': 'No API key configured.'}, status=500)
+        client = OpenAI(
+            api_key=materials_key,
+            base_url='https://openrouter.ai/api/v1',
+            default_headers={'HTTP-Referer': 'http://localhost', 'X-Title': 'Nexa AI System'}
+        )
         completion = client.chat.completions.create(
             model="openai/gpt-4o-mini",
             messages=messages_payload,
