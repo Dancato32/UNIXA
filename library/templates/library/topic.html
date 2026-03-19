@@ -805,6 +805,7 @@ async function generatePodcast() {
       podcastAudioUrl = data.audio_url;
       const audioEl = getPodcastAudioEl();
       audioEl.src = podcastAudioUrl;
+      audioEl.preload = 'auto';
       audioEl.load();
       audioEl.onended = () => { podcastPlaying = false; podcastPaused = false; updatePodcastControls(); stopWave(); };
       audioEl.onpause = () => { if (!audioEl.ended) { podcastPlaying = false; podcastPaused = true; updatePodcastControls(); stopWave(); } };

@@ -1074,48 +1074,34 @@ const NexaVoice = {
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                     body: JSON.stringify({ text: text.substring(0, 2000), voice: 'alloy' })
                 });
-                if (response.ok) {
-                    const ct = response.headers.get('content-type') || '';
-                    if (ct.includes('application/json')) {
-                        const json = await response.json();
-                        if (json.use_browser_tts) { await this.speakWithBrowserTTS(text); resolve(); return; }
-                    }
-                    const audioBlob = await response.blob();
-                    if (!audioBlob || audioBlob.size < 100) {
-                        await this.speakWithBrowserTTS(text); resolve(); return;
-                    }
-                    const audioUrl = URL.createObjectURL(audioBlob);
+                if (!response.ok) { await this.speakWithBrowserTTS(text); resolve(); return; }
 
-                    // Use DOM <audio> element — required for iOS Safari autoplay
-                    if (audioEl) {
-                        audioEl.src = audioUrl;
-                        audioEl.load();
-                        this.currentAudio = audioEl;
-                        audioEl.onended = () => { URL.revokeObjectURL(audioUrl); audioEl.src = ''; this.currentAudio = null; resolve(); };
-                        audioEl.onerror = () => { URL.revokeObjectURL(audioUrl); audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
-                        audioEl.play().then(() => {
-                            this.updateStatus('Speaking...', 'speaking');
-                        }).catch(err => {
-                            console.warn('[TTS] play() blocked:', err);
-                            URL.revokeObjectURL(audioUrl);
-                            audioEl.src = '';
-                            this.currentAudio = null;
-                            this.speakWithBrowserTTS(text).then(resolve);
-                        });
-                    } else {
-                        // Fallback: new Audio() for non-iOS
-                        const audio = new Audio(audioUrl);
-                        audio.setAttribute('playsinline', '');
-                        this.currentAudio = audio;
-                        audio.onended = () => { URL.revokeObjectURL(audioUrl); this.currentAudio = null; resolve(); };
-                        audio.onerror = () => { URL.revokeObjectURL(audioUrl); this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
-                        audio.play().catch(() => { URL.revokeObjectURL(audioUrl); this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); });
-                    }
+                const json = await response.json();
+
+                if (json.use_browser_tts || !json.audio_url) {
+                    await this.speakWithBrowserTTS(text); resolve(); return;
+                }
+
+                // Use direct URL — works on iOS Safari, Android Chrome, all mobile browsers
+                if (audioEl) {
+                    audioEl.src = json.audio_url;
+                    audioEl.load();
+                    this.currentAudio = audioEl;
+                    audioEl.onended = () => { audioEl.src = ''; this.currentAudio = null; resolve(); };
+                    audioEl.onerror = () => { audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
+                    audioEl.play().catch(() => {
+                        audioEl.src = ''; this.currentAudio = null;
+                        this.speakWithBrowserTTS(text).then(resolve);
+                    });
                 } else {
-                    await this.speakWithBrowserTTS(text); resolve();
+                    const audio = new Audio(json.audio_url);
+                    audio.setAttribute('playsinline', '');
+                    this.currentAudio = audio;
+                    audio.onended = () => { this.currentAudio = null; resolve(); };
+                    audio.onerror = () => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
+                    audio.play().catch(() => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); });
                 }
             } catch(error) {
-                console.warn('[TTS] fetch error:', error);
                 await this.speakWithBrowserTTS(text); resolve();
             }
         });

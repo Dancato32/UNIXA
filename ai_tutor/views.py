@@ -9,6 +9,7 @@ from .models import Conversation, EssayRequest
 from .forms import ChatForm, EssayForm
 from .ai_utils import ask_ai, deep_web_essay, generate_essay_with_sources, text_to_speech
 import json
+import os
 
 
 @login_required
@@ -88,31 +89,76 @@ def chat_ajax(request):
 
 @login_required
 def text_to_speech_view(request):
-    """Convert text to speech and return audio."""
+    """Convert text to speech, save to file, return URL — mobile-safe approach."""
     if request.method == 'POST':
         try:
+            import uuid as _uuid
+            from django.conf import settings as django_settings
+
             data = json.loads(request.body)
             text = data.get('text', '')
             voice = data.get('voice', 'alloy')
-            
+
             if not text:
                 return JsonResponse({'error': 'Text cannot be empty'}, status=400)
-            
+
             audio_content = text_to_speech(text, voice)
-            
+
             if audio_content:
-                response = HttpResponse(audio_content, content_type='audio/mpeg')
-                response['Content-Disposition'] = 'inline; filename="speech.mp3"'
-                response['Accept-Ranges'] = 'bytes'
-                return response
+                # Save to file and return a URL — blob URLs break on iOS Safari
+                audio_dir = os.path.join(django_settings.MEDIA_ROOT, 'tts')
+                os.makedirs(audio_dir, exist_ok=True)
+                filename = f'tts_{_uuid.uuid4().hex[:12]}.mp3'
+                filepath = os.path.join(audio_dir, filename)
+                with open(filepath, 'wb') as f:
+                    f.write(audio_content)
+                audio_url = f'/ai-tutor/tts/audio/{filename}'
+                return JsonResponse({'audio_url': audio_url})
             else:
-                # No TTS available — tell frontend to use browser TTS
-                return JsonResponse({'error': 'tts_unavailable', 'use_browser_tts': True}, status=200)
-                
+                return JsonResponse({'use_browser_tts': True})
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-    
+
     return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@login_required
+def serve_tts_audio(request, filename):
+    """Serve a saved TTS audio file with range support."""
+    import re as _re
+    from django.conf import settings as django_settings
+
+    # Sanitise filename — only allow hex + .mp3
+    if not _re.match(r'^tts_[a-f0-9]+\.mp3$', filename):
+        return HttpResponse('Not found', status=404)
+
+    filepath = os.path.join(django_settings.MEDIA_ROOT, 'tts', filename)
+    if not os.path.exists(filepath):
+        return HttpResponse('Not found', status=404)
+
+    from django.http import FileResponse
+    file_size = os.path.getsize(filepath)
+    range_header = request.META.get('HTTP_RANGE', '').strip()
+    if range_header:
+        parts = range_header.replace('bytes=', '').split('-')
+        first = int(parts[0]) if parts[0] else 0
+        last = int(parts[1]) if parts[1] else file_size - 1
+        last = min(last, file_size - 1)
+        length = last - first + 1
+        with open(filepath, 'rb') as f:
+            f.seek(first)
+            data = f.read(length)
+        resp = HttpResponse(data, status=206, content_type='audio/mpeg')
+        resp['Content-Range'] = f'bytes {first}-{last}/{file_size}'
+        resp['Accept-Ranges'] = 'bytes'
+        resp['Content-Length'] = str(length)
+        return resp
+
+    resp = FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
+    resp['Content-Length'] = str(file_size)
+    resp['Accept-Ranges'] = 'bytes'
+    return resp
 
 
 @login_required

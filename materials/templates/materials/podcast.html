@@ -274,6 +274,7 @@ async function generate() {
       audioEl = getPodcastAudioEl();
       audioEl.src = data.audio_url;
       audioEl.playbackRate = currentSpeed;
+      audioEl.preload = 'auto';
       audioEl.load();
       audioEl.onended = () => { isPlaying = false; isPaused = false; updatePlayIcon(); setWave(false); };
       audioEl.onpause = () => { if (!audioEl.ended) { isPlaying = false; isPaused = true; updatePlayIcon(); setWave(false); } };
