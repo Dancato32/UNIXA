@@ -54,7 +54,7 @@
 .post-by a:hover{color:var(--t1);}
 .post-av{width:20px;height:20px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.5625rem;font-weight:700;color:var(--t2);flex-shrink:0;overflow:hidden;}
 .post-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.post-when{font-size:.74);font-size:.75rem;}
+.post-when{font-size:.75rem;color:var(--t3);}
 .post-cat{font-size:.6875rem;font-weight:600;padding:.1rem .4rem;border-radius:3px;background:rgba(88,101,242,.12);color:#818cf8;margin-left:auto;}
 .post-text{font-size:.875rem;line-height:1.65;color:var(--t2);margin-bottom:.75rem;white-space:pre-wrap;max-height:240px;overflow:hidden;position:relative;}
 .post-text.expanded{max-height:none;}
@@ -184,7 +184,7 @@
       {% if community.logo %}
         <img src="{{ community.logo.url }}" alt="{{ community.name }}">
       {% elif community.logo_url %}
-        <img src="{{ community.logo_url }}" alt="{{ community.name }}" onerror="this.style.display='none';this.parentNode.textContent='{{ community.name|slice:':1'|upper }}'">
+        <img src="{{ community.logo_url }}" alt="{{ community.name }}" onerror="this.style.display='none';if(!this.parentNode.querySelector('.lf')){var s=document.createElement('span');s.className='lf';s.textContent=this.alt.slice(0,1).toUpperCase();this.parentNode.appendChild(s);}":1"|upper }}';this.parentNode.appendChild(s);}">
       {% else %}
         {{ community.name|slice:":1"|upper }}
       {% endif %}
