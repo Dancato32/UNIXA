@@ -965,7 +965,7 @@ function setMobSort(type, btn) {
 
 /* ── Quick Follow from feed ── */
 function quickFollow(username, userId, btn) {
-  fetch('/community/api/follows/', {
+  fetch('/community/api/follow-toggle/', {
     method: 'POST',
     headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
     body: JSON.stringify({username})
@@ -1057,7 +1057,7 @@ function fsAccept(username, friendId, btn) {
 
 function fsFollow(username, btn) {
   btn.disabled = true;
-  fetch('/community/api/follows/', {
+  fetch('/community/api/follow-toggle/', {
     method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
     body: JSON.stringify({username})
   }).then(r => r.json()).then(d => {

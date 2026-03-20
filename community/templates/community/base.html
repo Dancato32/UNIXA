@@ -478,7 +478,7 @@ function drawerFollow(username, btn) {
   btn.disabled = true;
   const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
     || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
-  fetch('/community/api/follows/', {
+  fetch('/community/api/follow-toggle/', {
     method: 'POST', headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/json'},
     body: JSON.stringify({username: username})
   }).then(function(r){return r.json();}).then(function(d) {

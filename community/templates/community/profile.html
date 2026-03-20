@@ -318,7 +318,7 @@ function spawnRipple(btn, e) {
 function toggleFollow(e) {
   const btn = document.getElementById('follow-btn');
   if (btn) { spawnRipple(btn, e); btn.disabled = true; btn.textContent = '…'; }
-  fetch('/community/api/follows/', {
+  fetch('/community/api/follow-toggle/', {
     method: 'POST',
     headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
     body: JSON.stringify({username: PROFILE_USERNAME})
