@@ -416,6 +416,7 @@ class Notification(models.Model):
     TYPE_JOIN = 'join'
     TYPE_FRIEND_REQUEST = 'friend_request'
     TYPE_FRIEND_ACCEPTED = 'friend_accepted'
+    TYPE_MESSAGE = 'message'
     TYPE_CHOICES = [
         (TYPE_LIKE, 'Like'),
         (TYPE_COMMENT, 'Comment'),
@@ -426,6 +427,7 @@ class Notification(models.Model):
         (TYPE_JOIN, 'Join'),
         (TYPE_FRIEND_REQUEST, 'Friend Request'),
         (TYPE_FRIEND_ACCEPTED, 'Friend Accepted'),
+        (TYPE_MESSAGE, 'Message'),
     ]
 
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)

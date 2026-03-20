@@ -1192,14 +1192,7 @@ def friend_request_send(request, username):
         existing.delete()
 
     friendship = Friendship.objects.create(requester=request.user, recipient=recipient)
-
-    # Notify recipient
-    Notification.objects.create(
-        recipient=recipient,
-        actor=request.user,
-        type=Notification.TYPE_FRIEND_REQUEST,
-    )
-
+    # Notification created by signal (on_friendship_change)
     return JsonResponse({'status': 'sent', 'id': str(friendship.id)})
 
 
@@ -1220,12 +1213,7 @@ def friend_request_respond(request, friendship_id):
     if action == 'accept':
         friendship.status = Friendship.STATUS_ACCEPTED
         friendship.save(update_fields=['status', 'updated_at'])
-        # Notify requester
-        Notification.objects.create(
-            recipient=friendship.requester,
-            actor=request.user,
-            type=Notification.TYPE_FRIEND_ACCEPTED,
-        )
+        # Notification created by signal (on_friendship_change)
         return JsonResponse({'status': 'accepted'})
     elif action == 'reject':
         friendship.status = Friendship.STATUS_REJECTED
@@ -1277,11 +1265,7 @@ def follow_toggle(request):
         following = False
     else:
         following = True
-        Notification.objects.create(
-            recipient=other,
-            actor=request.user,
-            type=Notification.TYPE_FOLLOW,
-        )
+        # Notification is created by signal (community/signals.py → on_follow)
     follower_count = Follow.objects.filter(following=other).count()
     return JsonResponse({'following': following, 'follower_count': follower_count})
 

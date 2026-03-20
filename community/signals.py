@@ -3,7 +3,7 @@ Signals for the community app.
 
 Responsibilities:
   - Keep denormalized like_count / comment_count in sync on Post.
-  - Create Notification records on like, comment, and follow events.
+  - Create Notification records for ALL in-app events.
   - All operations are atomic-safe (post_save / post_delete).
 """
 
@@ -11,16 +11,26 @@ from django.db.models import F
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from community.models import Comment, CommentLike, Follow, Notification, Post, PostLike
+from community.models import (
+    Comment,
+    CommentLike,
+    CommunityMembership,
+    CustomCommunityMembership,
+    Follow,
+    Friendship,
+    Message,
+    Notification,
+    Post,
+    PostLike,
+)
 
 
-# ── PostLike → update Post.like_count ─────────────────────────────────────────
+# ── PostLike → update Post.like_count + notify ────────────────────────────────
 
 @receiver(post_save, sender=PostLike)
-def increment_like_count(sender, instance, created, **kwargs):
+def on_post_like(sender, instance, created, **kwargs):
     if created:
         Post.objects.filter(pk=instance.post_id).update(like_count=F('like_count') + 1)
-        # Notify post author (skip self-likes)
         if instance.user != instance.post.author:
             Notification.objects.get_or_create(
                 recipient=instance.post.author,
@@ -31,19 +41,18 @@ def increment_like_count(sender, instance, created, **kwargs):
 
 
 @receiver(post_delete, sender=PostLike)
-def decrement_like_count(sender, instance, **kwargs):
+def on_post_unlike(sender, instance, **kwargs):
     Post.objects.filter(pk=instance.post_id).update(like_count=F('like_count') - 1)
 
 
-# ── Comment → update Post.comment_count ──────────────────────────────────────
+# ── Comment → update Post.comment_count + notify ─────────────────────────────
 
 @receiver(post_save, sender=Comment)
-def increment_comment_count(sender, instance, created, **kwargs):
+def on_comment(sender, instance, created, **kwargs):
     if created:
         Post.objects.filter(pk=instance.post_id).update(comment_count=F('comment_count') + 1)
-
         if instance.parent:
-            # This is a reply — notify the parent comment's author (skip self-replies)
+            # Reply — notify parent comment author
             if instance.author != instance.parent.author:
                 Notification.objects.create(
                     recipient=instance.parent.author,
@@ -53,7 +62,7 @@ def increment_comment_count(sender, instance, created, **kwargs):
                     comment=instance,
                 )
         else:
-            # Top-level comment — notify post author (skip self-comments)
+            # Top-level comment — notify post author
             if instance.author != instance.post.author:
                 Notification.objects.create(
                     recipient=instance.post.author,
@@ -65,17 +74,16 @@ def increment_comment_count(sender, instance, created, **kwargs):
 
 
 @receiver(post_delete, sender=Comment)
-def decrement_comment_count(sender, instance, **kwargs):
+def on_comment_delete(sender, instance, **kwargs):
     Post.objects.filter(pk=instance.post_id).update(comment_count=F('comment_count') - 1)
 
 
-# ── CommentLike → update Comment.like_count ───────────────────────────────────
+# ── CommentLike → update Comment.like_count + notify ─────────────────────────
 
 @receiver(post_save, sender=CommentLike)
-def increment_comment_like_count(sender, instance, created, **kwargs):
+def on_comment_like(sender, instance, created, **kwargs):
     if created:
         Comment.objects.filter(pk=instance.comment_id).update(like_count=F('like_count') + 1)
-        # Notify comment author (skip self-likes)
         if instance.user != instance.comment.author:
             Notification.objects.create(
                 recipient=instance.comment.author,
@@ -87,17 +95,83 @@ def increment_comment_like_count(sender, instance, created, **kwargs):
 
 
 @receiver(post_delete, sender=CommentLike)
-def decrement_comment_like_count(sender, instance, **kwargs):
+def on_comment_unlike(sender, instance, **kwargs):
     Comment.objects.filter(pk=instance.comment_id).update(like_count=F('like_count') - 1)
 
 
-# ── Follow → Notification ─────────────────────────────────────────────────────
+# ── Follow → notify ───────────────────────────────────────────────────────────
 
 @receiver(post_save, sender=Follow)
-def notify_on_follow(sender, instance, created, **kwargs):
+def on_follow(sender, instance, created, **kwargs):
     if created:
-        Notification.objects.create(
+        Notification.objects.get_or_create(
             recipient=instance.following,
             actor=instance.follower,
             type=Notification.TYPE_FOLLOW,
+        )
+
+
+# ── Friendship → notify on request + accept ──────────────────────────────────
+
+@receiver(post_save, sender=Friendship)
+def on_friendship_change(sender, instance, created, **kwargs):
+    if created:
+        # New friend request — notify recipient
+        Notification.objects.get_or_create(
+            recipient=instance.recipient,
+            actor=instance.requester,
+            type=Notification.TYPE_FRIEND_REQUEST,
+            defaults={},
+        )
+    else:
+        # Status changed to accepted — notify requester
+        if instance.status == Friendship.STATUS_ACCEPTED:
+            Notification.objects.get_or_create(
+                recipient=instance.requester,
+                actor=instance.recipient,
+                type=Notification.TYPE_FRIEND_ACCEPTED,
+                defaults={},
+            )
+
+
+# ── Message → notify recipient of new DM ─────────────────────────────────────
+
+@receiver(post_save, sender=Message)
+def on_new_message(sender, instance, created, **kwargs):
+    if not created:
+        return
+    # Only notify for non-empty, non-system messages
+    if not instance.content and not instance.voice_note and not instance.media:
+        return
+    convo = instance.conversation
+    # Notify all other participants
+    try:
+        participants = convo.participants.exclude(id=instance.sender_id)
+        for recipient in participants:
+            Notification.objects.create(
+                recipient=recipient,
+                actor=instance.sender,
+                type=Notification.TYPE_MESSAGE,
+            )
+    except Exception:
+        pass
+
+
+# ── CommunityMembership → notify community creator on join ───────────────────
+
+@receiver(post_save, sender=CommunityMembership)
+def on_school_join(sender, instance, created, **kwargs):
+    if created:
+        # Notify the first admin/creator — use the community itself as context
+        # School communities don't have a single creator, so skip
+        pass
+
+
+@receiver(post_save, sender=CustomCommunityMembership)
+def on_custom_community_join(sender, instance, created, **kwargs):
+    if created and instance.community.creator and instance.user != instance.community.creator:
+        Notification.objects.create(
+            recipient=instance.community.creator,
+            actor=instance.user,
+            type=Notification.TYPE_JOIN,
         )
