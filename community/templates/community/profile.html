@@ -276,6 +276,13 @@
       </div>
       {% if post.title %}<div class="post-title">{{ post.title }}</div>{% endif %}
       <div class="post-text">{{ post.content|truncatechars:200 }}</div>
+      {% if post.media %}
+        {% if post.media_type == 'image' %}
+          <img src="{{ post.media.url }}" alt="" style="width:100%;border-radius:6px;margin:.5rem 0 .25rem;max-height:360px;object-fit:cover;display:block;">
+        {% elif post.media_type == 'video' %}
+          <video src="{{ post.media.url }}" controls style="width:100%;border-radius:6px;margin:.5rem 0 .25rem;max-height:360px;background:#000;display:block;"></video>
+        {% endif %}
+      {% endif %}
       <div class="post-actions">
         <a href="{% url 'community:post_detail' post.id %}" class="pa">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
