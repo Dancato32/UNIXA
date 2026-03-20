@@ -485,6 +485,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script>
 const CSRF = '{{ csrf_token }}';
 {% if active_convo %}
@@ -784,92 +785,152 @@ function vpSeek(bar, e) {
 // Init players on page load
 initVoicePlayers();
 
-/* ── Jitsi Meet WebRTC Calls ── */
+/* ── PeerJS WebRTC Calls ── */
 let callTimerInterval = null;
 let callSeconds = 0;
-let jitsiApi = null;
+let localStream = null;
+let activePeer = null;
+let activeCall = null;
 let callType = null;
+let listenerPeer = null;
 
 {% if active_convo %}
 const OTHER_USERNAME = '{{ other_user.username }}';
 
-// Room name: stable per conversation, alphanumeric only
-const JITSI_ROOM = 'nexa' + '{{ active_convo.id }}'.replace(/-/g,'').slice(0, 20);
+// Generate a random peer ID unique to this session
+function randPeerId() {
+  return 'nx' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+// Persist our peer ID for this conversation in sessionStorage
+const SS_KEY = 'peer_id_{{ active_convo.id }}';
+let MY_PEER_ID = sessionStorage.getItem(SS_KEY);
+if (!MY_PEER_ID) {
+  MY_PEER_ID = randPeerId();
+  sessionStorage.setItem(SS_KEY, MY_PEER_ID);
+}
+
+// Register our peer ID with the server so the other user can find us
+function registerPeerId() {
+  fetch('/community/messages/{{ active_convo.id }}/call/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'peer_id=' + encodeURIComponent(MY_PEER_ID) + '&type=voice',
+  }).catch(function() {});
+}
+
+// Poll for the other user's peer ID
+function fetchOtherPeerId(cb) {
+  fetch('/community/messages/{{ active_convo.id }}/peer/')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { cb(d.peer_id || null); })
+    .catch(function() { cb(null); });
+}
+
+// TURN servers for NAT traversal
+const ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'turn:openrelay.metered.ca:80',              username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443',             username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turns:openrelay.metered.ca:443',            username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+];
+
+function makePeer(id) {
+  return new Peer(id, {
+    config: { iceServers: ICE_SERVERS },
+    debug: 1,
+  });
+}
+
+// Start listener peer on page load so we can receive incoming calls
+(function initListener() {
+  registerPeerId();
+  listenerPeer = makePeer(MY_PEER_ID);
+  listenerPeer.on('open', function() {
+    // Re-register with confirmed ID
+    registerPeerId();
+  });
+  listenerPeer.on('error', function(err) {
+    if (err.type === 'unavailable-id') {
+      // ID collision — generate a new one and retry
+      MY_PEER_ID = randPeerId();
+      sessionStorage.setItem(SS_KEY, MY_PEER_ID);
+      listenerPeer = makePeer(MY_PEER_ID);
+      listenerPeer.on('open', registerPeerId);
+      listenerPeer.on('call', handleIncomingCall);
+    }
+  });
+  listenerPeer.on('call', handleIncomingCall);
+})();
+
+function handleIncomingCall(incomingCall) {
+  const constraints = { audio: true, video: true };
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream) {
+      localStream = stream;
+      callType = 'voice';
+      openCallOverlay('voice');
+      incomingCall.answer(stream);
+      activeCall = incomingCall;
+      incomingCall.on('stream', function(remoteStream) {
+        const rv = document.getElementById('remote-video');
+        if (rv) rv.srcObject = remoteStream;
+        setCallStatus('');
+        if (remoteStream.getVideoTracks().length > 0)
+          document.getElementById('cam-btn').style.display = 'flex';
+      });
+      incomingCall.on('close', endCall);
+      incomingCall.on('error', endCall);
+      const lv = document.getElementById('local-video');
+      if (lv) lv.srcObject = stream;
+    })
+    .catch(function() { alert('Could not access microphone to answer call.'); });
+}
 
 function startCall(type) {
   callType = type;
-  openCallOverlay(type);
+  const constraints = type === 'video' ? { audio: true, video: true } : { audio: true, video: false };
 
-  // Load Jitsi script if not already loaded
-  if (!window.JitsiMeetExternalAPI) {
-    const s = document.createElement('script');
-    s.src = 'https://meet.jit.si/external_api.js';
-    s.onload = function() { launchJitsi(type); };
-    s.onerror = function() { setCallStatus('Could not load call library. Check your connection.'); };
-    document.head.appendChild(s);
-  } else {
-    launchJitsi(type);
-  }
-}
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream) {
+      localStream = stream;
+      const lv = document.getElementById('local-video');
+      if (lv) { lv.srcObject = stream; lv.style.display = type === 'video' ? 'block' : 'none'; }
 
-function launchJitsi(type) {
-  const container = document.getElementById('call-videos');
-  if (!container) return;
+      openCallOverlay(type);
+      setCallStatus('Looking up contact…');
 
-  // Clear any previous content
-  container.innerHTML = '<div id="jitsi-frame" style="width:100%;height:100%;"></div>';
+      // Destroy listener to free our peer ID for the active call peer
+      if (listenerPeer && !listenerPeer.destroyed) { listenerPeer.destroy(); listenerPeer = null; }
 
-  const options = {
-    roomName: JITSI_ROOM,
-    parentNode: document.getElementById('jitsi-frame'),
-    width: '100%',
-    height: '100%',
-    configOverwrite: {
-      startWithAudioMuted: false,
-      startWithVideoMuted: type !== 'video',
-      prejoinPageEnabled: false,
-      disableDeepLinking: true,
-      enableWelcomePage: false,
-      toolbarButtons: [],  // hide Jitsi's own toolbar — we use ours
-    },
-    interfaceConfigOverwrite: {
-      SHOW_JITSI_WATERMARK: false,
-      SHOW_WATERMARK_FOR_GUESTS: false,
-      SHOW_BRAND_WATERMARK: false,
-      TOOLBAR_BUTTONS: [],
-      SETTINGS_SECTIONS: [],
-      FILM_STRIP_MAX_HEIGHT: 0,
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-    },
-    userInfo: {
-      displayName: MY_USERNAME,
-    },
-  };
-
-  try {
-    jitsiApi = new JitsiMeetExternalAPI('meet.jit.si', options);
-
-    jitsiApi.on('videoConferenceJoined', function() {
-      setCallStatus('');
-    });
-
-    jitsiApi.on('participantJoined', function() {
-      setCallStatus('');
-    });
-
-    jitsiApi.on('readyToClose', function() {
-      endCall();
-    });
-
-    jitsiApi.on('errorOccurred', function(err) {
-      console.warn('Jitsi error:', err);
-      setCallStatus('Connection error. Try again.');
-    });
-
-  } catch(e) {
-    setCallStatus('Could not start call. Try again.');
-    console.error(e);
-  }
+      // Fetch the other user's peer ID from server
+      fetchOtherPeerId(function(otherPeerId) {
+        if (!otherPeerId) {
+          setCallStatus('Other user is not online. Ask them to open the chat.');
+          return;
+        }
+        setCallStatus('Calling…');
+        activePeer = makePeer(MY_PEER_ID);
+        activePeer.on('open', function() {
+          activeCall = activePeer.call(otherPeerId, stream);
+          if (!activeCall) { setCallStatus('Could not reach the other user.'); return; }
+          activeCall.on('stream', function(remoteStream) {
+            const rv = document.getElementById('remote-video');
+            if (rv) rv.srcObject = remoteStream;
+            setCallStatus('');
+          });
+          activeCall.on('close', endCall);
+          activeCall.on('error', function() { setCallStatus('Call disconnected.'); });
+        });
+        activePeer.on('error', function(err) {
+          console.warn('PeerJS:', err.type);
+          setCallStatus('Connection error (' + err.type + '). Try again.');
+        });
+      });
+    })
+    .catch(function() { alert('Could not access camera/microphone. Please allow access and try again.'); });
 }
 {% endif %}
 
@@ -899,37 +960,42 @@ function setCallStatus(msg) {
 
 function endCall() {
   clearInterval(callTimerInterval);
-  if (jitsiApi) { try { jitsiApi.dispose(); } catch(e) {} jitsiApi = null; }
-  const overlay = document.getElementById('call-overlay');
-  overlay.classList.remove('open');
-  // Restore video container
-  const container = document.getElementById('call-videos');
-  if (container) {
-    container.innerHTML =
-      '<video id="remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>' +
-      '<video id="local-video" autoplay playsinline muted style="position:absolute;bottom:1rem;right:1rem;width:120px;height:90px;object-fit:cover;border-radius:8px;border:2px solid rgba(255,255,255,.2);background:#111;display:none;"></video>' +
-      '<div id="call-status-msg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1rem;font-weight:600;text-align:center;pointer-events:none;"></div>';
-  }
+  if (activeCall) { try { activeCall.close(); } catch(e) {} activeCall = null; }
+  if (activePeer) { try { activePeer.destroy(); } catch(e) {} activePeer = null; }
+  if (localStream) { localStream.getTracks().forEach(function(t) { t.stop(); }); localStream = null; }
+  const rv = document.getElementById('remote-video');
+  const lv = document.getElementById('local-video');
+  if (rv) rv.srcObject = null;
+  if (lv) { lv.srcObject = null; lv.style.display = 'none'; }
+  document.getElementById('call-overlay').classList.remove('open');
   setCallStatus('');
+  // Re-register listener after call ends
+  {% if active_convo %}
+  setTimeout(function() {
+    if (!listenerPeer || listenerPeer.destroyed) {
+      listenerPeer = makePeer(MY_PEER_ID);
+      listenerPeer.on('open', registerPeerId);
+      listenerPeer.on('call', handleIncomingCall);
+      listenerPeer.on('error', function(err) { console.warn('listener:', err.type); });
+    }
+  }, 1500);
+  {% endif %}
 }
 
 function toggleMute() {
-  const btn = document.getElementById('mute-btn');
-  btn.classList.toggle('active');
-  if (jitsiApi) jitsiApi.executeCommand('toggleAudio');
+  if (!localStream) return;
+  localStream.getAudioTracks().forEach(function(t) { t.enabled = !t.enabled; });
+  document.getElementById('mute-btn').classList.toggle('active');
 }
 
 function toggleCam() {
-  const btn = document.getElementById('cam-btn');
-  btn.classList.toggle('active');
-  if (jitsiApi) jitsiApi.executeCommand('toggleVideo');
+  if (!localStream) return;
+  localStream.getVideoTracks().forEach(function(t) { t.enabled = !t.enabled; });
+  document.getElementById('cam-btn').classList.toggle('active');
 }
 
-// Close call on Escape
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && document.getElementById('call-overlay').classList.contains('open')) {
-    endCall();
-  }
+  if (e.key === 'Escape' && document.getElementById('call-overlay').classList.contains('open')) endCall();
 });
 
 /* ── Mobile: convo list drawer ── */

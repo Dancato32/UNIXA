@@ -738,51 +738,35 @@ def community_profile_edit(request):
     return render(request, 'community/profile_edit.html', {'profile': profile})
 
 
-# ── Voice / Video Calls (Daily.co) ────────────────────────────────────────────
+# ── Voice / Video Calls (PeerJS WebRTC) ──────────────────────────────────────
 
 @login_required
 @require_POST
 def create_call(request, convo_id):
-    """
-    Create a Daily.co room for this conversation and return the room URL.
-    Rooms expire after 1 hour automatically.
-    If DAILY_API_KEY is not set, falls back to a free public room on daily.co.
-    """
-    import os, requests as http_requests, time
-
+    """Store caller's peer ID server-side so the callee can look it up."""
+    from django.core.cache import cache
     convo = get_object_or_404(Conversation, id=convo_id, participants=request.user)
-    call_type = request.POST.get('type', 'video')  # 'voice' or 'video'
+    call_type = request.POST.get('type', 'voice')
+    peer_id = request.POST.get('peer_id', '')
+    if peer_id:
+        # Store for 5 minutes so callee can fetch it
+        cache_key = f'call_peer_{convo_id}_{request.user.username}'
+        cache.set(cache_key, peer_id, timeout=300)
+    return JsonResponse({'ok': True, 'type': call_type})
 
-    api_key = os.environ.get('DAILY_API_KEY', '')
-    room_name = f'nexa-{convo_id}'
 
-    if api_key:
-        try:
-            resp = http_requests.post(
-                'https://api.daily.co/v1/rooms',
-                headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
-                json={
-                    'name': room_name,
-                    'properties': {
-                        'exp': int(time.time()) + 3600,  # 1 hour
-                        'enable_chat': False,
-                        'enable_screenshare': True,
-                        'start_video_off': call_type == 'voice',
-                        'start_audio_off': False,
-                        'max_participants': 10,
-                    },
-                },
-                timeout=8,
-            )
-            data = resp.json()
-            room_url = data.get('url') or f'https://nexa.daily.co/{room_name}'
-        except Exception:
-            room_url = f'https://nexa.daily.co/{room_name}'
-    else:
-        # No API key — use a deterministic public room name (fine for dev/demo)
-        room_url = f'https://meet.daily.co/{room_name}'
-
-    return JsonResponse({'room_url': room_url, 'type': call_type})
+@login_required
+def get_peer_id(request, convo_id):
+    """Return the other participant's registered peer ID (if any)."""
+    from django.core.cache import cache
+    convo = get_object_or_404(Conversation, id=convo_id, participants=request.user)
+    others = [p for p in convo.participants.all() if p != request.user]
+    other = others[0] if others else None
+    peer_id = None
+    if other:
+        cache_key = f'call_peer_{convo_id}_{other.username}'
+        peer_id = cache.get(cache_key)
+    return JsonResponse({'peer_id': peer_id})
 
 
 # ── Group Workspaces ──────────────────────────────────────────────────────────
