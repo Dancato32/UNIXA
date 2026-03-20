@@ -638,7 +638,7 @@ def conversation_create(request):
 def notifications(request):
     notifs = (
         Notification.objects.filter(recipient=request.user)
-        .select_related('actor', 'post', 'comment')
+        .select_related('actor', 'post', 'comment', 'conversation')
         .order_by('-created_at')[:50]
     )
     # Mark all as read when the page is visited
