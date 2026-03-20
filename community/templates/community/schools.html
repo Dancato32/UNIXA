@@ -1,90 +1,286 @@
 {% extends "community/base.html" %}
-{% block title %}School Communities{% endblock %}
-{% block mobile_title %}Schools{% endblock %}
+{% block title %}Universities{% endblock %}
+{% block mobile_title %}Universities{% endblock %}
 {% block nav_schools %}active{% endblock %}
 {% block rail_schools %}active{% endblock %}
 {% block bn_schools %}active{% endblock %}
-{% block topbar_title %}schools{% endblock %}
-{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>{% endblock %}
-{% block topbar_desc %}Browse and join school communities{% endblock %}
+{% block topbar_title %}Universities{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>{% endblock %}
 
 {% block extra_css %}
 <style>
-.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
-.page-title{font-size:1rem;font-weight:700;}
-.search-bar{display:flex;align-items:center;gap:.5rem;background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.45rem .75rem;margin-bottom:1.25rem;}
-.search-bar svg{width:15px;height:15px;color:var(--t3);flex-shrink:0;}
-.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:.875rem;}
-.search-bar input::placeholder{color:var(--t3);}
-.schools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem;}
-.school-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;transition:border-color .15s;}
-.school-card:hover{border-color:var(--b3);}
-.school-banner{height:72px;background:linear-gradient(135deg,var(--s3),var(--s4));display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:var(--t4);}
-.school-body{padding:.875rem;}
-.school-name-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.375rem;}
-.school-card-name{font-size:.9375rem;font-weight:700;}
-.school-desc{font-size:.8125rem;color:var(--t2);line-height:1.5;margin-bottom:.875rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.school-footer{display:flex;align-items:center;justify-content:space-between;}
-.member-count{font-size:.75rem;color:var(--t3);}
+/* ── Hero ── */
+.uni-hero{background:linear-gradient(135deg,#0a0a0a 0%,#111 100%);border:1px solid var(--b2);border-radius:16px;padding:2.25rem 1.5rem 2rem;margin-bottom:1.5rem;text-align:center;position:relative;overflow:hidden;}
+.uni-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(255,255,255,.06) 0%,transparent 60%);pointer-events:none;}
+.uni-hero-icon{font-size:3rem;display:block;margin-bottom:.75rem;line-height:1;}
+.uni-hero-title{font-size:1.625rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.375rem;}
+.uni-hero-sub{font-size:.875rem;color:var(--t3);margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;line-height:1.6;}
+.uni-stats{display:flex;align-items:center;justify-content:center;gap:3rem;}
+.uni-stat{text-align:center;}
+.uni-stat-num{font-size:1.5rem;font-weight:800;display:block;}
+.uni-stat-label{font-size:.6875rem;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-top:.125rem;display:block;}
 
+/* ── Search ── */
+.uni-search-wrap{position:relative;margin-bottom:1.25rem;}
+.uni-search-wrap svg{position:absolute;left:.875rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--t3);pointer-events:none;}
+.uni-search{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:.625rem .875rem .625rem 2.5rem;color:var(--t1);font-size:.9375rem;outline:none;transition:border-color .15s;}
+.uni-search:focus{border-color:var(--b3);}
+.uni-search::placeholder{color:var(--t3);}
+
+/* ── Filter tabs ── */
+.uni-filters{display:flex;gap:.5rem;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:.25rem;-webkit-overflow-scrolling:touch;}
+.uni-filters::-webkit-scrollbar{display:none;}
+.uni-filter{padding:.375rem .875rem;border-radius:20px;font-size:.8125rem;font-weight:600;color:var(--t3);background:var(--s2);border:1px solid var(--b2);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.uni-filter:hover{color:var(--t1);border-color:var(--b3);}
+.uni-filter.active{background:var(--white);color:#000;border-color:var(--white);}
+
+/* ── Grid ── */
+.uni-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+
+/* ── Card ── */
+.uni-card{background:var(--s2);border:1px solid var(--b2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .18s,transform .18s,box-shadow .18s;cursor:pointer;text-decoration:none;color:inherit;}
+.uni-card:hover{border-color:var(--b3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.35);}
+.uni-card-banner{height:80px;position:relative;overflow:hidden;flex-shrink:0;}
+.uni-card-banner-bg{width:100%;height:100%;object-fit:cover;display:block;}
+.uni-card-banner-grad{position:absolute;inset:0;}
+.uni-card-logo-wrap{position:absolute;bottom:-22px;left:1rem;width:48px;height:48px;border-radius:12px;border:3px solid var(--s2);background:var(--s3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.125rem;font-weight:800;color:var(--t1);}
+.uni-card-logo-wrap img{width:100%;height:100%;object-fit:cover;border-radius:9px;}
+.uni-card-body{padding:1.75rem .875rem .875rem;}
+.uni-card-name{font-size:.9375rem;font-weight:700;line-height:1.3;margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.uni-card-desc{font-size:.75rem;color:var(--t3);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.75rem;}
+.uni-card-meta{display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;}
+.uni-card-stat{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--t3);}
+.uni-card-stat svg{width:13px;height:13px;}
+.uni-card-stat strong{color:var(--t2);font-weight:600;}
+.uni-card-badge{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:600;padding:.15rem .5rem;border-radius:20px;background:rgba(74,222,128,.1);color:#4ade80;margin-left:auto;}
+.uni-card-badge svg{width:10px;height:10px;}
+.uni-card-footer{display:flex;align-items:center;gap:.5rem;padding:.75rem .875rem;border-top:1px solid var(--b1);}
+.uni-join-btn{flex:1;padding:.45rem .75rem;border-radius:8px;font-size:.8125rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;text-align:center;}
+.uni-join-btn.join{background:var(--white);color:#000;}
+.uni-join-btn.join:hover{background:#e8e8e8;}
+.uni-join-btn.joined{background:var(--s4);color:var(--t2);border:1px solid var(--b2);}
+.uni-join-btn.joined:hover{background:#e53e3e22;color:#fc8181;border-color:#e53e3e44;}
+.uni-view-btn{padding:.45rem .75rem;border-radius:8px;font-size:.8125rem;font-weight:600;background:var(--s3);color:var(--t2);border:1px solid var(--b2);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;}
+.uni-view-btn:hover{background:var(--s4);color:var(--t1);}
+.uni-view-btn svg{width:13px;height:13px;}
+
+/* ── Empty ── */
+.uni-empty{text-align:center;padding:3rem 1rem;color:var(--t3);}
+.uni-empty svg{width:48px;height:48px;opacity:.15;margin-bottom:.75rem;}
+.uni-empty p{font-size:.875rem;}
+
+/* ── Responsive ── */
 @media(max-width:600px){
-  .schools-grid{grid-template-columns:1fr 1fr;gap:.625rem;}
-  .school-card{padding:.75rem;}
-  .school-name{font-size:.875rem;}
-  .school-desc{font-size:.75rem;-webkit-line-clamp:2;}
-  .page-head{flex-wrap:wrap;gap:.5rem;}
-  .page-head .btn{font-size:.75rem;}
+  .uni-hero{padding:1.5rem 1rem 1.5rem;}
+  .uni-hero-title{font-size:1.25rem;}
+  .uni-stats{gap:1.75rem;}
+  .uni-grid{grid-template-columns:1fr 1fr;gap:.625rem;}
+  .uni-card-name{font-size:.875rem;}
+  .uni-card-body{padding:1.5rem .75rem .75rem;}
+  .uni-card-footer{padding:.625rem .75rem;}
 }
 @media(max-width:380px){
-  .schools-grid{grid-template-columns:1fr;}
+  .uni-grid{grid-template-columns:1fr;}
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-head">
-  <span class="page-title">School Communities</span>
+
+<!-- Hero -->
+<div class="uni-hero">
+  <span class="uni-hero-icon">🎓</span>
+  <div class="uni-hero-title">Ghana Universities</div>
+  <div class="uni-hero-sub">Connect with students and alumni from every university in Ghana.</div>
+  <div class="uni-stats">
+    <div class="uni-stat">
+      <span class="uni-stat-num">{{ schools|length }}</span>
+      <span class="uni-stat-label">Universities</span>
+    </div>
+    <div class="uni-stat">
+      <span class="uni-stat-num">{{ joined_ids|length }}</span>
+      <span class="uni-stat-label">Joined</span>
+    </div>
+  </div>
 </div>
 
-<form method="get" class="search-bar">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-  <input type="text" name="q" value="{{ query }}" placeholder="Search schools…" autofocus>
+<!-- Search -->
+<form method="get" action="" style="margin:0;">
+  <div class="uni-search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" name="q" value="{{ query }}" class="uni-search" placeholder="Search universities…" id="uni-search-input" autocomplete="off">
+  </div>
 </form>
 
-<div class="schools-grid">
-  {% for sc in schools %}
-  <div class="school-card">
-    <div class="school-banner">
-      {% if sc.banner %}<img src="{{ sc.banner.url }}" style="width:100%;height:100%;object-fit:cover;">
-      {% else %}{{ sc.name|slice:":1" }}{% endif %}
-    </div>
-    <div class="school-body">
-      <div class="school-name-row">
-        <span class="school-card-name">{{ sc.name }}</span>
-        {% if sc.verified %}<span class="badge badge-blue">✓ Verified</span>{% endif %}
-      </div>
-      <p class="school-desc">{{ sc.description|default:"Official school community." }}</p>
-      <div class="school-footer">
-        <span class="member-count">{{ sc.memberships.count }} members</span>
-        <div style="display:flex;gap:.5rem;">
-          <a href="{% url 'community:school_detail' sc.slug %}" class="btn btn-ghost btn-sm">View</a>
-          {% if sc.id in joined_ids %}
-            <form method="post" action="{% url 'community:school_leave' sc.slug %}">
-              {% csrf_token %}<button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);">Leave</button>
-            </form>
+<!-- Filter tabs -->
+<div class="uni-filters">
+  <button class="uni-filter active" data-filter="all" onclick="filterCards(this,'all')">All</button>
+  <button class="uni-filter" data-filter="joined" onclick="filterCards(this,'joined')">Joined</button>
+  <button class="uni-filter" data-filter="public" onclick="filterCards(this,'public')">Public</button>
+  <button class="uni-filter" data-filter="technical" onclick="filterCards(this,'technical')">Technical</button>
+  <button class="uni-filter" data-filter="private" onclick="filterCards(this,'private')">Private</button>
+</div>
+
+<!-- Grid -->
+<div class="uni-grid" id="uni-grid">
+  {% for school in schools %}
+  {% with is_joined=school.id|stringformat:"s" in joined_ids|join:"," %}
+  <div class="uni-card-wrap"
+    data-name="{{ school.name|lower }}"
+    data-joined="{% if school.id in joined_ids %}1{% else %}0{% endif %}"
+    data-type="{% if 'Technical' in school.name %}technical{% elif 'Ashesi' in school.name or 'Central' in school.name or 'Valley' in school.name or 'Methodist' in school.name or 'Presbyterian' in school.name or 'Pentecost' in school.name or 'Catholic' in school.name or 'Islamic' in school.name or 'Lancaster' in school.name or 'Academic' in school.name or 'BlueCrest' in school.name or 'Regent' in school.name or 'Knutsford' in school.name or 'Wisconsin' in school.name or 'Kings' in school.name or 'Garden' in school.name or 'African' in school.name or 'Ghana Christian' in school.name %}private{% else %}public{% endif %}">
+    <a href="{% url 'community:school_detail' school.slug %}" class="uni-card">
+      <!-- Banner -->
+      <div class="uni-card-banner">
+        {% if school.banner %}
+          <img class="uni-card-banner-bg" src="{{ school.banner.url }}" alt="">
+        {% else %}
+          <div class="uni-card-banner-grad" style="background:{{ school.name|slice:':1'|lower|make_list|first|default:'u' }}; background:linear-gradient(135deg,
+            {% if 'Ghana' in school.name and 'Kwame' not in school.name and 'Cape' not in school.name %}#1a3a1a,#0d2b0d
+            {% elif 'Kwame' in school.name %}#1a1a3a,#0d0d2b
+            {% elif 'Cape Coast' in school.name %}#1a2a3a,#0d1b2b
+            {% elif 'Ashesi' in school.name %}#2a1a1a,#1a0d0d
+            {% elif 'Technical' in school.name %}#1a1a1a,#2a2a2a
+            {% else %}#111,#1a1a1a{% endif %});"></div>
+        {% endif %}
+        <!-- Logo -->
+        <div class="uni-card-logo-wrap">
+          {% if school.logo %}
+            <img src="{{ school.logo.url }}" alt="{{ school.name }}">
+          {% elif school.logo_url %}
+            <img src="{{ school.logo_url }}" alt="{{ school.name }}" onerror="this.style.display='none';this.parentNode.textContent='{{ school.name|slice:':1'|upper }}'">
           {% else %}
-            <form method="post" action="{% url 'community:school_join' sc.slug %}">
-              {% csrf_token %}<button type="submit" class="btn btn-primary btn-sm">Join</button>
-            </form>
+            {{ school.name|slice:":1"|upper }}
           {% endif %}
         </div>
       </div>
+
+      <!-- Body -->
+      <div class="uni-card-body">
+        <div class="uni-card-name">{{ school.name }}</div>
+        <div class="uni-card-desc">{{ school.description|default:"Official university community on NEXA." }}</div>
+        <div class="uni-card-meta">
+          <div class="uni-card-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <strong>{{ school.memberships.count }}</strong> members
+          </div>
+          {% if school.verified %}
+          <div class="uni-card-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Verified
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+
+    <!-- Footer (outside <a> to avoid nested links) -->
+    <div class="uni-card-footer">
+      <a href="{% url 'community:school_detail' school.slug %}" class="uni-view-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        View
+      </a>
+      <form method="post" action="{% if school.id in joined_ids %}{% url 'community:school_leave' school.slug %}{% else %}{% url 'community:school_join' school.slug %}{% endif %}" style="flex:1;margin:0;" onsubmit="handleJoin(event,this)">
+        {% csrf_token %}
+        <button type="submit" class="uni-join-btn {% if school.id in joined_ids %}joined{% else %}join{% endif %}" id="jbtn-{{ school.id }}">
+          {% if school.id in joined_ids %}✓ Joined{% else %}Join{% endif %}
+        </button>
+      </form>
     </div>
   </div>
+  {% endwith %}
   {% empty %}
-  <div class="empty-state" style="grid-column:1/-1;">
-    <p>No schools found{% if query %} for "{{ query }}"{% endif %}.</p>
+  <div class="uni-empty" style="grid-column:1/-1;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    <p>No universities found{% if query %} for "{{ query }}"{% endif %}.</p>
   </div>
   {% endfor %}
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+
+// Live search filter
+const searchInput = document.getElementById('uni-search-input');
+if (searchInput) {
+  searchInput.addEventListener('input', function() {
+    applyFilters();
+  });
+}
+
+let activeFilter = 'all';
+
+function filterCards(btn, filter) {
+  document.querySelectorAll('.uni-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = filter;
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+  document.querySelectorAll('.uni-card-wrap').forEach(function(card) {
+    const name = card.dataset.name || '';
+    const joined = card.dataset.joined === '1';
+    const type = card.dataset.type || 'public';
+
+    const matchSearch = !q || name.includes(q);
+    const matchFilter =
+      activeFilter === 'all' ||
+      (activeFilter === 'joined' && joined) ||
+      (activeFilter === 'public' && type === 'public') ||
+      (activeFilter === 'technical' && type === 'technical') ||
+      (activeFilter === 'private' && type === 'private');
+
+    card.style.display = (matchSearch && matchFilter) ? '' : 'none';
+  });
+
+  // Show empty state if nothing visible
+  const visible = Array.from(document.querySelectorAll('.uni-card-wrap')).filter(c => c.style.display !== 'none');
+  let empty = document.getElementById('uni-empty-state');
+  if (!visible.length) {
+    if (!empty) {
+      empty = document.createElement('div');
+      empty.id = 'uni-empty-state';
+      empty.className = 'uni-empty';
+      empty.style.gridColumn = '1/-1';
+      empty.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><p>No universities found.</p>';
+      document.getElementById('uni-grid').appendChild(empty);
+    }
+  } else if (empty) {
+    empty.remove();
+  }
+}
+
+// AJAX join/leave
+function handleJoin(e, form) {
+  e.preventDefault();
+  const btn = form.querySelector('button');
+  const isJoined = btn.classList.contains('joined');
+  fetch(form.action, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
+    body: new FormData(form),
+  }).then(function() {
+    if (isJoined) {
+      btn.textContent = 'Join';
+      btn.classList.remove('joined');
+      btn.classList.add('join');
+      form.action = form.action.replace('/leave/', '/join/');
+      const wrap = form.closest('.uni-card-wrap');
+      if (wrap) wrap.dataset.joined = '0';
+    } else {
+      btn.textContent = '✓ Joined';
+      btn.classList.remove('join');
+      btn.classList.add('joined');
+      form.action = form.action.replace('/join/', '/leave/');
+      const wrap = form.closest('.uni-card-wrap');
+      if (wrap) wrap.dataset.joined = '1';
+    }
+  }).catch(function() { form.submit(); });
+}
+</script>
 {% endblock %}

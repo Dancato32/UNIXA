@@ -169,13 +169,25 @@
 <!-- Banner -->
 <div style="margin:-1.5rem -2rem 0;position:relative;">
   <div class="c-banner">
-    {% if community.banner %}<img src="{{ community.banner.url }}" alt="">{% endif %}
+    {% if community.banner %}
+      <img src="{{ community.banner.url }}" alt="">
+    {% else %}
+      <div style="width:100%;height:100%;background:linear-gradient(135deg,#0d1b2b 0%,#1a2a3a 50%,#0a1628 100%);position:relative;">
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,.04) 0%,transparent 60%);"></div>
+        <div style="position:absolute;bottom:1rem;left:5.5rem;font-size:.75rem;color:rgba(255,255,255,.25);font-weight:600;letter-spacing:.1em;text-transform:uppercase;">{{ community.name }}</div>
+      </div>
+    {% endif %}
   </div>
   <!-- Header bar -->
   <div class="c-header">
     <div class="c-icon">
-      {% if community.logo %}<img src="{{ community.logo.url }}" alt="">
-      {% else %}{{ community.name|slice:":1"|upper }}{% endif %}
+      {% if community.logo %}
+        <img src="{{ community.logo.url }}" alt="{{ community.name }}">
+      {% elif community.logo_url %}
+        <img src="{{ community.logo_url }}" alt="{{ community.name }}" onerror="this.style.display='none';this.parentNode.textContent='{{ community.name|slice:':1'|upper }}'">
+      {% else %}
+        {{ community.name|slice:":1"|upper }}
+      {% endif %}
     </div>
     <div>
       <div class="c-name">{{ community.name }}</div>
@@ -307,7 +319,13 @@
   <div class="detail-side">
     <!-- About card -->
     <div class="side-card">
-      <div class="side-banner"></div>
+      <div class="side-banner" style="background:linear-gradient(135deg,#0d1b2b,#1a2a3a);display:flex;align-items:center;justify-content:center;">
+        {% if community.logo %}
+          <img src="{{ community.logo.url }}" alt="" style="height:36px;width:auto;object-fit:contain;opacity:.85;">
+        {% elif community.logo_url %}
+          <img src="{{ community.logo_url }}" alt="" style="height:36px;width:auto;object-fit:contain;opacity:.85;" onerror="this.remove()">
+        {% endif %}
+      </div>
       <div class="side-body">
         <div class="side-title">{{ community.name }}</div>
         <div class="side-desc">{{ community.description|default:"Official school community on NEXA." }}</div>
