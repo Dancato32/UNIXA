@@ -424,13 +424,13 @@ function drawerSearch(val) {
           } else if (u.friendship_status === 'pending_sent') {
             friendBtn = '<button style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:1px solid #303030;background:#222;color:#666;cursor:default;">Pending</button>';
           } else if (u.friendship_status === 'pending_received') {
-            friendBtn = '<button onclick="drawerAccept(\'' + u.username + '\',\'' + u.friendship_id + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#818cf8;color:#fff;cursor:pointer;">Accept</button>';
+            friendBtn = '<button data-uname="' + u.username + '" data-fid="' + u.friendship_id + '" onclick="drawerAccept(this.dataset.uname,this.dataset.fid,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#818cf8;color:#fff;cursor:pointer;">Accept</button>';
           } else {
-            friendBtn = '<button onclick="drawerAddFriend(\'' + u.username + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#fff;color:#000;cursor:pointer;">+ Add</button>';
+            friendBtn = '<button data-uname="' + u.username + '" onclick="drawerAddFriend(this.dataset.uname,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#fff;color:#000;cursor:pointer;">+ Add</button>';
           }
           const followBtn = u.is_following
-            ? '<button onclick="drawerFollow(\'' + u.username + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.15);background:rgba(74,222,128,.08);color:#4ade80;cursor:pointer;">Following</button>'
-            : '<button onclick="drawerFollow(\'' + u.username + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid #303030;background:#1c1c1c;color:#aaa;cursor:pointer;">Follow</button>';
+            ? '<button data-uname="' + u.username + '" onclick="drawerFollow(this.dataset.uname,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.15);background:rgba(74,222,128,.08);color:#4ade80;cursor:pointer;">Following</button>'
+            : '<button data-uname="' + u.username + '" onclick="drawerFollow(this.dataset.uname,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid #303030;background:#1c1c1c;color:#aaa;cursor:pointer;">Follow</button>';
           return '<div style="display:flex;align-items:center;gap:.75rem;padding:.625rem .25rem;border-bottom:1px solid #1a1a1a;">' +
             '<div style="width:40px;height:40px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;">' + av + '</div>' +
             '<div style="flex:1;min-width:0;">' +
