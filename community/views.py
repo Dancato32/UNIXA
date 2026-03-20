@@ -428,6 +428,11 @@ def messages_view(request, convo_id=None):
     for convo in user_convos:
         others = [p for p in convo.participants.all() if p != request.user]
         convo.other_participant = others[0] if others else request.user
+        # Ensure the other participant has a community profile
+        try:
+            CommunityProfile.objects.get_or_create(user=convo.other_participant)
+        except Exception:
+            pass
         last = convo.messages.order_by('-created_at').first()
         convo.last_message_preview = (last.content[:40] + '…') if last and len(last.content) > 40 else (last.content if last else '')
 

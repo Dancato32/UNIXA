@@ -243,9 +243,10 @@
   </div>
   <div class="convos-list" id="convos-list">
     {% for convo in conversations %}
+    {% if convo.other_participant %}
     <a href="{% url 'community:conversation_detail' convo.id %}" class="convo-row {% if active_convo and active_convo.id == convo.id %}active{% endif %}">
       <div class="convo-av">
-        {% if convo.other_participant.community_profile.avatar %}
+        {% if convo.other_participant.community_profile and convo.other_participant.community_profile.avatar %}
           <img src="{{ convo.other_participant.community_profile.avatar.url }}" alt="">
         {% else %}
           {{ convo.other_participant.username|slice:":1"|upper }}
@@ -257,6 +258,7 @@
       </div>
       <span class="convo-time">{{ convo.updated_at|timesince|truncatechars:8 }}</span>
     </a>
+    {% endif %}
     {% empty %}
     <div style="padding:2rem;text-align:center;color:var(--t3);font-size:.8125rem;">
       No conversations yet.<br>
