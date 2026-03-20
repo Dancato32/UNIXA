@@ -224,6 +224,21 @@ def custom_detail(request, slug):
     })
 
 
+@login_required
+def custom_delete(request, slug):
+    community = get_object_or_404(CustomCommunity, slug=slug)
+    if community.creator != request.user and not request.user.is_staff:
+        return JsonResponse({'error': 'Not allowed.'}, status=403)
+    if request.method == 'POST':
+        community.is_active = False
+        community.save(update_fields=['is_active'])
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'ok': True})
+        django_messages.success(request, f'"{community.name}" has been deleted.')
+        return redirect('community:custom_list')
+    return JsonResponse({'error': 'POST required.'}, status=405)
+
+
 # ── Posts ─────────────────────────────────────────────────────────────────────
 
 @login_required

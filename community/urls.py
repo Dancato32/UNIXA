@@ -50,6 +50,7 @@ urlpatterns = [
     path('communities/', views.custom_list, name='custom_list'),
     path('communities/create/', views.custom_create, name='custom_create'),
     path('communities/<slug:slug>/', views.custom_detail, name='custom_detail'),
+    path('communities/<slug:slug>/delete/', views.custom_delete, name='custom_delete'),
 
     # Posts
     path('posts/create/', views.post_create, name='post_create'),

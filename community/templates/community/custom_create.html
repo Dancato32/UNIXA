@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('succ-name').textContent = 'r/' + n;
       document.getElementById('succ-av').textContent = n.slice(0,1).toUpperCase();
       document.getElementById('succ-desc').textContent = desc;
-      document.getElementById('wiz-go').href = '/community/c/' + data.slug + '/';
+      document.getElementById('wiz-go').href = '/community/communities/' + data.slug + '/';
 
       showDone(() => showStep(4));
     })
