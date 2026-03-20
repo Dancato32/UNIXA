@@ -1352,6 +1352,17 @@ def pending_friend_requests(request):
 
 
 @login_required
+def profile_stats(request, username):
+    """Return live follower/following counts for a profile."""
+    from community.models import Follow
+    profile_user = get_object_or_404(User, username=username)
+    return JsonResponse({
+        'follower_count': Follow.objects.filter(following=profile_user).count(),
+        'following_count': Follow.objects.filter(follower=profile_user).count(),
+    })
+
+
+@login_required
 def search_users(request):
     """Search users by username for friend/follow discovery."""
     q = request.GET.get('q', '').strip()

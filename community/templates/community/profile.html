@@ -224,7 +224,7 @@
       </div>
       <div class="prof-stat">
         <div class="prof-stat-label">Following</div>
-        <div class="prof-stat-val">{{ following_count }}</div>
+        <div class="prof-stat-val" id="following-count">{{ following_count }}</div>
       </div>
       <div class="prof-stat">
         <div class="prof-stat-label">Likes</div>
@@ -296,10 +296,26 @@ function toggleFollow() {
     isFollowing = d.following;
     updateFollowBtn();
     const el = document.getElementById('followers-count');
-    if (el) el.textContent = d.follower_count !== undefined ? d.follower_count : el.textContent;
+    if (el && d.follower_count !== undefined) el.textContent = d.follower_count;
   })
   .catch(() => {});
 }
 {% endif %}
+
+// Poll follower/following counts every 15s so they stay live
+(function pollStats() {
+  setTimeout(function() {
+    fetch('/community/api/profile-stats/{{ profile_user.username }}/')
+      .then(r => r.json())
+      .then(d => {
+        const fc = document.getElementById('followers-count');
+        const fwc = document.getElementById('following-count');
+        if (fc) fc.textContent = d.follower_count;
+        if (fwc) fwc.textContent = d.following_count;
+      })
+      .catch(() => {})
+      .finally(pollStats);
+  }, 15000);
+})();
 </script>
 {% endblock %}
