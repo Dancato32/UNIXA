@@ -354,15 +354,13 @@ def generate_podcast_audio_streaming(request, script_text, material_id):
     try:
         from openai import OpenAI
         import os
-        
-        # Get API key
+
+        # TTS requires a direct OpenAI key — OpenRouter does NOT support TTS
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            api_key = os.getenv("OPENROUTER_API_KEY")
-        
-        if not api_key:
+            print("No OPENAI_API_KEY for TTS — skipping streaming audio")
             return None, None
-        
+
         client = OpenAI(api_key=api_key)
         
         # Prepare full text
@@ -1052,7 +1050,7 @@ Score X/5, what to review, ask if they want another topic."""
         client = OpenAI(
             api_key=materials_key,
             base_url='https://openrouter.ai/api/v1',
-            default_headers={'HTTP-Referer': 'http://localhost', 'X-Title': 'Nexa AI System'}
+            default_headers={'HTTP-Referer': 'https://unixa.onrender.com', 'X-Title': 'Nexa AI Materials'}
         )
         # Only models that support system prompts
         free_models = [

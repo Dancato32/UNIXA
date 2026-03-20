@@ -29,7 +29,7 @@ def extract_text_from_photo(image_bytes):
         client = OpenAI(
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
-            default_headers={"HTTP-Referer": "http://localhost", "X-Title": "Nexa AI System"}
+            default_headers={"HTTP-Referer": "https://unixa.onrender.com", "X-Title": "Nexa AI Assignment"}
         )
         b64 = base64.b64encode(image_bytes).decode("utf-8")
         response = client.chat.completions.create(

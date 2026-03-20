@@ -120,8 +120,8 @@ def get_openai_client():
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
             default_headers={
-                "HTTP-Referer": "http://localhost",
-                "X-Title": "Nexa AI System"
+                "HTTP-Referer": "https://unixa.onrender.com",
+                "X-Title": "Nexa AI Tutor"
             }
         )
         print("DEBUG: OpenAI client created successfully")
