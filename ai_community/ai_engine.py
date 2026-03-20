@@ -763,3 +763,78 @@ or
     except Exception:
         pass
     return None
+
+
+def deep_search(query, workspace_context=None):
+    """
+    Deep web search using Perplexity Sonar via OpenRouter.
+    Returns {summary, key_findings, sources, follow_up_questions, search_query}
+    """
+    ws_context = ''
+    if workspace_context:
+        ws_context = f"\nWorkspace context: {workspace_context}"
+
+    system = """You are Nexa, an AI research assistant doing a deep web search.
+Search the web thoroughly and return a comprehensive, well-structured research report.
+Always cite your sources with URLs. Be specific, factual, and up-to-date.
+Format your response as a proper research brief — not a chat message."""
+
+    user_prompt = f"""Deep search query: {query}{ws_context}
+
+Please research this thoroughly and provide:
+1. A clear executive summary (3-5 sentences)
+2. Key findings (5-8 bullet points with specific facts, numbers, dates)
+3. Relevant sources with URLs
+4. 3 follow-up questions worth exploring
+
+Return as JSON:
+{{
+  "search_query": "the refined search query used",
+  "summary": "executive summary paragraph",
+  "key_findings": ["finding 1 with specific detail", "finding 2", ...],
+  "sources": [{{"title": "...", "url": "...", "snippet": "brief excerpt"}}],
+  "follow_up_questions": ["question 1?", "question 2?", "question 3?"]
+}}
+Return ONLY valid JSON."""
+
+    try:
+        # Use Perplexity Sonar Pro — has live internet access
+        raw = _chat(
+            [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user_prompt},
+            ],
+            model='perplexity/sonar-pro',
+            max_tokens=2000,
+        )
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        if start >= 0:
+            result = json.loads(raw[start:end])
+            if result.get('summary'):
+                return result
+    except Exception as e:
+        logger.error('Deep search sonar error: %s', e)
+
+    # Fallback to gpt-4o-mini with best-effort knowledge
+    try:
+        fallback_prompt = f"""Research this topic as thoroughly as possible: {query}
+
+Return JSON:
+{{
+  "search_query": "{query}",
+  "summary": "comprehensive summary",
+  "key_findings": ["finding 1", "finding 2", "finding 3", "finding 4", "finding 5"],
+  "sources": [{{"title": "Relevant source", "url": "", "snippet": "Note: live search unavailable, results based on training data"}}],
+  "follow_up_questions": ["follow-up 1?", "follow-up 2?", "follow-up 3?"]
+}}
+Return ONLY valid JSON."""
+        raw = _chat([{'role': 'user', 'content': fallback_prompt}], max_tokens=1500)
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        if start >= 0:
+            return json.loads(raw[start:end])
+    except Exception as e:
+        logger.error('Deep search fallback error: %s', e)
+
+    return None

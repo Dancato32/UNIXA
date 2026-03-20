@@ -2012,3 +2012,45 @@ def workspace_ai_schedule_meeting(request, ws_id):
         'time_label': time_label,
         'delay_seconds': delay_seconds,
     })
+
+
+@login_required
+@require_POST
+def workspace_ai_deep_search(request, ws_id):
+    """
+    Nexa performs a deep web search and posts the results to the group chat.
+    """
+    import json as _json
+    from ai_community.ai_engine import deep_search as _deep_search
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    try:
+        body = _json.loads(request.body)
+        query = body.get('query', '').strip()
+    except Exception:
+        query = ''
+
+    if not query:
+        return JsonResponse({'error': 'Query required'}, status=400)
+
+    # Pass workspace context so results can be relevant
+    ws_context = f"Workspace: {ws.name}, Type: {ws.workspace_type}"
+    result = _deep_search(query, workspace_context=ws_context)
+
+    if not result:
+        return JsonResponse({'error': 'Search failed'}, status=500)
+
+    # Save a compact version to group chat so all members see it
+    summary_msg = (
+        f"[AI]🔍 **Deep Search: {query}**\n\n"
+        f"{result.get('summary', '')}\n\n"
+        f"**Key Findings:**\n" +
+        '\n'.join(f"• {f}" for f in result.get('key_findings', [])[:5])
+    )
+    WorkspaceMessage.objects.create(
+        workspace=ws,
+        sender=request.user,
+        content=summary_msg,
+    )
+
+    return JsonResponse({'ok': True, 'result': result})

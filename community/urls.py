@@ -108,6 +108,7 @@ urlpatterns = [
     path('workspaces/<uuid:ws_id>/tasks/<uuid:task_id>/review/', views.workspace_task_review, name='workspace_task_review'),
     path('workspaces/<uuid:ws_id>/assembly/', views.workspace_final_assembly, name='workspace_final_assembly'),
     path('workspaces/<uuid:ws_id>/ai/meeting-schedule/', views.workspace_ai_schedule_meeting, name='workspace_ai_schedule_meeting'),
+    path('workspaces/<uuid:ws_id>/ai/deep-search/', views.workspace_ai_deep_search, name='workspace_ai_deep_search'),
 
     # REST API
     path('api/', include(router.urls)),
