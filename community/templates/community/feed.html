@@ -149,24 +149,95 @@
 .feed-empty svg{width:40px;height:40px;margin:0 auto 1rem;opacity:.1;display:block;}
 .feed-empty p{font-size:.875rem;color:var(--t3);margin-bottom:1.25rem;}
 
+/* Mobile sort tabs */
+.mob-sort-tabs{
+  display:none;flex-direction:row;align-items:center;
+  border-bottom:1px solid var(--b1);
+  background:var(--bg);
+  position:sticky;top:52px;z-index:150;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.mob-sort-tab{
+  flex:1;min-width:80px;padding:.625rem .5rem;
+  text-align:center;font-size:.8125rem;font-weight:600;color:var(--t3);
+  background:none;border:none;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;
+}
+.mob-sort-tab.active{color:var(--white);border-bottom-color:var(--white);}
+
+/* Mobile post card header */
+.mob-post-header{display:none;align-items:center;gap:.5rem;margin-bottom:.5rem;}
+.mob-comm-av{
+  width:28px;height:28px;border-radius:50%;background:var(--s4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6875rem;font-weight:700;color:var(--t2);flex-shrink:0;overflow:hidden;
+}
+.mob-comm-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.mob-post-meta{flex:1;min-width:0;}
+.mob-comm-name{font-size:.8125rem;font-weight:700;color:var(--t1);line-height:1.2;}
+.mob-post-by{font-size:.7rem;color:var(--t3);}
+.mob-more-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);cursor:pointer;border-radius:4px;flex-shrink:0;}
+.mob-more-btn svg{width:16px;height:16px;}
+
+/* Mobile vote/comment pills */
+.mob-pills{display:none;align-items:center;gap:.375rem;margin-bottom:.375rem;}
+.mob-pill{
+  display:inline-flex;align-items:center;gap:.25rem;
+  padding:.2rem .5rem;border-radius:20px;
+  background:var(--s3);border:1px solid var(--b2);
+  font-size:.7rem;font-weight:700;color:var(--t2);
+}
+.mob-pill svg{width:11px;height:11px;}
+
+/* Mobile action bar */
+.mob-actions-bar{display:none;align-items:center;justify-content:space-around;padding:.5rem 0 .25rem;border-top:1px solid var(--b1);margin-top:.375rem;}
+.mob-act{
+  display:flex;align-items:center;gap:.3rem;
+  font-size:.75rem;font-weight:600;color:var(--t3);
+  background:none;border:none;cursor:pointer;padding:.25rem .375rem;border-radius:4px;
+}
+.mob-act:active{background:var(--s3);}
+.mob-act svg{width:18px;height:18px;}
+.mob-act.liked{color:#ff6314;}
+
 @media(max-width:900px){
   .feed-shell{flex-direction:column;}
   .feed-right{display:none;}
-  .sort-bar{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
+  .sort-bar{display:none;}
+  .mob-sort-tabs{display:flex;}
 }
 @media(max-width:600px){
   .vote-col{display:none;}
   .post-body{padding:.625rem .75rem;}
-  .post-actions{gap:0;}
-  .pa{padding:.3rem .4rem;font-size:.7rem;}
+  .post-actions{display:none;}
   .composer{padding:.5rem .75rem;}
   .c-av{width:32px;height:32px;font-size:.75rem;}
-  .post-title{font-size:.875rem;}
+  .post-title{font-size:.9rem;margin-bottom:.375rem;}
   .post-text{font-size:.8125rem;}
   .ic-item-actions{gap:.1rem;}
   .ic-act{padding:.15rem .3rem;font-size:.65rem;}
+  /* show mobile-only elements */
+  .mob-post-header{display:flex;}
+  .mob-pills{display:flex;}
+  .mob-actions-bar{display:flex;}
+  /* hide desktop post-top on mobile */
+  .post-top{display:none;}
+  /* post card style on mobile — edge to edge */
+  .post-card{border-radius:0;border-left:none;border-right:none;margin-bottom:.375rem;}
+  .feed-main{margin:0 -.625rem;}
+  /* composer stays padded */
+  .composer{margin:0 .625rem .625rem;border-radius:6px;}
 }
 </style>
+{% endblock %}
+
+{% block pre_content %}
+<!-- Mobile sort tabs (hidden on desktop via CSS) -->
+<div class="mob-sort-tabs" id="mob-sort-tabs">
+  <button class="mob-sort-tab active" onclick="setMobSort('popular',this)">Popular</button>
+  <button class="mob-sort-tab" onclick="setMobSort('trending',this)">Trending</button>
+  <button class="mob-sort-tab" onclick="setMobSort('latest',this)">Latest</button>
+</div>
 {% endblock %}
 
 {% block content %}
@@ -218,6 +289,7 @@
 
       <!-- Body -->
       <div class="post-body">
+        <!-- Desktop post header -->
         <div class="post-top">
           {% if post.school_community %}
             <a href="{% url 'community:school_detail' post.school_community.slug %}" class="post-community-tag">{{ post.school_community.name }}</a>
@@ -238,6 +310,38 @@
           {% if post.category %}<span class="post-category">{{ post.category }}</span>{% endif %}
         </div>
 
+        <!-- Mobile post header (shown only on mobile) -->
+        <div class="mob-post-header">
+          <div class="mob-comm-av">
+            {% if post.author.community_profile.avatar %}
+              <img src="{{ post.author.community_profile.avatar.url }}" alt="">
+            {% else %}
+              {{ post.author.username|slice:":1"|upper }}
+            {% endif %}
+          </div>
+          <div class="mob-post-meta">
+            <div class="mob-comm-name">
+              {% if post.school_community %}{{ post.school_community.name }}{% elif post.custom_community %}{{ post.custom_community.name }}{% else %}Community{% endif %}
+            </div>
+            <div class="mob-post-by">Posted by u/{{ post.author.username }} · {{ post.created_at|timesince }} ago</div>
+          </div>
+          <button class="mob-more-btn" onclick="window.location='/community/posts/{{ post.id }}/'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+        </div>
+
+        <!-- Mobile vote/comment pills -->
+        <div class="mob-pills">
+          <span class="mob-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <span id="mob-lc-{{ post.id }}">{{ post.like_count }}</span>
+          </span>
+          <span class="mob-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            {{ post.comment_count }}
+          </span>
+        </div>
+
         <div class="post-text" id="pt-{{ post.id }}">{{ post.content }}<div class="post-text-fade" id="ptf-{{ post.id }}"></div></div>
         {% if post.media and post.media_type == 'image' %}
           <img src="{{ post.media.url }}" alt="" class="post-img">
@@ -245,7 +349,7 @@
           <video src="{{ post.media.url }}" controls class="post-img" style="background:#000;max-height:400px;"></video>
         {% endif %}
 
-        <!-- Action bar -->
+        <!-- Desktop action bar -->
         <div class="post-actions">
           <button class="pa" onclick="toggleCommentBox('{{ post.id }}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -265,6 +369,24 @@
             Delete
           </a>
           {% endif %}
+        </div>
+
+        <!-- Mobile action bar -->
+        <div class="mob-actions-bar">
+          <button class="mob-act {% if post.id in liked_ids %}liked{% endif %}" onclick="toggleLike('{{ post.id }}',this)" title="Upvote">
+            <svg viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+            <span id="mob-lc2-{{ post.id }}">{{ post.like_count }}</span>
+          </button>
+          <button class="mob-act" onclick="toggleCommentBox('{{ post.id }}')" title="Comments">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span id="mob-cc-{{ post.id }}">{{ post.comment_count }}</span>
+          </button>
+          <button class="mob-act" onclick="sharePost('{% url 'community:post_detail' post.id %}')" title="Share">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
+          <button class="mob-act" onclick="window.location='{% url 'community:post_detail' post.id %}'" title="Award">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </button>
         </div>
 
         <!-- Inline comment panel -->
@@ -367,9 +489,14 @@ function toggleLike(id, btn) {
   .then(r => r.json())
   .then(d => {
     btn.classList.toggle('up', d.liked);
-    btn.querySelector('svg').setAttribute('fill', d.liked ? 'currentColor' : 'none');
-    const el = document.getElementById('lc-' + id);
-    if (el) el.textContent = d.like_count;
+    btn.classList.toggle('liked', d.liked);
+    const svgEl = btn.querySelector('svg');
+    if (svgEl) svgEl.setAttribute('fill', d.liked ? 'currentColor' : 'none');
+    // update all like count elements for this post
+    ['lc-','mob-lc-','mob-lc2-'].forEach(prefix => {
+      const el = document.getElementById(prefix + id);
+      if (el) el.textContent = d.like_count;
+    });
   })
   .catch(() => {});
 }
@@ -514,6 +641,8 @@ function submitComment(e, postId) {
     // bump comment count
     const cc = document.getElementById('cc-' + postId);
     if (cc) cc.textContent = parseInt(cc.textContent || 0) + 1;
+    const mobCc = document.getElementById('mob-cc-' + postId);
+    if (mobCc) mobCc.textContent = parseInt(mobCc.textContent || 0) + 1;
     // prepend new comment to list
     const listEl = document.getElementById('ic-list-' + postId);
     if (listEl) {
@@ -609,6 +738,16 @@ function icShare(commentId) {
 function setSort(type, btn) {
   document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+}
+function setMobSort(type, btn) {
+  document.querySelectorAll('.mob-sort-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // mirror to desktop sort
+  const map = {popular:'hot', trending:'new', latest:'top'};
+  document.querySelectorAll('.sort-btn').forEach(b => {
+    const txt = b.textContent.trim().toLowerCase();
+    b.classList.toggle('active', txt === (map[type] || type));
+  });
 }
 
 /* ── Expand long posts ── */
