@@ -863,12 +863,14 @@ function wsPoll() {
     .then(r => r.ok ? r.json() : null)
     .then(data => {
       if (!data || !data.messages.length) return;
+      let newCount = 0;
       data.messages.forEach(msg => {
         if (seenIds.has(msg.id)) return;
         seenIds.add(msg.id);
         lastTs = msg.created_at;
-        if (!msg.is_mine) appendWsMsg(msg, false);
+        if (!msg.is_mine) { appendWsMsg(msg, false); newCount++; }
       });
+      if (newCount > 0) checkProactiveAI(newCount);
     })
     .catch(() => {});
 }
@@ -1731,10 +1733,10 @@ function aimGenerateAssembly() {
 
 /* ── Proactive AI Chat Participation ── */
 let proactiveMsgCount = 0;
-const PROACTIVE_THRESHOLD = 8; // check every 8 new messages
+const PROACTIVE_THRESHOLD = 8; // check every 8 new messages from others
 
-function checkProactiveAI() {
-  proactiveMsgCount++;
+function checkProactiveAI(newCount) {
+  proactiveMsgCount += (newCount || 1);
   if (proactiveMsgCount < PROACTIVE_THRESHOLD) return;
   proactiveMsgCount = 0;
 
@@ -1742,7 +1744,6 @@ function checkProactiveAI() {
     .then(r => r.json())
     .then(data => {
       if (!data.should_post || !data.message) return;
-      // Show as a special AI suggestion bubble in the chat
       const msgs = document.getElementById('ws-chat-msgs');
       if (!msgs) return;
       const div = document.createElement('div');
@@ -1758,19 +1759,5 @@ function checkProactiveAI() {
     })
     .catch(() => {});
 }
-
-// Hook into the existing poll to count new messages
-const _origWsPoll = wsPoll;
-wsPoll = function() {
-  const before = seenIds.size;
-  _origWsPoll();
-  // We can't easily count here since wsPoll is async, so we hook appendWsMsg instead
-};
-
-const _origAppendWsMsg = appendWsMsg;
-appendWsMsg = function(data, isMine) {
-  _origAppendWsMsg(data, isMine);
-  if (!isMine) checkProactiveAI();
-};
 </script>
 {% endblock %}
