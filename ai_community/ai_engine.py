@@ -717,3 +717,49 @@ Return ONLY valid JSON."""
     except Exception:
         pass
     return {'should_post': False, 'message': ''}
+
+
+def parse_meeting_request(message):
+    """
+    Parse a natural-language meeting request like:
+    "start a meeting in 20 mins", "schedule a call in 1 hour", "meeting tomorrow at 3pm"
+
+    Returns {title, delay_seconds, time_label} or None if not a meeting request.
+    delay_seconds is capped at 24h. For "now" or immediate, returns 10 seconds.
+    """
+    prompt = f"""Parse this meeting scheduling request from a team member:
+
+"{message}"
+
+Extract:
+- title: a short meeting title (e.g. "Team Standup", "Project Review", "Quick Sync")
+- delay_seconds: how many seconds from now until the meeting starts (integer)
+  - "now" or "immediately" → 10
+  - "in 5 mins" → 300
+  - "in 20 mins" → 1200
+  - "in 1 hour" → 3600
+  - "in 2 hours" → 7200
+  - cap at 86400 (24 hours)
+- time_label: human-readable time string (e.g. "in 20 minutes", "in 1 hour", "now")
+
+If this is NOT a meeting/call scheduling request, return {{"is_meeting": false}}.
+
+Return ONLY valid JSON:
+{{"is_meeting": true, "title": "...", "delay_seconds": 1200, "time_label": "in 20 minutes"}}
+or
+{{"is_meeting": false}}"""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=150)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        result = json.loads(raw[start:end]) if start >= 0 else None
+        if result and result.get('is_meeting'):
+            return {
+                'title': result.get('title', 'Team Meeting'),
+                'delay_seconds': min(int(result.get('delay_seconds', 1200)), 86400),
+                'time_label': result.get('time_label', 'soon'),
+            }
+    except Exception:
+        pass
+    return None

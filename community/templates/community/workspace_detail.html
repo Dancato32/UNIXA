@@ -913,6 +913,9 @@ if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
 // Track AI typing state to avoid duplicate responses
 let aiTyping = false;
 
+// Meeting keywords to detect scheduling intent
+const MEETING_KEYWORDS = /\b(start|schedule|set.?up|arrange|book)\b.{0,30}\b(meeting|call|standup|sync)\b|\bstart a (call|meeting)\b|\bschedule.{0,20}(call|meeting)\b/i;
+
 function wsSendMessage(e) {
   e.preventDefault();
   const input = document.getElementById('ws-chat-input');
@@ -922,12 +925,11 @@ function wsSendMessage(e) {
 
   const isAtAI = content.toLowerCase().startsWith('@ai');
   const question = isAtAI ? (content.slice(3).trim() || 'Hello!') : content;
+  const looksLikeMeeting = MEETING_KEYWORDS.test(content) || /meeting|start.*call|call.*start/i.test(content);
 
   if (isAtAI) {
-    // @ai: show locally, don't save to group chat
     appendWsMsg({ id: 'local-' + Date.now(), sender: MY_USERNAME, sender_avatar: MY_AVATAR, content: content, created_at: new Date().toISOString(), is_mine: true }, true);
   } else {
-    // Normal message: save to group chat
     const fd = new FormData();
     fd.append('content', content);
     fd.append('csrfmiddlewaretoken', CSRF);
@@ -937,10 +939,9 @@ function wsSendMessage(e) {
       .catch(() => {});
   }
 
-  if (aiTyping) return; // don't stack AI responses
+  if (aiTyping) return;
   aiTyping = true;
 
-  // Show typing indicator
   const msgs = document.getElementById('ws-chat-msgs');
   const typing = document.createElement('div');
   typing.id = 'ai-chat-typing';
@@ -949,45 +950,162 @@ function wsSendMessage(e) {
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
 
-  // Small human-like delay before responding
-  const thinkDelay = 800 + Math.random() * 1200;
+  const thinkDelay = 800 + Math.random() * 1000;
 
-  setTimeout(() => {
-    fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ message: question, source: isAtAI ? 'manager' : 'group' }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        const t = document.getElementById('ai-chat-typing');
-        if (t) t.remove();
-        aiTyping = false;
-        const reply = data.reply || '';
-        if (!reply) return;
-
-        if (isAtAI) {
-          // @ai messages: show locally only (not saved to DB)
-          const div = document.createElement('div');
-          div.className = 'ws-msg-wrap theirs';
-          div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">Nexa</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
-          msgs.appendChild(div);
-          msgs.scrollTop = msgs.scrollHeight;
-        }
-        // For group messages: AI reply is saved to DB, polling will pick it up automatically
-
-        if (data.actions && data.actions.length) {
-          data.actions.forEach(action => {
-            if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
-          });
-        }
+  if (looksLikeMeeting) {
+    setTimeout(() => {
+      fetch('/community/workspaces/' + WS_ID + '/ai/meeting-schedule/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ message: question }),
       })
-      .catch(() => {
-        const t = document.getElementById('ai-chat-typing');
-        if (t) t.remove();
-        aiTyping = false;
-      });
-  }, thinkDelay);
+        .then(r => r.json())
+        .then(data => {
+          const t = document.getElementById('ai-chat-typing');
+          if (t) t.remove();
+          aiTyping = false;
+          if (data.ok) {
+            startMeetingCountdown(data.meeting_title, data.time_label, data.delay_seconds);
+          } else {
+            triggerNormalAIChat(question, isAtAI);
+          }
+        })
+        .catch(() => {
+          const t = document.getElementById('ai-chat-typing');
+          if (t) t.remove();
+          aiTyping = false;
+          triggerNormalAIChat(question, isAtAI);
+        });
+    }, thinkDelay);
+  } else {
+    setTimeout(() => triggerNormalAIChat(question, isAtAI), thinkDelay);
+  }
+}
+
+function triggerNormalAIChat(question, isAtAI) {
+  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ message: question, source: isAtAI ? 'manager' : 'group' }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      const t = document.getElementById('ai-chat-typing');
+      if (t) t.remove();
+      aiTyping = false;
+      const reply = data.reply || '';
+      if (!reply) return;
+      if (isAtAI) {
+        const msgs = document.getElementById('ws-chat-msgs');
+        const div = document.createElement('div');
+        div.className = 'ws-msg-wrap theirs';
+        div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">Nexa</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+      if (data.actions && data.actions.length) {
+        data.actions.forEach(action => {
+          if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
+        });
+      }
+    })
+    .catch(() => {
+      const t = document.getElementById('ai-chat-typing');
+      if (t) t.remove();
+      aiTyping = false;
+    });
+}
+
+/* ── Meeting countdown + auto-call ── */
+let meetingTimer = null;
+
+function startMeetingCountdown(title, timeLabel, delaySecs) {
+  const msgs = document.getElementById('ws-chat-msgs');
+  const countdownId = 'mtg-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'ws-msg-wrap theirs';
+  div.id = countdownId;
+  div.innerHTML = `
+    <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div>
+    <div class="ws-msg-group">
+      <span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>
+      <div class="ws-msg-bubble nexa-meeting-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.4);color:var(--t1);min-width:230px;padding:.75rem 1rem;">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:.25rem;">📅 ${esc(title)}</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.55);margin-bottom:.75rem;">I've DM'd everyone. Starting ${esc(timeLabel)}.</div>
+        <div style="display:flex;align-items:center;gap:.875rem;">
+          <div style="position:relative;width:56px;height:56px;flex-shrink:0;">
+            <svg width="56" height="56" viewBox="0 0 56 56" style="transform:rotate(-90deg);">
+              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(99,102,241,.2)" stroke-width="4"/>
+              <circle id="ring-${countdownId}" cx="28" cy="28" r="24" fill="none" stroke="#818cf8" stroke-width="4"
+                stroke-dasharray="150.8" stroke-dashoffset="0" stroke-linecap="round"
+                style="transition:stroke-dashoffset 1s linear;"/>
+            </svg>
+            <span id="timer-${countdownId}" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:800;color:#a5b4fc;">${formatCountdown(delaySecs)}</span>
+          </div>
+          <div>
+            <div style="font-size:.6875rem;color:rgba(255,255,255,.4);margin-bottom:.375rem;">until call starts</div>
+            <button onclick="cancelMeeting('${countdownId}')" style="font-size:.6875rem;background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);border-radius:4px;padding:.2rem .625rem;cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  let remaining = delaySecs;
+  const totalDash = 150.8;
+  if (meetingTimer) clearInterval(meetingTimer);
+  meetingTimer = setInterval(() => {
+    remaining--;
+    const timerEl = document.getElementById(`timer-${countdownId}`);
+    const ring = document.getElementById(`ring-${countdownId}`);
+    if (timerEl) timerEl.textContent = formatCountdown(remaining);
+    if (ring) ring.style.strokeDashoffset = String(totalDash * (1 - remaining / delaySecs));
+    if (remaining <= 0) {
+      clearInterval(meetingTimer);
+      meetingTimer = null;
+      launchMeetingCall(countdownId, title);
+    }
+  }, 1000);
+}
+
+function formatCountdown(secs) {
+  if (secs <= 0) return '0:00';
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function cancelMeeting(countdownId) {
+  if (meetingTimer) { clearInterval(meetingTimer); meetingTimer = null; }
+  const el = document.getElementById(countdownId);
+  if (el) el.remove();
+  const fd = new FormData();
+  fd.append('content', '[AI]❌ Meeting cancelled.');
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd }).catch(() => {});
+}
+
+function launchMeetingCall(countdownId, title) {
+  const el = document.getElementById(countdownId);
+  if (el) {
+    const bubble = el.querySelector('.nexa-meeting-bubble');
+    if (bubble) bubble.innerHTML = `<div style="font-weight:700;">📞 ${esc(title)} — Starting now!</div><div style="font-size:.75rem;color:rgba(255,255,255,.6);margin-top:.25rem;">Joining the call…</div>`;
+  }
+  const fd = new FormData();
+  fd.append('content', `[AI]📞 **${title}** is starting now! Come join the call! 🎙️`);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd }).catch(() => {});
+  setTimeout(() => {
+    const callBtn = document.getElementById('nav-call');
+    if (callBtn) callBtn.click();
+    setTimeout(() => {
+      const joinBtn = document.getElementById('btn-join-call');
+      if (joinBtn) joinBtn.click();
+    }, 800);
+  }, 600);
 }
 
 function wsAttachFile(input) {

@@ -1914,3 +1914,101 @@ def workspace_ai_proactive(request, ws_id):
         members=list(members),
     )
     return JsonResponse(result or {'should_post': False, 'message': ''})
+
+
+@login_required
+@require_POST
+def workspace_ai_schedule_meeting(request, ws_id):
+    """
+    Nexa parses a natural-language meeting request, DMs every member,
+    posts a group announcement, and returns countdown seconds so the
+    frontend can auto-start the call.
+    """
+    import json as _json
+    from ai_community.ai_engine import parse_meeting_request as _parse
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    try:
+        body = _json.loads(request.body)
+        message = body.get('message', '').strip()
+    except Exception:
+        message = ''
+
+    if not message:
+        return JsonResponse({'error': 'Message required'}, status=400)
+
+    # Parse the meeting request with AI
+    parsed = _parse(message)
+    if not parsed:
+        return JsonResponse({'error': 'Could not understand meeting request'}, status=400)
+
+    delay_seconds = parsed.get('delay_seconds', 1200)   # default 20 min
+    meeting_title = parsed.get('title', 'Team Meeting')
+    time_label = parsed.get('time_label', 'in 20 minutes')
+
+    # Get all workspace members
+    members = list(
+        WorkspaceMember.objects.filter(workspace=ws)
+        .select_related('user', 'user__community_profile')
+    )
+    member_users = [m.user for m in members]
+
+    # DM every member privately as Nexa (using the requester as sender proxy)
+    dm_text = (
+        f"👋 Hey! Nexa here.\n\n"
+        f"📅 **{meeting_title}** has been scheduled for **{time_label}** "
+        f"in the *{ws.name}* workspace.\n\n"
+        f"The call will start automatically — just head to the workspace when it's time. See you there! 🚀"
+    )
+
+    for member_user in member_users:
+        if member_user == request.user:
+            continue
+        try:
+            # Find or create a DM conversation between requester and this member
+            existing = (
+                Conversation.objects.filter(participants=request.user, is_group=False)
+                .filter(participants=member_user)
+                .first()
+            )
+            if existing:
+                convo = existing
+            else:
+                convo = Conversation.objects.create(is_group=False)
+                convo.participants.set([request.user, member_user])
+
+            Message.objects.create(
+                conversation=convo,
+                sender=request.user,
+                content=dm_text,
+            )
+            Conversation.objects.filter(pk=convo.pk).update(updated_at=timezone.now())
+
+            # Create a notification for the member
+            Notification.objects.create(
+                recipient=member_user,
+                actor=request.user,
+                type=Notification.TYPE_MESSAGE,
+                conversation=convo,
+            )
+        except Exception:
+            pass
+
+    # Post group chat announcement from Nexa
+    announce = (
+        f"[AI]📅 **{meeting_title}** scheduled {time_label}.\n"
+        f"I've DM'd everyone with the details. The call will start automatically — "
+        f"I'll ping you here when it's time! ⏰"
+    )
+    WorkspaceMessage.objects.create(
+        workspace=ws,
+        sender=request.user,
+        content=announce,
+    )
+
+    return JsonResponse({
+        'ok': True,
+        'meeting_title': meeting_title,
+        'time_label': time_label,
+        'delay_seconds': delay_seconds,
+    })
