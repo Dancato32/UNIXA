@@ -121,6 +121,31 @@
   .ai-tools-grid{grid-template-columns:1fr 1fr;}
   .ws-files-grid{grid-template-columns:1fr 1fr;}
 }
+/* Call panel */
+@keyframes callpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
+.call-panel-inner{display:flex;flex-direction:column;height:100%;padding:1rem;}
+.call-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-shrink:0;}
+.call-header-title{font-size:.9375rem;font-weight:700;}
+.call-status{font-size:.75rem;color:var(--t3);}
+.call-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.75rem;flex:1;overflow-y:auto;align-content:start;}
+.call-tile{background:var(--s2);border:1px solid var(--b2);border-radius:10px;aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;position:relative;overflow:hidden;}
+.call-tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;}
+.call-tile-av{width:52px;height:52px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;overflow:hidden;flex-shrink:0;}
+.call-tile-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.call-tile-name{font-size:.75rem;font-weight:600;color:var(--t2);z-index:1;}
+.call-tile-label{position:absolute;bottom:.375rem;left:.5rem;font-size:.6875rem;background:rgba(0,0,0,.6);color:#fff;padding:.1rem .35rem;border-radius:4px;}
+.call-tile.speaking{border-color:var(--green);box-shadow:0 0 0 2px rgba(34,197,94,.3);}
+.call-empty{grid-column:1/-1;text-align:center;color:var(--t3);font-size:.8125rem;padding:2rem 0;}
+.call-controls{display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1rem 0 .5rem;flex-shrink:0;}
+.call-ctrl-btn{width:44px;height:44px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
+.call-ctrl-btn svg{width:18px;height:18px;}
+.call-ctrl-btn.muted,.call-ctrl-btn.cam-off{background:var(--s4);color:var(--t3);}
+.call-ctrl-btn:not(.muted):not(.cam-off):not(.end-call){background:var(--s3);color:var(--t1);}
+.call-ctrl-btn:hover{filter:brightness(1.2);}
+.call-ctrl-btn.end-call{background:#ef4444;color:#fff;width:52px;height:52px;}
+.call-join-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:1rem;}
+.call-join-wrap p{color:var(--t3);font-size:.875rem;text-align:center;max-width:280px;}
+@media(max-width:600px){.call-grid{grid-template-columns:1fr 1fr;}}
 </style>
 {% endblock %}
 
@@ -149,6 +174,11 @@
       <button class="ws-nav-item" onclick="showPanel('tasks',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Tasks
+      </button>
+      <button class="ws-nav-item" id="nav-call" onclick="showPanel('call',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Group Call
+        <span id="call-badge" style="display:none;margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--green);animation:callpulse 2s infinite;"></span>
       </button>
       <button class="ws-nav-item" onclick="showPanel('members',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -395,6 +425,42 @@
         </div>
       </div>
     </div>
+    <!-- Call panel -->
+    <div class="ws-panel" id="panel-call">
+      <div class="call-panel-inner">
+        <div class="call-header">
+          <span class="call-header-title">Group Call</span>
+          <span class="call-status" id="call-status-text">Not in call</span>
+        </div>
+        <!-- Pre-join state -->
+        <div class="call-join-wrap" id="call-join-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.3;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <p id="call-waiting-text">Start or join a group call. All workspace members can join.</p>
+          <button class="btn btn-primary" id="call-join-btn" onclick="joinCall()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Join Call
+          </button>
+        </div>
+        <!-- In-call state -->
+        <div id="call-active-wrap" style="display:none;flex:1;flex-direction:column;">
+          <div class="call-grid" id="call-grid">
+            <div class="call-empty" id="call-empty-msg">Connecting…</div>
+          </div>
+          <div class="call-controls">
+            <button class="call-ctrl-btn" id="btn-mute" onclick="toggleMute()" title="Mute">
+              <svg id="icon-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="call-ctrl-btn" id="btn-cam" onclick="toggleCamera()" title="Camera">
+              <svg id="icon-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            </button>
+            <button class="call-ctrl-btn end-call" onclick="leaveCall()" title="Leave call">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /ws-main -->
 </div><!-- /ws-shell -->
 
@@ -628,5 +694,207 @@ function copyInviteLink() {
 /* ── Mobile: override mobile-bar hamburger to open ws sidebar ── */
 const mobBtn = document.querySelector('.mob-btn');
 if (mobBtn) mobBtn.onclick = toggleWsSidebar;
+</script>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+/* ── Group Call (PeerJS WebRTC) ── */
+const PEERJS_KEY = '{{ PEERJS_API_KEY|default:"peerjs" }}';
+const WS_SHORT = WS_ID.replace(/-/g,'').slice(0,12);
+const MY_PEER_ID = 'ws-' + WS_SHORT + '-' + MY_USERNAME;
+
+let peer = null;
+let localStream = null;
+let inCall = false;
+let isMuted = false;
+let isCamOff = false;
+let activeCalls = {};       // peerId → MediaConnection
+let heartbeatTimer = null;
+let pollTimer = null;
+
+function joinCall() {
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(stream => {
+      localStream = stream;
+      _startCall(stream);
+    })
+    .catch(() => {
+      // Audio-only fallback
+      navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+        .then(stream => { localStream = stream; _startCall(stream); })
+        .catch(err => alert('Could not access microphone: ' + err.message));
+    });
+}
+
+function _startCall(stream) {
+  inCall = true;
+  document.getElementById('call-join-wrap').style.display = 'none';
+  document.getElementById('call-active-wrap').style.display = 'flex';
+  document.getElementById('call-status-text').textContent = 'In call';
+  document.getElementById('call-badge').style.display = 'inline-block';
+
+  // Add local tile
+  _addTile(MY_PEER_ID, MY_USERNAME, MY_AVATAR, stream, true);
+
+  // Init PeerJS
+  peer = new Peer(MY_PEER_ID, { key: PEERJS_KEY, debug: 0 });
+
+  peer.on('open', () => {
+    // Announce join to server
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF);
+    fd.append('announce', '1');
+    fetch('/community/workspaces/' + WS_ID + '/call/join/', { method: 'POST', body: fd });
+
+    // Start heartbeat (keeps presence alive)
+    heartbeatTimer = setInterval(_heartbeat, 10000);
+    // Poll for other participants
+    pollTimer = setInterval(_pollParticipants, 3000);
+    _pollParticipants();
+  });
+
+  // Answer incoming calls
+  peer.on('call', call => {
+    call.answer(localStream);
+    call.on('stream', remoteStream => {
+      if (!activeCalls[call.peer]) {
+        activeCalls[call.peer] = call;
+        const uname = call.peer.split('-').pop();
+        _addTile(call.peer, uname, null, remoteStream, false);
+      }
+    });
+    call.on('close', () => _removeTile(call.peer));
+    call.on('error', () => _removeTile(call.peer));
+  });
+
+  peer.on('error', err => console.warn('PeerJS error:', err));
+}
+
+function _heartbeat() {
+  if (!inCall) return;
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/call/join/', { method: 'POST', body: fd });
+}
+
+function _pollParticipants() {
+  if (!inCall) return;
+  fetch('/community/workspaces/' + WS_ID + '/call/participants/')
+    .then(r => r.json())
+    .then(data => {
+      const count = data.count || 0;
+      document.getElementById('call-status-text').textContent = count > 0 ? count + ' in call' : 'In call';
+      if (count <= 1) {
+        document.getElementById('call-empty-msg') && (document.getElementById('call-empty-msg').style.display = 'none');
+      }
+      // Call any new participants we haven't called yet
+      (data.participants || []).forEach(p => {
+        const pid = 'ws-' + WS_SHORT + '-' + p.username;
+        if (pid === MY_PEER_ID || activeCalls[pid]) return;
+        if (!peer || !localStream) return;
+        const call = peer.call(pid, localStream);
+        if (!call) return;
+        activeCalls[pid] = call;
+        call.on('stream', remoteStream => _addTile(pid, p.username, p.avatar, remoteStream, false));
+        call.on('close', () => _removeTile(pid));
+        call.on('error', () => _removeTile(pid));
+      });
+    })
+    .catch(() => {});
+}
+
+function leaveCall() {
+  inCall = false;
+  clearInterval(heartbeatTimer);
+  clearInterval(pollTimer);
+
+  // Close all peer connections
+  Object.values(activeCalls).forEach(c => { try { c.close(); } catch(e){} });
+  activeCalls = {};
+
+  if (localStream) {
+    localStream.getTracks().forEach(t => t.stop());
+    localStream = null;
+  }
+  if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
+
+  // Notify server
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/call/leave/', { method: 'POST', body: fd });
+
+  // Reset UI
+  document.getElementById('call-active-wrap').style.display = 'none';
+  document.getElementById('call-join-wrap').style.display = 'flex';
+  document.getElementById('call-status-text').textContent = 'Not in call';
+  document.getElementById('call-badge').style.display = 'none';
+  document.getElementById('call-grid').innerHTML = '<div class="call-empty" id="call-empty-msg">Connecting…</div>';
+  isMuted = false; isCamOff = false;
+  document.getElementById('btn-mute').classList.remove('muted');
+  document.getElementById('btn-cam').classList.remove('cam-off');
+}
+
+function toggleMute() {
+  if (!localStream) return;
+  isMuted = !isMuted;
+  localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+  document.getElementById('btn-mute').classList.toggle('muted', isMuted);
+  document.getElementById('btn-mute').title = isMuted ? 'Unmute' : 'Mute';
+}
+
+function toggleCamera() {
+  if (!localStream) return;
+  isCamOff = !isCamOff;
+  localStream.getVideoTracks().forEach(t => t.enabled = !isCamOff);
+  document.getElementById('btn-cam').classList.toggle('cam-off', isCamOff);
+  document.getElementById('btn-cam').title = isCamOff ? 'Turn camera on' : 'Turn camera off';
+  const localVideo = document.querySelector('#tile-' + CSS.escape(MY_PEER_ID) + ' video');
+  if (localVideo) localVideo.style.display = isCamOff ? 'none' : 'block';
+}
+
+function _addTile(peerId, username, avatar, stream, isLocal) {
+  const grid = document.getElementById('call-grid');
+  const empty = document.getElementById('call-empty-msg');
+  if (empty) empty.style.display = 'none';
+
+  if (document.getElementById('tile-' + peerId)) return; // already exists
+
+  const tile = document.createElement('div');
+  tile.className = 'call-tile';
+  tile.id = 'tile-' + peerId;
+
+  const avHtml = avatar
+    ? `<div class="call-tile-av"><img src="${avatar}" alt=""></div>`
+    : `<div class="call-tile-av">${username.slice(0,1).toUpperCase()}</div>`;
+
+  tile.innerHTML = avHtml + `<span class="call-tile-name">${esc(username)}</span>`;
+
+  // Attach video if stream has video tracks
+  const hasVideo = stream && stream.getVideoTracks().length > 0;
+  if (hasVideo) {
+    const vid = document.createElement('video');
+    vid.autoplay = true;
+    vid.playsInline = true;
+    vid.muted = isLocal; // mute local to avoid echo
+    vid.srcObject = stream;
+    tile.prepend(vid);
+  }
+
+  const label = document.createElement('div');
+  label.className = 'call-tile-label';
+  label.textContent = isLocal ? 'You' : username;
+  tile.appendChild(label);
+
+  grid.appendChild(tile);
+}
+
+function _removeTile(peerId) {
+  const tile = document.getElementById('tile-' + peerId);
+  if (tile) tile.remove();
+  delete activeCalls[peerId];
+}
+
+// Leave call if user navigates away
+window.addEventListener('beforeunload', () => { if (inCall) leaveCall(); });
 </script>
 {% endblock %}

@@ -909,6 +909,7 @@ def _ws_member_or_404(request, ws_id):
 @login_required
 def workspace_detail(request, ws_id):
     """Main workspace dashboard."""
+    from django.conf import settings as django_settings
     ws, membership = _ws_member_or_404(request, ws_id)
 
     members = WorkspaceMember.objects.filter(workspace=ws).select_related('user', 'user__community_profile')
@@ -925,6 +926,7 @@ def workspace_detail(request, ws_id):
         'tasks': tasks,
         'is_owner': membership.role == WorkspaceMember.ROLE_OWNER,
         'is_admin': membership.role in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN),
+        'PEERJS_API_KEY': __import__('django.conf', fromlist=['settings']).settings.PEERJS_API_KEY,
     })
 
 
@@ -1456,3 +1458,91 @@ def api_communities_list(request):
     schools = list(SchoolCommunity.objects.filter(is_active=True).values('name')[:5])
     customs = list(CustomCommunity.objects.filter(is_active=True).values('name')[:5])
     return JsonResponse({'communities': schools + customs})
+
+
+# ── Group Call Presence ───────────────────────────────────────────────────────
+# Uses Django's cache to track who is in a call. TTL = 30s, refreshed every 10s.
+# No new DB model needed — presence is ephemeral.
+
+def _call_cache_key(ws_id):
+    return f'ws_call_{ws_id}'
+
+
+@login_required
+@require_POST
+def workspace_call_join(request, ws_id):
+    """Mark current user as active in the workspace call."""
+    from django.core.cache import cache
+    ws = get_object_or_404(GroupWorkspace, id=ws_id, is_active=True)
+    # Verify membership
+    if not WorkspaceMember.objects.filter(workspace=ws, user=request.user).exists():
+        return JsonResponse({'error': 'Not a member'}, status=403)
+
+    key = _call_cache_key(ws_id)
+    participants = cache.get(key, {})
+    avatar = None
+    try:
+        avatar = request.user.community_profile.avatar.url if request.user.community_profile.avatar else None
+    except Exception:
+        pass
+    participants[str(request.user.id)] = {
+        'username': request.user.username,
+        'avatar': avatar,
+        'joined_at': timezone.now().isoformat(),
+    }
+    cache.set(key, participants, timeout=30)
+
+    # Post a system message to chat (only when first joining, not on heartbeat)
+    if request.POST.get('announce') == '1':
+        WorkspaceMessage.objects.create(
+            workspace=ws,
+            sender=request.user,
+            content=f'📞 {request.user.username} joined the group call',
+        )
+
+    return JsonResponse({'ok': True, 'count': len(participants)})
+
+
+@login_required
+@require_POST
+def workspace_call_leave(request, ws_id):
+    """Remove current user from the workspace call."""
+    from django.core.cache import cache
+    ws = get_object_or_404(GroupWorkspace, id=ws_id, is_active=True)
+    key = _call_cache_key(ws_id)
+    participants = cache.get(key, {})
+    participants.pop(str(request.user.id), None)
+    if participants:
+        cache.set(key, participants, timeout=30)
+    else:
+        cache.delete(key)
+
+    WorkspaceMessage.objects.create(
+        workspace=ws,
+        sender=request.user,
+        content=f'📴 {request.user.username} left the group call',
+    )
+    return JsonResponse({'ok': True})
+
+
+@login_required
+def workspace_call_participants(request, ws_id):
+    """Return current call participants + heartbeat (refreshes TTL)."""
+    from django.core.cache import cache
+    ws = get_object_or_404(GroupWorkspace, id=ws_id, is_active=True)
+    if not WorkspaceMember.objects.filter(workspace=ws, user=request.user).exists():
+        return JsonResponse({'error': 'Not a member'}, status=403)
+
+    key = _call_cache_key(ws_id)
+    participants = cache.get(key, {})
+
+    # Heartbeat: refresh TTL for current user if they're in the call
+    uid = str(request.user.id)
+    if uid in participants:
+        participants[uid]['joined_at'] = timezone.now().isoformat()
+        cache.set(key, participants, timeout=30)
+
+    return JsonResponse({
+        'participants': list(participants.values()),
+        'count': len(participants),
+    })
