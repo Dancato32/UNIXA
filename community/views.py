@@ -53,9 +53,16 @@ def feed(request):
     )
 
     if tab == 'following':
-        # Only posts from people the current user follows
+        from django.db.models import Q
+        # Posts from people the current user follows OR communities they've joined
         following_ids = Follow.objects.filter(follower=request.user).values_list('following_id', flat=True)
-        qs = qs.filter(author_id__in=following_ids)
+        joined_school_ids = CommunityMembership.objects.filter(user=request.user).values_list('community_id', flat=True)
+        joined_custom_ids = CustomCommunityMembership.objects.filter(user=request.user).values_list('community_id', flat=True)
+        qs = qs.filter(
+            Q(author_id__in=following_ids) |
+            Q(school_community_id__in=joined_school_ids) |
+            Q(custom_community_id__in=joined_custom_ids)
+        )
     
     qs = qs.order_by('-created_at')
 
