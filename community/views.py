@@ -688,12 +688,23 @@ def community_profile(request, username):
         PostLike.objects.filter(user=request.user, post_id__in=post_ids)
         .values_list('post_id', flat=True)
     )
+    from community.models import Follow
+    follower_count = Follow.objects.filter(following=profile_user).count()
+    following_count = Follow.objects.filter(follower=profile_user).count()
+    total_likes = Post.objects.filter(author=profile_user, is_deleted=False).aggregate(
+        total=models.Sum('like_count')
+    )['total'] or 0
+    is_following = Follow.objects.filter(follower=request.user, following=profile_user).exists()
     return render(request, 'community/profile.html', {
         'profile_user': profile_user,
         'profile': profile,
         'posts': posts,
         'liked_ids': liked_ids,
         'is_own': profile_user == request.user,
+        'follower_count': follower_count,
+        'following_count': following_count,
+        'total_likes': total_likes,
+        'is_following': is_following,
     })
 
 
@@ -701,7 +712,10 @@ def community_profile(request, username):
 def community_profile_edit(request):
     profile, _ = CommunityProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
+        profile.display_name = request.POST.get('display_name', '').strip()[:100]
         profile.bio = request.POST.get('bio', '').strip()[:500]
+        profile.location = request.POST.get('location', '').strip()[:100]
+        profile.website = request.POST.get('website', '').strip()[:200]
         if 'avatar' in request.FILES:
             profile.avatar = request.FILES['avatar']
         if 'banner' in request.FILES:
@@ -1239,6 +1253,37 @@ def friend_status(request, username):
     if friendship.requester == request.user:
         return JsonResponse({'status': 'pending_sent', 'id': str(friendship.id)})
     return JsonResponse({'status': 'pending_received', 'id': str(friendship.id)})
+
+
+@login_required
+@require_POST
+def follow_toggle(request):
+    """Toggle follow for a user. Body: {username: '...'}"""
+    import json
+    try:
+        body = json.loads(request.body)
+        username = body.get('username', '').strip()
+    except Exception:
+        username = request.POST.get('username', '').strip()
+    if not username:
+        return JsonResponse({'error': 'username required'}, status=400)
+    other = get_object_or_404(User, username=username)
+    if other == request.user:
+        return JsonResponse({'error': 'Cannot follow yourself.'}, status=400)
+    from community.models import Follow
+    follow, created = Follow.objects.get_or_create(follower=request.user, following=other)
+    if not created:
+        follow.delete()
+        following = False
+    else:
+        following = True
+        Notification.objects.create(
+            recipient=other,
+            actor=request.user,
+            type=Notification.TYPE_FOLLOW,
+        )
+    follower_count = Follow.objects.filter(following=other).count()
+    return JsonResponse({'following': following, 'follower_count': follower_count})
 
 
 @login_required

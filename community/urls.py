@@ -105,6 +105,9 @@ urlpatterns = [
     path('api/share/conversations/', views.share_post_dm_list, name='share_dm_list'),
     path('api/posts/<uuid:post_id>/share/', views.share_post_send, name='share_post_send'),
 
+    # Follow toggle
+    path('api/follows/', views.follow_toggle, name='follow_toggle'),
+
     # Friend requests
     path('api/friends/request/<str:username>/', views.friend_request_send, name='friend_request_send'),
     path('api/friends/respond/<uuid:friendship_id>/', views.friend_request_respond, name='friend_request_respond'),

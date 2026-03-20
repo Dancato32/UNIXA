@@ -6,18 +6,35 @@
 
 {% block extra_css %}
 <style>
-.form-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:1.5rem;max-width:560px;}
-.form-group{margin-bottom:1.125rem;}
-.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.4rem;}
-.form-control{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:.55rem .875rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;}
+.edit-card{background:var(--s2);border:1px solid var(--b2);border-radius:12px;overflow:hidden;max-width:560px;}
+
+/* Banner preview */
+.banner-preview-wrap{position:relative;height:140px;background:linear-gradient(135deg,#a78bfa,#818cf8,#f0abfc);cursor:pointer;overflow:hidden;}
+.banner-preview-wrap img{width:100%;height:100%;object-fit:cover;}
+.banner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);opacity:0;transition:opacity .15s;}
+.banner-preview-wrap:hover .banner-overlay{opacity:1;}
+.banner-overlay span{color:#fff;font-size:.8125rem;font-weight:600;display:flex;align-items:center;gap:.4rem;}
+
+/* Avatar preview */
+.av-row{display:flex;align-items:flex-end;gap:1rem;padding:0 1.25rem 1rem;margin-top:-40px;}
+.av-preview{width:80px;height:80px;border-radius:16px;border:3px solid var(--s2);background:var(--s4);overflow:hidden;cursor:pointer;position:relative;flex-shrink:0;}
+.av-preview img{width:100%;height:100%;object-fit:cover;}
+.av-preview-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:700;color:var(--t1);}
+.av-edit-hint{font-size:.75rem;color:var(--t3);padding-bottom:.25rem;}
+
+/* Form body */
+.edit-body{padding:0 1.25rem 1.25rem;}
+.form-group{margin-bottom:1rem;}
+.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.35rem;}
+.form-control{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.55rem .875rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;box-sizing:border-box;}
 .form-control:focus{border-color:var(--b3);}
-textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
-.current-img{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:.5rem;display:block;}
-.current-banner{width:100%;height:80px;object-fit:cover;border-radius:4px;margin-bottom:.5rem;display:block;}
-.form-actions{display:flex;gap:.75rem;margin-top:1.25rem;}
+textarea.form-control{resize:vertical;min-height:90px;line-height:1.6;}
+.char-count{font-size:.75rem;color:var(--t4);text-align:right;margin-top:.2rem;}
+.form-actions{display:flex;gap:.75rem;padding-top:.5rem;}
+input[type="file"]{display:none;}
 
 @media(max-width:600px){
-  .form-card{padding:1rem;border-radius:6px;}
+  .edit-card{border-radius:8px;}
   .form-actions{flex-direction:column;}
   .form-actions .btn{justify-content:center;}
 }
@@ -25,32 +42,98 @@ textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
 {% endblock %}
 
 {% block content %}
-<div class="form-card">
-  <div style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">Edit Community Profile</div>
-  <form method="post" enctype="multipart/form-data">
+<div class="edit-card">
+  <form method="post" enctype="multipart/form-data" id="edit-form">
     {% csrf_token %}
-    <div class="form-group">
-      <label class="form-label">Avatar</label>
-      {% if profile.avatar %}
-        <img src="{{ profile.avatar.url }}" alt="Current avatar" class="current-img">
-      {% endif %}
-      <input type="file" name="avatar" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Banner Image</label>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="banner-input" name="banner" accept="image/jpeg,image/png,image/gif,image/webp">
+    <input type="file" id="avatar-input" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp">
+
+    <!-- Banner -->
+    <div class="banner-preview-wrap" id="banner-wrap" onclick="document.getElementById('banner-input').click()">
       {% if profile.banner %}
-        <img src="{{ profile.banner.url }}" alt="Current banner" class="current-banner">
+        <img src="{{ profile.banner.url }}" alt="Banner" id="banner-img">
+      {% else %}
+        <img src="" alt="" id="banner-img" style="display:none;">
       {% endif %}
-      <input type="file" name="banner" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
+      <div class="banner-overlay">
+        <span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Change banner
+        </span>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Bio</label>
-      <textarea name="bio" class="form-control" maxlength="500" placeholder="Tell the community about yourself…">{{ profile.bio }}</textarea>
+
+    <!-- Avatar row -->
+    <div class="av-row">
+      <div class="av-preview" onclick="document.getElementById('avatar-input').click()">
+        {% if profile.avatar %}
+          <img src="{{ profile.avatar.url }}" alt="Avatar" id="avatar-img">
+        {% else %}
+          <img src="" alt="" id="avatar-img" style="display:none;">
+          <div class="av-preview-placeholder" id="avatar-placeholder">{{ request.user.username|slice:":1"|upper }}</div>
+        {% endif %}
+      </div>
+      <div class="av-edit-hint">Click avatar or banner to change</div>
     </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">Save Changes</button>
-      <a href="{% url 'community:profile' username=request.user.username %}" class="btn btn-ghost">Cancel</a>
+
+    <!-- Fields -->
+    <div class="edit-body">
+      <div class="form-group">
+        <label class="form-label" for="id_display_name">Display Name</label>
+        <input type="text" id="id_display_name" name="display_name" class="form-control"
+               maxlength="100" placeholder="Your display name"
+               value="{{ profile.display_name }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="id_bio">Bio</label>
+        <textarea id="id_bio" name="bio" class="form-control" maxlength="500"
+                  placeholder="Tell the community about yourself…"
+                  oninput="document.getElementById('bio-count').textContent=this.value.length">{{ profile.bio }}</textarea>
+        <div class="char-count"><span id="bio-count">{{ profile.bio|length }}</span>/500</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="id_location">Location</label>
+        <input type="text" id="id_location" name="location" class="form-control"
+               maxlength="100" placeholder="City, Country"
+               value="{{ profile.location }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="id_website">Website</label>
+        <input type="url" id="id_website" name="website" class="form-control"
+               maxlength="200" placeholder="https://yoursite.com"
+               value="{{ profile.website }}">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'community:profile' username=request.user.username %}" class="btn btn-ghost">Cancel</a>
+      </div>
     </div>
   </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live preview for banner
+document.getElementById('banner-input').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const img = document.getElementById('banner-img');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+});
+
+// Live preview for avatar
+document.getElementById('avatar-input').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const img = document.getElementById('avatar-img');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+  const ph = document.getElementById('avatar-placeholder');
+  if (ph) ph.style.display = 'none';
+});
+</script>
 {% endblock %}

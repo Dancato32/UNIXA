@@ -6,20 +6,103 @@
 
 {% block extra_css %}
 <style>
-.profile-banner{width:100%;height:160px;background:linear-gradient(135deg,var(--s4),var(--s5));border-radius:8px 8px 0 0;overflow:hidden;position:relative;}
-.profile-banner img{width:100%;height:100%;object-fit:cover;}
-.profile-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;margin-bottom:1rem;}
-.profile-info{padding:1rem 1.25rem 1.25rem;position:relative;}
-.profile-av{width:72px;height:72px;border-radius:50%;background:var(--s4);border:3px solid var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;overflow:hidden;margin-top:-36px;margin-bottom:.75rem;}
-.profile-av img{width:100%;height:100%;object-fit:cover;}
-.profile-name{font-size:1.125rem;font-weight:700;margin-bottom:.25rem;}
-.profile-bio{font-size:.875rem;color:var(--t2);line-height:1.6;margin-bottom:.75rem;}
-.profile-meta{display:flex;gap:1.25rem;font-size:.8125rem;color:var(--t3);}
-.profile-meta strong{color:var(--t1);}
-.edit-btn{position:absolute;top:1rem;right:1.25rem;}
+/* ── Banner ── */
+.prof-banner{
+  width:100%;height:200px;border-radius:12px;overflow:hidden;position:relative;
+  background:linear-gradient(135deg,#a78bfa 0%,#818cf8 40%,#f0abfc 100%);
+  margin-bottom:0;flex-shrink:0;
+}
+.prof-banner img{width:100%;height:100%;object-fit:cover;}
+.prof-banner-edit{
+  position:absolute;bottom:.75rem;right:.75rem;
+  background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:.75rem;font-weight:600;padding:.3rem .7rem;
+  border-radius:6px;cursor:pointer;backdrop-filter:blur(4px);
+  text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;
+}
+.prof-banner-edit svg{width:13px;height:13px;}
 
-.posts-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:.75rem;}
-.post-card{background:var(--s2);border:1px solid var(--b2);border-radius:6px;margin-bottom:.5rem;display:flex;overflow:hidden;transition:border-color .15s;}
+/* ── Card ── */
+.prof-card{
+  background:var(--s2);border:1px solid var(--b2);border-radius:12px;
+  overflow:hidden;margin-bottom:1.25rem;
+}
+
+/* ── Header row ── */
+.prof-header{
+  display:flex;align-items:flex-end;gap:1.5rem;
+  padding:0 1.5rem 1.25rem;margin-top:-52px;
+  flex-wrap:wrap;
+}
+.prof-av-wrap{flex-shrink:0;}
+.prof-av{
+  width:104px;height:104px;border-radius:20px;
+  background:var(--s4);border:4px solid var(--s2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.25rem;font-weight:700;color:var(--t1);
+  overflow:hidden;position:relative;
+}
+.prof-av img{width:100%;height:100%;object-fit:cover;}
+
+/* ── Info block ── */
+.prof-info{flex:1;min-width:0;padding-top:.5rem;}
+.prof-name-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;margin-bottom:.25rem;}
+.prof-name{font-size:1.25rem;font-weight:800;color:var(--t1);line-height:1.2;}
+.prof-badge{
+  display:inline-flex;align-items:center;gap:.2rem;
+  background:#818cf8;color:#fff;font-size:.6875rem;font-weight:700;
+  padding:.15rem .45rem;border-radius:4px;letter-spacing:.03em;
+}
+.prof-bio{font-size:.875rem;color:var(--t2);line-height:1.6;margin-bottom:.5rem;max-width:480px;}
+.prof-meta-row{display:flex;align-items:center;gap:.875rem;flex-wrap:wrap;}
+.prof-meta-item{display:flex;align-items:center;gap:.3rem;font-size:.8125rem;color:var(--t3);}
+.prof-meta-item svg{width:13px;height:13px;flex-shrink:0;}
+.prof-meta-item a{color:var(--t3);transition:color .15s;}
+.prof-meta-item a:hover{color:var(--t1);}
+
+/* ── Actions ── */
+.prof-actions{display:flex;align-items:center;gap:.625rem;padding-top:.5rem;flex-shrink:0;}
+.prof-follow-btn{
+  padding:.5rem 1.25rem;background:var(--white);color:#000;
+  border:none;border-radius:8px;font-size:.875rem;font-weight:700;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.prof-follow-btn:hover{background:#e8e8e8;}
+.prof-follow-btn.following{background:var(--s3);color:var(--t1);border:1px solid var(--b2);}
+.prof-msg-btn{
+  padding:.5rem 1.125rem;background:var(--s3);color:var(--t1);
+  border:1px solid var(--b2);border-radius:8px;font-size:.875rem;font-weight:600;
+  cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;
+  display:inline-flex;align-items:center;gap:.375rem;
+}
+.prof-msg-btn:hover{background:var(--s4);color:var(--t1);}
+.prof-msg-btn svg{width:14px;height:14px;}
+.prof-edit-btn{
+  padding:.5rem 1.125rem;background:var(--s3);color:var(--t1);
+  border:1px solid var(--b2);border-radius:8px;font-size:.875rem;font-weight:600;
+  cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;
+  display:inline-flex;align-items:center;gap:.375rem;
+}
+.prof-edit-btn:hover{background:var(--s4);}
+.prof-edit-btn svg{width:14px;height:14px;}
+
+/* ── Stats row ── */
+.prof-stats{
+  display:flex;align-items:center;gap:0;
+  border-top:1px solid var(--b1);
+  padding:.875rem 1.5rem;
+}
+.prof-stat{
+  flex:1;text-align:center;padding:.25rem .5rem;
+  border-right:1px solid var(--b1);
+}
+.prof-stat:last-child{border-right:none;}
+.prof-stat-label{font-size:.75rem;color:var(--t3);margin-bottom:.2rem;}
+.prof-stat-val{font-size:1.375rem;font-weight:800;color:var(--t1);line-height:1.1;}
+
+/* ── Posts section ── */
+.posts-head{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:.75rem;}
+.post-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;margin-bottom:.5rem;display:flex;overflow:hidden;transition:border-color .15s;}
 .post-card:hover{border-color:var(--b3);}
 .vote-col{width:40px;background:var(--s3);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.2rem;flex-shrink:0;}
 .v-count{font-size:.6875rem;font-weight:700;color:var(--t2);}
@@ -31,62 +114,127 @@
 .post-title{font-size:.9375rem;font-weight:600;color:var(--t1);margin-bottom:.375rem;}
 .post-text{font-size:.875rem;color:var(--t2);max-height:80px;overflow:hidden;}
 .post-actions{display:flex;gap:.125rem;margin-top:.5rem;}
-.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .5rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;}
+.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .5rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;text-decoration:none;}
 .pa:hover{background:var(--s3);color:var(--t2);}
 .pa svg{width:13px;height:13px;}
 
-@media(max-width:600px){
-  .profile-banner{height:120px;border-radius:6px 6px 0 0;}
-  .profile-av{width:64px;height:64px;margin-top:-32px;border-width:3px;}
-  .profile-name{font-size:1.125rem;}
-  .profile-actions{flex-wrap:wrap;gap:.375rem;}
-  .profile-stats{gap:1rem;}
-  .post-card{border-radius:4px;}
+@media(max-width:700px){
+  .prof-banner{height:140px;border-radius:8px;}
+  .prof-header{gap:1rem;padding:0 1rem 1rem;margin-top:-44px;}
+  .prof-av{width:88px;height:88px;border-radius:16px;font-size:1.75rem;}
+  .prof-name{font-size:1.0625rem;}
+  .prof-stats{padding:.75rem 1rem;}
+  .prof-stat-val{font-size:1.125rem;}
+  .prof-actions{gap:.5rem;}
+  .prof-follow-btn,.prof-msg-btn,.prof-edit-btn{padding:.45rem .875rem;font-size:.8125rem;}
+}
+@media(max-width:480px){
+  .prof-header{flex-direction:column;align-items:flex-start;margin-top:0;padding-top:.75rem;}
+  .prof-av{margin-top:-44px;}
+  .prof-actions{width:100%;}
+  .prof-follow-btn,.prof-msg-btn,.prof-edit-btn{flex:1;justify-content:center;}
   .vote-col{display:none;}
   .post-body{padding:.625rem .75rem;}
-  .pa{padding:.3rem .4rem;font-size:.7rem;}
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="max-width:680px;">
-  <!-- Profile card -->
-  <div class="profile-card">
-    <div class="profile-banner">
+<div style="max-width:720px;">
+  <div class="prof-card">
+    <!-- Banner -->
+    <div class="prof-banner">
       {% if profile.banner %}<img src="{{ profile.banner.url }}" alt="">{% endif %}
+      {% if is_own %}
+      <a href="{% url 'community:profile_edit' %}" class="prof-banner-edit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit banner
+      </a>
+      {% endif %}
     </div>
-    <div class="profile-info">
-      <div class="profile-av">
-        {% if profile.avatar %}
-          <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}">
+
+    <!-- Header row: avatar + info + actions -->
+    <div class="prof-header">
+      <div class="prof-av-wrap">
+        <div class="prof-av">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}">
+          {% else %}
+            {{ profile_user.username|slice:":1"|upper }}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="prof-info">
+        <div class="prof-name-row">
+          <span class="prof-name">{{ profile.display_name|default:profile_user.username }}</span>
+          {% if profile_user.is_staff %}
+          <span class="prof-badge">⚡ PRO</span>
+          {% endif %}
+        </div>
+        {% if profile.bio %}
+        <div class="prof-bio">{{ profile.bio }}</div>
+        {% endif %}
+        <div class="prof-meta-row">
+          {% if profile.location %}
+          <span class="prof-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {{ profile.location }}
+          </span>
+          {% endif %}
+          {% if profile.website %}
+          <span class="prof-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website|truncatechars:30 }}</a>
+          </span>
+          {% endif %}
+          <span class="prof-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Joined {{ profile_user.date_joined|date:"N Y" }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="prof-actions">
+        {% if is_own %}
+          <a href="{% url 'community:profile_edit' %}" class="prof-edit-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Profile
+          </a>
         {% else %}
-          {{ profile_user.username|slice:":1"|upper }}
+          <button class="prof-follow-btn" id="follow-btn" onclick="toggleFollow()">Follow</button>
+          <a href="{% url 'community:dm_start' profile_user.username %}" class="prof-msg-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Message
+          </a>
         {% endif %}
       </div>
-      {% if is_own %}
-      <a href="{% url 'community:profile_edit' %}" class="btn btn-ghost btn-sm edit-btn">Edit Profile</a>
-      {% else %}
-      <div class="edit-btn" style="display:flex;gap:.5rem;">
-        <a href="{% url 'community:dm_start' profile_user.username %}" class="btn btn-primary btn-sm">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Message
-        </a>
+    </div>
+
+    <!-- Stats row -->
+    <div class="prof-stats">
+      <div class="prof-stat">
+        <div class="prof-stat-label">Posts</div>
+        <div class="prof-stat-val">{{ posts|length }}</div>
       </div>
-      {% endif %}
-      <div class="profile-name">{{ profile_user.username }}</div>
-      {% if profile.bio %}
-      <div class="profile-bio">{{ profile.bio }}</div>
-      {% endif %}
-      <div class="profile-meta">
-        <span><strong>{{ posts.count }}</strong> posts</span>
-        <span>Joined {{ profile_user.date_joined|date:"N Y" }}</span>
+      <div class="prof-stat">
+        <div class="prof-stat-label">Followers</div>
+        <div class="prof-stat-val" id="followers-count">{{ follower_count }}</div>
+      </div>
+      <div class="prof-stat">
+        <div class="prof-stat-label">Following</div>
+        <div class="prof-stat-val">{{ following_count }}</div>
+      </div>
+      <div class="prof-stat">
+        <div class="prof-stat-label">Likes</div>
+        <div class="prof-stat-val">{{ total_likes }}</div>
       </div>
     </div>
   </div>
 
   <!-- Posts -->
-  <div class="posts-title">Posts by {{ profile_user.username }}</div>
+  <div class="posts-head">Posts by {{ profile_user.username }}</div>
   {% for post in posts %}
   <div class="post-card">
     <div class="vote-col">
@@ -117,7 +265,41 @@
     </div>
   </div>
   {% empty %}
-  <div class="empty-state"><p>No posts yet.</p></div>
+  <div style="background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:2.5rem;text-align:center;color:var(--t3);font-size:.875rem;">No posts yet.</div>
   {% endfor %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if not is_own %}
+const CSRF = '{{ csrf_token }}';
+const PROFILE_USERNAME = '{{ profile_user.username }}';
+let isFollowing = {{ is_following|yesno:"true,false" }};
+
+function updateFollowBtn() {
+  const btn = document.getElementById('follow-btn');
+  if (!btn) return;
+  btn.textContent = isFollowing ? 'Following' : 'Follow';
+  btn.classList.toggle('following', isFollowing);
+}
+updateFollowBtn();
+
+function toggleFollow() {
+  fetch('/community/api/follows/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({username: PROFILE_USERNAME})
+  })
+  .then(r => r.json())
+  .then(d => {
+    isFollowing = d.following;
+    updateFollowBtn();
+    const el = document.getElementById('followers-count');
+    if (el) el.textContent = d.follower_count !== undefined ? d.follower_count : el.textContent;
+  })
+  .catch(() => {});
+}
+{% endif %}
+</script>
 {% endblock %}
