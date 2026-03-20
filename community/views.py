@@ -474,6 +474,15 @@ def messages_view(request, convo_id=None):
                     })
             return redirect('community:conversation_detail', convo_id=convo_id)
 
+        # Mark message notifications from the other user as read when opening convo
+        if other_user and other_user != request.user:
+            Notification.objects.filter(
+                recipient=request.user,
+                actor=other_user,
+                type=Notification.TYPE_MESSAGE,
+                is_read=False,
+            ).update(is_read=True)
+
     return render(request, 'community/messages.html', {
         'conversations': user_convos,
         'active_convo': active_convo,
