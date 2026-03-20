@@ -1737,3 +1737,157 @@ def workspace_ai_autocomplete(request, ws_id):
     if not result:
         return JsonResponse({'error': 'Could not generate document. Try again.'}, status=500)
     return JsonResponse(result)
+
+
+# ── GitHub-style contribution system ─────────────────────────────────────────
+
+@login_required
+@require_POST
+def workspace_task_submit(request, ws_id, task_id):
+    """Member submits their work for a task."""
+    import json as _json
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+
+    try:
+        body = _json.loads(request.body)
+        submission = body.get('submission', '').strip()
+    except Exception:
+        submission = request.POST.get('submission', '').strip()
+
+    if not submission:
+        return JsonResponse({'error': 'Submission content is required.'}, status=400)
+
+    from django.utils import timezone
+    task.submission = submission
+    task.review_status = WorkspaceTask.REVIEW_PENDING
+    task.submitted_at = timezone.now()
+    task.status = WorkspaceTask.STATUS_DOING
+    task.save(update_fields=['submission', 'review_status', 'submitted_at', 'status'])
+
+    return JsonResponse({
+        'ok': True,
+        'task_id': str(task.id),
+        'review_status': task.review_status,
+        'message': 'Submission received. Awaiting AI review.',
+    })
+
+
+@login_required
+def workspace_task_review(request, ws_id, task_id):
+    """AI reviews a task submission and approves or requests revision."""
+    from ai_community.ai_engine import review_task_submission as _review
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+
+    if not task.submission:
+        return JsonResponse({'error': 'No submission to review.'}, status=400)
+
+    # Gather project context from files
+    files_data = []
+    for f in ws.files.order_by('-uploaded_at')[:5]:
+        preview = ''
+        try:
+            file_url = f.file.url
+            if file_url.startswith('http'):
+                import requests as _req
+                resp = _req.get(file_url, timeout=8)
+                preview = resp.content[:1500].decode('utf-8', errors='ignore')
+            else:
+                f.file.open('rb')
+                preview = f.file.read(1500).decode('utf-8', errors='ignore')
+                f.file.close()
+        except Exception:
+            preview = ''
+        if preview:
+            files_data.append({'name': f.original_name, 'content_preview': preview})
+
+    result = _review(
+        task_title=task.title,
+        task_description=task.description,
+        submission=task.submission,
+        workspace_name=ws.name,
+        files_context=files_data,
+    )
+
+    if not result:
+        return JsonResponse({'error': 'AI review failed. Try again.'}, status=500)
+
+    # Save review result
+    task.review_status = result['status']  # 'approved' or 'revision'
+    task.review_feedback = result['feedback']
+    if result['status'] == WorkspaceTask.REVIEW_APPROVED:
+        task.status = WorkspaceTask.STATUS_DONE
+    task.save(update_fields=['review_status', 'review_feedback', 'status'])
+
+    # Post AI feedback as a system message in the workspace chat
+    ai_msg = f"🤖 AI Review — *{task.title}*\n"
+    ai_msg += f"Status: {'✅ Approved' if result['status'] == 'approved' else '🔄 Revision Requested'}\n"
+    ai_msg += result['feedback']
+    WorkspaceMessage.objects.create(
+        workspace=ws,
+        sender=request.user,
+        content=ai_msg,
+    )
+
+    return JsonResponse(result)
+
+
+@login_required
+def workspace_final_assembly(request, ws_id):
+    """Merge all approved task submissions into a coherent final document."""
+    from ai_community.ai_engine import assemble_final_document as _assemble
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    approved_tasks = list(
+        ws.tasks.filter(review_status=WorkspaceTask.REVIEW_APPROVED)
+        .select_related('assigned_to')
+        .values('title', 'description', 'submission', 'assigned_to__username')
+    )
+
+    if not approved_tasks:
+        return JsonResponse({'error': 'No approved submissions yet. Get tasks reviewed first.'}, status=400)
+
+    contributions = [
+        {
+            'title': t['title'],
+            'author': t['assigned_to__username'] or 'Unknown',
+            'content': t['submission'],
+        }
+        for t in approved_tasks
+    ]
+
+    result = _assemble(ws.name, contributions)
+    if not result:
+        return JsonResponse({'error': 'Assembly failed. Try again.'}, status=500)
+
+    return JsonResponse(result)
+
+
+@login_required
+def workspace_ai_proactive(request, ws_id):
+    """
+    Called by the frontend after N new messages.
+    AI reads recent chat and optionally returns a suggestion to post.
+    Returns {should_post, message} — frontend decides whether to show it.
+    """
+    from ai_community.ai_engine import proactive_chat_suggestion as _proactive
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    recent_msgs = list(
+        ws.chat_messages.order_by('-created_at')
+        .values('sender__username', 'content')[:12]
+    )
+    recent_msgs = list(reversed(recent_msgs))
+
+    tasks = list(ws.tasks.values('title', 'status'))
+    members = list(WorkspaceMember.objects.filter(workspace=ws).values_list('user__username', flat=True))
+
+    result = _proactive(
+        workspace_name=ws.name,
+        workspace_type=ws.workspace_type,
+        recent_messages=recent_msgs,
+        tasks=tasks,
+        members=list(members),
+    )
+    return JsonResponse(result or {'should_post': False, 'message': ''})

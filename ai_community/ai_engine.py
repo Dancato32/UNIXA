@@ -560,3 +560,152 @@ Return ONLY valid JSON."""
         return json.loads(raw[start:end]) if start >= 0 else None
     except Exception:
         return None
+
+
+def review_task_submission(task_title, task_description, submission, workspace_name, files_context):
+    """
+    AI reviews a member's task submission.
+    Returns {status: 'approved'|'revision', feedback, score, suggestions}
+    """
+    files_text = '\n\n'.join(
+        f"FILE: {f['name']}\n{f['content_preview']}" for f in files_context
+    ) if files_context else 'No project files available.'
+
+    prompt = f"""You are an AI project reviewer for a university group project.
+
+Project: {workspace_name}
+Task: {task_title}
+Task description: {task_description or 'No description provided.'}
+
+Project context from uploaded files:
+{files_text}
+
+Member's submission:
+{submission[:2000]}
+
+Review this submission and return JSON:
+{{
+  "status": "approved" or "revision",
+  "score": 0-100,
+  "feedback": "2-3 sentences of specific, constructive feedback",
+  "strengths": ["strength 1", "strength 2"],
+  "suggestions": ["improvement 1", "improvement 2"]
+}}
+
+Approve if the submission adequately addresses the task. Request revision if it's incomplete, off-topic, or needs significant improvement.
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=600)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        result = json.loads(raw[start:end]) if start >= 0 else None
+        if result and result.get('status') in ('approved', 'revision'):
+            return result
+    except Exception:
+        pass
+    return {
+        'status': 'revision',
+        'score': 50,
+        'feedback': 'Could not fully analyze the submission. Please ensure it addresses the task requirements.',
+        'strengths': [],
+        'suggestions': ['Review the task description and ensure all requirements are covered.'],
+    }
+
+
+def assemble_final_document(workspace_name, contributions):
+    """
+    Merge all approved task contributions into a coherent final document.
+    contributions: [{title, author, content}]
+    Returns {title, document, word_count, sections}
+    """
+    contribs_text = '\n\n'.join(
+        f"SECTION: {c['title']} (by {c['author']})\n{c['content'][:800]}"
+        for c in contributions
+    )
+
+    prompt = f"""You are an AI editor assembling a final academic project document.
+
+Project: {workspace_name}
+Number of contributions: {len(contributions)}
+
+Individual contributions:
+{contribs_text}
+
+Assemble these into a single coherent, professionally formatted document.
+- Ensure consistent tone and formatting throughout
+- Add smooth transitions between sections
+- Fix any inconsistencies
+- Add a brief introduction and conclusion if missing
+
+Return JSON:
+{{
+  "title": "Final document title",
+  "sections": [
+    {{"heading": "Section heading", "content": "Full section content", "author": "original author"}}
+  ],
+  "word_count": 0,
+  "editor_notes": "Brief note about what was adjusted for consistency"
+}}
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=2000)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        return json.loads(raw[start:end]) if start >= 0 else None
+    except Exception:
+        return None
+
+
+def proactive_chat_suggestion(workspace_name, workspace_type, recent_messages, tasks, members):
+    """
+    Analyze recent chat and decide if the AI should proactively post a suggestion.
+    Returns {should_post: bool, message: str}
+    Only posts when genuinely useful — avoids spam.
+    """
+    if not recent_messages:
+        return {'should_post': False, 'message': ''}
+
+    chat_text = '\n'.join(f"{m['sender__username']}: {m['content']}" for m in recent_messages[-8:])
+    todo_count = sum(1 for t in tasks if t.get('status') == 'todo')
+    done_count = sum(1 for t in tasks if t.get('status') == 'done')
+
+    type_context = {
+        'startup': 'startup team building a product/business',
+        'study_group': 'study group preparing for exams',
+        'group_project': 'group working on an academic project',
+        'general': 'collaborative team',
+    }.get(workspace_type, 'team')
+
+    prompt = f"""You are an AI assistant monitoring a {type_context} workspace chat.
+
+Workspace: {workspace_name}
+Members: {', '.join(members)}
+Tasks: {done_count} done, {todo_count} remaining
+
+Recent chat:
+{chat_text}
+
+Should you proactively post a helpful suggestion, warning, or insight based on this conversation?
+
+Rules:
+- Only post if there's something genuinely useful to add (a risk, a missed point, a helpful resource, a decision that needs clarification)
+- Do NOT post just to be present — silence is better than noise
+- Keep it short (1-2 sentences max)
+- Be specific to what was discussed
+
+Return JSON:
+{{"should_post": true or false, "message": "your message if should_post is true, else empty string"}}
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=200)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        result = json.loads(raw[start:end]) if start >= 0 else None
+        if result and isinstance(result.get('should_post'), bool):
+            return result
+    except Exception:
+        pass
+    return {'should_post': False, 'message': ''}

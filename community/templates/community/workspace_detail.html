@@ -397,7 +397,12 @@
     <div class="ws-panel" id="panel-tasks">
       <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
         <span style="font-size:.875rem;font-weight:700;">Study Board</span>
-        <button class="btn btn-primary btn-sm" onclick="toggleTaskForm()">+ Add Task</button>
+        <div style="display:flex;gap:.5rem;">
+          {% if ws.workspace_type == 'group_project' %}
+          <button class="btn btn-ghost btn-sm" onclick="showPanel('ai-manager', document.getElementById('nav-ai-manager')); aimShowView('finish', document.getElementById('aim-tab-finish')); aimTriggerAssembly()">🔗 Final Assembly</button>
+          {% endif %}
+          <button class="btn btn-primary btn-sm" onclick="toggleTaskForm()">+ Add Task</button>
+        </div>
       </div>
       <div id="task-add-form" class="task-add-form" style="margin:0 1rem;margin-top:.75rem;">
         <input type="text" id="task-title" placeholder="Task title…" maxlength="255">
@@ -412,14 +417,15 @@
         <div class="task-col" id="col-todo">
           <div class="task-col-head"><span>To Do</span><span id="todo-count" style="background:var(--s5);padding:.1rem .35rem;border-radius:10px;">{{ tasks|length }}</span></div>
           {% for t in tasks %}{% if t.status == 'todo' %}
-          <div class="task-card" id="task-{{ t.id }}">
+          <div class="task-card" id="task-{{ t.id }}" data-review="{{ t.review_status }}">
             <div class="task-card-title">{{ t.title }}</div>
             <div class="task-card-meta">
               {% if t.assigned_to %}<span>@{{ t.assigned_to.username }}</span>{% endif %}
               {% if t.due_date %}<span>Due {{ t.due_date }}</span>{% endif %}
             </div>
-            <div style="display:flex;gap:.375rem;margin-top:.375rem;">
+            <div style="display:flex;gap:.375rem;margin-top:.375rem;flex-wrap:wrap;">
               <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="wsUpdateTask('{{ t.id }}','doing')">→ Doing</button>
+              <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="openSubmitModal('{{ t.id }}','{{ t.title|escapejs }}')">📤 Submit</button>
             </div>
           </div>
           {% endif %}{% endfor %}
@@ -427,14 +433,24 @@
         <div class="task-col" id="col-doing">
           <div class="task-col-head"><span style="color:#f59e0b;">In Progress</span></div>
           {% for t in tasks %}{% if t.status == 'doing' %}
-          <div class="task-card" id="task-{{ t.id }}">
+          <div class="task-card" id="task-{{ t.id }}" data-review="{{ t.review_status }}">
             <div class="task-card-title">{{ t.title }}</div>
             <div class="task-card-meta">
               {% if t.assigned_to %}<span>@{{ t.assigned_to.username }}</span>{% endif %}
               {% if t.due_date %}<span>Due {{ t.due_date }}</span>{% endif %}
+              {% if t.review_status == 'pending' %}<span style="color:#f59e0b;">⏳ Pending review</span>{% endif %}
+              {% if t.review_status == 'revision' %}<span style="color:#ef4444;">🔄 Revision needed</span>{% endif %}
+              {% if t.review_status == 'approved' %}<span style="color:var(--green);">✅ Approved</span>{% endif %}
             </div>
-            <div style="display:flex;gap:.375rem;margin-top:.375rem;">
+            {% if t.review_feedback %}
+            <div style="font-size:.6875rem;color:var(--t3);margin-top:.25rem;padding:.375rem .5rem;background:var(--s4);border-radius:4px;line-height:1.4;">{{ t.review_feedback|truncatechars:100 }}</div>
+            {% endif %}
+            <div style="display:flex;gap:.375rem;margin-top:.375rem;flex-wrap:wrap;">
               <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="wsUpdateTask('{{ t.id }}','done')">✓ Done</button>
+              <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="openSubmitModal('{{ t.id }}','{{ t.title|escapejs }}')">📤 Submit</button>
+              {% if t.review_status == 'pending' %}
+              <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;color:#818cf8;" onclick="wsReviewTask('{{ t.id }}')">🤖 AI Review</button>
+              {% endif %}
             </div>
           </div>
           {% endif %}{% endfor %}
@@ -442,11 +458,27 @@
         <div class="task-col" id="col-done">
           <div class="task-col-head"><span style="color:var(--green);">Done</span></div>
           {% for t in tasks %}{% if t.status == 'done' %}
-          <div class="task-card" id="task-{{ t.id }}" style="opacity:.6;">
+          <div class="task-card" id="task-{{ t.id }}" data-review="{{ t.review_status }}" style="opacity:.7;">
             <div class="task-card-title" style="text-decoration:line-through;">{{ t.title }}</div>
-            <div class="task-card-meta">{% if t.assigned_to %}<span>@{{ t.assigned_to.username }}</span>{% endif %}</div>
+            <div class="task-card-meta">
+              {% if t.assigned_to %}<span>@{{ t.assigned_to.username }}</span>{% endif %}
+              {% if t.review_status == 'approved' %}<span style="color:var(--green);">✅ Approved</span>{% endif %}
+            </div>
           </div>
           {% endif %}{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Work Modal -->
+    <div id="submit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:1rem;">
+      <div style="background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:1.25rem;width:100%;max-width:520px;">
+        <div style="font-size:.9375rem;font-weight:700;margin-bottom:.75rem;">📤 Submit Work — <span id="submit-task-title"></span></div>
+        <div style="font-size:.75rem;color:var(--t3);margin-bottom:.5rem;">Paste or type your completed work below. The AI will review it against the project requirements.</div>
+        <textarea id="submit-content" style="width:100%;min-height:160px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.8125rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Paste your completed work here…"></textarea>
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.75rem;">
+          <button class="btn btn-ghost btn-sm" onclick="closeSubmitModal()">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="wsSubmitTask()">Submit for Review</button>
         </div>
       </div>
     </div>
@@ -680,6 +712,7 @@
                   <option value="report">Full Project Report</option>
                   <option value="slides">Presentation Outline (Slides)</option>
                   <option value="summary">Executive Summary</option>
+                  {% if ws.workspace_type == 'group_project' %}<option value="assembly">🔗 Merge Approved Submissions</option>{% endif %}
                 </select>
               </div>
               <button class="btn btn-primary btn-sm" style="width:100%;" onclick="aimGenerateDoc()">
@@ -1524,6 +1557,7 @@ function aimAddMeetingTask(idx, item) {
 /* ── Auto-Complete / Finish ── */
 function aimGenerateDoc() {
   const docType = document.getElementById('aim-finish-type').value;
+  if (docType === 'assembly') { aimGenerateAssembly(); return; }
   const result = document.getElementById('aim-finish-result');
   result.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Generating document…</div>';
 
@@ -1556,5 +1590,187 @@ setTimeout(aimLoadContributions, 1000);
 document.getElementById('aim-chat-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.querySelector('.aim-chat-form').dispatchEvent(new Event('submit')); }
 });
+
+/* ── Task Submission & AI Review ── */
+let activeSubmitTaskId = null;
+
+function openSubmitModal(taskId, taskTitle) {
+  activeSubmitTaskId = taskId;
+  document.getElementById('submit-task-title').textContent = taskTitle;
+  document.getElementById('submit-content').value = '';
+  document.getElementById('submit-modal').style.display = 'flex';
+}
+
+function closeSubmitModal() {
+  document.getElementById('submit-modal').style.display = 'none';
+  activeSubmitTaskId = null;
+}
+
+function wsSubmitTask() {
+  const content = document.getElementById('submit-content').value.trim();
+  if (!content || !activeSubmitTaskId) return;
+  const taskId = activeSubmitTaskId;
+  closeSubmitModal();
+
+  fetch('/community/workspaces/' + WS_ID + '/tasks/' + taskId + '/submit/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ submission: content }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { alert(data.error); return; }
+      const card = document.getElementById('task-' + taskId);
+      if (card) {
+        card.dataset.review = 'pending';
+        // Add pending badge
+        let meta = card.querySelector('.task-card-meta');
+        if (meta) {
+          const existing = meta.querySelector('.review-badge');
+          if (existing) existing.remove();
+          const badge = document.createElement('span');
+          badge.className = 'review-badge';
+          badge.style.cssText = 'color:#f59e0b;';
+          badge.textContent = '⏳ Pending review';
+          meta.appendChild(badge);
+        }
+        // Add AI Review button
+        let actions = card.querySelector('[style*="display:flex"]');
+        if (actions && !actions.querySelector('.ai-review-btn')) {
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-ghost btn-sm ai-review-btn';
+          btn.style.cssText = 'font-size:.7rem;padding:.2rem .45rem;color:#818cf8;';
+          btn.textContent = '🤖 AI Review';
+          btn.onclick = () => wsReviewTask(taskId);
+          actions.appendChild(btn);
+        }
+      }
+      // Auto-trigger AI review
+      setTimeout(() => wsReviewTask(taskId), 800);
+    })
+    .catch(() => alert('Submission failed. Try again.'));
+}
+
+function wsReviewTask(taskId) {
+  const card = document.getElementById('task-' + taskId);
+  const reviewBtn = card ? card.querySelector('.ai-review-btn') : null;
+  if (reviewBtn) { reviewBtn.textContent = '⏳ Reviewing…'; reviewBtn.disabled = true; }
+
+  fetch('/community/workspaces/' + WS_ID + '/tasks/' + taskId + '/review/')
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { alert(data.error); if (reviewBtn) { reviewBtn.textContent = '🤖 AI Review'; reviewBtn.disabled = false; } return; }
+      if (!card) return;
+      card.dataset.review = data.status;
+      const meta = card.querySelector('.task-card-meta');
+      if (meta) {
+        const existing = meta.querySelector('.review-badge');
+        if (existing) existing.remove();
+        const badge = document.createElement('span');
+        badge.className = 'review-badge';
+        if (data.status === 'approved') {
+          badge.style.cssText = 'color:var(--green);';
+          badge.textContent = '✅ Approved';
+          card.style.opacity = '.7';
+          // Move to done column
+          const doneCol = document.getElementById('col-done');
+          if (doneCol) doneCol.appendChild(card);
+        } else {
+          badge.style.cssText = 'color:#ef4444;';
+          badge.textContent = '🔄 Revision needed';
+        }
+        meta.appendChild(badge);
+      }
+      // Show feedback
+      let feedbackEl = card.querySelector('.review-feedback');
+      if (!feedbackEl) {
+        feedbackEl = document.createElement('div');
+        feedbackEl.className = 'review-feedback';
+        feedbackEl.style.cssText = 'font-size:.6875rem;color:var(--t3);margin-top:.25rem;padding:.375rem .5rem;background:var(--s4);border-radius:4px;line-height:1.4;';
+        card.insertBefore(feedbackEl, card.querySelector('[style*="display:flex"]'));
+      }
+      feedbackEl.textContent = data.feedback || '';
+      if (reviewBtn) reviewBtn.remove();
+    })
+    .catch(() => { if (reviewBtn) { reviewBtn.textContent = '🤖 AI Review'; reviewBtn.disabled = false; } });
+}
+
+/* ── Final Assembly trigger from task board ── */
+function aimTriggerAssembly() {
+  setTimeout(() => aimGenerateAssembly(), 300);
+}
+
+function aimGenerateAssembly() {
+  const result = document.getElementById('aim-finish-result');
+  if (!result) return;
+  result.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Assembling final document from approved submissions…</div>';
+
+  fetch('/community/workspaces/' + WS_ID + '/assembly/')
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { result.innerHTML = `<div style="color:var(--red);font-size:.8125rem;">${esc(data.error)}</div>`; return; }
+      let html = '';
+      if (data.title) html += `<div class="aim-section"><div class="aim-section-title">Final Document</div><div class="aim-card"><p style="font-size:.9375rem;font-weight:700;color:var(--t1);">${esc(data.title)}</p></div></div>`;
+      if (data.editor_notes) html += `<div class="aim-card" style="margin-bottom:.75rem;"><p style="font-size:.6875rem;color:var(--t3);">📝 Editor notes: ${esc(data.editor_notes)}</p></div>`;
+      if (data.sections && data.sections.length) {
+        data.sections.forEach(s => {
+          html += `<div class="aim-card" style="margin-bottom:.5rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:.375rem;">
+              <span style="font-size:.8125rem;font-weight:700;">${esc(s.heading)}</span>
+              ${s.author ? `<span style="font-size:.6875rem;color:var(--t3);">by @${esc(s.author)}</span>` : ''}
+            </div>
+            <p style="white-space:pre-wrap;font-size:.8125rem;">${esc(s.content)}</p>
+          </div>`;
+        });
+      }
+      if (data.word_count) html += `<div style="font-size:.6875rem;color:var(--t3);margin-top:.5rem;">~${data.word_count} words</div>`;
+      result.innerHTML = html || '<div style="color:var(--t3);font-size:.8125rem;">No content assembled.</div>';
+    })
+    .catch(() => { result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Assembly failed. Try again.</div>'; });
+}
+
+/* ── Proactive AI Chat Participation ── */
+let proactiveMsgCount = 0;
+const PROACTIVE_THRESHOLD = 8; // check every 8 new messages
+
+function checkProactiveAI() {
+  proactiveMsgCount++;
+  if (proactiveMsgCount < PROACTIVE_THRESHOLD) return;
+  proactiveMsgCount = 0;
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/proactive/')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.should_post || !data.message) return;
+      // Show as a special AI suggestion bubble in the chat
+      const msgs = document.getElementById('ws-chat-msgs');
+      if (!msgs) return;
+      const div = document.createElement('div');
+      div.className = 'ws-msg-wrap theirs';
+      div.innerHTML = `
+        <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div>
+        <div class="ws-msg-group">
+          <span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span>
+          <div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(data.message)}</div>
+        </div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    })
+    .catch(() => {});
+}
+
+// Hook into the existing poll to count new messages
+const _origWsPoll = wsPoll;
+wsPoll = function() {
+  const before = seenIds.size;
+  _origWsPoll();
+  // We can't easily count here since wsPoll is async, so we hook appendWsMsg instead
+};
+
+const _origAppendWsMsg = appendWsMsg;
+appendWsMsg = function(data, isMine) {
+  _origAppendWsMsg(data, isMine);
+  if (!isMine) checkProactiveAI();
+};
 </script>
 {% endblock %}

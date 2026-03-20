@@ -691,6 +691,17 @@ class WorkspaceTask(models.Model):
         (STATUS_DONE, 'Done'),
     ]
 
+    REVIEW_NONE = 'none'
+    REVIEW_PENDING = 'pending'
+    REVIEW_APPROVED = 'approved'
+    REVIEW_REVISION = 'revision'
+    REVIEW_CHOICES = [
+        (REVIEW_NONE, 'No submission'),
+        (REVIEW_PENDING, 'Pending review'),
+        (REVIEW_APPROVED, 'Approved'),
+        (REVIEW_REVISION, 'Revision requested'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
     workspace = models.ForeignKey(
         GroupWorkspace, on_delete=models.CASCADE, related_name='tasks'
@@ -711,6 +722,11 @@ class WorkspaceTask(models.Model):
     description = models.TextField(blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_TODO)
     due_date = models.DateField(null=True, blank=True)
+    # Contribution / review fields
+    submission = models.TextField(blank=True)
+    review_status = models.CharField(max_length=10, choices=REVIEW_CHOICES, default=REVIEW_NONE)
+    review_feedback = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
