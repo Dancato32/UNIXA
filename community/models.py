@@ -452,6 +452,13 @@ class Notification(models.Model):
         blank=True,
         related_name='notifications',
     )
+    conversation = models.ForeignKey(
+        'Conversation',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='notifications',
+    )
     is_read = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

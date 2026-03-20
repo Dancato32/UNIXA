@@ -140,18 +140,27 @@ def on_friendship_change(sender, instance, created, **kwargs):
 def on_new_message(sender, instance, created, **kwargs):
     if not created:
         return
-    # Only notify for non-empty, non-system messages
+    # Skip empty messages
     if not instance.content and not instance.voice_note and not instance.media:
         return
-    convo = instance.conversation
-    # Notify all other participants
     try:
-        participants = convo.participants.exclude(id=instance.sender_id)
-        for recipient in participants:
+        from community.models import Conversation
+        convo = Conversation.objects.prefetch_related('participants').get(pk=instance.conversation_id)
+        recipients = convo.participants.exclude(id=instance.sender_id)
+        for recipient in recipients:
+            # Upsert: replace any existing unread message notification from this
+            # sender to this recipient so the inbox doesn't get spammed.
+            Notification.objects.filter(
+                recipient=recipient,
+                actor=instance.sender,
+                type=Notification.TYPE_MESSAGE,
+                is_read=False,
+            ).delete()
             Notification.objects.create(
                 recipient=recipient,
                 actor=instance.sender,
                 type=Notification.TYPE_MESSAGE,
+                conversation=convo,
             )
     except Exception:
         pass

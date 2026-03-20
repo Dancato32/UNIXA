@@ -89,7 +89,7 @@
       {% elif notif.type == 'friend_accepted' %}
         accepted your friend request &mdash; <a href="{% url 'community:dm_start' notif.actor.username %}">say hi 👋</a>
       {% elif notif.type == 'message' %}
-        sent you a <a href="{% url 'community:messages' %}">message</a>
+        sent you a <a href="{% if notif.conversation %}{% url 'community:conversation_detail' notif.conversation.id %}{% else %}{% url 'community:messages' %}{% endif %}">message</a>
       {% elif notif.type == 'join' %}
         joined your community
       {% elif notif.type == 'mention' %}
