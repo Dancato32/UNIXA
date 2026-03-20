@@ -870,10 +870,16 @@ def workspace_create(request):
         if privacy not in (GroupWorkspace.PRIVACY_PRIVATE, GroupWorkspace.PRIVACY_REQUEST):
             privacy = GroupWorkspace.PRIVACY_PRIVATE
 
+        ws_type = request.POST.get('workspace_type', GroupWorkspace.TYPE_GENERAL)
+        valid_types = [t[0] for t in GroupWorkspace.TYPE_CHOICES]
+        if ws_type not in valid_types:
+            ws_type = GroupWorkspace.TYPE_GENERAL
+
         ws = GroupWorkspace.objects.create(
             name=name,
             description=description,
             subject=subject,
+            workspace_type=ws_type,
             privacy=privacy,
             owner=request.user,
         )
@@ -1586,6 +1592,7 @@ def workspace_ai_chat(request, ws_id):
 
     context = {
         'workspace_name': ws.name,
+        'workspace_type': ws.workspace_type,
         'members': members,
         'tasks': tasks_clean,
         'files': list(files),

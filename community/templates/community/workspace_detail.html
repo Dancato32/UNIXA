@@ -217,6 +217,7 @@
     <div class="ws-sidebar-head">
       <div class="ws-sidebar-name">{{ ws.name }}</div>
       {% if ws.subject %}<div class="ws-sidebar-sub">{{ ws.subject }}</div>{% endif %}
+      <div style="margin-top:.25rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);">{% if ws.workspace_type == 'startup' %}🚀 Startup{% elif ws.workspace_type == 'study_group' %}📚 Study Group{% elif ws.workspace_type == 'group_project' %}📋 Group Project{% else %}🤝 General{% endif %}</div>
     </div>
     <div class="ws-nav">
       <div class="ws-nav-section">Workspace</div>
@@ -526,16 +527,46 @@
           <!-- Chat view -->
           <div class="aim-view active" id="aim-view-chat">
             <div class="aim-quick-prompts">
+              {% if ws.workspace_type == 'startup' %}
+              <button class="aim-qp" onclick="aimQuickPrompt('Validate our startup idea and identify key risks')">💡 Validate idea</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Define our target market and estimate market size')">📊 Market analysis</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Suggest a business model and revenue strategy for us')">💰 Business model</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('What should our MVP include and what can we cut?')">🎯 Define MVP</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Help us structure a pitch deck for investors')">🎤 Pitch deck</button>
+              {% elif ws.workspace_type == 'study_group' %}
+              <button class="aim-qp" onclick="aimQuickPrompt('Summarize the uploaded notes into key points')">📝 Summarize notes</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Generate 10 practice questions from our materials')">❓ Practice questions</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Create a study schedule for our upcoming exam')">📅 Study schedule</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('What are the most likely exam topics based on our notes?')">🎯 Exam topics</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Generate flashcards from the uploaded content')">🃏 Flashcards</button>
+              {% elif ws.workspace_type == 'group_project' %}
+              <button class="aim-qp" onclick="aimQuickPrompt('Break this project into tasks and assign them to team members')">📋 Generate tasks</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('What are the project requirements and deliverables?')">📌 Requirements</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Who is behind on tasks and what should they do next?')">👥 Who is behind?</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Give me a full project health report')">📊 Health report</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Help us assemble the final submission document')">✅ Final assembly</button>
+              {% else %}
               <button class="aim-qp" onclick="aimQuickPrompt('Break this project into tasks and assign them to team members')">📋 Generate tasks</button>
               <button class="aim-qp" onclick="aimQuickPrompt('What is the project deadline and what should we prioritize?')">⏰ Deadline check</button>
               <button class="aim-qp" onclick="aimQuickPrompt('Write a project introduction paragraph for our report')">✍️ Write intro</button>
               <button class="aim-qp" onclick="aimQuickPrompt('Who is behind on tasks and what should they do next?')">👥 Who is behind?</button>
               <button class="aim-qp" onclick="aimQuickPrompt('Give me a full project health report')">📊 Health report</button>
+              {% endif %}
             </div>
             <div class="aim-chat-msgs" id="aim-chat-msgs">
               <div class="aim-msg ai">
                 <div class="aim-msg-av ai-av">AI</div>
-                <div class="aim-bubble">👋 I'm your AI Project Manager for <strong>{{ ws.name }}</strong>.<br><br>I can help you break down assignments, assign tasks, track progress, write content, and keep your team on schedule.<br><br>Upload your assignment brief in the Files tab, then ask me to analyze it — or just ask me anything!</div>
+                <div class="aim-bubble">
+                  {% if ws.workspace_type == 'startup' %}
+                  🚀 I'm your <strong>Startup Advisor</strong> for <strong>{{ ws.name }}</strong>.<br><br>I can help you validate your idea, analyze your market, define your MVP, build a business model, and prepare your pitch.<br><br>Tell me about your startup idea to get started!
+                  {% elif ws.workspace_type == 'study_group' %}
+                  📚 I'm your <strong>Academic Coach</strong> for <strong>{{ ws.name }}</strong>.<br><br>Upload your notes or lecture slides and I'll summarize them, generate practice questions, build flashcards, and help you prepare for exams.<br><br>What are you studying today?
+                  {% elif ws.workspace_type == 'group_project' %}
+                  📋 I'm your <strong>Project Manager</strong> for <strong>{{ ws.name }}</strong>.<br><br>Upload your assignment brief and I'll extract requirements, break the work into tasks, assign responsibilities, and help assemble the final submission.<br><br>Start by uploading your project files!
+                  {% else %}
+                  👋 I'm your <strong>AI Assistant</strong> for <strong>{{ ws.name }}</strong>.<br><br>I can help you organize tasks, brainstorm ideas, track progress, write content, and keep your team aligned.<br><br>Ask me anything!
+                  {% endif %}
+                </div>
               </div>
             </div>
             <div class="aim-chat-input-area">
@@ -711,6 +742,7 @@
 const CSRF = '{{ csrf_token }}';
 const WS_ID = '{{ ws.id }}';
 const MY_USERNAME = '{{ user.username }}';
+const WS_TYPE = '{{ ws.workspace_type }}';
 {% if user.community_profile.avatar %}const MY_AVATAR = '{{ user.community_profile.avatar.url }}';{% else %}const MY_AVATAR = null;{% endif %}
 
 /* ── Panel switching ── */

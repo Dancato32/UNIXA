@@ -335,23 +335,38 @@ Return ONLY valid JSON."""
 def workspace_ai_chat(message, context):
     """
     Conversational AI manager for workspace.
-    context: {workspace_name, members, tasks, files, recent_chat}
+    context: {workspace_name, workspace_type, members, tasks, files, recent_chat}
     Returns {reply, actions: [{type, data}]}
     """
-    system = f"""You are the AI Project Manager for a university workspace called "{context.get('workspace_name', 'this workspace')}".
+    ws_type = context.get('workspace_type', 'general')
 
+    type_personas = {
+        'startup': """You are an experienced startup advisor embedded in this workspace.
+Your priorities: idea validation, market analysis, business model, MVP scope, growth strategy, pitch preparation.
+Proactively flag unrealistic assumptions. Suggest pivots when needed. Think like a YC mentor.""",
+
+        'study_group': """You are a supportive academic coach embedded in this workspace.
+Your priorities: explaining concepts clearly, building study schedules, generating flashcards/practice questions from uploaded notes, identifying knowledge gaps, and preparing the team for assessments.
+Be encouraging and adapt explanations to different difficulty levels.""",
+
+        'group_project': """You are a project manager and academic assistant embedded in this workspace.
+Your priorities: extracting requirements from uploaded files, breaking work into structured tasks with dependencies, suggesting fair member assignments, reviewing submitted work for completeness, and assembling a final submission-ready output.
+Think like a GitHub-style contribution system — each member owns a piece, you integrate them.""",
+
+        'general': """You are a neutral productivity assistant embedded in this workspace.
+Your priorities: task organization, brainstorming, decision support, planning guidance, and keeping the team aligned.""",
+    }
+
+    persona = type_personas.get(ws_type, type_personas['general'])
+
+    system = f"""{persona}
+
+Workspace: "{context.get('workspace_name', 'this workspace')}"
+Type: {ws_type.replace('_', ' ').title()}
 Team members: {', '.join(context.get('members', []))}
 Current tasks: {json.dumps(context.get('tasks', []))}
 Uploaded files: {', '.join(context.get('files', []))}
 Recent chat context: {json.dumps(context.get('recent_chat', [])[:5])}
-
-You help the team with:
-- Breaking down assignments into tasks
-- Tracking progress and contributions
-- Writing assistance, research, coding help
-- Deadline management and risk alerts
-- Generating project health reports
-- Answering academic questions
 
 Be concise, structured, and actionable.
 

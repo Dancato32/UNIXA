@@ -550,10 +550,24 @@ class GroupWorkspace(models.Model):
         (PRIVACY_REQUEST, 'Visible, join by request'),
     ]
 
+    TYPE_STARTUP = 'startup'
+    TYPE_STUDY = 'study_group'
+    TYPE_PROJECT = 'group_project'
+    TYPE_GENERAL = 'general'
+    TYPE_CHOICES = [
+        (TYPE_STARTUP, 'Startup'),
+        (TYPE_STUDY, 'Study Group'),
+        (TYPE_PROJECT, 'Group Project'),
+        (TYPE_GENERAL, 'General Collaboration'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     subject = models.CharField(max_length=100, blank=True)
+    workspace_type = models.CharField(
+        max_length=20, choices=TYPE_CHOICES, default=TYPE_GENERAL
+    )
     privacy = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default=PRIVACY_PRIVATE)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
