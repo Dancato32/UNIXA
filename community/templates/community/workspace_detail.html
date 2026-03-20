@@ -510,6 +510,14 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span>Contributions</span>
           </button>
+          <button class="aim-tab" id="aim-tab-meeting" onclick="aimShowView('meeting',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span>Meeting</span>
+          </button>
+          <button class="aim-tab" id="aim-tab-finish" onclick="aimShowView('finish',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 11 12 14 22 4"/></svg>
+            <span>Finish</span>
+          </button>
         </div>
 
         <!-- AI Manager main area -->
@@ -583,7 +591,7 @@
               <div id="aim-contrib-inner">
                 {% with members_list=members %}
                 {% for m in members_list %}
-                <div class="aim-card" style="margin-bottom:.5rem;">
+                <div class="aim-card" style="margin-bottom:.5rem;" data-username="{{ m.user.username }}">
                   <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:.5rem;">
                     <div class="ws-member-av" style="width:32px;height:32px;font-size:.75rem;">
                       {% if m.user.community_profile.avatar %}<img src="{{ m.user.community_profile.avatar.url }}" alt="">{% else %}{{ m.user.username|slice:":1"|upper }}{% endif %}
@@ -593,14 +601,14 @@
                       <div style="font-size:.6875rem;color:var(--t3);">{{ m.get_role_display }}</div>
                     </div>
                     <div style="margin-left:auto;text-align:right;">
-                      <div style="font-size:.75rem;font-weight:700;" id="contrib-tasks-{{ m.user.id }}">
-                        {{ tasks|length }} tasks
+                      <div style="font-size:.75rem;font-weight:700;" class="contrib-task-count">
+                        — tasks
                       </div>
                     </div>
                   </div>
                   <div style="font-size:.6875rem;color:var(--t3);margin-bottom:.25rem;">Task contribution</div>
                   <div class="aim-contrib-bar">
-                    <div class="aim-contrib-fill" id="contrib-bar-{{ m.user.id }}" style="width:0%;transition:width .6s;"></div>
+                    <div class="aim-contrib-fill contrib-bar-fill" style="width:0%;transition:width .6s;"></div>
                   </div>
                 </div>
                 {% endfor %}
@@ -609,6 +617,45 @@
               <div style="margin-top:1rem;">
                 <button class="btn btn-ghost btn-sm" onclick="aimLoadContributions()" style="width:100%;">Recalculate from AI</button>
               </div>
+            </div>
+          </div>
+
+          <!-- Meeting Support view -->
+          <div class="aim-view" id="aim-view-meeting">
+            <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+              <span style="font-size:.875rem;font-weight:700;">Meeting Support</span>
+            </div>
+            <div class="aim-scroll">
+              <div style="font-size:.75rem;color:var(--t3);margin-bottom:.75rem;">Paste your meeting notes or transcript below. The AI will extract a summary, decisions, and action items.</div>
+              <textarea id="aim-meeting-input" style="width:100%;min-height:140px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.8125rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Paste meeting transcript or notes here…"></textarea>
+              <button class="btn btn-primary btn-sm" style="margin-top:.625rem;width:100%;" onclick="aimProcessMeeting()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+                Process with AI
+              </button>
+              <div id="aim-meeting-result" style="margin-top:1rem;"></div>
+            </div>
+          </div>
+
+          <!-- Auto-Complete / Finish view -->
+          <div class="aim-view" id="aim-view-finish">
+            <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);flex-shrink:0;">
+              <span style="font-size:.875rem;font-weight:700;">Auto-Complete Support</span>
+            </div>
+            <div class="aim-scroll">
+              <div style="font-size:.75rem;color:var(--t3);margin-bottom:.875rem;">Generate a final document from your uploaded files and completed tasks.</div>
+              <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.875rem;">
+                <label style="font-size:.75rem;color:var(--t3);">Document type</label>
+                <select id="aim-finish-type" style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.8125rem;outline:none;">
+                  <option value="report">Full Project Report</option>
+                  <option value="slides">Presentation Outline (Slides)</option>
+                  <option value="summary">Executive Summary</option>
+                </select>
+              </div>
+              <button class="btn btn-primary btn-sm" style="width:100%;" onclick="aimGenerateDoc()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Generate Document
+              </button>
+              <div id="aim-finish-result" style="margin-top:1rem;"></div>
             </div>
           </div>
 
@@ -1197,7 +1244,14 @@ function aimAppendTaskSuggestions(tasks) {
 }
 
 function aimAddSuggestedTask(idx, taskData) {
-  const btn = document.querySelector(`#aim-ts-${idx} .aim-task-suggest-add`);
+  // idx can be a number (chat suggestions: aim-ts-0) or string like 'brief-0' (brief suggestions: brief-ts-0)
+  let btn;
+  if (typeof idx === 'string' && idx.startsWith('brief-')) {
+    const num = idx.replace('brief-', '');
+    btn = document.querySelector(`#brief-ts-${num} .aim-task-suggest-add`);
+  } else {
+    btn = document.querySelector(`#aim-ts-${idx} .aim-task-suggest-add`);
+  }
   if (btn && btn.classList.contains('added')) return;
   const fd = new FormData();
   fd.append('title', taskData.title || taskData);
@@ -1357,21 +1411,110 @@ function aimLoadContributions() {
       if (!data.work_distribution) return;
       const maxTasks = Math.max(...data.work_distribution.map(m => m.tasks || 0), 1);
       data.work_distribution.forEach(m => {
-        // Try to find member by username in the rendered cards
         const barPct = Math.round((m.tasks / maxTasks) * 100);
-        // Update bars by finding elements with matching username text
-        document.querySelectorAll('#aim-contrib-inner .aim-card').forEach(card => {
-          const nameEl = card.querySelector('[style*="font-weight:600"]');
-          if (nameEl && nameEl.textContent.trim() === m.member) {
-            const bar = card.querySelector('.aim-contrib-fill');
-            if (bar) bar.style.width = barPct + '%';
-            const taskEl = card.querySelector('[id^="contrib-tasks-"]');
-            if (taskEl) taskEl.textContent = m.tasks + ' task' + (m.tasks !== 1 ? 's' : '');
-          }
-        });
+        const card = document.querySelector(`#aim-contrib-inner .aim-card[data-username="${m.member}"]`);
+        if (!card) return;
+        const bar = card.querySelector('.contrib-bar-fill');
+        if (bar) bar.style.width = barPct + '%';
+        const taskEl = card.querySelector('.contrib-task-count');
+        if (taskEl) taskEl.textContent = m.tasks + ' task' + (m.tasks !== 1 ? 's' : '');
       });
     })
     .catch(() => {});
+}
+
+/* ── Meeting Support ── */
+function aimProcessMeeting() {
+  const transcript = document.getElementById('aim-meeting-input').value.trim();
+  if (!transcript) { alert('Please paste a meeting transcript first.'); return; }
+  const result = document.getElementById('aim-meeting-result');
+  result.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Processing transcript…</div>';
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/meeting/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF },
+    body: 'transcript=' + encodeURIComponent(transcript),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { result.innerHTML = `<div style="color:var(--red);font-size:.8125rem;">${esc(data.error)}</div>`; return; }
+      let html = '';
+      if (data.summary) html += `<div class="aim-section"><div class="aim-section-title">Summary</div><div class="aim-card"><p>${esc(data.summary)}</p></div></div>`;
+      if (data.key_topics && data.key_topics.length) {
+        html += `<div class="aim-section"><div class="aim-section-title">Key Topics</div><div class="aim-card"><p>${data.key_topics.map(t => '• ' + esc(t)).join('<br>')}</p></div></div>`;
+      }
+      if (data.decisions && data.decisions.length) {
+        html += `<div class="aim-section"><div class="aim-section-title">Decisions Made</div>`;
+        data.decisions.forEach(d => html += `<div class="aim-card"><p>✅ ${esc(d)}</p></div>`);
+        html += '</div>';
+      }
+      if (data.action_items && data.action_items.length) {
+        html += `<div class="aim-section"><div class="aim-section-title">Action Items</div>`;
+        data.action_items.forEach((item, i) => {
+          html += `<div class="aim-task-suggest" id="meeting-ts-${i}">
+            <div class="aim-task-suggest-info">
+              <div class="aim-task-suggest-title">${esc(item.task)}</div>
+              <div class="aim-task-suggest-meta">${item.assignee ? '@' + esc(item.assignee) : 'Unassigned'}${item.deadline_hint ? ' · ' + esc(item.deadline_hint) : ''}</div>
+            </div>
+            <button class="aim-task-suggest-add" onclick="aimAddMeetingTask(${i}, ${JSON.stringify(item).replace(/"/g,'&quot;')})">+ Add</button>
+          </div>`;
+        });
+        html += '</div>';
+      }
+      result.innerHTML = html || '<div style="color:var(--t3);font-size:.8125rem;">No structured data found.</div>';
+    })
+    .catch(() => { result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Failed. Try again.</div>'; });
+}
+
+function aimAddMeetingTask(idx, item) {
+  const btn = document.querySelector(`#meeting-ts-${idx} .aim-task-suggest-add`);
+  if (btn && btn.classList.contains('added')) return;
+  const fd = new FormData();
+  fd.append('title', item.task);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  if (item.assignee) fd.append('assigned_to', item.assignee);
+  fetch('/community/workspaces/' + WS_ID + '/tasks/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (btn) { btn.textContent = '✓ Added'; btn.classList.add('added'); }
+      const col = document.getElementById('col-todo');
+      if (col) {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        card.id = 'task-' + data.id;
+        card.innerHTML = `<div class="task-card-title">${esc(data.title)}</div><div class="task-card-meta">${data.assigned_to ? '<span>@' + esc(data.assigned_to) + '</span>' : ''}</div><div style="display:flex;gap:.375rem;margin-top:.375rem;"><button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="wsUpdateTask('${data.id}','doing')">→ Doing</button></div>`;
+        col.appendChild(card);
+      }
+    })
+    .catch(() => {});
+}
+
+/* ── Auto-Complete / Finish ── */
+function aimGenerateDoc() {
+  const docType = document.getElementById('aim-finish-type').value;
+  const result = document.getElementById('aim-finish-result');
+  result.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Generating document…</div>';
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/autocomplete/?type=' + encodeURIComponent(docType))
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { result.innerHTML = `<div style="color:var(--red);font-size:.8125rem;">${esc(data.error)}</div>`; return; }
+      let html = '';
+      if (data.title) html += `<div class="aim-section"><div class="aim-section-title">Document Title</div><div class="aim-card"><p style="font-size:.9375rem;font-weight:700;color:var(--t1);">${esc(data.title)}</p></div></div>`;
+      if (data.sections && data.sections.length) {
+        html += `<div class="aim-section"><div class="aim-section-title">Content</div>`;
+        data.sections.forEach(s => {
+          html += `<div class="aim-card" style="margin-bottom:.5rem;">
+            <div style="font-size:.8125rem;font-weight:700;margin-bottom:.375rem;">${esc(s.heading)}</div>
+            <p style="white-space:pre-wrap;">${esc(s.content)}</p>
+          </div>`;
+        });
+        html += '</div>';
+      }
+      if (data.word_count_estimate) html += `<div style="font-size:.6875rem;color:var(--t3);margin-top:.5rem;">~${data.word_count_estimate} words estimated</div>`;
+      result.innerHTML = html || '<div style="color:var(--t3);font-size:.8125rem;">No content generated.</div>';
+    })
+    .catch(() => { result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Failed. Try again.</div>'; });
 }
 
 // Auto-load contributions on page load

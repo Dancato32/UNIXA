@@ -353,28 +353,42 @@ You help the team with:
 - Generating project health reports
 - Answering academic questions
 
-Be concise, structured, and actionable. When you suggest tasks, format them clearly.
-If asked to generate tasks, include them in the actions array."""
+Be concise, structured, and actionable.
+
+IMPORTANT: When you suggest tasks (e.g. when asked to break down work, generate tasks, assign tasks, or split work),
+you MUST include them as a JSON block at the END of your response in this exact format:
+```tasks
+[{{"title":"Task title","description":"What to do","priority":"high|medium|low","estimated_hours":2,"suggested_assignee":"username or null"}}]
+```
+Only include the tasks block when you are actually suggesting tasks to add to the board."""
 
     raw = _chat([
         {'role': 'system', 'content': system},
         {'role': 'user', 'content': message},
     ], max_tokens=1000)
 
-    # Try to extract structured actions if present
     actions = []
     reply = raw
 
-    # Check if response contains task suggestions
-    if any(kw in message.lower() for kw in ['task', 'break down', 'assign', 'split', 'divide']):
-        # Try to parse tasks from the response
+    # Extract tasks block if present
+    if '```tasks' in raw:
         try:
-            if '```json' in raw:
-                json_part = raw.split('```json')[1].split('```')[0].strip()
-                parsed = json.loads(json_part)
-                if isinstance(parsed, list):
-                    actions = [{'type': 'tasks', 'data': parsed}]
-                    reply = raw.split('```json')[0].strip()
+            parts = raw.split('```tasks')
+            reply = parts[0].strip()
+            json_part = parts[1].split('```')[0].strip()
+            parsed = json.loads(json_part)
+            if isinstance(parsed, list) and parsed:
+                actions = [{'type': 'tasks', 'data': parsed}]
+        except Exception:
+            pass
+    elif '```json' in raw:
+        try:
+            parts = raw.split('```json')
+            json_part = parts[1].split('```')[0].strip()
+            parsed = json.loads(json_part)
+            if isinstance(parsed, list) and parsed and isinstance(parsed[0], dict) and 'title' in parsed[0]:
+                actions = [{'type': 'tasks', 'data': parsed}]
+                reply = parts[0].strip()
         except Exception:
             pass
 
@@ -440,3 +454,94 @@ Return ONLY valid JSON."""
         'next_actions': ['Add tasks to the board', 'Assign tasks to members', 'Upload project files'],
         'summary': f'Project is {completion}% complete with {len(todo)} tasks remaining.',
     }
+
+
+def analyze_meeting_transcript(transcript, workspace_name, members):
+    """
+    Analyze a meeting transcript and extract:
+    - summary, decisions, action_items (with assignee + deadline hints)
+    Returns {summary, decisions, action_items}
+    """
+    members_list = ', '.join(members)
+    prompt = f"""You are an AI meeting analyst for a university project team.
+
+Workspace: {workspace_name}
+Team members: {members_list}
+
+Meeting transcript:
+{transcript[:3000]}
+
+Extract and return structured meeting notes as JSON:
+{{
+  "summary": "2-3 sentence meeting summary",
+  "decisions": ["decision 1", "decision 2"],
+  "action_items": [
+    {{
+      "task": "What needs to be done",
+      "assignee": "username or null if unclear",
+      "deadline_hint": "any deadline mentioned or null"
+    }}
+  ],
+  "key_topics": ["topic 1", "topic 2"]
+}}
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=900)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        return json.loads(raw[start:end]) if start >= 0 else None
+    except Exception:
+        return None
+
+
+def generate_autocomplete_doc(workspace_name, members, tasks, files_data, doc_type='report'):
+    """
+    Generate a final document draft, presentation outline, or executive summary.
+    doc_type: 'report' | 'slides' | 'summary'
+    Returns {type, title, content, sections}
+    """
+    files_text = '\n\n'.join(
+        f"FILE: {f['name']}\n{f['content_preview'][:600]}" for f in files_data
+    ) if files_data else 'No files uploaded.'
+
+    done_tasks = [t['title'] for t in tasks if t.get('status') == 'done']
+    todo_tasks = [t['title'] for t in tasks if t.get('status') != 'done']
+
+    type_instructions = {
+        'report': 'Generate a structured academic project report with: Title, Abstract, Introduction, Methodology, Results/Findings, Conclusion, and References placeholder.',
+        'slides': 'Generate a presentation outline with 6-10 slides. For each slide: title + 3-5 bullet points.',
+        'summary': 'Generate a concise executive summary (max 300 words) covering objectives, progress, key findings, and next steps.',
+    }
+    instruction = type_instructions.get(doc_type, type_instructions['report'])
+
+    prompt = f"""You are an AI writing assistant for a university project team.
+
+Project: {workspace_name}
+Team: {', '.join(members)}
+Completed tasks: {json.dumps(done_tasks)}
+Remaining tasks: {json.dumps(todo_tasks)}
+
+Uploaded files context:
+{files_text}
+
+Task: {instruction}
+
+Return JSON:
+{{
+  "type": "{doc_type}",
+  "title": "Document title",
+  "sections": [
+    {{"heading": "Section heading", "content": "Section content or bullet points as a string"}}
+  ],
+  "word_count_estimate": 0
+}}
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=1800)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        return json.loads(raw[start:end]) if start >= 0 else None
+    except Exception:
+        return None

@@ -101,6 +101,8 @@ urlpatterns = [
     path('workspaces/<uuid:ws_id>/ai/chat/', views.workspace_ai_chat, name='workspace_ai_chat'),
     path('workspaces/<uuid:ws_id>/ai/analyze/', views.workspace_ai_analyze, name='workspace_ai_analyze'),
     path('workspaces/<uuid:ws_id>/ai/health/', views.workspace_ai_health, name='workspace_ai_health'),
+    path('workspaces/<uuid:ws_id>/ai/meeting/', views.workspace_ai_meeting, name='workspace_ai_meeting'),
+    path('workspaces/<uuid:ws_id>/ai/autocomplete/', views.workspace_ai_autocomplete, name='workspace_ai_autocomplete'),
 
     # REST API
     path('api/', include(router.urls)),

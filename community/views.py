@@ -1614,10 +1614,16 @@ def workspace_ai_analyze(request, ws_id):
     for f in files:
         preview = ''
         try:
-            # Try to read text content for analysis
-            f.file.open('rb')
-            raw_bytes = f.file.read(3000)
-            f.file.close()
+            # For Cloudinary/remote storage, fetch via URL; fallback to local open
+            file_url = f.file.url
+            if file_url.startswith('http'):
+                import requests as _req
+                resp = _req.get(file_url, timeout=8)
+                raw_bytes = resp.content[:3000]
+            else:
+                f.file.open('rb')
+                raw_bytes = f.file.read(3000)
+                f.file.close()
             try:
                 preview = raw_bytes.decode('utf-8', errors='ignore')
             except Exception:
@@ -1655,4 +1661,72 @@ def workspace_ai_health(request, ws_id):
     files = list(ws.files.values_list('original_name', flat=True))
 
     result = _health(ws.name, members_clean, tasks_clean, list(files))
+    return JsonResponse(result)
+
+@login_required
+@require_POST
+def workspace_ai_meeting(request, ws_id):
+    """Process a meeting transcript and return summary, decisions, action items."""
+    import json as _json
+    from ai_community.ai_engine import analyze_meeting_transcript as _meeting
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    transcript = request.POST.get('transcript', '').strip()
+    if not transcript:
+        try:
+            body = _json.loads(request.body)
+            transcript = body.get('transcript', '').strip()
+        except Exception:
+            pass
+
+    if not transcript:
+        return JsonResponse({'error': 'Transcript text is required.'}, status=400)
+
+    members = list(
+        WorkspaceMember.objects.filter(workspace=ws)
+        .values_list('user__username', flat=True)
+    )
+    result = _meeting(transcript, ws.name, members)
+    if not result:
+        return JsonResponse({'error': 'Could not process transcript. Try again.'}, status=500)
+    return JsonResponse(result)
+
+
+@login_required
+def workspace_ai_autocomplete(request, ws_id):
+    """Generate a final document draft or presentation outline from workspace files + tasks."""
+    import json as _json
+    from ai_community.ai_engine import generate_autocomplete_doc as _autocomplete
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    doc_type = request.GET.get('type', 'report')  # report | slides | summary
+
+    files = ws.files.select_related('uploaded_by').order_by('-uploaded_at')[:8]
+    tasks = list(ws.tasks.values('title', 'status', 'assigned_to__username'))
+    members = list(
+        WorkspaceMember.objects.filter(workspace=ws)
+        .values_list('user__username', flat=True)
+    )
+
+    files_data = []
+    for f in files:
+        preview = ''
+        try:
+            file_url = f.file.url
+            if file_url.startswith('http'):
+                import requests as _req
+                resp = _req.get(file_url, timeout=8)
+                raw_bytes = resp.content[:2000]
+            else:
+                f.file.open('rb')
+                raw_bytes = f.file.read(2000)
+                f.file.close()
+            preview = raw_bytes.decode('utf-8', errors='ignore')
+        except Exception:
+            preview = f'[Could not read: {f.original_name}]'
+        files_data.append({'name': f.original_name, 'content_preview': preview})
+
+    result = _autocomplete(ws.name, list(members), tasks, files_data, doc_type)
+    if not result:
+        return JsonResponse({'error': 'Could not generate document. Try again.'}, status=500)
     return JsonResponse(result)
