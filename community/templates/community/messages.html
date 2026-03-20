@@ -76,7 +76,6 @@
 .call-ctrl.end:hover{background:#c53030;}
 .call-ctrl.share{background:var(--s4);color:var(--t1);}
 .call-ctrl.share:hover{background:var(--s5);}
-.call-frame{flex:1;width:100%;border:none;}
 
 .chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.375rem;}
 /* Date separator */
@@ -442,7 +441,7 @@
     <img id="lb-img" src="" alt="">
   </div>
 
-  <!-- Call overlay -->
+  <!-- Call overlay — PeerJS WebRTC -->
   <div class="call-overlay" id="call-overlay">
     <div class="call-bar">
       <div class="call-bar-info">
@@ -451,9 +450,6 @@
         <span class="call-bar-timer" id="call-timer">0:00</span>
       </div>
       <div class="call-bar-actions">
-        <button class="call-ctrl share" onclick="copyCallLink()" title="Copy invite link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        </button>
         <button class="call-ctrl mute" id="mute-btn" onclick="toggleMute()" title="Mute">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </button>
@@ -465,7 +461,12 @@
         </button>
       </div>
     </div>
-    <iframe class="call-frame" id="call-frame" allow="camera; microphone; fullscreen; display-capture; autoplay" src=""></iframe>
+    <!-- Video streams -->
+    <div id="call-videos" style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;background:#000;overflow:hidden;">
+      <video id="remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+      <video id="local-video" autoplay playsinline muted style="position:absolute;bottom:1rem;right:1rem;width:120px;height:90px;object-fit:cover;border-radius:8px;border:2px solid rgba(255,255,255,.2);background:#111;"></video>
+      <div id="call-status-msg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1rem;font-weight:600;text-align:center;pointer-events:none;"></div>
+    </div>
   </div>
 
   {% else %}
@@ -484,6 +485,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script>
 const CSRF = '{{ csrf_token }}';
 {% if active_convo %}
@@ -782,10 +784,22 @@ function vpSeek(bar, e) {
 
 // Init players on page load
 initVoicePlayers();
+
+/* ── PeerJS WebRTC Calls ── */
 let callTimerInterval = null;
 let callSeconds = 0;
-let activeRoomUrl = null;
+let localStream = null;
+let activePeer = null;
+let activeCall = null;
 let callType = null;
+
+{% if active_convo %}
+const OTHER_USERNAME = '{{ other_user.username }}';
+{% endif %}
+
+function sanitizePeerId(s) {
+  return s.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
+}
 
 function startCall(type) {
   callType = type;
@@ -795,28 +809,81 @@ function startCall(type) {
     body: 'type=' + type,
   })
   .then(r => r.json())
-  .then(data => {
-    activeRoomUrl = data.room_url;
-    openCallOverlay(data.room_url, type);
+  .then(function(data) {
+    const myPeerId = data.peer_id;
+    const roomName = data.room_name;
+    const otherPeerId = roomName + sanitizePeerId(OTHER_USERNAME);
+
+    const constraints = type === 'video'
+      ? { audio: true, video: true }
+      : { audio: true, video: false };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then(function(stream) {
+        localStream = stream;
+
+        // Show local video
+        const localVid = document.getElementById('local-video');
+        if (localVid) { localVid.srcObject = stream; localVid.style.display = type === 'video' ? 'block' : 'none'; }
+
+        // Show overlay
+        openCallOverlay(type);
+
+        // Create peer
+        activePeer = new Peer(myPeerId, {
+          host: '0.peerjs.com',
+          key: '6303d4c1d55fcc381b9c8e9f',
+          port: 443,
+          secure: true,
+        });
+
+        activePeer.on('open', function() {
+          setCallStatus('Calling…');
+          activeCall = activePeer.call(otherPeerId, stream);
+          if (activeCall) {
+            activeCall.on('stream', function(remoteStream) {
+              const remoteVid = document.getElementById('remote-video');
+              if (remoteVid) { remoteVid.srcObject = remoteStream; }
+              setCallStatus('');
+            });
+            activeCall.on('close', endCall);
+            activeCall.on('error', endCall);
+          }
+        });
+
+        // Handle incoming call (other side picks up)
+        activePeer.on('call', function(incomingCall) {
+          incomingCall.answer(stream);
+          activeCall = incomingCall;
+          incomingCall.on('stream', function(remoteStream) {
+            const remoteVid = document.getElementById('remote-video');
+            if (remoteVid) { remoteVid.srcObject = remoteStream; }
+            setCallStatus('');
+          });
+          incomingCall.on('close', endCall);
+        });
+
+        activePeer.on('error', function(err) {
+          console.warn('PeerJS error:', err);
+          setCallStatus('Connection error. Try again.');
+        });
+      })
+      .catch(function(err) {
+        alert('Could not access camera/microphone. Please allow access and try again.');
+      });
   })
   .catch(function() { alert('Could not start call. Please try again.'); });
 }
 
-function openCallOverlay(roomUrl, type) {
+function openCallOverlay(type) {
   const overlay = document.getElementById('call-overlay');
-  const frame = document.getElementById('call-frame');
   const label = document.getElementById('call-label');
   const camBtn = document.getElementById('cam-btn');
 
-  // Append username so Daily prebuilt shows their name
-  const url = roomUrl + '?userName=' + encodeURIComponent(MY_USERNAME);
-  frame.src = url;
   label.textContent = (type === 'voice' ? '🎙 Voice call' : '📹 Video call') + ' with {{ other_user.username }}';
   camBtn.style.display = type === 'video' ? 'flex' : 'none';
-
   overlay.classList.add('open');
 
-  // Start timer
   callSeconds = 0;
   document.getElementById('call-timer').textContent = '0:00';
   callTimerInterval = setInterval(function() {
@@ -827,33 +894,36 @@ function openCallOverlay(roomUrl, type) {
   }, 1000);
 }
 
+function setCallStatus(msg) {
+  const el = document.getElementById('call-status-msg');
+  if (el) el.textContent = msg;
+}
+
 function endCall() {
   clearInterval(callTimerInterval);
-  const overlay = document.getElementById('call-overlay');
-  const frame = document.getElementById('call-frame');
-  overlay.classList.remove('open');
-  frame.src = '';
-  activeRoomUrl = null;
+  if (activeCall) { try { activeCall.close(); } catch(e) {} activeCall = null; }
+  if (activePeer) { try { activePeer.destroy(); } catch(e) {} activePeer = null; }
+  if (localStream) { localStream.getTracks().forEach(function(t) { t.stop(); }); localStream = null; }
+  const remoteVid = document.getElementById('remote-video');
+  const localVid = document.getElementById('local-video');
+  if (remoteVid) remoteVid.srcObject = null;
+  if (localVid) { localVid.srcObject = null; localVid.style.display = 'none'; }
+  document.getElementById('call-overlay').classList.remove('open');
+  setCallStatus('');
 }
 
 function toggleMute() {
+  if (!localStream) return;
   const btn = document.getElementById('mute-btn');
+  localStream.getAudioTracks().forEach(function(t) { t.enabled = !t.enabled; });
   btn.classList.toggle('active');
-  // Daily prebuilt handles mic state internally via its own UI;
-  // this just visually marks the button as muted for the caller's reference
 }
 
 function toggleCam() {
+  if (!localStream) return;
   const btn = document.getElementById('cam-btn');
+  localStream.getVideoTracks().forEach(function(t) { t.enabled = !t.enabled; });
   btn.classList.toggle('active');
-}
-
-function copyCallLink() {
-  if (!activeRoomUrl) return;
-  navigator.clipboard && navigator.clipboard.writeText(activeRoomUrl);
-  const btn = document.querySelector('.call-ctrl.share');
-  btn.style.background = '#48bb78';
-  setTimeout(function() { btn.style.background = ''; }, 1500);
 }
 
 // Close call on Escape
