@@ -291,6 +291,10 @@
       <div class="chat-head-sub">Click to view profile</div>
     </div>
     <div class="chat-head-actions">
+      <!-- Friend request button -->
+      <button class="chat-head-btn" id="friend-btn" onclick="toggleFriendRequest('{{ other_user.username }}')" title="Add friend" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      </button>
       <button class="call-btn voice" onclick="startCall('voice')" title="Voice call">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       </button>
@@ -1122,6 +1126,75 @@ function closeLightbox() {
 
   // Poll every 2.5 seconds
   setInterval(poll, 2500);
+})();
+{% endif %}
+
+/* ── Friend Request ── */
+{% if active_convo %}
+(function() {
+  const btn = document.getElementById('friend-btn');
+  if (!btn) return;
+  const username = '{{ other_user.username }}';
+
+  fetch('/community/api/friends/status/' + username + '/')
+    .then(r => r.json())
+    .then(d => {
+      btn.style.display = 'flex';
+      updateFriendBtn(btn, d.status, d.id);
+    })
+    .catch(() => {});
+
+  function updateFriendBtn(btn, status, id) {
+    btn.dataset.status = status;
+    btn.dataset.friendId = id || '';
+    if (status === 'friends') {
+      btn.title = 'Friends ✓';
+      btn.style.color = '#48bb78';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>';
+    } else if (status === 'pending_sent') {
+      btn.title = 'Friend request sent';
+      btn.style.color = '#f6ad55';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>';
+    } else if (status === 'pending_received') {
+      btn.title = 'Accept friend request';
+      btn.style.color = '#818cf8';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>';
+    } else {
+      btn.title = 'Add friend';
+      btn.style.color = '';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>';
+    }
+  }
+
+  window.toggleFriendRequest = function(username) {
+    const btn = document.getElementById('friend-btn');
+    const status = btn.dataset.status;
+    const friendId = btn.dataset.friendId;
+
+    if (status === 'pending_received' && friendId) {
+      // Accept the request
+      fetch('/community/api/friends/respond/' + friendId + '/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'accept'})
+      })
+      .then(r => r.json())
+      .then(d => { if (d.status === 'accepted') updateFriendBtn(btn, 'friends', friendId); })
+      .catch(() => {});
+    } else if (status === 'none') {
+      // Send request
+      fetch('/community/api/friends/request/' + username + '/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': CSRF}
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === 'sent') updateFriendBtn(btn, 'pending_sent', d.id);
+        else if (d.status === 'already_friends') updateFriendBtn(btn, 'friends', '');
+      })
+      .catch(() => {});
+    }
+  };
 })();
 {% endif %}
 </script>

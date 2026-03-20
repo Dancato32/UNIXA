@@ -96,4 +96,18 @@ urlpatterns = [
 
     # REST API
     path('api/', include(router.urls)),
+
+    # Quick join from feed
+    path('api/communities/<slug:slug>/quick-join/', views.quick_join_custom, name='quick_join_custom'),
+    path('api/schools/<slug:slug>/quick-join/', views.quick_join_school, name='quick_join_school'),
+
+    # Share post via DM
+    path('api/share/conversations/', views.share_post_dm_list, name='share_dm_list'),
+    path('api/posts/<uuid:post_id>/share/', views.share_post_send, name='share_post_send'),
+
+    # Friend requests
+    path('api/friends/request/<str:username>/', views.friend_request_send, name='friend_request_send'),
+    path('api/friends/respond/<uuid:friendship_id>/', views.friend_request_respond, name='friend_request_respond'),
+    path('api/friends/status/<str:username>/', views.friend_status, name='friend_status'),
+    path('api/friends/pending/', views.pending_friend_requests, name='pending_friend_requests'),
 ]

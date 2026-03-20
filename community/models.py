@@ -414,6 +414,8 @@ class Notification(models.Model):
     TYPE_FOLLOW = 'follow'
     TYPE_MENTION = 'mention'
     TYPE_JOIN = 'join'
+    TYPE_FRIEND_REQUEST = 'friend_request'
+    TYPE_FRIEND_ACCEPTED = 'friend_accepted'
     TYPE_CHOICES = [
         (TYPE_LIKE, 'Like'),
         (TYPE_COMMENT, 'Comment'),
@@ -422,6 +424,8 @@ class Notification(models.Model):
         (TYPE_FOLLOW, 'Follow'),
         (TYPE_MENTION, 'Mention'),
         (TYPE_JOIN, 'Join'),
+        (TYPE_FRIEND_REQUEST, 'Friend Request'),
+        (TYPE_FRIEND_ACCEPTED, 'Friend Accepted'),
     ]
 
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
@@ -687,3 +691,68 @@ class WorkspaceTask(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ── Friendship ────────────────────────────────────────────────────────────────
+
+class Friendship(models.Model):
+    """Friend request and friendship tracking."""
+
+    STATUS_PENDING = 'pending'
+    STATUS_ACCEPTED = 'accepted'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_REJECTED, 'Rejected'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    requester = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='friend_requests_sent',
+    )
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='friend_requests_received',
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('requester', 'recipient')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.requester} → {self.recipient} ({self.status})'
+
+
+# ── Custom Community Membership ───────────────────────────────────────────────
+
+class CustomCommunityMembership(models.Model):
+    """Tracks which users belong to which CustomCommunity."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='custom_community_memberships',
+    )
+    community = models.ForeignKey(
+        CustomCommunity,
+        on_delete=models.CASCADE,
+        related_name='memberships',
+    )
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'community')
+        verbose_name = 'Custom Community Membership'
+        verbose_name_plural = 'Custom Community Memberships'
+
+    def __str__(self):
+        return f'{self.user} → {self.community}'
+

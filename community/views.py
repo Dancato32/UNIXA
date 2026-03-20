@@ -6,6 +6,7 @@ All views require login. No modifications to existing apps.
 from django.contrib import messages as django_messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.db import models
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -19,6 +20,8 @@ from community.models import (
     CommunityProfile,
     Conversation,
     CustomCommunity,
+    CustomCommunityMembership,
+    Friendship,
     GroupWorkspace,
     Message,
     Notification,
@@ -72,6 +75,10 @@ def feed(request):
         .values_list('community_id', flat=True)
     )
     custom_communities = CustomCommunity.objects.filter(is_active=True).order_by('-created_at')[:5]
+    custom_joined_ids = set(
+        CustomCommunityMembership.objects.filter(user=request.user)
+        .values_list('community_id', flat=True)
+    )
 
     return render(request, 'community/feed.html', {
         'posts': posts,
@@ -81,6 +88,7 @@ def feed(request):
         'school_communities': school_communities,
         'joined_ids': joined_ids,
         'custom_communities': custom_communities,
+        'custom_joined_ids': custom_joined_ids,
     })
 
 
@@ -1037,3 +1045,216 @@ def workspace_search_users(request):
         Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
     ).exclude(id=request.user.id)[:10]
     return JsonResponse({'users': [{'username': u.username, 'display': u.get_full_name() or u.username} for u in users]})
+
+
+# ── Quick Join Community (from feed) ─────────────────────────────────────────
+
+@login_required
+@require_POST
+def quick_join_custom(request, slug):
+    """Join/leave a public CustomCommunity directly from the feed."""
+    community = get_object_or_404(CustomCommunity, slug=slug, is_active=True)
+    if community.privacy == CustomCommunity.PRIVACY_PRIVATE:
+        return JsonResponse({'error': 'Private community.'}, status=403)
+    membership, created = CustomCommunityMembership.objects.get_or_create(
+        user=request.user, community=community
+    )
+    if not created:
+        membership.delete()
+        return JsonResponse({'joined': False, 'member_count': community.memberships.count()})
+    return JsonResponse({'joined': True, 'member_count': community.memberships.count()})
+
+
+@login_required
+@require_POST
+def quick_join_school(request, slug):
+    """Join/leave a SchoolCommunity directly from the feed."""
+    community = get_object_or_404(SchoolCommunity, slug=slug, is_active=True)
+    membership, created = CommunityMembership.objects.get_or_create(
+        user=request.user, community=community,
+        defaults={'role': CommunityMembership.ROLE_MEMBER}
+    )
+    if not created:
+        membership.delete()
+        return JsonResponse({'joined': False})
+    return JsonResponse({'joined': True})
+
+
+# ── Share Post via DM ─────────────────────────────────────────────────────────
+
+@login_required
+def share_post_dm_list(request):
+    """Return the user's DM conversations for the share picker."""
+    convos = (
+        Conversation.objects.filter(participants=request.user, is_group=False)
+        .prefetch_related('participants', 'participants__community_profile')
+        .order_by('-updated_at')[:30]
+    )
+    data = []
+    for c in convos:
+        others = [p for p in c.participants.all() if p != request.user]
+        if not others:
+            continue
+        other = others[0]
+        avatar = None
+        try:
+            avatar = other.community_profile.avatar.url if other.community_profile.avatar else None
+        except Exception:
+            pass
+        data.append({
+            'convo_id': str(c.id),
+            'username': other.username,
+            'avatar': avatar,
+        })
+    return JsonResponse({'conversations': data})
+
+
+@login_required
+@require_POST
+def share_post_send(request, post_id):
+    """Send a post link as a DM to selected conversations."""
+    import json
+    post = get_object_or_404(Post, pk=post_id, is_deleted=False)
+    try:
+        body = json.loads(request.body)
+        convo_ids = body.get('convo_ids', [])
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    if not convo_ids:
+        return JsonResponse({'error': 'No conversations selected.'}, status=400)
+
+    post_url = request.build_absolute_uri(f'/community/posts/{post.id}/')
+    preview = post.content[:80] + ('…' if len(post.content) > 80 else '')
+    message_text = f'📎 Shared a post: {preview}\n{post_url}'
+
+    sent = 0
+    for cid in convo_ids[:10]:  # cap at 10
+        try:
+            convo = Conversation.objects.get(id=cid, participants=request.user)
+            Message.objects.create(
+                conversation=convo,
+                sender=request.user,
+                content=message_text,
+                message_type=Message.TYPE_TEXT,
+            )
+            Conversation.objects.filter(pk=convo.pk).update(updated_at=timezone.now())
+            # Increment share count
+            Post.objects.filter(pk=post.id).update(share_count=models.F('share_count') + 1)
+            sent += 1
+        except Conversation.DoesNotExist:
+            pass
+
+    return JsonResponse({'sent': sent})
+
+
+# ── Friend Requests ───────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def friend_request_send(request, username):
+    """Send a friend request to a user."""
+    recipient = get_object_or_404(User, username=username)
+    if recipient == request.user:
+        return JsonResponse({'error': 'Cannot friend yourself.'}, status=400)
+
+    # Check if already friends or request exists
+    existing = Friendship.objects.filter(
+        Q(requester=request.user, recipient=recipient) |
+        Q(requester=recipient, recipient=request.user)
+    ).first()
+
+    if existing:
+        if existing.status == Friendship.STATUS_ACCEPTED:
+            return JsonResponse({'status': 'already_friends'})
+        if existing.status == Friendship.STATUS_PENDING:
+            return JsonResponse({'status': 'pending'})
+        # Rejected — allow re-request
+        existing.delete()
+
+    friendship = Friendship.objects.create(requester=request.user, recipient=recipient)
+
+    # Notify recipient
+    Notification.objects.create(
+        recipient=recipient,
+        actor=request.user,
+        type=Notification.TYPE_FRIEND_REQUEST,
+    )
+
+    return JsonResponse({'status': 'sent', 'id': str(friendship.id)})
+
+
+@login_required
+@require_POST
+def friend_request_respond(request, friendship_id):
+    """Accept or reject a friend request."""
+    import json
+    friendship = get_object_or_404(
+        Friendship, id=friendship_id, recipient=request.user, status=Friendship.STATUS_PENDING
+    )
+    try:
+        body = json.loads(request.body)
+        action = body.get('action')
+    except Exception:
+        action = request.POST.get('action')
+
+    if action == 'accept':
+        friendship.status = Friendship.STATUS_ACCEPTED
+        friendship.save(update_fields=['status', 'updated_at'])
+        # Notify requester
+        Notification.objects.create(
+            recipient=friendship.requester,
+            actor=request.user,
+            type=Notification.TYPE_FRIEND_ACCEPTED,
+        )
+        return JsonResponse({'status': 'accepted'})
+    elif action == 'reject':
+        friendship.status = Friendship.STATUS_REJECTED
+        friendship.save(update_fields=['status', 'updated_at'])
+        return JsonResponse({'status': 'rejected'})
+
+    return JsonResponse({'error': 'Invalid action.'}, status=400)
+
+
+@login_required
+def friend_status(request, username):
+    """Return friendship status between current user and username."""
+    other = get_object_or_404(User, username=username)
+    friendship = Friendship.objects.filter(
+        Q(requester=request.user, recipient=other) |
+        Q(requester=other, recipient=request.user)
+    ).first()
+
+    if not friendship:
+        return JsonResponse({'status': 'none'})
+
+    # Determine perspective
+    if friendship.status == Friendship.STATUS_ACCEPTED:
+        return JsonResponse({'status': 'friends', 'id': str(friendship.id)})
+    if friendship.requester == request.user:
+        return JsonResponse({'status': 'pending_sent', 'id': str(friendship.id)})
+    return JsonResponse({'status': 'pending_received', 'id': str(friendship.id)})
+
+
+@login_required
+def pending_friend_requests(request):
+    """Return pending friend requests received by the current user."""
+    requests_qs = (
+        Friendship.objects.filter(recipient=request.user, status=Friendship.STATUS_PENDING)
+        .select_related('requester', 'requester__community_profile')
+        .order_by('-created_at')
+    )
+    data = []
+    for fr in requests_qs:
+        avatar = None
+        try:
+            avatar = fr.requester.community_profile.avatar.url if fr.requester.community_profile.avatar else None
+        except Exception:
+            pass
+        data.append({
+            'id': str(fr.id),
+            'username': fr.requester.username,
+            'avatar': avatar,
+            'created_at': fr.created_at.isoformat(),
+        })
+    return JsonResponse({'requests': data})
