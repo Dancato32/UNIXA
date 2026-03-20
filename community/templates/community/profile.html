@@ -272,9 +272,9 @@
 
 {% block extra_js %}
 <script>
-{% if not is_own %}
-const CSRF = '{{ csrf_token }}';
+const CSRF = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
 const PROFILE_USERNAME = '{{ profile_user.username }}';
+{% if not is_own %}
 let isFollowing = {{ is_following|yesno:"true,false" }};
 
 function updateFollowBtn() {
@@ -286,6 +286,8 @@ function updateFollowBtn() {
 updateFollowBtn();
 
 function toggleFollow() {
+  const btn = document.getElementById('follow-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
   fetch('/community/api/follows/', {
     method: 'POST',
     headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
@@ -293,19 +295,21 @@ function toggleFollow() {
   })
   .then(r => r.json())
   .then(d => {
+    if (d.error) { console.error(d.error); return; }
     isFollowing = d.following;
     updateFollowBtn();
     const el = document.getElementById('followers-count');
     if (el && d.follower_count !== undefined) el.textContent = d.follower_count;
   })
-  .catch(() => {});
+  .catch(e => console.error('follow error', e))
+  .finally(() => { if (btn) btn.disabled = false; });
 }
 {% endif %}
 
-// Poll follower/following counts every 15s so they stay live
+// Poll follower/following counts every 15s
 (function pollStats() {
   setTimeout(function() {
-    fetch('/community/api/profile-stats/{{ profile_user.username }}/')
+    fetch('/community/api/profile-stats/' + PROFILE_USERNAME + '/')
       .then(r => r.json())
       .then(d => {
         const fc = document.getElementById('followers-count');
