@@ -1427,3 +1427,32 @@ def search_users(request):
             'is_following': u.id in following_ids,
         })
     return JsonResponse({'users': data})
+
+
+@login_required
+def api_workspaces_list(request):
+    """Return recent workspaces for the radar."""
+    from community.models import GroupWorkspace, WorkspaceMember
+    ws_ids = WorkspaceMember.objects.filter(user=request.user).values_list('workspace_id', flat=True)
+    workspaces = GroupWorkspace.objects.filter(id__in=ws_ids).order_by('-created_at')[:10]
+    return JsonResponse({
+        'workspaces': [{'id': str(w.id), 'name': w.name} for w in workspaces]
+    })
+
+
+@login_required
+def api_posts_recent(request):
+    """Return recent posts for the radar."""
+    posts = Post.objects.filter(is_deleted=False).order_by('-created_at')[:10]
+    return JsonResponse({
+        'posts': [{'id': str(p.id), 'content': p.content[:80]} for p in posts]
+    })
+
+
+@login_required
+def api_communities_list(request):
+    """Return active communities for the radar."""
+    from community.models import SchoolCommunity, CustomCommunity
+    schools = list(SchoolCommunity.objects.filter(is_active=True).values('name')[:5])
+    customs = list(CustomCommunity.objects.filter(is_active=True).values('name')[:5])
+    return JsonResponse({'communities': schools + customs})

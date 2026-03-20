@@ -1,0 +1,210 @@
+{% extends "community/base.html" %}
+{% block title %}Start My Startup{% endblock %}
+{% block rail_ai %}active{% endblock %}
+{% block nav_ai %}active{% endblock %}
+{% block bn_ai %}active{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>{% endblock %}
+{% block topbar_title %}start-my-startup{% endblock %}
+{% block topbar_desc %}AI-powered team formation{% endblock %}
+{% block mobile_title %}Start My Startup{% endblock %}
+{% block extra_css %}
+<style>
+.startup-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
+@media(max-width:640px){.startup-grid{grid-template-columns:1fr;}}
+.field label{display:block;font-size:.75rem;font-weight:600;color:var(--t3);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.05em;}
+.field input,.field select,.field textarea{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--t3);}
+.field textarea{resize:vertical;min-height:80px;}
+.field select option{background:var(--s3);}
+.team-card{background:var(--s2);border:1px solid var(--b2);border-radius:10px;overflow:hidden;}
+.team-header{padding:1rem;border-bottom:1px solid var(--b2);display:flex;align-items:center;gap:.75rem;}
+.team-body{padding:1rem;}
+.member-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--b1);}
+.member-row:last-child{border-bottom:none;}
+.member-av{width:36px;height:36px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;}
+.result-box{background:var(--s3);border:1px solid var(--b2);border-radius:10px;padding:1.25rem;margin-top:1.25rem;display:none;}
+</style>
+{% endblock %}
+{% block content %}
+<div style="max-width:760px;margin:0 auto;">
+
+  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <a href="{% url 'ai_community:hub' %}" style="color:var(--t3);font-size:.875rem;display:flex;align-items:center;gap:.375rem;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      AI Hub
+    </a>
+    <span style="color:var(--t4);">/</span>
+    <h1 style="font-size:1.25rem;font-weight:800;display:flex;align-items:center;gap:.5rem;">
+      🚀 Start My Startup
+    </h1>
+  </div>
+
+  <!-- Intake Form -->
+  <div style="background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">Tell the AI about your startup idea</h2>
+    <div class="field" style="margin-bottom:.875rem;">
+      <label>Startup Idea *</label>
+      <textarea id="s-idea" placeholder="Describe your startup idea in a few sentences…"></textarea>
+    </div>
+    <div class="startup-grid" style="margin-bottom:.875rem;">
+      <div class="field">
+        <label>Industry / Category</label>
+        <input type="text" id="s-industry" placeholder="EdTech, FinTech, Health…">
+      </div>
+      <div class="field">
+        <label>Stage</label>
+        <select id="s-stage">
+          <option value="idea">Idea</option>
+          <option value="prototype">Prototype</option>
+          <option value="launched">Launched</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Skills Needed</label>
+        <input type="text" id="s-roles" placeholder="Developer, Designer, Marketer…">
+      </div>
+      <div class="field">
+        <label>Team Size</label>
+        <select id="s-size">
+          <option value="2">2 people</option>
+          <option value="3">3 people</option>
+          <option value="4" selected>4 people</option>
+          <option value="5">5 people</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+      <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;color:var(--t2);cursor:pointer;">
+        <input type="checkbox" id="s-remote" checked style="width:15px;height:15px;accent-color:var(--white);">
+        Remote-friendly
+      </label>
+    </div>
+    <button class="btn btn-primary" onclick="createStartup(this)" style="width:100%;justify-content:center;padding:.625rem;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      Assemble My Team with AI
+    </button>
+    <div class="result-box" id="startup-result"></div>
+  </div>
+
+  <!-- My Startups -->
+  {% if my_teams %}
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:.875rem;">My Startup Teams</h2>
+  <div style="display:flex;flex-direction:column;gap:.875rem;margin-bottom:1.5rem;">
+    {% for team in my_teams %}
+    <div class="team-card">
+      <div class="team-header">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🚀</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.9375rem;font-weight:700;">{{ team.name }}</div>
+          <div style="font-size:.8125rem;color:var(--t3);">{{ team.industry }} · {{ team.get_stage_display|default:team.stage }} · <span class="badge {% if team.status == 'active' %}badge-green{% else %}badge-gray{% endif %}">{{ team.get_status_display }}</span></div>
+        </div>
+        {% if team.workspace_id %}
+        <a href="/community/workspaces/{{ team.workspace_id }}/" class="btn btn-ghost btn-sm">Open Workspace</a>
+        {% endif %}
+      </div>
+      <div class="team-body">
+        {% if team.ai_intro %}<p style="font-size:.8125rem;color:var(--t3);margin-bottom:.875rem;line-height:1.6;">{{ team.ai_intro }}</p>{% endif %}
+        {% for member in team.members.all %}
+        <div class="member-row">
+          <div class="member-av">{{ member.user.username|slice:":1"|upper }}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.875rem;font-weight:600;">{{ member.user.username }}</div>
+            <div style="font-size:.75rem;color:var(--t3);">{{ member.role }}</div>
+          </div>
+          <span class="badge {% if member.status == 'accepted' %}badge-green{% elif member.status == 'declined' %}badge-gray{% else %}badge-blue{% endif %}">{{ member.get_status_display }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Pending Invites -->
+  {% if invites %}
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:.875rem;">Pending Invitations</h2>
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
+    {% for inv in invites %}
+    <div style="background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:.875rem;flex-wrap:wrap;" id="sinvite-{{ inv.team.id }}">
+      <div style="font-size:1.5rem;">🚀</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;">{{ inv.team.name }}</div>
+        <div style="font-size:.8125rem;color:var(--t3);">{{ inv.role }} · by @{{ inv.team.founder.username }}</div>
+        {% if inv.ai_reason %}<div style="font-size:.75rem;color:var(--t3);margin-top:.25rem;">{{ inv.ai_reason }}</div>{% endif %}
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-primary btn-sm" onclick="respondInvite('{{ inv.team.id }}',true,this)">Accept</button>
+        <button class="btn btn-ghost btn-sm" onclick="respondInvite('{{ inv.team.id }}',false,this)">Decline</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const CSRF = (()=>{ const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:''; })();
+
+function createStartup(btn) {
+  const idea = document.getElementById('s-idea').value.trim();
+  if (!idea) { alert('Please describe your startup idea.'); return; }
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Assembling team…';
+  fetch('/community/ai/api/startup/create/', {
+    method:'POST',
+    headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},
+    body: JSON.stringify({
+      idea,
+      industry: document.getElementById('s-industry').value,
+      stage: document.getElementById('s-stage').value,
+      required_roles: document.getElementById('s-roles').value,
+      team_size: parseInt(document.getElementById('s-size').value),
+      remote: document.getElementById('s-remote').checked,
+    })
+  }).then(r=>r.json()).then(d=>{
+    btn.disabled=false; btn.innerHTML=orig;
+    const res = document.getElementById('startup-result');
+    res.style.display = 'block';
+    if (d.ok) {
+      res.innerHTML = `
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;">
+          <div style="font-size:2rem;">🚀</div>
+          <div>
+            <div style="font-size:1rem;font-weight:700;">${d.team_name}</div>
+            <div style="font-size:.8125rem;color:var(--t3);">${d.invited.length} teammates invited</div>
+          </div>
+        </div>
+        ${d.intro ? `<p style="font-size:.875rem;color:var(--t2);line-height:1.6;margin-bottom:.875rem;">${d.intro}</p>` : ''}
+        <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+          <a href="/community/workspaces/${d.workspace_id}/" class="btn btn-primary">Open Team Workspace →</a>
+          <a href="{% url 'ai_community:startup' %}" class="btn btn-ghost" onclick="location.reload()">View All Teams</a>
+        </div>`;
+    } else {
+      res.innerHTML = `<div style="color:var(--red);font-size:.875rem;">${d.error||'Failed to create startup team.'}</div>`;
+    }
+  }).catch(()=>{ btn.disabled=false; btn.innerHTML=orig; alert('Failed. Please try again.'); });
+}
+
+function respondInvite(teamId, accept, btn) {
+  btn.disabled = true;
+  fetch(`/community/ai/api/startup/${teamId}/respond/`, {
+    method:'POST',
+    headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},
+    body: JSON.stringify({accept})
+  }).then(r=>r.json()).then(d=>{
+    if (d.ok) {
+      const card = document.getElementById('sinvite-'+teamId);
+      if (accept) {
+        card.querySelector('div:last-child').innerHTML = '<span class="badge badge-green">✓ Accepted</span>';
+      } else {
+        card.style.opacity='.4'; card.style.pointerEvents='none';
+      }
+    }
+  }).catch(()=>{ btn.disabled=false; });
+}
+</script>
+<style>@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}</style>
+{% endblock %}

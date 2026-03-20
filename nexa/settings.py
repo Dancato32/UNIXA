@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'library',
     'community',
+    'ai_community',
 ]
 
 # ── Middleware ────────────────────────────────────────────────────────────────

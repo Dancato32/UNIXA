@@ -116,4 +116,9 @@ urlpatterns = [
     path('api/friends/pending/', views.pending_friend_requests, name='pending_friend_requests'),
     path('api/users/search/', views.search_users, name='search_users'),
     path('api/profile-stats/<str:username>/', views.profile_stats, name='profile_stats'),
+
+    # Radar APIs (used by AI Hub)
+    path('api/workspaces/list/', views.api_workspaces_list, name='api_workspaces_list'),
+    path('api/posts/recent/', views.api_posts_recent, name='api_posts_recent'),
+    path('api/communities/list/', views.api_communities_list, name='api_communities_list'),
 ]
