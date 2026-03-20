@@ -488,14 +488,19 @@
   <div class="feed-right">
     <!-- Find Friends -->
     <div class="right-card" id="find-friends-card">
-      <div class="rc-head">Find Friends</div>
-      <div style="position:relative;margin:.5rem .75rem .625rem;">
-        <svg style="position:absolute;left:.625rem;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--t3);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="friend-search-input" type="text" placeholder="Search by username…" autocomplete="off"
-          style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.45rem .75rem .45rem 2rem;color:var(--t1);font-size:.8125rem;outline:none;box-sizing:border-box;transition:border-color .15s;"
-          oninput="friendSearch(this.value)">
+      <div class="rc-head" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleFriendCard()">
+        <span>Find Friends</span>
+        <svg id="fs-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--t3);transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div id="friend-search-results"></div>
+      <div id="fs-body">
+        <div style="position:relative;margin:.5rem .75rem .625rem;">
+          <svg style="position:absolute;left:.625rem;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--t3);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="friend-search-input" type="text" placeholder="Search by username…" autocomplete="off"
+            style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.45rem .75rem .45rem 2rem;color:var(--t1);font-size:.8125rem;outline:none;box-sizing:border-box;transition:border-color .15s;"
+            oninput="friendSearch(this.value)">
+        </div>
+        <div id="friend-search-results"></div>
+      </div>
     </div>
     <!-- School communities -->
     <div class="right-card">
@@ -926,6 +931,12 @@ function setMobSort(type, btn) {
 
 /* ── Friend Search ── */
 let _fsTimer = null;
+let _fsOpen = true;
+function toggleFriendCard() {
+  _fsOpen = !_fsOpen;
+  document.getElementById('fs-body').style.display = _fsOpen ? '' : 'none';
+  document.getElementById('fs-chevron').style.transform = _fsOpen ? '' : 'rotate(-90deg)';
+}
 function friendSearch(val) {
   clearTimeout(_fsTimer);
   const res = document.getElementById('friend-search-results');
