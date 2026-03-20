@@ -209,3 +209,36 @@ class CommunityProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'updated_at')
     search_fields = ('user__username',)
     raw_id_fields = ('user',)
+
+
+# ── Group Workspace ───────────────────────────────────────────────────────────
+
+from community.models import GroupWorkspace, WorkspaceMember, WorkspaceMessage, WorkspaceFile, WorkspaceTask
+
+
+class WorkspaceMemberInline(admin.TabularInline):
+    model = WorkspaceMember
+    extra = 0
+    readonly_fields = ('joined_at',)
+
+
+@admin.register(GroupWorkspace)
+class GroupWorkspaceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'owner', 'privacy', 'invite_code', 'is_active', 'created_at')
+    list_filter = ('privacy', 'is_active')
+    search_fields = ('name', 'owner__username', 'invite_code')
+    readonly_fields = ('id', 'invite_code', 'created_at', 'updated_at')
+    inlines = [WorkspaceMemberInline]
+
+
+@admin.register(WorkspaceMember)
+class WorkspaceMemberAdmin(admin.ModelAdmin):
+    list_display = ('user', 'workspace', 'role', 'joined_at')
+    list_filter = ('role',)
+    search_fields = ('user__username', 'workspace__name')
+
+
+@admin.register(WorkspaceFile)
+class WorkspaceFileAdmin(admin.ModelAdmin):
+    list_display = ('original_name', 'workspace', 'uploaded_by', 'file_size', 'uploaded_at')
+    search_fields = ('original_name', 'workspace__name')

@@ -77,6 +77,22 @@ urlpatterns = [
     path('notifications/', views.notifications, name='notifications'),
     path('notifications/mark-read/', views.notifications_mark_read, name='notifications_mark_read'),
 
+    # Group Workspaces
+    path('workspaces/', views.workspace_list, name='workspace_list'),
+    path('workspaces/create/', views.workspace_create, name='workspace_create'),
+    path('workspaces/join/<str:invite_code>/', views.workspace_join, name='workspace_join'),
+    path('workspaces/users/search/', views.workspace_search_users, name='workspace_search_users'),
+    path('workspaces/<uuid:ws_id>/', views.workspace_detail, name='workspace_detail'),
+    path('workspaces/<uuid:ws_id>/chat/', views.workspace_send_message, name='workspace_send_message'),
+    path('workspaces/<uuid:ws_id>/poll/', views.workspace_poll_messages, name='workspace_poll_messages'),
+    path('workspaces/<uuid:ws_id>/files/', views.workspace_upload_file, name='workspace_upload_file'),
+    path('workspaces/<uuid:ws_id>/tasks/', views.workspace_add_task, name='workspace_add_task'),
+    path('workspaces/<uuid:ws_id>/tasks/<uuid:task_id>/', views.workspace_update_task, name='workspace_update_task'),
+    path('workspaces/<uuid:ws_id>/members/add/', views.workspace_add_member, name='workspace_add_member'),
+    path('workspaces/<uuid:ws_id>/members/<int:user_id>/remove/', views.workspace_remove_member, name='workspace_remove_member'),
+    path('workspaces/<uuid:ws_id>/leave/', views.workspace_leave, name='workspace_leave'),
+    path('workspaces/<uuid:ws_id>/delete/', views.workspace_delete, name='workspace_delete'),
+
     # REST API
     path('api/', include(router.urls)),
 ]

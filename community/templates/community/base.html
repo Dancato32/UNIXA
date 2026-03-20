@@ -173,6 +173,9 @@ input,textarea,select{font-family:inherit;}
     <a href="{% url 'community:custom_list' %}" class="rail-icon {% block rail_communities %}{% endblock %}" title="Communities">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     </a>
+    <a href="{% url 'community:workspace_list' %}" class="rail-icon {% block rail_workspaces %}{% endblock %}" title="Workspaces">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    </a>
     <div class="rail-sep"></div>
     <a href="{% url 'community:messages' %}" class="rail-icon {% block rail_msgs %}{% endblock %}" title="Messages">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -207,6 +210,8 @@ input,textarea,select{font-family:inherit;}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg># communities</a>
       <a href="{% url 'community:post_create' %}" class="ch-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg># new-post</a>
+      <a href="{% url 'community:workspace_list' %}" class="ch-item {% block nav_workspaces %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg># workspaces</a>
       <div class="sidebar-section" style="margin-top:.5rem;">
         <div class="sidebar-label">
           Direct Messages

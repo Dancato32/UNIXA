@@ -515,3 +515,171 @@ class Block(models.Model):
 
     def __str__(self):
         return f'{self.blocker} blocked {self.blocked}'
+
+
+# ── Group Workspace ───────────────────────────────────────────────────────────
+
+class GroupWorkspace(models.Model):
+    """A private collaborative workspace for group study."""
+
+    PRIVACY_PRIVATE = 'private'
+    PRIVACY_REQUEST = 'request'
+    PRIVACY_CHOICES = [
+        (PRIVACY_PRIVATE, 'Private (invite only)'),
+        (PRIVACY_REQUEST, 'Visible, join by request'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    subject = models.CharField(max_length=100, blank=True)
+    privacy = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default=PRIVACY_PRIVATE)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='owned_workspaces',
+    )
+    invite_code = models.CharField(max_length=12, unique=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Group Workspace'
+        verbose_name_plural = 'Group Workspaces'
+
+    def save(self, *args, **kwargs):
+        if not self.invite_code:
+            import secrets, string
+            alphabet = string.ascii_uppercase + string.digits
+            while True:
+                code = ''.join(secrets.choice(alphabet) for _ in range(8))
+                if not GroupWorkspace.objects.filter(invite_code=code).exists():
+                    self.invite_code = code
+                    break
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class WorkspaceMember(models.Model):
+    """Membership of a user in a GroupWorkspace."""
+
+    ROLE_OWNER = 'owner'
+    ROLE_ADMIN = 'admin'
+    ROLE_MEMBER = 'member'
+    ROLE_CHOICES = [
+        (ROLE_OWNER, 'Owner'),
+        (ROLE_ADMIN, 'Admin'),
+        (ROLE_MEMBER, 'Member'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.CASCADE, related_name='members'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='workspace_memberships',
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_MEMBER)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('workspace', 'user')
+        verbose_name = 'Workspace Member'
+
+    def __str__(self):
+        return f'{self.user} in {self.workspace} ({self.role})'
+
+
+class WorkspaceMessage(models.Model):
+    """Chat message inside a GroupWorkspace."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.CASCADE, related_name='chat_messages'
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='workspace_messages',
+    )
+    content = models.TextField(blank=True)
+    media = models.FileField(upload_to='workspace/files/', null=True, blank=True)
+    media_name = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'WS msg {self.id}'
+
+
+class WorkspaceFile(models.Model):
+    """File uploaded to a GroupWorkspace — visible to all members."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.CASCADE, related_name='files'
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='workspace_files',
+    )
+    file = models.FileField(upload_to='workspace/files/')
+    original_name = models.CharField(max_length=255)
+    file_size = models.PositiveIntegerField(default=0)  # bytes
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return self.original_name
+
+
+class WorkspaceTask(models.Model):
+    """A task/study item on the workspace board."""
+
+    STATUS_TODO = 'todo'
+    STATUS_DOING = 'doing'
+    STATUS_DONE = 'done'
+    STATUS_CHOICES = [
+        (STATUS_TODO, 'To Do'),
+        (STATUS_DOING, 'In Progress'),
+        (STATUS_DONE, 'Done'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.CASCADE, related_name='tasks'
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='created_tasks',
+    )
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_tasks',
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_TODO)
+    due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['status', 'due_date', 'created_at']
+
+    def __str__(self):
+        return self.title

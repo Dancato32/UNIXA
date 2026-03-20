@@ -1,0 +1,632 @@
+{% extends "community/base.html" %}
+{% block title %}{{ ws.name }}{% endblock %}
+{% block mobile_title %}{{ ws.name }}{% endblock %}
+{% block topbar_title %}{{ ws.name }}{% endblock %}
+{% block topbar_desc %}{{ ws.subject }}{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>{% endblock %}
+
+{% block extra_css %}
+<style>
+.ws-shell{display:flex;height:calc(100vh - 48px);overflow:hidden;}
+.ws-sidebar{width:220px;background:var(--s2);border-right:1px solid var(--b1);display:flex;flex-direction:column;flex-shrink:0;}
+.ws-sidebar-head{padding:.875rem 1rem;border-bottom:1px solid var(--b1);}
+.ws-sidebar-name{font-size:.9375rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ws-sidebar-sub{font-size:.75rem;color:var(--t3);margin-top:.125rem;}
+.ws-nav{flex:1;overflow-y:auto;padding:.5rem 0;}
+.ws-nav-item{display:flex;align-items:center;gap:.5rem;padding:.35rem .75rem;border-radius:4px;color:var(--t3);font-size:.875rem;font-weight:500;cursor:pointer;margin:1px .5rem;transition:all .12s;border:none;background:none;width:calc(100% - 1rem);text-align:left;}
+.ws-nav-item:hover{background:var(--s3);color:var(--t2);}
+.ws-nav-item.active{background:var(--s4);color:var(--t1);}
+.ws-nav-item svg{width:15px;height:15px;flex-shrink:0;}
+.ws-nav-section{padding:.625rem .75rem .2rem;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);}
+.ws-members-list{padding:.5rem 0;border-top:1px solid var(--b1);max-height:180px;overflow-y:auto;}
+.ws-member-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .75rem;font-size:.8125rem;color:var(--t3);}
+.ws-member-av{width:24px;height:24px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.5625rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.ws-member-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.ws-member-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ws-member-role{font-size:.6rem;font-weight:700;padding:.1rem .3rem;border-radius:3px;background:var(--s5);color:var(--t3);}
+.ws-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.ws-panel{flex:1;overflow:hidden;display:none;flex-direction:column;}
+.ws-panel.active{display:flex;}
+.panel-scroll{flex:1;overflow-y:auto;}
+</style>
+{% endblock %}
+
+{% block pre_content %}
+<style>
+/* Override base page padding — workspace uses full height */
+.content-scroll{overflow:hidden!important;}
+.page{padding:0!important;max-width:100%!important;height:calc(100dvh - 48px);height:calc(100vh - 48px);}
+@media(max-width:900px){
+  .page{height:calc(100dvh - 52px)!important;max-height:calc(100dvh - 52px)!important;}
+  .ws-shell{height:100%;}
+  .ws-sidebar{position:fixed;top:52px;left:0;bottom:0;z-index:400;transform:translateX(-100%);transition:transform .25s;width:260px;}
+  .ws-sidebar.open{transform:translateX(0);}
+  .bottom-nav{display:none!important;}
+}
+/* Chat */
+.ws-chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.375rem;}
+.ws-chat-input-area{padding:.75rem 1rem;border-top:1px solid var(--b1);flex-shrink:0;}
+.ws-chat-form{display:flex;gap:.5rem;align-items:center;background:var(--s3);border:1px solid var(--b2);border-radius:24px;padding:.5rem .75rem;}
+.ws-chat-form:focus-within{border-color:var(--b3);}
+.ws-chat-input{flex:1;background:none;border:none;color:var(--t1);font-size:.875rem;outline:none;}
+.ws-chat-input::placeholder{color:var(--t3);}
+.ws-send-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--white);color:#000;border:none;border-radius:50%;flex-shrink:0;cursor:pointer;}
+.ws-send-btn:hover{background:#e8e8e8;}
+.ws-send-btn svg{width:14px;height:14px;}
+.ws-attach-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);border-radius:50%;cursor:pointer;}
+.ws-attach-btn:hover{background:var(--s4);color:var(--t1);}
+.ws-attach-btn svg{width:16px;height:16px;}
+.ws-msg-wrap{display:flex;align-items:flex-end;gap:.5rem;}
+.ws-msg-wrap.mine{flex-direction:row-reverse;}
+.ws-msg-av{width:26px;height:26px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.ws-msg-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.ws-msg-group{display:flex;flex-direction:column;gap:.125rem;max-width:68%;}
+.mine .ws-msg-group{align-items:flex-end;}
+.theirs .ws-msg-group{align-items:flex-start;}
+.ws-msg-sender{font-size:.6875rem;color:var(--t3);padding:0 .25rem;}
+.ws-msg-bubble{padding:.5rem .875rem;border-radius:18px;font-size:.875rem;line-height:1.55;word-break:break-word;}
+.mine .ws-msg-bubble{background:var(--white);color:#000;border-radius:18px 18px 4px 18px;}
+.theirs .ws-msg-bubble{background:var(--s3);color:var(--t1);border-radius:18px 18px 18px 4px;}
+.ws-msg-time{font-size:.625rem;color:var(--t3);padding:0 .25rem;}
+/* Files */
+.ws-files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;padding:1rem;}
+.ws-file-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.875rem;display:flex;flex-direction:column;gap:.5rem;transition:border-color .15s;}
+.ws-file-card:hover{border-color:var(--b3);}
+.ws-file-icon{width:36px;height:36px;background:var(--s4);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.ws-file-icon svg{width:18px;height:18px;color:var(--t2);}
+.ws-file-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ws-file-meta{font-size:.6875rem;color:var(--t3);}
+.ws-upload-zone{border:2px dashed var(--b2);border-radius:8px;padding:2rem;text-align:center;color:var(--t3);cursor:pointer;transition:all .15s;margin:1rem;}
+.ws-upload-zone:hover{border-color:var(--b3);color:var(--t2);}
+.ws-upload-zone svg{width:32px;height:32px;margin:0 auto .5rem;display:block;opacity:.3;}
+/* Tasks */
+.task-board{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;padding:1rem;overflow-y:auto;flex:1;}
+.task-col{background:var(--s2);border:1px solid var(--b2);border-radius:8px;display:flex;flex-direction:column;gap:.5rem;padding:.75rem;min-height:200px;}
+.task-col-head{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);padding-bottom:.5rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;}
+.task-card{background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.625rem .75rem;font-size:.8125rem;transition:border-color .15s;}
+.task-card:hover{border-color:var(--b3);}
+.task-card-title{font-weight:600;margin-bottom:.25rem;}
+.task-card-meta{font-size:.6875rem;color:var(--t3);display:flex;gap:.5rem;flex-wrap:wrap;}
+.task-add-form{background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.75rem;margin-top:.5rem;display:none;}
+.task-add-form.open{display:block;}
+.task-add-form input{width:100%;background:var(--s4);border:1px solid var(--b2);border-radius:4px;padding:.4rem .625rem;color:var(--t1);font-size:.8125rem;outline:none;margin-bottom:.375rem;}
+.task-add-form input:focus{border-color:var(--b3);}
+/* AI Tools */
+.ai-tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;padding:1rem;}
+.ai-tool-card{background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:1.125rem;display:flex;flex-direction:column;gap:.625rem;text-decoration:none;color:inherit;transition:border-color .15s;}
+.ai-tool-card:hover{border-color:var(--b3);}
+.ai-tool-icon{width:40px;height:40px;background:var(--s4);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.ai-tool-icon svg{width:20px;height:20px;color:var(--t2);}
+.ai-tool-name{font-size:.875rem;font-weight:700;}
+.ai-tool-desc{font-size:.75rem;color:var(--t3);line-height:1.4;}
+/* Members panel */
+.members-panel-inner{padding:1rem;overflow-y:auto;}
+.member-card{display:flex;align-items:center;gap:.75rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.75rem 1rem;margin-bottom:.5rem;}
+.member-card-av{width:38px;height:38px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.member-card-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.member-card-info{flex:1;min-width:0;}
+.member-card-name{font-size:.875rem;font-weight:600;}
+.member-card-role{font-size:.6875rem;color:var(--t3);}
+.add-member-wrap{position:relative;display:flex;gap:.5rem;margin-bottom:1rem;}
+.add-member-wrap input{flex:1;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;}
+.add-member-wrap input:focus{border-color:var(--b3);}
+.add-member-results{position:absolute;top:calc(100% + 4px);left:0;right:80px;background:var(--s2);border:1px solid var(--b2);border-radius:6px;z-index:50;max-height:180px;overflow-y:auto;display:none;}
+.add-member-results.open{display:block;}
+.add-member-result{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;cursor:pointer;font-size:.8125rem;transition:background .12s;}
+.add-member-result:hover{background:var(--s3);}
+.invite-box{background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.875rem 1rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;}
+.invite-code{font-family:monospace;font-size:1rem;letter-spacing:.12em;font-weight:700;}
+@media(max-width:600px){
+  .task-board{grid-template-columns:1fr;}
+  .ai-tools-grid{grid-template-columns:1fr 1fr;}
+  .ws-files-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ws-shell">
+  <!-- Workspace sidebar -->
+  <div class="ws-sidebar" id="ws-sidebar">
+    <div class="ws-sidebar-head">
+      <div class="ws-sidebar-name">{{ ws.name }}</div>
+      {% if ws.subject %}<div class="ws-sidebar-sub">{{ ws.subject }}</div>{% endif %}
+    </div>
+    <div class="ws-nav">
+      <div class="ws-nav-section">Workspace</div>
+      <button class="ws-nav-item active" onclick="showPanel('chat',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Group Chat
+      </button>
+      <button class="ws-nav-item" onclick="showPanel('tools',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        AI Tools
+      </button>
+      <button class="ws-nav-item" onclick="showPanel('files',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Files
+      </button>
+      <button class="ws-nav-item" onclick="showPanel('tasks',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tasks
+      </button>
+      <button class="ws-nav-item" onclick="showPanel('members',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Members
+      </button>
+      {% if is_owner %}
+      <div class="ws-nav-section" style="margin-top:.5rem;">Settings</div>
+      <form method="post" action="{% url 'community:workspace_delete' ws.id %}" onsubmit="return confirm('Delete this workspace? This cannot be undone.')">
+        {% csrf_token %}
+        <button type="submit" class="ws-nav-item" style="color:var(--red);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Delete Workspace
+        </button>
+      </form>
+      {% else %}
+      <form method="post" action="{% url 'community:workspace_leave' ws.id %}" style="margin-top:.5rem;" onsubmit="return confirm('Leave this workspace?')">
+        {% csrf_token %}
+        <button type="submit" class="ws-nav-item" style="color:var(--t3);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Leave
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    <div class="ws-members-list">
+      {% for m in members %}
+      <div class="ws-member-row">
+        <div class="ws-member-av">
+          {% if m.user.community_profile.avatar %}<img src="{{ m.user.community_profile.avatar.url }}" alt="">{% else %}{{ m.user.username|slice:":1"|upper }}{% endif %}
+        </div>
+        <span class="ws-member-name">{{ m.user.username }}</span>
+        {% if m.role != 'member' %}<span class="ws-member-role">{{ m.get_role_display }}</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Main panels -->
+  <div class="ws-main">
+    <!-- Chat panel -->
+    <div class="ws-panel active" id="panel-chat">
+      <div class="ws-chat-msgs" id="ws-chat-msgs">
+        {% for msg in messages_list %}
+        <div class="ws-msg-wrap {% if msg.sender == user %}mine{% else %}theirs{% endif %}" data-id="{{ msg.id }}">
+          <div class="ws-msg-av">
+            {% if msg.sender.community_profile.avatar %}<img src="{{ msg.sender.community_profile.avatar.url }}" alt="">{% else %}{{ msg.sender.username|slice:":1"|upper }}{% endif %}
+          </div>
+          <div class="ws-msg-group">
+            {% if msg.sender != user %}<span class="ws-msg-sender">{{ msg.sender.username }}</span>{% endif %}
+            {% if msg.media %}
+            <div class="ws-msg-bubble" style="padding:.375rem .625rem;">
+              <a href="{{ msg.media.url }}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 {{ msg.media_name|default:"File" }}</a>
+              {% if msg.content %}<div style="margin-top:.25rem;">{{ msg.content }}</div>{% endif %}
+            </div>
+            {% else %}
+            <div class="ws-msg-bubble">{{ msg.content }}</div>
+            {% endif %}
+            <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
+          </div>
+        </div>
+        {% empty %}
+        <div style="text-align:center;color:var(--t3);font-size:.8125rem;margin-top:3rem;">Say hello to the group! 👋</div>
+        {% endfor %}
+      </div>
+      <div class="ws-chat-input-area">
+        <form class="ws-chat-form" id="ws-chat-form" onsubmit="wsSendMessage(event)">
+          {% csrf_token %}
+          <button type="button" class="ws-attach-btn" onclick="document.getElementById('ws-file-input').click()" title="Attach file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <input type="text" class="ws-chat-input" id="ws-chat-input" placeholder="Message the group…" autocomplete="off">
+          <button type="submit" class="ws-send-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </form>
+        <input type="file" id="ws-file-input" style="display:none;" onchange="wsAttachFile(this)">
+      </div>
+    </div>
+
+    <!-- AI Tools panel -->
+    <div class="ws-panel" id="panel-tools">
+      <div class="panel-scroll">
+        <div style="padding:1rem 1rem .5rem;font-size:.8125rem;color:var(--t3);">All tools run in the context of this workspace. Outputs are shared with all members.</div>
+        <div class="ai-tools-grid">
+          <a href="{% url 'ai_chat' %}" class="ai-tool-card" target="_blank">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div class="ai-tool-name">AI Tutor</div>
+            <div class="ai-tool-desc">Ask questions, get explanations, and learn together with AI assistance.</div>
+          </a>
+          <a href="{% url 'assignment_create' %}" class="ai-tool-card" target="_blank">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="ai-tool-name">Homework Solver</div>
+            <div class="ai-tool-desc">Upload assignments and get AI-generated solutions and structured answers.</div>
+          </a>
+          <a href="{% url 'essay_request' %}" class="ai-tool-card" target="_blank">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+            <div class="ai-tool-name">Essay Writer</div>
+            <div class="ai-tool-desc">Generate well-researched essays on any topic with AI.</div>
+          </a>
+          <a href="{% url 'list_materials' %}" class="ai-tool-card" target="_blank">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div class="ai-tool-name">Study Materials</div>
+            <div class="ai-tool-desc">Upload and manage PDFs, notes, and study resources.</div>
+          </a>
+          <a href="{% url 'dashboard' %}" class="ai-tool-card" target="_blank">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+            <div class="ai-tool-name">Dashboard</div>
+            <div class="ai-tool-desc">Access your personal dashboard and all study tools.</div>
+          </a>
+          <a href="{% url 'assignment_list' %}" class="ai-tool-card" target="_blank">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <div class="ai-tool-name">Assignments</div>
+            <div class="ai-tool-desc">View and manage all your assignments and results.</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Files panel -->
+    <div class="ws-panel" id="panel-files">
+      <div class="panel-scroll">
+        <div style="padding:1rem 1rem 0;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:.875rem;font-weight:700;">Shared Files</span>
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('ws-upload-input').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Upload
+          </button>
+          <input type="file" id="ws-upload-input" style="display:none;" onchange="wsUploadFile(this)">
+        </div>
+        <div class="ws-upload-zone" onclick="document.getElementById('ws-upload-input').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div style="font-size:.8125rem;font-weight:600;">Drop files here or click to upload</div>
+          <div style="font-size:.75rem;margin-top:.25rem;">Visible to all workspace members</div>
+        </div>
+        <div class="ws-files-grid" id="ws-files-grid">
+          {% for f in files %}
+          <div class="ws-file-card">
+            <div class="ws-file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="ws-file-name" title="{{ f.original_name }}">{{ f.original_name }}</div>
+            <div class="ws-file-meta">{{ f.uploaded_by.username }} · {{ f.uploaded_at|timesince }} ago</div>
+            <a href="{{ f.file.url }}" download class="btn btn-ghost btn-sm" style="margin-top:auto;">Download</a>
+          </div>
+          {% empty %}
+          <div style="grid-column:1/-1;text-align:center;color:var(--t3);font-size:.8125rem;padding:1rem 0;">No files yet. Upload the first one!</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks panel -->
+    <div class="ws-panel" id="panel-tasks">
+      <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <span style="font-size:.875rem;font-weight:700;">Study Board</span>
+        <button class="btn btn-primary btn-sm" onclick="toggleTaskForm()">+ Add Task</button>
+      </div>
+      <div id="task-add-form" class="task-add-form" style="margin:0 1rem;margin-top:.75rem;">
+        <input type="text" id="task-title" placeholder="Task title…" maxlength="255">
+        <input type="date" id="task-due" placeholder="Due date (optional)">
+        <input type="text" id="task-assignee" placeholder="Assign to (username, optional)">
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.375rem;">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="toggleTaskForm()">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="wsAddTask()">Add</button>
+        </div>
+      </div>
+      <div class="task-board" id="task-board">
+        <div class="task-col" id="col-todo">
+          <div class="task-col-head"><span>To Do</span><span id="todo-count" style="background:var(--s5);padding:.1rem .35rem;border-radius:10px;">{{ tasks|length }}</span></div>
+          {% for t in tasks %}{% if t.status == 'todo' %}
+          <div class="task-card" id="task-{{ t.id }}">
+            <div class="task-card-title">{{ t.title }}</div>
+            <div class="task-card-meta">
+              {% if t.assigned_to %}<span>@{{ t.assigned_to.username }}</span>{% endif %}
+              {% if t.due_date %}<span>Due {{ t.due_date }}</span>{% endif %}
+            </div>
+            <div style="display:flex;gap:.375rem;margin-top:.375rem;">
+              <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="wsUpdateTask('{{ t.id }}','doing')">→ Doing</button>
+            </div>
+          </div>
+          {% endif %}{% endfor %}
+        </div>
+        <div class="task-col" id="col-doing">
+          <div class="task-col-head"><span style="color:#f59e0b;">In Progress</span></div>
+          {% for t in tasks %}{% if t.status == 'doing' %}
+          <div class="task-card" id="task-{{ t.id }}">
+            <div class="task-card-title">{{ t.title }}</div>
+            <div class="task-card-meta">
+              {% if t.assigned_to %}<span>@{{ t.assigned_to.username }}</span>{% endif %}
+              {% if t.due_date %}<span>Due {{ t.due_date }}</span>{% endif %}
+            </div>
+            <div style="display:flex;gap:.375rem;margin-top:.375rem;">
+              <button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="wsUpdateTask('{{ t.id }}','done')">✓ Done</button>
+            </div>
+          </div>
+          {% endif %}{% endfor %}
+        </div>
+        <div class="task-col" id="col-done">
+          <div class="task-col-head"><span style="color:var(--green);">Done</span></div>
+          {% for t in tasks %}{% if t.status == 'done' %}
+          <div class="task-card" id="task-{{ t.id }}" style="opacity:.6;">
+            <div class="task-card-title" style="text-decoration:line-through;">{{ t.title }}</div>
+            <div class="task-card-meta">{% if t.assigned_to %}<span>@{{ t.assigned_to.username }}</span>{% endif %}</div>
+          </div>
+          {% endif %}{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Members panel -->
+    <div class="ws-panel" id="panel-members">
+      <div class="panel-scroll">
+        <div class="members-panel-inner">
+          <div class="invite-box">
+            <div>
+              <div style="font-size:.75rem;color:var(--t3);margin-bottom:.25rem;">Invite Code</div>
+              <div class="invite-code">{{ ws.invite_code }}</div>
+              <div style="font-size:.6875rem;color:var(--t3);margin-top:.25rem;">Share link: <span id="invite-link-text" style="color:var(--t2);">{{ request.scheme }}://{{ request.get_host }}{% url 'community:workspace_join' ws.invite_code %}</span></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="copyInviteLink()">Copy Link</button>
+          </div>
+          {% if is_admin %}
+          <div class="add-member-wrap">
+            <input type="text" id="add-member-input" placeholder="Search user to add…" autocomplete="off">
+            <div class="add-member-results" id="add-member-results"></div>
+            <button class="btn btn-primary btn-sm" onclick="wsAddMember()">Add</button>
+          </div>
+          {% endif %}
+          {% for m in members %}
+          <div class="member-card" id="member-card-{{ m.user.id }}">
+            <div class="member-card-av">
+              {% if m.user.community_profile.avatar %}<img src="{{ m.user.community_profile.avatar.url }}" alt="">{% else %}{{ m.user.username|slice:":1"|upper }}{% endif %}
+            </div>
+            <div class="member-card-info">
+              <div class="member-card-name">{{ m.user.username }}</div>
+              <div class="member-card-role">{{ m.get_role_display }}</div>
+            </div>
+            {% if is_admin and m.role != 'owner' and m.user != user %}
+            <form method="post" action="{% url 'community:workspace_remove_member' ws.id m.user.id %}" onsubmit="return confirm('Remove {{ m.user.username }}?')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red);border-color:rgba(239,68,68,.3);">Remove</button>
+            </form>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div><!-- /ws-main -->
+</div><!-- /ws-shell -->
+
+<!-- Mobile sidebar overlay -->
+<div class="mob-overlay" id="ws-mob-overlay" onclick="toggleWsSidebar()" style="display:none;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+const WS_ID = '{{ ws.id }}';
+const MY_USERNAME = '{{ user.username }}';
+{% if user.community_profile.avatar %}const MY_AVATAR = '{{ user.community_profile.avatar.url }}';{% else %}const MY_AVATAR = null;{% endif %}
+
+/* ── Panel switching ── */
+function showPanel(name, btn) {
+  document.querySelectorAll('.ws-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ws-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (window.innerWidth <= 900) toggleWsSidebar();
+}
+
+/* ── Mobile sidebar ── */
+function toggleWsSidebar() {
+  const sb = document.getElementById('ws-sidebar');
+  const ov = document.getElementById('ws-mob-overlay');
+  const open = sb.classList.toggle('open');
+  ov.style.display = open ? 'block' : 'none';
+}
+
+/* ── Scroll chat to bottom ── */
+const chatMsgs = document.getElementById('ws-chat-msgs');
+if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+/* ── Send chat message ── */
+function wsSendMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('ws-chat-input');
+  const content = input.value.trim();
+  if (!content) return;
+  input.value = '';
+  const fd = new FormData();
+  fd.append('content', content);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => appendWsMsg(data, true))
+    .catch(() => {});
+}
+
+function wsAttachFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => appendWsMsg(data, true))
+    .catch(() => {});
+  input.value = '';
+}
+
+function appendWsMsg(data, isMine) {
+  const msgs = document.getElementById('ws-chat-msgs');
+  if (!msgs) return;
+  const empty = msgs.querySelector('[style*="Say hello"]');
+  if (empty) empty.remove();
+  const avHtml = (isMine ? MY_AVATAR : data.sender_avatar)
+    ? `<img src="${isMine ? MY_AVATAR : data.sender_avatar}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+    : (isMine ? MY_USERNAME : data.sender).slice(0,1).toUpperCase();
+  const timeStr = new Date(data.created_at).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  let bubbleHtml = '';
+  if (data.media_url) {
+    bubbleHtml = `<div class="ws-msg-bubble" style="padding:.375rem .625rem;"><a href="${data.media_url}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 ${esc(data.media_name || 'File')}</a>${data.content ? '<div style="margin-top:.25rem;">' + esc(data.content) + '</div>' : ''}</div>`;
+  } else {
+    bubbleHtml = `<div class="ws-msg-bubble">${esc(data.content)}</div>`;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'ws-msg-wrap ' + (isMine ? 'mine' : 'theirs');
+  wrap.dataset.id = data.id;
+  wrap.innerHTML = `<div class="ws-msg-av">${avHtml}</div><div class="ws-msg-group">${!isMine ? `<span class="ws-msg-sender">${esc(data.sender)}</span>` : ''}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>`;
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── Live polling ── */
+let lastTs = new Date().toISOString();
+const seenIds = new Set();
+document.querySelectorAll('.ws-msg-wrap[data-id]').forEach(el => seenIds.add(el.dataset.id));
+
+function wsPoll() {
+  fetch('/community/workspaces/' + WS_ID + '/poll/?since=' + encodeURIComponent(lastTs))
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data || !data.messages.length) return;
+      data.messages.forEach(msg => {
+        if (seenIds.has(msg.id)) return;
+        seenIds.add(msg.id);
+        lastTs = msg.created_at;
+        if (!msg.is_mine) appendWsMsg(msg, false);
+      });
+    })
+    .catch(() => {});
+}
+setInterval(wsPoll, 2500);
+
+/* ── Enter to send ── */
+document.getElementById('ws-chat-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('ws-chat-form').dispatchEvent(new Event('submit')); }
+});
+
+/* ── File upload ── */
+function wsUploadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/files/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      const grid = document.getElementById('ws-files-grid');
+      const empty = grid.querySelector('[style*="No files"]');
+      if (empty) empty.remove();
+      const card = document.createElement('div');
+      card.className = 'ws-file-card';
+      card.innerHTML = `<div class="ws-file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="ws-file-name">${esc(data.name)}</div><div class="ws-file-meta">${esc(MY_USERNAME)} · just now</div><a href="${data.url}" download class="btn btn-ghost btn-sm" style="margin-top:auto;">Download</a>`;
+      grid.prepend(card);
+    })
+    .catch(() => {});
+  input.value = '';
+}
+
+/* ── Tasks ── */
+function toggleTaskForm() {
+  document.getElementById('task-add-form').classList.toggle('open');
+}
+function wsAddTask() {
+  const title = document.getElementById('task-title').value.trim();
+  if (!title) return;
+  const fd = new FormData();
+  fd.append('title', title);
+  fd.append('due_date', document.getElementById('task-due').value);
+  fd.append('assigned_to', document.getElementById('task-assignee').value.trim());
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/tasks/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      const col = document.getElementById('col-todo');
+      const card = document.createElement('div');
+      card.className = 'task-card';
+      card.id = 'task-' + data.id;
+      card.innerHTML = `<div class="task-card-title">${esc(data.title)}</div><div class="task-card-meta">${data.assigned_to ? '<span>@' + esc(data.assigned_to) + '</span>' : ''}${data.due_date ? '<span>Due ' + data.due_date + '</span>' : ''}</div><div style="display:flex;gap:.375rem;margin-top:.375rem;"><button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="wsUpdateTask('${data.id}','doing')">→ Doing</button></div>`;
+      col.appendChild(card);
+      document.getElementById('task-title').value = '';
+      document.getElementById('task-due').value = '';
+      document.getElementById('task-assignee').value = '';
+      toggleTaskForm();
+    })
+    .catch(() => {});
+}
+function wsUpdateTask(taskId, status) {
+  const fd = new FormData();
+  fd.append('status', status);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/tasks/' + taskId + '/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      const card = document.getElementById('task-' + taskId);
+      if (!card) return;
+      const targetCol = document.getElementById('col-' + data.status);
+      if (targetCol) { targetCol.appendChild(card); }
+      if (data.status === 'done') { card.style.opacity = '.6'; card.querySelector('.task-card-title').style.textDecoration = 'line-through'; }
+    })
+    .catch(() => {});
+}
+
+/* ── Add member search ── */
+let addMemberTimeout = null;
+const addInput = document.getElementById('add-member-input');
+if (addInput) {
+  addInput.addEventListener('input', function() {
+    clearTimeout(addMemberTimeout);
+    const q = this.value.trim();
+    if (q.length < 2) { document.getElementById('add-member-results').classList.remove('open'); return; }
+    addMemberTimeout = setTimeout(() => {
+      fetch('/community/workspaces/users/search/?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => {
+          const res = document.getElementById('add-member-results');
+          if (!data.users.length) { res.classList.remove('open'); return; }
+          res.innerHTML = data.users.map(u => `<div class="add-member-result" onclick="selectAddMember('${u.username}')">${u.username}</div>`).join('');
+          res.classList.add('open');
+        });
+    }, 250);
+  });
+}
+function selectAddMember(username) {
+  document.getElementById('add-member-input').value = username;
+  document.getElementById('add-member-results').classList.remove('open');
+}
+function wsAddMember() {
+  const username = (document.getElementById('add-member-input') || {}).value?.trim();
+  if (!username) return;
+  const fd = new FormData();
+  fd.append('username', username);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/members/add/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { alert(data.error); return; }
+      document.getElementById('add-member-input').value = '';
+      if (data.added) location.reload();
+    })
+    .catch(() => {});
+}
+
+/* ── Invite link copy ── */
+function copyInviteLink() {
+  const link = document.getElementById('invite-link-text').textContent;
+  navigator.clipboard && navigator.clipboard.writeText(link);
+  const btn = event.target;
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy Link', 2000);
+}
+
+/* ── Mobile: override mobile-bar hamburger to open ws sidebar ── */
+const mobBtn = document.querySelector('.mob-btn');
+if (mobBtn) mobBtn.onclick = toggleWsSidebar;
+</script>
+{% endblock %}

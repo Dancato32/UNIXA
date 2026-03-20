@@ -19,11 +19,16 @@ from community.models import (
     CommunityProfile,
     Conversation,
     CustomCommunity,
+    GroupWorkspace,
     Message,
     Notification,
     Post,
     PostLike,
     SchoolCommunity,
+    WorkspaceFile,
+    WorkspaceMember,
+    WorkspaceMessage,
+    WorkspaceTask,
 )
 from community.services.feed import get_personalized_feed
 
@@ -725,3 +730,293 @@ def create_call(request, convo_id):
         room_url = f'https://meet.daily.co/{room_name}'
 
     return JsonResponse({'room_url': room_url, 'type': call_type})
+
+
+# ── Group Workspaces ──────────────────────────────────────────────────────────
+
+@login_required
+def workspace_list(request):
+    """List all workspaces the user belongs to."""
+    memberships = (
+        WorkspaceMember.objects
+        .filter(user=request.user)
+        .select_related('workspace', 'workspace__owner')
+        .order_by('-workspace__updated_at')
+    )
+    return render(request, 'community/workspace_list.html', {
+        'memberships': memberships,
+    })
+
+
+@login_required
+def workspace_create(request):
+    """Two-step workspace creation."""
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if not name:
+            return render(request, 'community/workspace_create.html', {'error': 'Group name is required.'})
+
+        description = request.POST.get('description', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        privacy = request.POST.get('privacy', GroupWorkspace.PRIVACY_PRIVATE)
+        if privacy not in (GroupWorkspace.PRIVACY_PRIVATE, GroupWorkspace.PRIVACY_REQUEST):
+            privacy = GroupWorkspace.PRIVACY_PRIVATE
+
+        ws = GroupWorkspace.objects.create(
+            name=name,
+            description=description,
+            subject=subject,
+            privacy=privacy,
+            owner=request.user,
+        )
+        # Owner is automatically a member
+        WorkspaceMember.objects.create(workspace=ws, user=request.user, role=WorkspaceMember.ROLE_OWNER)
+
+        # Add selected members
+        usernames = request.POST.getlist('members')
+        for uname in usernames:
+            try:
+                u = User.objects.get(username=uname)
+                if u != request.user:
+                    WorkspaceMember.objects.get_or_create(workspace=ws, user=u, defaults={'role': WorkspaceMember.ROLE_MEMBER})
+            except User.DoesNotExist:
+                pass
+
+        return redirect('community:workspace_detail', ws_id=ws.id)
+
+    return render(request, 'community/workspace_create.html', {})
+
+
+def _ws_member_or_404(request, ws_id):
+    """Return (workspace, membership) or raise 404/403."""
+    ws = get_object_or_404(GroupWorkspace, id=ws_id, is_active=True)
+    try:
+        membership = WorkspaceMember.objects.get(workspace=ws, user=request.user)
+    except WorkspaceMember.DoesNotExist:
+        from django.http import Http404
+        raise Http404
+    return ws, membership
+
+
+@login_required
+def workspace_detail(request, ws_id):
+    """Main workspace dashboard."""
+    ws, membership = _ws_member_or_404(request, ws_id)
+
+    members = WorkspaceMember.objects.filter(workspace=ws).select_related('user', 'user__community_profile')
+    messages_qs = ws.chat_messages.select_related('sender', 'sender__community_profile').order_by('created_at')
+    files = ws.files.select_related('uploaded_by').order_by('-uploaded_at')
+    tasks = ws.tasks.select_related('assigned_to', 'created_by').order_by('status', 'due_date')
+
+    return render(request, 'community/workspace_detail.html', {
+        'ws': ws,
+        'membership': membership,
+        'members': members,
+        'messages_list': messages_qs,
+        'files': files,
+        'tasks': tasks,
+        'is_owner': membership.role == WorkspaceMember.ROLE_OWNER,
+        'is_admin': membership.role in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN),
+    })
+
+
+@login_required
+def workspace_join(request, invite_code):
+    """Join a workspace via invite code."""
+    ws = get_object_or_404(GroupWorkspace, invite_code=invite_code, is_active=True)
+    _, created = WorkspaceMember.objects.get_or_create(
+        workspace=ws, user=request.user,
+        defaults={'role': WorkspaceMember.ROLE_MEMBER}
+    )
+    return redirect('community:workspace_detail', ws_id=ws.id)
+
+
+@login_required
+@require_POST
+def workspace_send_message(request, ws_id):
+    ws, _ = _ws_member_or_404(request, ws_id)
+    content = request.POST.get('content', '').strip()
+    file = request.FILES.get('file')
+    if not content and not file:
+        return JsonResponse({'error': 'Empty message'}, status=400)
+
+    msg = WorkspaceMessage(workspace=ws, sender=request.user, content=content)
+    if file:
+        msg.media = file
+        msg.media_name = file.name
+    msg.save()
+    ws.updated_at = timezone.now()
+    ws.save(update_fields=['updated_at'])
+
+    avatar = None
+    try:
+        avatar = request.user.community_profile.avatar.url if request.user.community_profile.avatar else None
+    except Exception:
+        pass
+
+    return JsonResponse({
+        'id': str(msg.id),
+        'content': msg.content,
+        'sender': request.user.username,
+        'sender_avatar': avatar,
+        'media_url': msg.media.url if msg.media else None,
+        'media_name': msg.media_name,
+        'created_at': msg.created_at.isoformat(),
+    })
+
+
+@login_required
+def workspace_poll_messages(request, ws_id):
+    ws, _ = _ws_member_or_404(request, ws_id)
+    since_raw = request.GET.get('since')
+    qs = ws.chat_messages.select_related('sender', 'sender__community_profile').order_by('created_at')
+    if since_raw:
+        from django.utils.dateparse import parse_datetime
+        since_dt = parse_datetime(since_raw)
+        if since_dt:
+            qs = qs.filter(created_at__gt=since_dt)
+
+    data = []
+    for msg in qs:
+        avatar = None
+        try:
+            avatar = msg.sender.community_profile.avatar.url if msg.sender.community_profile.avatar else None
+        except Exception:
+            pass
+        data.append({
+            'id': str(msg.id),
+            'content': msg.content,
+            'sender': msg.sender.username,
+            'sender_avatar': avatar,
+            'is_mine': msg.sender_id == request.user.id,
+            'media_url': msg.media.url if msg.media else None,
+            'media_name': msg.media_name,
+            'created_at': msg.created_at.isoformat(),
+        })
+    return JsonResponse({'messages': data})
+
+
+@login_required
+@require_POST
+def workspace_upload_file(request, ws_id):
+    ws, _ = _ws_member_or_404(request, ws_id)
+    f = request.FILES.get('file')
+    if not f:
+        return JsonResponse({'error': 'No file'}, status=400)
+    wf = WorkspaceFile.objects.create(
+        workspace=ws,
+        uploaded_by=request.user,
+        file=f,
+        original_name=f.name,
+        file_size=f.size,
+    )
+    return JsonResponse({
+        'id': str(wf.id),
+        'name': wf.original_name,
+        'url': wf.file.url,
+        'size': wf.file_size,
+        'uploaded_by': request.user.username,
+    })
+
+
+@login_required
+@require_POST
+def workspace_add_task(request, ws_id):
+    ws, _ = _ws_member_or_404(request, ws_id)
+    title = request.POST.get('title', '').strip()
+    if not title:
+        return JsonResponse({'error': 'Title required'}, status=400)
+    due = request.POST.get('due_date') or None
+    assignee_name = request.POST.get('assigned_to', '').strip()
+    assignee = None
+    if assignee_name:
+        try:
+            assignee = User.objects.get(username=assignee_name)
+        except User.DoesNotExist:
+            pass
+    task = WorkspaceTask.objects.create(
+        workspace=ws,
+        created_by=request.user,
+        title=title,
+        description=request.POST.get('description', ''),
+        due_date=due,
+        assigned_to=assignee,
+    )
+    return JsonResponse({
+        'id': str(task.id),
+        'title': task.title,
+        'status': task.status,
+        'due_date': str(task.due_date) if task.due_date else None,
+        'assigned_to': task.assigned_to.username if task.assigned_to else None,
+    })
+
+
+@login_required
+@require_POST
+def workspace_update_task(request, ws_id, task_id):
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+    status = request.POST.get('status')
+    if status in (WorkspaceTask.STATUS_TODO, WorkspaceTask.STATUS_DOING, WorkspaceTask.STATUS_DONE):
+        task.status = status
+        task.save(update_fields=['status'])
+    return JsonResponse({'id': str(task.id), 'status': task.status})
+
+
+@login_required
+@require_POST
+def workspace_add_member(request, ws_id):
+    ws, membership = _ws_member_or_404(request, ws_id)
+    if membership.role not in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN):
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    username = request.POST.get('username', '').strip()
+    try:
+        u = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    _, created = WorkspaceMember.objects.get_or_create(
+        workspace=ws, user=u, defaults={'role': WorkspaceMember.ROLE_MEMBER}
+    )
+    return JsonResponse({'username': u.username, 'added': created})
+
+
+@login_required
+@require_POST
+def workspace_remove_member(request, ws_id, user_id):
+    ws, membership = _ws_member_or_404(request, ws_id)
+    if membership.role not in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN):
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    WorkspaceMember.objects.filter(workspace=ws, user_id=user_id).exclude(
+        role=WorkspaceMember.ROLE_OWNER
+    ).delete()
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def workspace_leave(request, ws_id):
+    ws, membership = _ws_member_or_404(request, ws_id)
+    if membership.role == WorkspaceMember.ROLE_OWNER:
+        return JsonResponse({'error': 'Owner cannot leave. Delete the workspace instead.'}, status=400)
+    membership.delete()
+    return redirect('community:workspace_list')
+
+
+@login_required
+@require_POST
+def workspace_delete(request, ws_id):
+    ws = get_object_or_404(GroupWorkspace, id=ws_id, owner=request.user)
+    ws.delete()
+    return redirect('community:workspace_list')
+
+
+@login_required
+def workspace_search_users(request):
+    """AJAX user search for adding members."""
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2:
+        return JsonResponse({'users': []})
+    users = User.objects.filter(
+        Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
+    ).exclude(id=request.user.id)[:10]
+    return JsonResponse({'users': [{'username': u.username, 'display': u.get_full_name() or u.username} for u in users]})
