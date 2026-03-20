@@ -999,12 +999,16 @@ def workspace_poll_messages(request, ws_id):
             avatar = msg.sender.community_profile.avatar.url if msg.sender.community_profile.avatar else None
         except Exception:
             pass
+        # Detect AI messages stored with [AI] prefix
+        is_ai_msg = msg.content.startswith('[AI]')
+        content = msg.content[4:] if is_ai_msg else msg.content
         data.append({
             'id': str(msg.id),
-            'content': msg.content,
-            'sender': msg.sender.username,
+            'content': content,
+            'sender': 'AI Assistant' if is_ai_msg else msg.sender.username,
             'sender_avatar': avatar,
-            'is_mine': msg.sender_id == request.user.id,
+            'is_mine': (not is_ai_msg) and (msg.sender_id == request.user.id),
+            'is_ai': is_ai_msg,
             'media_url': msg.media.url if msg.media else None,
             'media_name': msg.media_name,
             'created_at': msg.created_at.isoformat(),
@@ -1559,7 +1563,7 @@ def workspace_call_participants(request, ws_id):
 @login_required
 @require_POST
 def workspace_ai_chat(request, ws_id):
-    """Conversational AI manager endpoint."""
+    """Conversational AI manager endpoint — AI acts as a real team member."""
     import json as _json
     from ai_community.ai_engine import workspace_ai_chat as _ai_chat
     ws, _ = _ws_member_or_404(request, ws_id)
@@ -1567,8 +1571,11 @@ def workspace_ai_chat(request, ws_id):
     try:
         body = _json.loads(request.body)
         message = body.get('message', '').strip()
+        # source: 'group' = came from group chat, 'manager' = AI Manager panel
+        source = body.get('source', 'group')
     except Exception:
         message = request.POST.get('message', '').strip()
+        source = 'group'
 
     if not message:
         return JsonResponse({'error': 'Message required'}, status=400)
@@ -1585,10 +1592,13 @@ def workspace_ai_chat(request, ws_id):
         for t in tasks
     ]
     files = list(ws.files.values_list('original_name', flat=True))
+
+    # Pass last 20 messages so AI has full conversation context
     recent_chat = list(
         ws.chat_messages.order_by('-created_at')
-        .values('sender__username', 'content')[:8]
+        .values('sender__username', 'content')[:20]
     )
+    recent_chat = list(reversed(recent_chat))
 
     context = {
         'workspace_name': ws.name,
@@ -1596,10 +1606,23 @@ def workspace_ai_chat(request, ws_id):
         'members': members,
         'tasks': tasks_clean,
         'files': list(files),
-        'recent_chat': list(reversed(recent_chat)),
+        'recent_chat': recent_chat,
+        'current_sender': request.user.username,
+        'source': source,
     }
 
     result = _ai_chat(message, context)
+
+    # Save AI reply to group chat DB so all members see it via polling
+    if result.get('reply') and source == 'group':
+        # Use a system/bot user approach — save as a special marker message
+        # We store it as a WorkspaceMessage with content prefixed so polling can identify it
+        WorkspaceMessage.objects.create(
+            workspace=ws,
+            sender=request.user,  # sender field required; we override display on frontend
+            content=f'[AI]{result["reply"]}',
+        )
+
     return JsonResponse(result)
 
 

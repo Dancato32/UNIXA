@@ -287,6 +287,16 @@
     <div class="ws-panel active" id="panel-chat">
       <div class="ws-chat-msgs" id="ws-chat-msgs">
         {% for msg in messages_list %}
+        {% if msg.content|slice:":4" == "[AI]" %}
+        <div class="ws-msg-wrap theirs" data-id="{{ msg.id }}">
+          <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div>
+          <div class="ws-msg-group">
+            <span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span>
+            <div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">{{ msg.content|slice:"4:" }}</div>
+            <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
+          </div>
+        </div>
+        {% else %}
         <div class="ws-msg-wrap {% if msg.sender == user %}mine{% else %}theirs{% endif %}" data-id="{{ msg.id }}">
           <div class="ws-msg-av">
             {% if msg.sender.community_profile.avatar %}<img src="{{ msg.sender.community_profile.avatar.url }}" alt="">{% else %}{{ msg.sender.username|slice:":1"|upper }}{% endif %}
@@ -304,6 +314,7 @@
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
         </div>
+        {% endif %}
         {% empty %}
         <div style="text-align:center;color:var(--t3);font-size:.8125rem;margin-top:3rem;">Say hello to the group! 👋</div>
         {% endfor %}
@@ -800,6 +811,9 @@ const chatMsgs = document.getElementById('ws-chat-msgs');
 if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
 
 /* ── Send chat message ── */
+// Track AI typing state to avoid duplicate responses
+let aiTyping = false;
+
 function wsSendMessage(e) {
   e.preventDefault();
   const input = document.getElementById('ws-chat-input');
@@ -807,15 +821,14 @@ function wsSendMessage(e) {
   if (!content) return;
   input.value = '';
 
-  // Determine if this is a direct @ai mention
   const isAtAI = content.toLowerCase().startsWith('@ai');
   const question = isAtAI ? (content.slice(3).trim() || 'Hello!') : content;
 
-  // Always show user message in chat
   if (isAtAI) {
+    // @ai: show locally, don't save to group chat
     appendWsMsg({ id: 'local-' + Date.now(), sender: MY_USERNAME, sender_avatar: MY_AVATAR, content: content, created_at: new Date().toISOString(), is_mine: true }, true);
   } else {
-    // Send to group chat normally
+    // Normal message: save to group chat
     const fd = new FormData();
     fd.append('content', content);
     fd.append('csrfmiddlewaretoken', CSRF);
@@ -825,7 +838,10 @@ function wsSendMessage(e) {
       .catch(() => {});
   }
 
-  // Always get AI response
+  if (aiTyping) return; // don't stack AI responses
+  aiTyping = true;
+
+  // Show typing indicator
   const msgs = document.getElementById('ws-chat-msgs');
   const typing = document.createElement('div');
   typing.id = 'ai-chat-typing';
@@ -834,32 +850,45 @@ function wsSendMessage(e) {
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
 
-  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-    body: JSON.stringify({ message: question }),
-  })
-    .then(r => r.json())
-    .then(data => {
-      const t = document.getElementById('ai-chat-typing');
-      if (t) t.remove();
-      const reply = data.reply || '';
-      if (!reply) return;
-      const div = document.createElement('div');
-      div.className = 'ws-msg-wrap theirs';
-      div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
-      msgs.appendChild(div);
-      msgs.scrollTop = msgs.scrollHeight;
-      if (data.actions && data.actions.length) {
-        data.actions.forEach(action => {
-          if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
-        });
-      }
+  // Small human-like delay before responding
+  const thinkDelay = 800 + Math.random() * 1200;
+
+  setTimeout(() => {
+    fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ message: question, source: isAtAI ? 'manager' : 'group' }),
     })
-    .catch(() => {
-      const t = document.getElementById('ai-chat-typing');
-      if (t) t.remove();
-    });
+      .then(r => r.json())
+      .then(data => {
+        const t = document.getElementById('ai-chat-typing');
+        if (t) t.remove();
+        aiTyping = false;
+        const reply = data.reply || '';
+        if (!reply) return;
+
+        if (isAtAI) {
+          // @ai messages: show locally only (not saved to DB)
+          const div = document.createElement('div');
+          div.className = 'ws-msg-wrap theirs';
+          div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
+          msgs.appendChild(div);
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+        // For group messages: AI reply is saved to DB, polling will pick it up automatically
+
+        if (data.actions && data.actions.length) {
+          data.actions.forEach(action => {
+            if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
+          });
+        }
+      })
+      .catch(() => {
+        const t = document.getElementById('ai-chat-typing');
+        if (t) t.remove();
+        aiTyping = false;
+      });
+  }, thinkDelay);
 }
 
 function wsAttachFile(input) {
@@ -880,20 +909,36 @@ function appendWsMsg(data, isMine) {
   if (!msgs) return;
   const empty = msgs.querySelector('[style*="Say hello"]');
   if (empty) empty.remove();
-  const avHtml = (isMine ? MY_AVATAR : data.sender_avatar)
-    ? `<img src="${isMine ? MY_AVATAR : data.sender_avatar}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-    : (isMine ? MY_USERNAME : data.sender).slice(0,1).toUpperCase();
+
+  const isAI = data.is_ai === true;
+
+  let avHtml;
+  if (isAI) {
+    avHtml = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">AI</div>`;
+  } else {
+    const av = isMine ? MY_AVATAR : data.sender_avatar;
+    const initial = (isMine ? MY_USERNAME : data.sender || '?').slice(0,1).toUpperCase();
+    avHtml = `<div class="ws-msg-av">${av ? `<img src="${av}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : initial}</div>`;
+  }
+
   const timeStr = new Date(data.created_at).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
   let bubbleHtml = '';
   if (data.media_url) {
     bubbleHtml = `<div class="ws-msg-bubble" style="padding:.375rem .625rem;"><a href="${data.media_url}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 ${esc(data.media_name || 'File')}</a>${data.content ? '<div style="margin-top:.25rem;">' + esc(data.content) + '</div>' : ''}</div>`;
+  } else if (isAI) {
+    bubbleHtml = `<div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(data.content).replace(/\n/g,'<br>')}</div>`;
   } else {
     bubbleHtml = `<div class="ws-msg-bubble">${esc(data.content)}</div>`;
   }
+
+  const senderLabel = isAI
+    ? `<span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span>`
+    : (!isMine ? `<span class="ws-msg-sender">${esc(data.sender)}</span>` : '');
+
   const wrap = document.createElement('div');
   wrap.className = 'ws-msg-wrap ' + (isMine ? 'mine' : 'theirs');
   wrap.dataset.id = data.id;
-  wrap.innerHTML = `<div class="ws-msg-av">${avHtml}</div><div class="ws-msg-group">${!isMine ? `<span class="ws-msg-sender">${esc(data.sender)}</span>` : ''}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>`;
+  wrap.innerHTML = `${avHtml}<div class="ws-msg-group">${senderLabel}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>`;
   msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
 }

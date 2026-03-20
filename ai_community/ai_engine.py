@@ -334,53 +334,61 @@ Return ONLY valid JSON."""
 
 def workspace_ai_chat(message, context):
     """
-    Conversational AI manager for workspace.
-    context: {workspace_name, workspace_type, members, tasks, files, recent_chat}
+    Conversational AI — behaves like a real team member in the group chat.
+    Reads the full conversation thread, understands who said what, and replies naturally.
+    context: {workspace_name, workspace_type, members, tasks, files, recent_chat, current_sender, source}
     Returns {reply, actions: [{type, data}]}
     """
     ws_type = context.get('workspace_type', 'general')
+    ws_name = context.get('workspace_name', 'this workspace')
+    members = context.get('members', [])
+    current_sender = context.get('current_sender', 'someone')
+    source = context.get('source', 'group')
 
     type_personas = {
-        'startup': """You are an experienced startup advisor embedded in this workspace.
-Your priorities: idea validation, market analysis, business model, MVP scope, growth strategy, pitch preparation.
-Proactively flag unrealistic assumptions. Suggest pivots when needed. Think like a YC mentor.""",
-
-        'study_group': """You are a supportive academic coach embedded in this workspace.
-Your priorities: explaining concepts clearly, building study schedules, generating flashcards/practice questions from uploaded notes, identifying knowledge gaps, and preparing the team for assessments.
-Be encouraging and adapt explanations to different difficulty levels.""",
-
-        'group_project': """You are a project manager and academic assistant embedded in this workspace.
-Your priorities: extracting requirements from uploaded files, breaking work into structured tasks with dependencies, suggesting fair member assignments, reviewing submitted work for completeness, and assembling a final submission-ready output.
-Think like a GitHub-style contribution system — each member owns a piece, you integrate them.""",
-
-        'general': """You are a neutral productivity assistant embedded in this workspace.
-Your priorities: task organization, brainstorming, decision support, planning guidance, and keeping the team aligned.""",
+        'startup': 'a sharp startup advisor who has been part of this team from day one. You think like a YC mentor — you validate ideas, spot risks, suggest pivots, and help with pitch, market, and product strategy.',
+        'study_group': 'a knowledgeable study buddy who has been in this group from the start. You explain concepts clearly, help plan study sessions, generate practice questions, and keep everyone motivated.',
+        'group_project': 'an experienced project manager and academic assistant embedded in this team. You track tasks, review work, suggest assignments, and help assemble the final deliverable.',
+        'general': 'a helpful, thoughtful collaborator who has been part of this team. You help with planning, brainstorming, decisions, and keeping the team aligned.',
     }
-
     persona = type_personas.get(ws_type, type_personas['general'])
 
-    system = f"""{persona}
+    # Build the conversation thread so AI can reference specific messages
+    chat_lines = []
+    for m in context.get('recent_chat', []):
+        sender = m.get('sender__username', 'someone')
+        content = m.get('content', '')
+        # Skip stored AI messages from context (they start with [AI])
+        if content.startswith('[AI]'):
+            chat_lines.append(f'AI Assistant: {content[4:]}')
+        else:
+            chat_lines.append(f'{sender}: {content}')
+    # Add the current message
+    chat_lines.append(f'{current_sender}: {message}')
+    conversation_thread = '\n'.join(chat_lines)
 
-Workspace: "{context.get('workspace_name', 'this workspace')}"
-Type: {ws_type.replace('_', ' ').title()}
-Team members: {', '.join(context.get('members', []))}
+    system = f"""You are {persona}
+
+You are a full member of the "{ws_name}" workspace ({ws_type.replace('_', ' ').title()}).
+Team members: {', '.join(members)}
 Current tasks: {json.dumps(context.get('tasks', []))}
 Uploaded files: {', '.join(context.get('files', []))}
-Recent chat context: {json.dumps(context.get('recent_chat', [])[:5])}
 
-Be concise, structured, and actionable.
+IMPORTANT RULES — read carefully:
+1. You are IN the conversation. You read everything that was said and reply like a real person would.
+2. Reference specific things people said when relevant — e.g. "Like {current_sender} mentioned..." or "Building on what was said about X..."
+3. Keep replies SHORT and conversational — 1 to 4 sentences max unless someone asks for something detailed.
+4. Don't introduce yourself or say "As an AI". You're just another member of the team.
+5. Be direct, warm, and useful. Match the energy of the conversation.
+6. If someone asks a question, answer it. If someone shares an idea, react to it. If there's a problem, help solve it.
+7. Only suggest tasks (using the ```tasks block) when someone explicitly asks to break down work or assign tasks.
 
-IMPORTANT: When you suggest tasks (e.g. when asked to break down work, generate tasks, assign tasks, or split work),
-you MUST include them as a JSON block at the END of your response in this exact format:
-```tasks
-[{{"title":"Task title","description":"What to do","priority":"high|medium|low","estimated_hours":2,"suggested_assignee":"username or null"}}]
-```
-Only include the tasks block when you are actually suggesting tasks to add to the board."""
+You are reading the full conversation thread below. Reply ONLY to the latest message from {current_sender}, but use the full context to make your reply relevant and specific."""
 
     raw = _chat([
         {'role': 'system', 'content': system},
-        {'role': 'user', 'content': message},
-    ], max_tokens=1000)
+        {'role': 'user', 'content': f'Conversation so far:\n{conversation_thread}\n\nReply to {current_sender}\'s latest message as a team member:'},
+    ], max_tokens=400)
 
     actions = []
     reply = raw
