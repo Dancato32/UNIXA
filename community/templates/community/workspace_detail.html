@@ -1432,10 +1432,17 @@ const mobBtn = document.querySelector('.mob-btn');
 if (mobBtn) mobBtn.onclick = toggleWsSidebar;
 </script>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 /* ── Group Call (PeerJS WebRTC) ── */
-const PEERJS_KEY = '{{ PEERJS_API_KEY|default:"peerjs" }}';
+// Dynamically load PeerJS then define all call functions
+(function() {
+  var s = document.createElement('script');
+  s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+  s.onload = function() { _initCallModule(); };
+  s.onerror = function() { console.warn('PeerJS failed to load'); };
+  document.head.appendChild(s);
+})();
+
 const WS_SHORT = WS_ID.replace(/-/g,'').slice(0,12);
 const MY_PEER_ID = 'ws-' + WS_SHORT + '-' + MY_USERNAME;
 
@@ -1444,9 +1451,16 @@ let localStream = null;
 let inCall = false;
 let isMuted = false;
 let isCamOff = false;
-let activeCalls = {};       // peerId → MediaConnection
+let activeCalls = {};
 let heartbeatTimer = null;
 let pollTimer = null;
+
+// Stub so onclick never throws even before PeerJS loads
+window.joinCall = function() {
+  document.getElementById('call-waiting-text').textContent = 'Loading call module… please try again in a moment.';
+};
+
+function _initCallModule() {
 
 function joinCall() {
   const joinBtn = document.getElementById('call-join-btn');
@@ -1684,6 +1698,14 @@ document.getElementById('call-join-btn').addEventListener('click', joinCall);
 document.getElementById('btn-mute').addEventListener('click', toggleMute);
 document.getElementById('btn-cam').addEventListener('click', toggleCamera);
 document.getElementById('btn-end-call').addEventListener('click', leaveCall);
+
+// Expose to window so any inline refs still work
+window.joinCall = joinCall;
+window.leaveCall = leaveCall;
+window.toggleMute = toggleMute;
+window.toggleCamera = toggleCamera;
+
+} // end _initCallModule
 </script>
 
 <script>
