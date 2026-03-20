@@ -9,55 +9,49 @@
 
 {% block extra_css %}
 <style>
-/* Wizard overlay */
-.wiz-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;display:flex;align-items:center;justify-content:center;padding:1rem;}
-.wiz-modal{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;position:relative;}
+/* ── Wizard backdrop & modal ── */
+.wiz-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:800;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.wiz-modal{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;width:100%;max-width:560px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;position:relative;}
 .wiz-close{position:absolute;top:.875rem;right:.875rem;width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:none;color:#aaa;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
 .wiz-close:hover{background:#333;color:#fff;}
 .wiz-close svg{width:16px;height:16px;}
-.wiz-body{flex:1;overflow-y:auto;padding:1.75rem 1.75rem 1rem;}
+.wiz-body{overflow-y:auto;padding:1.75rem 1.75rem 1rem;flex:1;}
 .wiz-title{font-size:1.25rem;font-weight:800;color:#f0f0f0;margin-bottom:.375rem;}
 .wiz-sub{font-size:.8125rem;color:#888;margin-bottom:1.25rem;line-height:1.5;}
-/* Step dots */
+/* Dots */
 .wiz-dots{display:flex;align-items:center;gap:.375rem;padding:.875rem 1.75rem;border-top:1px solid #222;}
-.wiz-dot{width:8px;height:8px;border-radius:50%;background:#333;transition:all .2s;}
+.wiz-dot{width:8px;height:8px;border-radius:50%;background:#333;transition:all .25s;}
 .wiz-dot.active{background:#fff;width:20px;border-radius:4px;}
 .wiz-dot.done{background:#555;}
 /* Footer */
 .wiz-footer{display:flex;align-items:center;justify-content:flex-end;gap:.625rem;padding:.875rem 1.75rem;border-top:1px solid #222;}
-.wiz-btn{padding:.5rem 1.25rem;border-radius:20px;font-size:.875rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;}
+.wiz-btn{padding:.5rem 1.25rem;border-radius:20px;font-size:.875rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:.375rem;}
 .wiz-btn-ghost{background:#2a2a2a;color:#aaa;}
 .wiz-btn-ghost:hover{background:#333;color:#fff;}
 .wiz-btn-primary{background:#fff;color:#000;}
 .wiz-btn-primary:hover{background:#e8e8e8;}
 .wiz-btn-primary:disabled{background:#333;color:#666;cursor:not-allowed;}
-/* Step panels */
+/* Steps */
 .wiz-step{display:none;}
 .wiz-step.active{display:block;}
-</style>
-
-/* Step 1 — Topics */
-<style>
+/* ── Step 1: Topics ── */
 .topic-grid{display:flex;flex-wrap:wrap;gap:.5rem;}
 .topic-chip{display:inline-flex;align-items:center;gap:.375rem;padding:.4rem .75rem;border-radius:20px;border:1px solid #2a2a2a;background:#161616;color:#aaa;font-size:.8125rem;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;}
 .topic-chip:hover{border-color:#444;color:#f0f0f0;}
 .topic-chip.selected{border-color:#fff;background:#fff;color:#000;}
-.topic-chip .tc-emoji{font-size:.9rem;}
-/* Step 2 — Privacy */
+/* ── Step 2: Privacy ── */
 .privacy-list{display:flex;flex-direction:column;gap:.5rem;}
 .privacy-opt{display:flex;align-items:center;gap:1rem;padding:.875rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#161616;cursor:pointer;transition:all .15s;}
 .privacy-opt:hover{border-color:#444;}
 .privacy-opt.selected{border-color:#fff;background:#1e1e1e;}
-.privacy-opt input[type=radio]{display:none;}
-.privacy-radio{width:20px;height:20px;border-radius:50%;border:2px solid #444;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;transition:all .15s;}
+.privacy-radio{width:20px;height:20px;border-radius:50%;border:2px solid #444;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;transition:all .15s;position:relative;}
 .privacy-opt.selected .privacy-radio{border-color:#fff;background:#fff;}
-.privacy-opt.selected .privacy-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#000;}
+.privacy-opt.selected .privacy-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#000;position:absolute;}
 .privacy-icon{width:36px;height:36px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .privacy-icon svg{width:18px;height:18px;color:#aaa;}
 .privacy-info{flex:1;}
 .privacy-name{font-size:.9375rem;font-weight:700;color:#f0f0f0;}
 .privacy-desc{font-size:.75rem;color:#888;margin-top:.125rem;}
-/* Mature toggle */
 .mature-row{display:flex;align-items:center;gap:1rem;padding:.875rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#161616;margin-top:.5rem;}
 .mature-info{flex:1;}
 .mature-name{font-size:.9375rem;font-weight:700;color:#f0f0f0;}
@@ -68,7 +62,9 @@
 .toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;}
 .toggle-wrap input:checked + .toggle-track{background:#fff;}
 .toggle-wrap input:checked + .toggle-track::after{transform:translateX(20px);background:#000;}
-/* Step 3 — Details */
+</style>
+<style>
+/* ── Step 3: Details ── */
 .detail-layout{display:flex;gap:1rem;}
 .detail-left{flex:1;min-width:0;}
 .detail-right{width:200px;flex-shrink:0;}
@@ -86,7 +82,22 @@ textarea.form-input{resize:vertical;min-height:100px;line-height:1.6;}
 .preview-name{font-size:.875rem;font-weight:800;color:#f0f0f0;}
 .preview-meta{font-size:.6875rem;color:#666;margin-top:.125rem;}
 .preview-desc{font-size:.75rem;color:#888;margin-top:.375rem;line-height:1.5;}
-/* Step 4 — Success */
+/* ── Loading screen ── */
+.wiz-loading{display:none;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.75rem;gap:1.25rem;}
+.wiz-loading.active{display:flex;}
+.spinner{width:52px;height:52px;border:4px solid #2a2a2a;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.wiz-loading-text{font-size:.9375rem;font-weight:600;color:#aaa;}
+/* ── Done screen ── */
+.wiz-done{display:none;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.75rem;gap:1rem;text-align:center;}
+.wiz-done.active{display:flex;}
+.done-circle{width:72px;height:72px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes popIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+.done-circle svg{width:36px;height:36px;color:#fff;stroke-dasharray:50;stroke-dashoffset:50;animation:drawCheck .4s .3s ease forwards;}
+@keyframes drawCheck{to{stroke-dashoffset:0;}}
+.done-label{font-size:1.25rem;font-weight:800;color:#f0f0f0;}
+.done-sub{font-size:.875rem;color:#888;}
+/* ── Step 4: Success ── */
 .success-layout{display:flex;gap:1.25rem;}
 .success-left{flex:1;}
 .success-right{width:220px;flex-shrink:0;}
@@ -103,16 +114,6 @@ textarea.form-input{resize:vertical;min-height:100px;line-height:1.6;}
 .comm-card-name{font-size:.9375rem;font-weight:800;color:#f0f0f0;}
 .comm-card-meta{font-size:.6875rem;color:#666;margin-top:.125rem;}
 .comm-card-desc{font-size:.75rem;color:#888;margin-top:.375rem;line-height:1.5;}
-/* Next steps */
-.ns-section{margin-bottom:1.25rem;}
-.ns-section-title{font-size:.875rem;font-weight:700;color:#f0f0f0;margin-bottom:.25rem;}
-.ns-section-sub{font-size:.75rem;color:#888;margin-bottom:.75rem;line-height:1.5;}
-.ns-item{display:flex;align-items:center;justify-content:space-between;padding:.625rem .875rem;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:8px;margin-bottom:.375rem;}
-.ns-item-info{flex:1;}
-.ns-item-title{font-size:.8125rem;font-weight:700;color:#f0f0f0;}
-.ns-item-desc{font-size:.6875rem;color:#888;margin-top:.125rem;}
-.ns-btn{padding:.3rem .75rem;border-radius:20px;background:#2a2a2a;border:1px solid #333;color:#f0f0f0;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
-.ns-btn:hover{background:#333;}
 @media(max-width:520px){
   .detail-layout{flex-direction:column;}
   .detail-right{width:100%;}
@@ -126,12 +127,11 @@ textarea.form-input{resize:vertical;min-height:100px;line-height:1.6;}
 {% endblock %}
 
 {% block content %}
-<div style="text-align:center;padding:3rem 1rem;color:#666;font-size:.875rem;">Loading wizard…</div>
+<div style="text-align:center;padding:3rem 1rem;color:#555;font-size:.875rem;">Opening wizard…</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Render wizard as overlay on top of base layout
 document.addEventListener('DOMContentLoaded', function() {
   const CSRF = '{{ csrf_token }}';
   let step = 1;
@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let selectedTopic = '';
   let selectedPrivacy = 'public';
   let isMature = false;
+  let communitySlug = '';
 
   const TOPICS = [
     ['🎌','Anime & Cosplay'],['🎨','Art'],['💼','Business & Finance'],
@@ -157,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     el.id = 'wiz-backdrop';
     el.innerHTML = `
 <div class="wiz-modal" id="wiz-modal">
-  <button class="wiz-close" onclick="closeWizard()">
+  <button class="wiz-close" id="wiz-close-btn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </button>
 
@@ -166,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="wiz-title">What will your community be about?</div>
     <div class="wiz-sub">Choose a topic to help people discover your community</div>
     <div class="topic-grid" id="topic-grid">
-      ${TOPICS.map(([e,t]) => `<div class="topic-chip" data-topic="${t}" onclick="selectTopic(this,'${t}')"><span class="tc-emoji">${e}</span>${t}</div>`).join('')}
+      ${TOPICS.map(([e,t]) => `<div class="topic-chip" onclick="selectTopic(this,'${t}')"><span>${e}</span>${t}</div>`).join('')}
     </div>
   </div>
 
@@ -175,27 +176,27 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="wiz-title">What kind of community is this?</div>
     <div class="wiz-sub">Decide who can view and contribute. Only public communities show up in search.</div>
     <div class="privacy-list">
-      <label class="privacy-opt selected" id="opt-public" onclick="selectPrivacy('public')">
+      <div class="privacy-opt selected" id="opt-public" onclick="selectPrivacy('public')">
         <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
         <div class="privacy-info"><div class="privacy-name">Public</div><div class="privacy-desc">Anyone can view, post, and comment</div></div>
         <div class="privacy-radio"></div>
-      </label>
-      <label class="privacy-opt" id="opt-restricted" onclick="selectPrivacy('restricted')">
+      </div>
+      <div class="privacy-opt" id="opt-restricted" onclick="selectPrivacy('restricted')">
         <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
         <div class="privacy-info"><div class="privacy-name">Restricted</div><div class="privacy-desc">Anyone can view, but only approved users can post</div></div>
         <div class="privacy-radio"></div>
-      </label>
-      <label class="privacy-opt" id="opt-private" onclick="selectPrivacy('private')">
-        <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      </div>
+      <div class="privacy-opt" id="opt-private" onclick="selectPrivacy('private')">
+        <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
         <div class="privacy-info"><div class="privacy-name">Private</div><div class="privacy-desc">Only approved users can view and post</div></div>
         <div class="privacy-radio"></div>
-      </label>
+      </div>
     </div>
     <div class="mature-row">
       <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
       <div class="mature-info"><div class="mature-name">Mature (18+)</div><div class="mature-desc">Users must be over 18 to view and contribute</div></div>
       <label class="toggle-wrap">
-        <input type="checkbox" id="mature-toggle" onchange="isMature=this.checked">
+        <input type="checkbox" id="mature-toggle">
         <div class="toggle-track"></div>
       </label>
     </div>
@@ -209,13 +210,13 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="detail-left">
         <div class="form-field">
           <label>Community name <span style="color:#ef4444">*</span></label>
-          <input type="text" class="form-input" id="comm-name" placeholder="Community name" maxlength="21" oninput="updatePreview()">
+          <input type="text" class="form-input" id="comm-name" placeholder="Community name" maxlength="21" autocomplete="off">
           <div class="char-count"><span id="name-count">0</span>/21</div>
         </div>
         <div class="form-field">
-          <label>Description <span style="color:#ef4444">*</span></label>
-          <textarea class="form-input" id="comm-desc" placeholder="What is this community about?" oninput="updatePreview()"></textarea>
-          <div class="char-count"><span id="desc-count">0</span></div>
+          <label>Description</label>
+          <textarea class="form-input" id="comm-desc" placeholder="What is this community about?" rows="4"></textarea>
+          <div class="char-count"><span id="desc-count">0</span> chars</div>
         </div>
       </div>
       <div class="detail-right">
@@ -232,6 +233,23 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
+  <!-- Loading screen -->
+  <div class="wiz-loading" id="wiz-loading">
+    <div class="spinner"></div>
+    <div class="wiz-loading-text">Creating your community…</div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="wiz-done" id="wiz-done">
+    <div class="done-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="done-label">Done!</div>
+    <div class="done-sub">Your community has been created</div>
+  </div>
+
   <!-- Step 4: Success -->
   <div class="wiz-body wiz-step" id="wiz-s4">
     <div class="success-layout">
@@ -240,8 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="success-sub">Here's what you should know</div>
         <div class="success-body">We've applied some settings to help you get started. You can view and edit them anytime.</div>
         <div class="success-checks">
-          <div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Rules</div>
-          <div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Welcome guide</div>
+          <div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Rules set up</div>
+          <div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Welcome guide ready</div>
         </div>
       </div>
       <div class="success-right">
@@ -250,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="comm-card-body">
             <div class="comm-card-name" id="succ-name">r/communityname</div>
             <div class="comm-card-meta">1 weekly visitor · 1 weekly contributor</div>
-            <div class="comm-card-desc" id="succ-desc">Your community description</div>
+            <div class="comm-card-desc" id="succ-desc"></div>
           </div>
         </div>
       </div>
@@ -267,12 +285,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <!-- Footer -->
   <div class="wiz-footer" id="wiz-footer">
-    <button class="wiz-btn wiz-btn-ghost" id="wiz-back" onclick="wizBack()" style="display:none">Back</button>
-    <button class="wiz-btn wiz-btn-ghost" id="wiz-cancel" onclick="closeWizard()">Cancel</button>
-    <button class="wiz-btn wiz-btn-primary" id="wiz-next" onclick="wizNext()">Next</button>
+    <button class="wiz-btn wiz-btn-ghost" id="wiz-back" style="display:none">Back</button>
+    <button class="wiz-btn wiz-btn-ghost" id="wiz-cancel">Cancel</button>
+    <button class="wiz-btn wiz-btn-primary" id="wiz-next">Next</button>
   </div>
 </div>`;
     document.body.appendChild(el);
+
+    // Wire up events after DOM insertion
+    document.getElementById('wiz-close-btn').onclick = closeWizard;
+    document.getElementById('wiz-cancel').onclick = closeWizard;
+    document.getElementById('wiz-back').onclick = wizBack;
+    document.getElementById('wiz-next').onclick = wizNext;
+    document.getElementById('mature-toggle').onchange = function() { isMature = this.checked; };
+    document.getElementById('comm-name').addEventListener('input', updatePreview);
+    document.getElementById('comm-desc').addEventListener('input', updatePreview);
   }
 
   window.selectTopic = function(el, topic) {
@@ -288,51 +315,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   };
 
-  window.updatePreview = function() {
+  function updatePreview() {
     const name = document.getElementById('comm-name').value;
     const desc = document.getElementById('comm-desc').value;
     document.getElementById('name-count').textContent = name.length;
     document.getElementById('desc-count').textContent = desc.length;
-    const display = name || 'communityname';
+    const display = name.trim() || 'communityname';
     document.getElementById('prev-name').textContent = 'r/' + display;
-    document.getElementById('prev-av').textContent = display.slice(0,1).toUpperCase() || '?';
+    document.getElementById('prev-av').textContent = display.slice(0,1).toUpperCase();
     document.getElementById('prev-desc').textContent = desc || 'Your community description';
-  };
+  }
 
-  window.wizNext = function() {
-    if (step === 3) {
-      const name = document.getElementById('comm-name').value.trim();
-      if (!name) { document.getElementById('comm-name').focus(); return; }
-      submitCommunity();
-      return;
-    }
-    if (step < TOTAL) goStep(step + 1);
-  };
+  function setFooter(backVisible, cancelVisible, nextText) {
+    document.getElementById('wiz-back').style.display = backVisible ? '' : 'none';
+    document.getElementById('wiz-cancel').style.display = cancelVisible ? '' : 'none';
+    const nb = document.getElementById('wiz-next');
+    if (nextText === null) { nb.style.display = 'none'; }
+    else { nb.style.display = ''; nb.textContent = nextText; nb.disabled = false; }
+  }
 
-  window.wizBack = function() {
-    if (step > 1) goStep(step - 1);
-  };
+  function showStep(n) {
+    // hide all step bodies + special screens
+    [1,2,3,4].forEach(i => {
+      const s = document.getElementById('wiz-s' + i);
+      if (s) s.classList.remove('active');
+    });
+    document.getElementById('wiz-loading').classList.remove('active');
+    document.getElementById('wiz-done').classList.remove('active');
+    document.getElementById('wiz-dots').style.display = '';
+    document.getElementById('wiz-footer').style.display = '';
 
-  function goStep(n) {
-    document.getElementById('wiz-s' + step).classList.remove('active');
-    document.getElementById('dot-' + step).classList.remove('active');
-    document.getElementById('dot-' + step).classList.add('done');
-    step = n;
-    document.getElementById('wiz-s' + step).classList.add('active');
-    // update dots
+    const target = document.getElementById('wiz-s' + n);
+    if (target) target.classList.add('active');
+
+    // dots
     for (let i = 1; i <= TOTAL; i++) {
       const d = document.getElementById('dot-' + i);
       d.classList.remove('active','done');
-      if (i < step) d.classList.add('done');
-      if (i === step) d.classList.add('active');
+      if (i < n) d.classList.add('done');
+      if (i === n) d.classList.add('active');
     }
-    // footer
-    document.getElementById('wiz-back').style.display = step > 1 && step < 4 ? '' : 'none';
-    document.getElementById('wiz-cancel').style.display = step < 4 ? '' : 'none';
-    const nextBtn = document.getElementById('wiz-next');
-    if (step === 4) {
-      nextBtn.style.display = 'none';
-      // show go-to-community button
+
+    step = n;
+    if (n === 1) setFooter(false, true, 'Next');
+    else if (n === 2) setFooter(true, true, 'Next');
+    else if (n === 3) setFooter(true, true, 'Create Community');
+    else if (n === 4) {
+      setFooter(false, false, null);
+      // add Go To Community button once
       const footer = document.getElementById('wiz-footer');
       if (!document.getElementById('wiz-go')) {
         const go = document.createElement('a');
@@ -341,18 +371,52 @@ document.addEventListener('DOMContentLoaded', function() {
         go.textContent = 'Go To Community';
         footer.appendChild(go);
       }
-    } else {
-      nextBtn.style.display = '';
-      nextBtn.textContent = step === 3 ? 'Create Community' : 'Next';
+      document.getElementById('wiz-footer').style.display = '';
     }
+  }
+
+  function showLoading() {
+    [1,2,3,4].forEach(i => {
+      const s = document.getElementById('wiz-s' + i);
+      if (s) s.classList.remove('active');
+    });
+    document.getElementById('wiz-loading').classList.add('active');
+    document.getElementById('wiz-done').classList.remove('active');
+    document.getElementById('wiz-dots').style.display = 'none';
+    document.getElementById('wiz-footer').style.display = 'none';
+  }
+
+  function showDone(callback) {
+    document.getElementById('wiz-loading').classList.remove('active');
+    document.getElementById('wiz-done').classList.add('active');
+    setTimeout(callback, 1600);
+  }
+
+  function wizNext() {
+    if (step === 3) {
+      const name = document.getElementById('comm-name').value.trim();
+      if (!name) {
+        const inp = document.getElementById('comm-name');
+        inp.style.borderColor = '#ef4444';
+        inp.focus();
+        setTimeout(() => inp.style.borderColor = '', 1500);
+        return;
+      }
+      submitCommunity();
+      return;
+    }
+    showStep(step + 1);
+  }
+
+  function wizBack() {
+    if (step > 1) showStep(step - 1);
   }
 
   function submitCommunity() {
     const name = document.getElementById('comm-name').value.trim();
     const desc = document.getElementById('comm-desc').value.trim();
-    const btn = document.getElementById('wiz-next');
-    btn.disabled = true;
-    btn.textContent = 'Creating…';
+
+    showLoading();
 
     const fd = new FormData();
     fd.append('csrfmiddlewaretoken', CSRF);
@@ -367,18 +431,29 @@ document.addEventListener('DOMContentLoaded', function() {
       headers: {'X-Requested-With': 'XMLHttpRequest'},
       body: fd
     })
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Server error'); });
+      return r.json();
+    })
     .then(data => {
-      if (data.error) { btn.disabled = false; btn.textContent = 'Create Community'; alert(data.error); return; }
-      // populate success screen
+      communitySlug = data.slug;
       const n = data.name || name;
+      // populate success card
       document.getElementById('succ-name').textContent = 'r/' + n;
       document.getElementById('succ-av').textContent = n.slice(0,1).toUpperCase();
-      document.getElementById('succ-desc').textContent = desc || '';
+      document.getElementById('succ-desc').textContent = desc;
       document.getElementById('wiz-go').href = '/community/c/' + data.slug + '/';
-      goStep(4);
+
+      showDone(() => showStep(4));
     })
-    .catch(() => { btn.disabled = false; btn.textContent = 'Create Community'; });
+    .catch(err => {
+      // restore step 3 on error
+      showStep(3);
+      const inp = document.getElementById('comm-name');
+      inp.style.borderColor = '#ef4444';
+      setTimeout(() => inp.style.borderColor = '', 2000);
+      console.error(err);
+    });
   }
 
   window.closeWizard = function() {
