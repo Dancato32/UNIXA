@@ -9,50 +9,385 @@
 
 {% block extra_css %}
 <style>
-.form-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:1.5rem;max-width:560px;}
-.form-title{font-size:1rem;font-weight:700;margin-bottom:1.25rem;}
-.form-group{margin-bottom:1.125rem;}
-.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.4rem;}
-.form-control{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:.55rem .875rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;}
-.form-control:focus{border-color:var(--b3);}
-.form-control::placeholder{color:var(--t3);}
-textarea.form-control{resize:vertical;min-height:90px;line-height:1.6;}
-select.form-control option{background:var(--s3);}
+/* Wizard overlay */
+.wiz-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.wiz-modal{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;position:relative;}
+.wiz-close{position:absolute;top:.875rem;right:.875rem;width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:none;color:#aaa;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
+.wiz-close:hover{background:#333;color:#fff;}
+.wiz-close svg{width:16px;height:16px;}
+.wiz-body{flex:1;overflow-y:auto;padding:1.75rem 1.75rem 1rem;}
+.wiz-title{font-size:1.25rem;font-weight:800;color:#f0f0f0;margin-bottom:.375rem;}
+.wiz-sub{font-size:.8125rem;color:#888;margin-bottom:1.25rem;line-height:1.5;}
+/* Step dots */
+.wiz-dots{display:flex;align-items:center;gap:.375rem;padding:.875rem 1.75rem;border-top:1px solid #222;}
+.wiz-dot{width:8px;height:8px;border-radius:50%;background:#333;transition:all .2s;}
+.wiz-dot.active{background:#fff;width:20px;border-radius:4px;}
+.wiz-dot.done{background:#555;}
+/* Footer */
+.wiz-footer{display:flex;align-items:center;justify-content:flex-end;gap:.625rem;padding:.875rem 1.75rem;border-top:1px solid #222;}
+.wiz-btn{padding:.5rem 1.25rem;border-radius:20px;font-size:.875rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;}
+.wiz-btn-ghost{background:#2a2a2a;color:#aaa;}
+.wiz-btn-ghost:hover{background:#333;color:#fff;}
+.wiz-btn-primary{background:#fff;color:#000;}
+.wiz-btn-primary:hover{background:#e8e8e8;}
+.wiz-btn-primary:disabled{background:#333;color:#666;cursor:not-allowed;}
+/* Step panels */
+.wiz-step{display:none;}
+.wiz-step.active{display:block;}
+</style>
+
+/* Step 1 — Topics */
+<style>
+.topic-grid{display:flex;flex-wrap:wrap;gap:.5rem;}
+.topic-chip{display:inline-flex;align-items:center;gap:.375rem;padding:.4rem .75rem;border-radius:20px;border:1px solid #2a2a2a;background:#161616;color:#aaa;font-size:.8125rem;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;}
+.topic-chip:hover{border-color:#444;color:#f0f0f0;}
+.topic-chip.selected{border-color:#fff;background:#fff;color:#000;}
+.topic-chip .tc-emoji{font-size:.9rem;}
+/* Step 2 — Privacy */
+.privacy-list{display:flex;flex-direction:column;gap:.5rem;}
+.privacy-opt{display:flex;align-items:center;gap:1rem;padding:.875rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#161616;cursor:pointer;transition:all .15s;}
+.privacy-opt:hover{border-color:#444;}
+.privacy-opt.selected{border-color:#fff;background:#1e1e1e;}
+.privacy-opt input[type=radio]{display:none;}
+.privacy-radio{width:20px;height:20px;border-radius:50%;border:2px solid #444;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;transition:all .15s;}
+.privacy-opt.selected .privacy-radio{border-color:#fff;background:#fff;}
+.privacy-opt.selected .privacy-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#000;}
+.privacy-icon{width:36px;height:36px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.privacy-icon svg{width:18px;height:18px;color:#aaa;}
+.privacy-info{flex:1;}
+.privacy-name{font-size:.9375rem;font-weight:700;color:#f0f0f0;}
+.privacy-desc{font-size:.75rem;color:#888;margin-top:.125rem;}
+/* Mature toggle */
+.mature-row{display:flex;align-items:center;gap:1rem;padding:.875rem 1rem;border-radius:10px;border:1px solid #2a2a2a;background:#161616;margin-top:.5rem;}
+.mature-info{flex:1;}
+.mature-name{font-size:.9375rem;font-weight:700;color:#f0f0f0;}
+.mature-desc{font-size:.75rem;color:#888;margin-top:.125rem;}
+.toggle-wrap{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:#333;border-radius:12px;cursor:pointer;transition:background .2s;}
+.toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;}
+.toggle-wrap input:checked + .toggle-track{background:#fff;}
+.toggle-wrap input:checked + .toggle-track::after{transform:translateX(20px);background:#000;}
+/* Step 3 — Details */
+.detail-layout{display:flex;gap:1rem;}
+.detail-left{flex:1;min-width:0;}
+.detail-right{width:200px;flex-shrink:0;}
+.form-field{margin-bottom:.875rem;}
+.form-field label{display:block;font-size:.75rem;font-weight:600;color:#888;margin-bottom:.375rem;}
+.form-input{width:100%;background:#222;border:1px solid #2a2a2a;border-radius:8px;padding:.625rem .875rem;color:#f0f0f0;font-size:.875rem;outline:none;transition:border-color .15s;}
+.form-input:focus{border-color:#555;}
+.form-input::placeholder{color:#555;}
+textarea.form-input{resize:vertical;min-height:100px;line-height:1.6;}
+.char-count{font-size:.6875rem;color:#555;text-align:right;margin-top:.2rem;}
+.preview-card{background:#222;border-radius:10px;overflow:hidden;}
+.preview-banner{height:60px;background:linear-gradient(135deg,#2a2a2a,#333);}
+.preview-av{width:44px;height:44px;border-radius:50%;background:#444;border:3px solid #222;margin:-22px 0 0 .75rem;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#888;}
+.preview-info{padding:.5rem .75rem .75rem;}
+.preview-name{font-size:.875rem;font-weight:800;color:#f0f0f0;}
+.preview-meta{font-size:.6875rem;color:#666;margin-top:.125rem;}
+.preview-desc{font-size:.75rem;color:#888;margin-top:.375rem;line-height:1.5;}
+/* Step 4 — Success */
+.success-layout{display:flex;gap:1.25rem;}
+.success-left{flex:1;}
+.success-right{width:220px;flex-shrink:0;}
+.success-title{font-size:1.375rem;font-weight:800;color:#f0f0f0;line-height:1.3;margin-bottom:.75rem;}
+.success-sub{font-size:.875rem;font-weight:700;color:#f0f0f0;margin-bottom:.375rem;}
+.success-body{font-size:.8125rem;color:#888;line-height:1.6;margin-bottom:1rem;}
+.success-checks{display:flex;flex-direction:column;gap:.5rem;}
+.success-check{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:8px;font-size:.8125rem;font-weight:600;color:#f0f0f0;}
+.success-check svg{width:16px;height:16px;color:#22c55e;flex-shrink:0;}
+.comm-card{background:#222;border-radius:12px;overflow:hidden;}
+.comm-card-banner{height:80px;background:linear-gradient(135deg,#2a2a2a,#3a3a3a);position:relative;}
+.comm-card-av{width:52px;height:52px;border-radius:50%;background:#444;border:3px solid #222;position:absolute;bottom:-26px;left:.875rem;display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:#888;}
+.comm-card-body{padding:1.75rem .875rem .875rem;}
+.comm-card-name{font-size:.9375rem;font-weight:800;color:#f0f0f0;}
+.comm-card-meta{font-size:.6875rem;color:#666;margin-top:.125rem;}
+.comm-card-desc{font-size:.75rem;color:#888;margin-top:.375rem;line-height:1.5;}
+/* Next steps */
+.ns-section{margin-bottom:1.25rem;}
+.ns-section-title{font-size:.875rem;font-weight:700;color:#f0f0f0;margin-bottom:.25rem;}
+.ns-section-sub{font-size:.75rem;color:#888;margin-bottom:.75rem;line-height:1.5;}
+.ns-item{display:flex;align-items:center;justify-content:space-between;padding:.625rem .875rem;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:8px;margin-bottom:.375rem;}
+.ns-item-info{flex:1;}
+.ns-item-title{font-size:.8125rem;font-weight:700;color:#f0f0f0;}
+.ns-item-desc{font-size:.6875rem;color:#888;margin-top:.125rem;}
+.ns-btn{padding:.3rem .75rem;border-radius:20px;background:#2a2a2a;border:1px solid #333;color:#f0f0f0;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.ns-btn:hover{background:#333;}
+@media(max-width:520px){
+  .detail-layout{flex-direction:column;}
+  .detail-right{width:100%;}
+  .success-layout{flex-direction:column;}
+  .success-right{width:100%;}
+  .wiz-body{padding:1.25rem 1.25rem .75rem;}
+  .wiz-footer{padding:.75rem 1.25rem;}
+  .wiz-dots{padding:.75rem 1.25rem;}
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="form-card">
-  <div class="form-title">Create a Community</div>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="form-group">
-      <label class="form-label">Name</label>
-      <input type="text" name="name" class="form-control" placeholder="Community name" required maxlength="255">
+<div style="text-align:center;padding:3rem 1rem;color:#666;font-size:.875rem;">Loading wizard…</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Render wizard as overlay on top of base layout
+document.addEventListener('DOMContentLoaded', function() {
+  const CSRF = '{{ csrf_token }}';
+  let step = 1;
+  const TOTAL = 4;
+  let selectedTopic = '';
+  let selectedPrivacy = 'public';
+  let isMature = false;
+
+  const TOPICS = [
+    ['🎌','Anime & Cosplay'],['🎨','Art'],['💼','Business & Finance'],
+    ['🎮','Games'],['📚','Education & Career'],['👗','Fashion & Beauty'],
+    ['🍔','Food & Drinks'],['❤️','Health'],['🏡','Home & Garden'],
+    ['⚖️','Humanities & Law'],['🌐','Internet Culture'],['🎬','Movies & TV'],
+    ['🎵','Music'],['🌿','Nature & Outdoors'],['📰','News & Politics'],
+    ['✈️','Places & Travel'],['🎭','Pop Culture'],['❓','Q&As & Stories'],
+    ['📖','Reading & Writing'],['🔬','Sciences'],['👻','Spooky'],
+    ['⚽','Sports'],['💻','Technology'],['🚗','Vehicles'],['🧘','Wellness'],
+  ];
+
+  function buildWizard() {
+    const el = document.createElement('div');
+    el.className = 'wiz-backdrop';
+    el.id = 'wiz-backdrop';
+    el.innerHTML = `
+<div class="wiz-modal" id="wiz-modal">
+  <button class="wiz-close" onclick="closeWizard()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+
+  <!-- Step 1: Topic -->
+  <div class="wiz-body wiz-step active" id="wiz-s1">
+    <div class="wiz-title">What will your community be about?</div>
+    <div class="wiz-sub">Choose a topic to help people discover your community</div>
+    <div class="topic-grid" id="topic-grid">
+      ${TOPICS.map(([e,t]) => `<div class="topic-chip" data-topic="${t}" onclick="selectTopic(this,'${t}')"><span class="tc-emoji">${e}</span>${t}</div>`).join('')}
     </div>
-    <div class="form-group">
-      <label class="form-label">Description</label>
-      <textarea name="description" class="form-control" placeholder="What is this community about?"></textarea>
+  </div>
+
+  <!-- Step 2: Privacy -->
+  <div class="wiz-body wiz-step" id="wiz-s2">
+    <div class="wiz-title">What kind of community is this?</div>
+    <div class="wiz-sub">Decide who can view and contribute. Only public communities show up in search.</div>
+    <div class="privacy-list">
+      <label class="privacy-opt selected" id="opt-public" onclick="selectPrivacy('public')">
+        <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <div class="privacy-info"><div class="privacy-name">Public</div><div class="privacy-desc">Anyone can view, post, and comment</div></div>
+        <div class="privacy-radio"></div>
+      </label>
+      <label class="privacy-opt" id="opt-restricted" onclick="selectPrivacy('restricted')">
+        <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="privacy-info"><div class="privacy-name">Restricted</div><div class="privacy-desc">Anyone can view, but only approved users can post</div></div>
+        <div class="privacy-radio"></div>
+      </label>
+      <label class="privacy-opt" id="opt-private" onclick="selectPrivacy('private')">
+        <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="privacy-info"><div class="privacy-name">Private</div><div class="privacy-desc">Only approved users can view and post</div></div>
+        <div class="privacy-radio"></div>
+      </label>
     </div>
-    <div class="form-group">
-      <label class="form-label">Privacy</label>
-      <select name="privacy" class="form-control">
-        <option value="public">Public — anyone can see posts</option>
-        <option value="private">Private — members only</option>
-      </select>
+    <div class="mature-row">
+      <div class="privacy-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div class="mature-info"><div class="mature-name">Mature (18+)</div><div class="mature-desc">Users must be over 18 to view and contribute</div></div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="mature-toggle" onchange="isMature=this.checked">
+        <div class="toggle-track"></div>
+      </label>
     </div>
-    <div class="form-group">
-      <label class="form-label">Rules (optional)</label>
-      <textarea name="rules" class="form-control" placeholder="Community rules…"></textarea>
+  </div>
+
+  <!-- Step 3: Details -->
+  <div class="wiz-body wiz-step" id="wiz-s3">
+    <div class="wiz-title">Tell us about your community</div>
+    <div class="wiz-sub">A name and description help people understand what your community is all about.</div>
+    <div class="detail-layout">
+      <div class="detail-left">
+        <div class="form-field">
+          <label>Community name <span style="color:#ef4444">*</span></label>
+          <input type="text" class="form-input" id="comm-name" placeholder="Community name" maxlength="21" oninput="updatePreview()">
+          <div class="char-count"><span id="name-count">0</span>/21</div>
+        </div>
+        <div class="form-field">
+          <label>Description <span style="color:#ef4444">*</span></label>
+          <textarea class="form-input" id="comm-desc" placeholder="What is this community about?" oninput="updatePreview()"></textarea>
+          <div class="char-count"><span id="desc-count">0</span></div>
+        </div>
+      </div>
+      <div class="detail-right">
+        <div class="preview-card">
+          <div class="preview-banner"></div>
+          <div class="preview-av" id="prev-av">?</div>
+          <div class="preview-info">
+            <div class="preview-name" id="prev-name">r/communityname</div>
+            <div class="preview-meta">1 weekly visitor · 1 weekly contributor</div>
+            <div class="preview-desc" id="prev-desc">Your community description</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Logo (optional)</label>
-      <input type="file" name="logo" class="form-control" accept="image/*">
+  </div>
+
+  <!-- Step 4: Success -->
+  <div class="wiz-body wiz-step" id="wiz-s4">
+    <div class="success-layout">
+      <div class="success-left">
+        <div class="success-title">You launched a new community!</div>
+        <div class="success-sub">Here's what you should know</div>
+        <div class="success-body">We've applied some settings to help you get started. You can view and edit them anytime.</div>
+        <div class="success-checks">
+          <div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Rules</div>
+          <div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Welcome guide</div>
+        </div>
+      </div>
+      <div class="success-right">
+        <div class="comm-card">
+          <div class="comm-card-banner"><div class="comm-card-av" id="succ-av">?</div></div>
+          <div class="comm-card-body">
+            <div class="comm-card-name" id="succ-name">r/communityname</div>
+            <div class="comm-card-meta">1 weekly visitor · 1 weekly contributor</div>
+            <div class="comm-card-desc" id="succ-desc">Your community description</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div style="display:flex;gap:.75rem;margin-top:1.25rem;">
-      <button type="submit" class="btn btn-primary">Create Community</button>
-      <a href="{% url 'community:custom_list' %}" class="btn btn-ghost">Cancel</a>
-    </div>
-  </form>
-</div>
+  </div>
+
+  <!-- Dots -->
+  <div class="wiz-dots" id="wiz-dots">
+    <div class="wiz-dot active" id="dot-1"></div>
+    <div class="wiz-dot" id="dot-2"></div>
+    <div class="wiz-dot" id="dot-3"></div>
+    <div class="wiz-dot" id="dot-4"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="wiz-footer" id="wiz-footer">
+    <button class="wiz-btn wiz-btn-ghost" id="wiz-back" onclick="wizBack()" style="display:none">Back</button>
+    <button class="wiz-btn wiz-btn-ghost" id="wiz-cancel" onclick="closeWizard()">Cancel</button>
+    <button class="wiz-btn wiz-btn-primary" id="wiz-next" onclick="wizNext()">Next</button>
+  </div>
+</div>`;
+    document.body.appendChild(el);
+  }
+
+  window.selectTopic = function(el, topic) {
+    document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTopic = topic;
+  };
+
+  window.selectPrivacy = function(val) {
+    selectedPrivacy = val;
+    ['public','restricted','private'].forEach(v => {
+      document.getElementById('opt-' + v).classList.toggle('selected', v === val);
+    });
+  };
+
+  window.updatePreview = function() {
+    const name = document.getElementById('comm-name').value;
+    const desc = document.getElementById('comm-desc').value;
+    document.getElementById('name-count').textContent = name.length;
+    document.getElementById('desc-count').textContent = desc.length;
+    const display = name || 'communityname';
+    document.getElementById('prev-name').textContent = 'r/' + display;
+    document.getElementById('prev-av').textContent = display.slice(0,1).toUpperCase() || '?';
+    document.getElementById('prev-desc').textContent = desc || 'Your community description';
+  };
+
+  window.wizNext = function() {
+    if (step === 3) {
+      const name = document.getElementById('comm-name').value.trim();
+      if (!name) { document.getElementById('comm-name').focus(); return; }
+      submitCommunity();
+      return;
+    }
+    if (step < TOTAL) goStep(step + 1);
+  };
+
+  window.wizBack = function() {
+    if (step > 1) goStep(step - 1);
+  };
+
+  function goStep(n) {
+    document.getElementById('wiz-s' + step).classList.remove('active');
+    document.getElementById('dot-' + step).classList.remove('active');
+    document.getElementById('dot-' + step).classList.add('done');
+    step = n;
+    document.getElementById('wiz-s' + step).classList.add('active');
+    // update dots
+    for (let i = 1; i <= TOTAL; i++) {
+      const d = document.getElementById('dot-' + i);
+      d.classList.remove('active','done');
+      if (i < step) d.classList.add('done');
+      if (i === step) d.classList.add('active');
+    }
+    // footer
+    document.getElementById('wiz-back').style.display = step > 1 && step < 4 ? '' : 'none';
+    document.getElementById('wiz-cancel').style.display = step < 4 ? '' : 'none';
+    const nextBtn = document.getElementById('wiz-next');
+    if (step === 4) {
+      nextBtn.style.display = 'none';
+      // show go-to-community button
+      const footer = document.getElementById('wiz-footer');
+      if (!document.getElementById('wiz-go')) {
+        const go = document.createElement('a');
+        go.id = 'wiz-go';
+        go.className = 'wiz-btn wiz-btn-primary';
+        go.textContent = 'Go To Community';
+        footer.appendChild(go);
+      }
+    } else {
+      nextBtn.style.display = '';
+      nextBtn.textContent = step === 3 ? 'Create Community' : 'Next';
+    }
+  }
+
+  function submitCommunity() {
+    const name = document.getElementById('comm-name').value.trim();
+    const desc = document.getElementById('comm-desc').value.trim();
+    const btn = document.getElementById('wiz-next');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF);
+    fd.append('name', name);
+    fd.append('description', desc);
+    fd.append('privacy', selectedPrivacy);
+    fd.append('topic', selectedTopic);
+    fd.append('is_mature', isMature ? '1' : '0');
+
+    fetch('{% url "community:custom_create" %}', {
+      method: 'POST',
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
+      body: fd
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { btn.disabled = false; btn.textContent = 'Create Community'; alert(data.error); return; }
+      // populate success screen
+      const n = data.name || name;
+      document.getElementById('succ-name').textContent = 'r/' + n;
+      document.getElementById('succ-av').textContent = n.slice(0,1).toUpperCase();
+      document.getElementById('succ-desc').textContent = desc || '';
+      document.getElementById('wiz-go').href = '/community/c/' + data.slug + '/';
+      goStep(4);
+    })
+    .catch(() => { btn.disabled = false; btn.textContent = 'Create Community'; });
+  }
+
+  window.closeWizard = function() {
+    const bd = document.getElementById('wiz-backdrop');
+    if (bd) bd.remove();
+    window.location.href = '{% url "community:custom_list" %}';
+  };
+
+  buildWizard();
+});
+</script>
 {% endblock %}

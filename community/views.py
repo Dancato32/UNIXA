@@ -179,19 +179,21 @@ def custom_create(request):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         if not name:
-            django_messages.error(request, 'Name is required.')
-            return render(request, 'community/custom_create.html')
+            return JsonResponse({'error': 'Name is required.'}, status=400)
         cc = CustomCommunity(
             name=name,
             description=request.POST.get('description', ''),
             privacy=request.POST.get('privacy', 'public'),
+            topic=request.POST.get('topic', ''),
+            is_mature=request.POST.get('is_mature') == '1',
             rules=request.POST.get('rules', ''),
             creator=request.user,
         )
         if 'logo' in request.FILES:
             cc.logo = request.FILES['logo']
         cc.save()
-        django_messages.success(request, f'Community "{cc.name}" created.')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'slug': cc.slug, 'name': cc.name})
         return redirect('community:custom_detail', slug=cc.slug)
     return render(request, 'community/custom_create.html')
 

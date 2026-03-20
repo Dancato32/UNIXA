@@ -92,9 +92,11 @@ class CustomCommunity(models.Model):
     """User-created communities with public/private privacy settings."""
 
     PRIVACY_PUBLIC = 'public'
+    PRIVACY_RESTRICTED = 'restricted'
     PRIVACY_PRIVATE = 'private'
     PRIVACY_CHOICES = [
         (PRIVACY_PUBLIC, 'Public'),
+        (PRIVACY_RESTRICTED, 'Restricted'),
         (PRIVACY_PRIVATE, 'Private'),
     ]
 
@@ -114,6 +116,8 @@ class CustomCommunity(models.Model):
     logo = models.ImageField(upload_to='community/custom/logos/', null=True, blank=True)
     banner = models.ImageField(upload_to='community/custom/banners/', null=True, blank=True)
     rules = models.TextField(blank=True)
+    is_mature = models.BooleanField(default=False)
+    topic = models.CharField(max_length=100, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
