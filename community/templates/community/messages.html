@@ -792,98 +792,142 @@ let localStream = null;
 let activePeer = null;
 let activeCall = null;
 let callType = null;
+let listenerPeer = null; // always-on peer to receive incoming calls
 
 {% if active_convo %}
 const OTHER_USERNAME = '{{ other_user.username }}';
-{% endif %}
 
-function sanitizePeerId(s) {
-  return s.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
+// Peer IDs are: "nx-" + convoId (truncated) + "-" + username (alphanumeric only)
+// Both users register on page load so either can call the other
+function makePeerId(username) {
+  const cid = '{{ active_convo.id }}'.replace(/-/g,'').slice(0,12);
+  const u = username.replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
+  return 'nx' + cid + u;
+}
+
+const MY_PEER_ID    = makePeerId(MY_USERNAME);
+const OTHER_PEER_ID = makePeerId(OTHER_USERNAME);
+
+// Register this user's peer on page load so they can receive calls
+(function initListenerPeer() {
+  listenerPeer = new Peer(MY_PEER_ID);
+  listenerPeer.on('error', function(err) {
+    // ID already taken (e.g. same tab open twice) — ignore
+    if (err.type === 'unavailable-id') return;
+    console.warn('listener peer error:', err.type);
+  });
+  listenerPeer.on('call', function(incomingCall) {
+    // Someone is calling us — show incoming call UI
+    handleIncomingCall(incomingCall);
+  });
+})();
+
+function handleIncomingCall(incomingCall) {
+  const type = 'voice'; // we don't know yet; answer with audio+video and let caller decide
+  const constraints = { audio: true, video: true };
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream) {
+      localStream = stream;
+      callType = type;
+      openCallOverlay(type);
+      incomingCall.answer(stream);
+      activeCall = incomingCall;
+      incomingCall.on('stream', function(remoteStream) {
+        const remoteVid = document.getElementById('remote-video');
+        if (remoteVid) remoteVid.srcObject = remoteStream;
+        setCallStatus('');
+        // Show cam button if remote has video
+        if (remoteStream.getVideoTracks().length > 0) {
+          document.getElementById('cam-btn').style.display = 'flex';
+        }
+      });
+      incomingCall.on('close', endCall);
+      incomingCall.on('error', endCall);
+      const localVid = document.getElementById('local-video');
+      if (localVid) { localVid.srcObject = stream; }
+    })
+    .catch(function() {
+      alert('Could not access microphone to answer call.');
+    });
 }
 
 function startCall(type) {
   callType = type;
-  fetch('/community/messages/' + CONVO_ID + '/call/', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'type=' + type,
-  })
-  .then(r => r.json())
-  .then(function(data) {
-    const myPeerId = data.peer_id;
-    const roomName = data.room_name;
-    const otherPeerId = roomName + sanitizePeerId(OTHER_USERNAME);
+  const constraints = type === 'video'
+    ? { audio: true, video: true }
+    : { audio: true, video: false };
 
-    const constraints = type === 'video'
-      ? { audio: true, video: true }
-      : { audio: true, video: false };
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream) {
+      localStream = stream;
 
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then(function(stream) {
-        localStream = stream;
+      const localVid = document.getElementById('local-video');
+      if (localVid) {
+        localVid.srcObject = stream;
+        localVid.style.display = type === 'video' ? 'block' : 'none';
+      }
 
-        // Show local video
-        const localVid = document.getElementById('local-video');
-        if (localVid) { localVid.srcObject = stream; localVid.style.display = type === 'video' ? 'block' : 'none'; }
+      openCallOverlay(type);
+      setCallStatus('Calling…');
 
-        // Show overlay
-        openCallOverlay(type);
+      // Destroy listener peer first to free the ID, then re-create as caller
+      if (listenerPeer && !listenerPeer.destroyed) {
+        listenerPeer.destroy();
+        listenerPeer = null;
+      }
 
-        // Create peer
-        activePeer = new Peer(myPeerId, {
-          host: '0.peerjs.com',
-          key: '6303d4c1d55fcc381b9c8e9f',
-          port: 443,
-          secure: true,
+      activePeer = new Peer(MY_PEER_ID);
+      activePeer.on('open', function() {
+        activeCall = activePeer.call(OTHER_PEER_ID, stream);
+        if (!activeCall) {
+          setCallStatus('Could not reach the other user.');
+          return;
+        }
+        activeCall.on('stream', function(remoteStream) {
+          const remoteVid = document.getElementById('remote-video');
+          if (remoteVid) remoteVid.srcObject = remoteStream;
+          setCallStatus('');
         });
-
-        activePeer.on('open', function() {
-          setCallStatus('Calling…');
-          activeCall = activePeer.call(otherPeerId, stream);
-          if (activeCall) {
-            activeCall.on('stream', function(remoteStream) {
-              const remoteVid = document.getElementById('remote-video');
-              if (remoteVid) { remoteVid.srcObject = remoteStream; }
-              setCallStatus('');
-            });
-            activeCall.on('close', endCall);
-            activeCall.on('error', endCall);
-          }
-        });
-
-        // Handle incoming call (other side picks up)
-        activePeer.on('call', function(incomingCall) {
-          incomingCall.answer(stream);
-          activeCall = incomingCall;
-          incomingCall.on('stream', function(remoteStream) {
-            const remoteVid = document.getElementById('remote-video');
-            if (remoteVid) { remoteVid.srcObject = remoteStream; }
-            setCallStatus('');
-          });
-          incomingCall.on('close', endCall);
-        });
-
-        activePeer.on('error', function(err) {
-          console.warn('PeerJS error:', err);
-          setCallStatus('Connection error. Try again.');
-        });
-      })
-      .catch(function(err) {
-        alert('Could not access camera/microphone. Please allow access and try again.');
+        activeCall.on('close', endCall);
+        activeCall.on('error', function() { setCallStatus('Call ended.'); });
       });
-  })
-  .catch(function() { alert('Could not start call. Please try again.'); });
+      activePeer.on('error', function(err) {
+        console.warn('PeerJS error:', err.type, err.message);
+        if (err.type === 'unavailable-id') {
+          // Our ID is taken (listener still registered) — retry with a random suffix
+          activePeer.destroy();
+          activePeer = new Peer(MY_PEER_ID + Math.floor(Math.random()*9000+1000));
+          activePeer.on('open', function() {
+            activeCall = activePeer.call(OTHER_PEER_ID, stream);
+            if (activeCall) {
+              activeCall.on('stream', function(rs) {
+                const rv = document.getElementById('remote-video');
+                if (rv) rv.srcObject = rs;
+                setCallStatus('');
+              });
+              activeCall.on('close', endCall);
+            }
+          });
+        } else {
+          setCallStatus('Connection error. Try again.');
+        }
+      });
+    })
+    .catch(function() {
+      alert('Could not access camera/microphone. Please allow access and try again.');
+    });
 }
+{% endif %}
 
 function openCallOverlay(type) {
   const overlay = document.getElementById('call-overlay');
   const label = document.getElementById('call-label');
   const camBtn = document.getElementById('cam-btn');
-
+  {% if active_convo %}
   label.textContent = (type === 'voice' ? '🎙 Voice call' : '📹 Video call') + ' with {{ other_user.username }}';
+  {% endif %}
   camBtn.style.display = type === 'video' ? 'flex' : 'none';
   overlay.classList.add('open');
-
   callSeconds = 0;
   document.getElementById('call-timer').textContent = '0:00';
   callTimerInterval = setInterval(function() {
@@ -910,6 +954,16 @@ function endCall() {
   if (localVid) { localVid.srcObject = null; localVid.style.display = 'none'; }
   document.getElementById('call-overlay').classList.remove('open');
   setCallStatus('');
+  // Re-register listener peer after call ends
+  {% if active_convo %}
+  setTimeout(function() {
+    if (!listenerPeer || listenerPeer.destroyed) {
+      listenerPeer = new Peer(MY_PEER_ID);
+      listenerPeer.on('call', handleIncomingCall);
+      listenerPeer.on('error', function(err) { if (err.type !== 'unavailable-id') console.warn(err.type); });
+    }
+  }, 1000);
+  {% endif %}
 }
 
 function toggleMute() {
