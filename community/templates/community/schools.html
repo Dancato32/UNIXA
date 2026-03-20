@@ -124,7 +124,6 @@
 <!-- Grid -->
 <div class="uni-grid" id="uni-grid">
   {% for school in schools %}
-  {% with is_joined=school.id|stringformat:"s" in joined_ids|join:"," %}
   <div class="uni-card-wrap"
     data-name="{{ school.name|lower }}"
     data-joined="{% if school.id in joined_ids %}1{% else %}0{% endif %}"
@@ -188,7 +187,6 @@
       </form>
     </div>
   </div>
-  {% endwith %}
   {% empty %}
   <div class="uni-empty" style="grid-column:1/-1;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
