@@ -9,36 +9,34 @@
 
 {% block extra_css %}
 <style>
-/* Banner + header */
-.c-banner{height:160px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);position:relative;overflow:hidden;width:100%;}
+.c-banner{height:180px;position:relative;overflow:hidden;width:100%;}
 .c-banner img{width:100%;height:100%;object-fit:cover;}
-.c-header{background:var(--s2);border-bottom:1px solid var(--b2);padding:.875rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;position:relative;}
-.c-icon{width:64px;height:64px;border-radius:50%;background:var(--s4);border:4px solid var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.625rem;font-weight:800;color:var(--t1);flex-shrink:0;margin-top:-32px;position:relative;z-index:2;}
-.c-icon img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
-.c-meta{flex:1;min-width:0;}
-.c-name{font-size:1.375rem;font-weight:800;line-height:1.2;}
-.c-sub{font-size:.8125rem;color:var(--t3);margin-top:.125rem;}
-.c-header-actions{display:flex;align-items:center;gap:.5rem;margin-left:auto;}
-
-/* Layout */
-.detail-layout{display:flex;gap:1.25rem;align-items:start;}
+.c-banner-bg{width:100%;height:100%;background:linear-gradient(135deg,#0d1b2b 0%,#1a2a3a 50%,#0a1628 100%);position:relative;}
+.c-banner-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,.04) 0%,transparent 60%);}
+.c-header{background:var(--s2);border-bottom:1px solid var(--b2);padding:.75rem 1.25rem .875rem;position:relative;}
+.c-header-top{display:flex;align-items:flex-end;gap:.875rem;margin-bottom:.625rem;}
+.c-icon{width:60px;height:60px;border-radius:12px;background:var(--s4);border:3px solid var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:var(--t1);flex-shrink:0;margin-top:-36px;position:relative;z-index:2;overflow:hidden;}
+.c-icon img{width:100%;height:100%;object-fit:cover;}
+.c-meta{flex:1;min-width:0;padding-bottom:.125rem;}
+.c-name{font-size:1.25rem;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.c-sub{font-size:.75rem;color:var(--t3);margin-top:.125rem;}
+.c-stats{display:flex;gap:1.25rem;padding:.5rem 0 .125rem;}
+.c-stat{display:flex;flex-direction:column;gap:.1rem;}
+.c-stat-val{font-size:.9375rem;font-weight:700;line-height:1;}
+.c-stat-lbl{font-size:.6875rem;color:var(--t3);}
+.c-header-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.detail-layout{display:flex;gap:1.25rem;align-items:start;margin-top:.875rem;}
 .detail-main{flex:1;min-width:0;}
-.detail-side{width:272px;flex-shrink:0;}
-
-/* Sort bar */
-.sort-bar{display:flex;align-items:center;gap:.25rem;background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;margin-bottom:.75rem;}
-.sort-btn{display:flex;align-items:center;gap:.375rem;padding:.35rem .625rem;border-radius:4px;font-size:.8125rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;transition:all .15s;}
+.detail-side{width:268px;flex-shrink:0;}
+.sort-bar{display:flex;align-items:center;gap:.25rem;background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;margin-bottom:.75rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.sort-btn{display:flex;align-items:center;gap:.375rem;padding:.35rem .625rem;border-radius:4px;font-size:.8125rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .sort-btn:hover,.sort-btn.active{background:var(--s3);color:var(--t1);}
 .sort-btn svg{width:15px;height:15px;}
-.sort-sep{width:1px;height:18px;background:var(--b2);margin:0 .125rem;}
-
-/* Composer */
+.sort-sep{width:1px;height:18px;background:var(--b2);margin:0 .125rem;flex-shrink:0;}
 .composer{background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.625rem .875rem;margin-bottom:.625rem;display:flex;align-items:center;gap:.75rem;transition:border-color .15s;text-decoration:none;cursor:pointer;}
 .composer:hover{border-color:var(--b3);}
-.c-av{width:38px;height:38px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;color:var(--t2);}
+.c-av{width:36px;height:36px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;flex-shrink:0;color:var(--t2);}
 .c-input{flex:1;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:.5rem .875rem;color:var(--t3);font-size:.875rem;pointer-events:none;}
-
-/* Post card */
 .post-card{background:var(--s2);border:1px solid var(--b2);border-radius:6px;margin-bottom:.5rem;display:flex;overflow:hidden;transition:border-color .15s;}
 .post-card:hover{border-color:var(--b3);}
 .vote-col{width:40px;background:var(--s3);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.2rem;flex-shrink:0;}
@@ -47,6 +45,11 @@
 .v-btn.up{color:#ff6314;}
 .v-btn svg{width:16px;height:16px;}
 .v-count{font-size:.6875rem;font-weight:700;color:var(--t2);line-height:1;}
+</style>
+{% endblock %}
+
+{% block content %}
+<style>
 .post-body{flex:1;padding:.75rem .875rem;min-width:0;}
 .post-top{display:flex;align-items:center;gap:.375rem;margin-bottom:.375rem;flex-wrap:wrap;}
 .post-by{font-size:.75rem;color:var(--t3);display:flex;align-items:center;gap:.375rem;}
@@ -66,8 +69,6 @@
 .pa svg{width:14px;height:14px;}
 .pa.liked{color:#ff6314;}
 .pa-del:hover{color:var(--red);}
-
-/* ── Inline comment ── */
 .inline-comment{display:none;margin-top:.625rem;padding-top:.625rem;border-top:1px solid var(--b1);}
 .inline-comment.open{display:block;}
 .ic-form{display:flex;gap:.5rem;align-items:flex-start;}
@@ -77,7 +78,6 @@
 .ic-input:focus{border-color:var(--b3);}
 .ic-input::placeholder{color:var(--t3);}
 .ic-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.375rem;}
-/* Inline comment items */
 .ic-comments{margin-bottom:.625rem;}
 .ic-item{display:flex;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--b1);}
 .ic-item:last-child{border-bottom:none;}
@@ -92,8 +92,6 @@
 .ic-loading{font-size:.75rem;color:var(--t3);padding:.5rem 0;text-align:center;}
 .ic-view-all{display:block;text-align:center;font-size:.75rem;color:var(--t3);padding:.375rem 0;transition:color .15s;cursor:pointer;background:none;border:none;width:100%;}
 .ic-view-all:hover{color:var(--t2);}
-
-/* ── Inline comment action bar ── */
 .ic-item-actions{display:flex;align-items:center;gap:.2rem;margin-top:.375rem;flex-wrap:wrap;}
 .ic-vote-pill{display:inline-flex;align-items:center;background:var(--s4);border:1px solid var(--b2);border-radius:20px;overflow:hidden;}
 .ic-vbtn{display:inline-flex;align-items:center;justify-content:center;padding:.2rem .4rem;background:none;border:none;color:var(--t3);cursor:pointer;transition:all .15s;}
@@ -110,8 +108,9 @@
 .ic-reply-input:focus{border-color:var(--b3);}
 .ic-reply-input::placeholder{color:var(--t3);}
 .ic-reply-actions{display:flex;flex-direction:column;gap:.25rem;}
+.side-card{background:var(--s2);border:1px solid var(--b2);border-radius:10px;overflow:hidden;margin-bottom:.875rem;}
 .side-banner{height:48px;background:linear-gradient(135deg,#1a1a2e,#0f3460);}
-.side-body{padding:1rem;}
+.side-body{padding:.875rem 1rem;}
 .side-title{font-size:.9375rem;font-weight:700;margin-bottom:.25rem;}
 .side-desc{font-size:.8125rem;color:var(--t2);line-height:1.6;margin-bottom:.875rem;}
 .side-stat-row{display:flex;gap:1.5rem;margin-bottom:.875rem;}
@@ -122,126 +121,86 @@
 .side-meta-row{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--t2);margin-bottom:.5rem;}
 .side-meta-row svg{width:14px;height:14px;color:var(--t3);flex-shrink:0;}
 .side-actions{display:flex;flex-direction:column;gap:.5rem;margin-top:.875rem;}
-.side-actions .btn{justify-content:center;}
-
-/* Rules */
-.rules-card{background:var(--s2);border:1px solid var(--b2);border-radius:6px;overflow:hidden;}
-.rules-head{padding:.75rem 1rem;border-bottom:1px solid var(--b1);font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);}
-.rule-row{display:flex;align-items:flex-start;gap:.75rem;padding:.625rem 1rem;border-bottom:1px solid var(--b1);cursor:pointer;transition:background .12s;}
-.rule-row:last-child{border-bottom:none;}
-.rule-row:hover{background:var(--s3);}
-.rule-num{font-size:.75rem;font-weight:700;color:var(--t3);flex-shrink:0;width:16px;}
-.rule-text{font-size:.8125rem;color:var(--t2);line-height:1.5;flex:1;}
-
-/* Members */
-.members-head{padding:.75rem 1rem;border-bottom:1px solid var(--b1);font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);}
+.side-actions .btn{justify-content:center;width:100%;}
+.members-head,.rules-head{padding:.625rem 1rem;border-bottom:1px solid var(--b1);font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);}
 .member-row{display:flex;align-items:center;gap:.625rem;padding:.5rem 1rem;border-bottom:1px solid var(--b1);}
 .member-row:last-child{border-bottom:none;}
 .member-av{width:28px;height:28px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;}
 .member-name{font-size:.8125rem;font-weight:500;flex:1;color:var(--t2);}
-
-/* Share toast */
 .share-toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--s5);color:var(--t1);padding:.5rem 1.25rem;border-radius:6px;font-size:.8125rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;}
 .share-toast.show{opacity:1;}
-
-@media(max-width:900px){
-  .detail-layout{flex-direction:column;}
-  .detail-side{width:100%;}
-  .c-header{padding:.75rem 1rem;}
-  .c-header-actions{flex-wrap:wrap;gap:.375rem;}
-  .sort-bar{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
-}
-@media(max-width:600px){
-  .vote-col{display:none;}
-  .post-body{padding:.625rem .75rem;}
-  .c-name{font-size:1.125rem;}
-  .c-banner{height:120px;}
-  .c-icon{width:52px;height:52px;font-size:1.25rem;margin-top:-26px;}
-  .post-actions{gap:0;}
-  .pa{padding:.3rem .4rem;font-size:.7rem;}
-  .ic-act{padding:.15rem .3rem;font-size:.65rem;}
-  .side-stat-row{gap:1rem;}
-}
+@media(max-width:900px){.detail-layout{flex-direction:column;margin-top:.625rem;}.detail-side{width:100%;}.c-header{padding:.625rem 1rem .75rem;}.c-header-actions{gap:.375rem;}}
+@media(max-width:600px){.c-banner{height:130px;}.c-icon{width:52px;height:52px;font-size:1.25rem;margin-top:-28px;border-radius:10px;}.c-name{font-size:1.0625rem;}.c-header-actions .btn{flex:1;justify-content:center;}.vote-col{display:none;}.post-body{padding:.625rem .75rem;}.post-actions{gap:0;}.pa{padding:.3rem .4rem;font-size:.7rem;}.ic-act{padding:.15rem .3rem;font-size:.65rem;}.side-stat-row{gap:1rem;}.detail-layout{gap:.75rem;}}
 </style>
-{% endblock %}
 
-{% block content %}
+
 <!-- Banner -->
 <div style="margin:-1.5rem -2rem 0;position:relative;">
   <div class="c-banner">
     {% if community.banner %}
       <img src="{{ community.banner.url }}" alt="">
     {% else %}
-      <div style="width:100%;height:100%;background:linear-gradient(135deg,#0d1b2b 0%,#1a2a3a 50%,#0a1628 100%);position:relative;">
-        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,.04) 0%,transparent 60%);"></div>
-        <div style="position:absolute;bottom:1rem;left:5.5rem;font-size:.75rem;color:rgba(255,255,255,.25);font-weight:600;letter-spacing:.1em;text-transform:uppercase;">{{ community.name }}</div>
-      </div>
+      <div class="c-banner-bg"></div>
     {% endif %}
   </div>
-  <!-- Header bar -->
   <div class="c-header">
-    <div class="c-icon">
-      {% if community.logo %}
-        <img src="{{ community.logo.url }}" alt="{{ community.name }}">
-      {% elif community.logo_url %}
-        <img src="{{ community.logo_url }}" alt="{{ community.name }}" onerror="this.style.display='none';if(!this.parentNode.querySelector('.lf')){var s=document.createElement('span');s.className='lf';s.textContent=this.alt.slice(0,1).toUpperCase();this.parentNode.appendChild(s);}":1"|upper }}';this.parentNode.appendChild(s);}">
-      {% else %}
-        {{ community.name|slice:":1"|upper }}
-      {% endif %}
+    <div class="c-header-top">
+      <div class="c-icon">
+        {% if community.logo %}
+          <img src="{{ community.logo.url }}" alt="{{ community.name }}">
+        {% elif community.logo_url %}
+          <img src="{{ community.logo_url }}" alt="{{ community.name }}" onerror="this.style.display='none';if(!this.parentNode.querySelector('.lf')){var s=document.createElement('span');s.className='lf';s.textContent=this.alt.slice(0,1).toUpperCase();this.parentNode.appendChild(s);}">
+        {% else %}
+          {{ community.name|slice:":1"|upper }}
+        {% endif %}
+      </div>
+      <div class="c-meta">
+        <div class="c-name">{{ community.name }}</div>
+        <div class="c-sub">School Community</div>
+      </div>
     </div>
-    <div>
-      <div class="c-name">{{ community.name }}</div>
-      <div style="font-size:.75rem;color:var(--t3);">{{ community.memberships.count }} members</div>
-    </div>
-    <div class="c-header-actions">
-      <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="btn btn-ghost btn-sm">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Create Post
-      </a>
-      {% if is_member %}
-        <form method="post" action="{% url 'community:school_leave' community.slug %}" style="margin:0;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-ghost btn-sm">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Joined
-          </button>
-        </form>
-      {% else %}
-        <form method="post" action="{% url 'community:school_join' community.slug %}" style="margin:0;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-primary btn-sm">Join</button>
-        </form>
-      {% endif %}
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;">
+      <div class="c-stats">
+        <div class="c-stat"><span class="c-stat-val">{{ community.memberships.count }}</span><span class="c-stat-lbl">Members</span></div>
+        <div class="c-stat"><span class="c-stat-val">{{ posts|length }}</span><span class="c-stat-lbl">Posts</span></div>
+      </div>
+      <div class="c-header-actions">
+        <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="btn btn-ghost btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Post
+        </a>
+        {% if is_member %}
+          <form method="post" action="{% url 'community:school_leave' community.slug %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Joined
+            </button>
+          </form>
+        {% else %}
+          <form method="post" action="{% url 'community:school_join' community.slug %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Join</button>
+          </form>
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Body -->
 <div class="detail-layout">
-  <!-- Left: feed -->
   <div class="detail-main">
-    <!-- Composer -->
     <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="composer" style="text-decoration:none;">
       <div class="c-av">{{ user.username|slice:":1"|upper }}</div>
       <div class="c-input">Create Post</div>
     </a>
-
-    <!-- Sort bar -->
     <div class="sort-bar">
-      <button class="sort-btn active" onclick="setSort(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Hot
-      </button>
+      <button class="sort-btn active" onclick="setSort(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Hot</button>
       <div class="sort-sep"></div>
-      <button class="sort-btn" onclick="setSort(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>New
-      </button>
+      <button class="sort-btn" onclick="setSort(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>New</button>
       <div class="sort-sep"></div>
-      <button class="sort-btn" onclick="setSort(this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>Top
-      </button>
+      <button class="sort-btn" onclick="setSort(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>Top</button>
     </div>
 
-    <!-- Posts -->
     {% for post in posts %}
     <div class="post-card" id="post-{{ post.id }}">
       <div class="vote-col">
@@ -249,17 +208,13 @@
           <svg viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
         </button>
         <span class="v-count" id="lc-{{ post.id }}">{{ post.like_count }}</span>
-        <button class="v-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
+        <button class="v-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
       </div>
       <div class="post-body">
         <div class="post-top">
           <span class="post-by">
             <a href="{% url 'community:profile' post.author.username %}">
-              <div class="post-av">
-                {% if post.author.community_profile.avatar %}<img src="{{ post.author.community_profile.avatar.url }}" alt="">{% else %}{{ post.author.username|slice:":1"|upper }}{% endif %}
-              </div>
+              <div class="post-av">{% if post.author.community_profile.avatar %}<img src="{{ post.author.community_profile.avatar.url }}" alt="">{% else %}{{ post.author.username|slice:":1"|upper }}{% endif %}</div>
             </a>
             <a href="{% url 'community:profile' post.author.username %}">{{ post.author.username }}</a>
           </span>
@@ -268,28 +223,25 @@
           {% if post.category %}<span class="post-cat">{{ post.category }}</span>{% endif %}
         </div>
         <div class="post-text" id="pt-{{ post.id }}">{{ post.content }}<div class="post-fade" id="ptf-{{ post.id }}"></div></div>
-        {% if post.media and post.media_type == 'image' %}<img src="{{ post.media.url }}" alt="" class="post-img">{% elif post.media and post.media_type == 'video' %}<video src="{{ post.media.url }}" controls class="post-img" style="background:#000;max-height:400px;"></video>{% endif %}
+        {% if post.media and post.media_type == 'image' %}<img src="{{ post.media.url }}" alt="" class="post-img">
+        {% elif post.media and post.media_type == 'video' %}<video src="{{ post.media.url }}" controls class="post-img" style="background:#000;max-height:400px;"></video>{% endif %}
         <div class="post-actions">
           <button class="pa" onclick="toggleCommentBox('{{ post.id }}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span id="cc-{{ post.id }}">{{ post.comment_count }}</span> Comments
           </button>
           <button class="pa" onclick="sharePost('{% url 'community:post_detail' post.id %}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            Share
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Share
           </button>
           <a href="{% url 'community:post_detail' post.id %}" class="pa">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-            More
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>More
           </a>
           {% if post.author == user %}
           <a href="{% url 'community:post_delete' post.id %}" class="pa pa-del" style="margin-left:auto;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            Delete
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete
           </a>
           {% endif %}
         </div>
-        <!-- Inline comment box -->
         <div class="inline-comment" id="ic-{{ post.id }}">
           <div class="ic-comments" id="ic-list-{{ post.id }}"></div>
           <form class="ic-form" onsubmit="submitComment(event,'{{ post.id }}')">
@@ -317,27 +269,17 @@
 
   <!-- Right sidebar -->
   <div class="detail-side">
-    <!-- About card -->
     <div class="side-card">
       <div class="side-banner" style="background:linear-gradient(135deg,#0d1b2b,#1a2a3a);display:flex;align-items:center;justify-content:center;">
-        {% if community.logo %}
-          <img src="{{ community.logo.url }}" alt="" style="height:36px;width:auto;object-fit:contain;opacity:.85;">
-        {% elif community.logo_url %}
-          <img src="{{ community.logo_url }}" alt="" style="height:36px;width:auto;object-fit:contain;opacity:.85;" onerror="this.remove()">
-        {% endif %}
+        {% if community.logo %}<img src="{{ community.logo.url }}" alt="" style="height:36px;width:auto;object-fit:contain;opacity:.85;">
+        {% elif community.logo_url %}<img src="{{ community.logo_url }}" alt="" style="height:36px;width:auto;object-fit:contain;opacity:.85;" onerror="this.remove()">{% endif %}
       </div>
       <div class="side-body">
         <div class="side-title">{{ community.name }}</div>
         <div class="side-desc">{{ community.description|default:"Official school community on NEXA." }}</div>
         <div class="side-stat-row">
-          <div class="side-stat">
-            <span class="side-stat-val">{{ community.memberships.count }}</span>
-            <span class="side-stat-lbl">Members</span>
-          </div>
-          <div class="side-stat">
-            <span class="side-stat-val">{{ posts|length }}</span>
-            <span class="side-stat-lbl">Posts</span>
-          </div>
+          <div class="side-stat"><span class="side-stat-val">{{ community.memberships.count }}</span><span class="side-stat-lbl">Members</span></div>
+          <div class="side-stat"><span class="side-stat-val">{{ posts|length }}</span><span class="side-stat-lbl">Posts</span></div>
         </div>
         <div class="side-divider"></div>
         <div class="side-meta-row">
@@ -357,21 +299,17 @@
         <div class="side-actions">
           <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="btn btn-primary">+ Create Post</a>
           {% if is_member %}
-          <form method="post" action="{% url 'community:school_leave' community.slug %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-ghost" style="width:100%;justify-content:center;">Leave Community</button>
+          <form method="post" action="{% url 'community:school_leave' community.slug %}">{% csrf_token %}
+            <button type="submit" class="btn btn-ghost">Leave Community</button>
           </form>
           {% else %}
-          <form method="post" action="{% url 'community:school_join' community.slug %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-ghost" style="width:100%;justify-content:center;">Join Community</button>
+          <form method="post" action="{% url 'community:school_join' community.slug %}">{% csrf_token %}
+            <button type="submit" class="btn btn-ghost">Join Community</button>
           </form>
           {% endif %}
         </div>
       </div>
     </div>
-
-    <!-- Members card -->
     {% if recent_members %}
     <div class="side-card">
       <div class="members-head">Recent Members</div>
@@ -467,12 +405,7 @@ function submitComment(e, postId) {
 function sharePost(path) {
   const url = location.origin + path;
   if (navigator.clipboard) { navigator.clipboard.writeText(url).then(showToast); }
-  else {
-    const ta = document.createElement('textarea');
-    ta.value = url; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); showToast();
-  }
+  else { const ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast(); }
 }
 function showToast(msg) {
   const t = document.getElementById('share-toast');
@@ -484,10 +417,7 @@ function icLike(id,btn){fetch('/community/comments/'+id+'/like/',{method:'POST',
 function icToggleReply(commentId,username){const box=document.getElementById('ic-rb-'+commentId);if(!box)return;const open=box.classList.toggle('open');if(open){const ta=document.getElementById('ic-ri-'+commentId);if(ta){ta.placeholder='Reply to '+username+'…';ta.focus();}}}
 function icSubmitReply(postId,parentId){const ta=document.getElementById('ic-ri-'+parentId);if(!ta)return;const content=ta.value.trim();if(!content)return;fetch('/community/api/posts/'+postId+'/comments/',{method:'POST',headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},body:JSON.stringify({content,parent:parentId})}).then(r=>r.json()).then(data=>{ta.value='';icToggleReply(parentId,'');const parentEl=document.getElementById('ic-comment-'+parentId);if(parentEl){let rep=parentEl.querySelector('.ic-replies');if(!rep){rep=document.createElement('div');rep.className='ic-replies';parentEl.querySelector('.ic-item-body').appendChild(rep);}rep.insertAdjacentHTML('beforeend','<div class="ic-item" style="padding:.375rem 0;"><div class="ic-item-av" style="width:22px;height:22px;">{{ user.username|slice:":1"|upper }}</div><div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">{{ user.username }}</span><span class="ic-item-time">just now</span></div><div class="ic-item-text">'+esc(content)+'</div></div></div>');}showToast('Reply posted!');}).catch(()=>showToast('Failed'));}
 function icShare(id){const url=location.origin+location.pathname+'#ic-comment-'+id;if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>showToast());}else showToast();}
-function setSort(btn) {
-  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
+function setSort(btn){document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 
 document.querySelectorAll('.post-text').forEach(el => {
   if (el.scrollHeight <= el.clientHeight + 4) {
