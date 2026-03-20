@@ -237,3 +237,45 @@ Return ONLY valid JSON."""
             'group_name': f'{subject} Study Group',
             'intro_message': f'Welcome to your AI-matched {subject} study group! Introduce yourselves and get started.',
         }
+
+
+def generate_join_briefing(joining_user, group_name, subject, members_data, recent_messages):
+    """
+    When a user joins a study group, generate:
+    - A personalized self-introduction for them
+    - A summary of where the group's studies have gotten to
+    - A brief description of each member
+    Returns {intro, summary, member_bios}
+    """
+    prompt = f"""A student is joining a study group. Generate a warm, personalized onboarding briefing.
+
+Joining student: {json.dumps(joining_user)}
+Group name: {group_name}
+Subject: {subject}
+Current members: {json.dumps(members_data)}
+Recent group chat (last messages): {json.dumps(recent_messages[:10])}
+
+Return JSON with exactly these keys:
+{{
+  "intro": "A 2-3 sentence self-introduction the joining student can post, based on their profile. Make it specific and friendly.",
+  "summary": "2-3 sentences summarizing what the group has been studying/discussing so far, based on the chat history. If no history, say the group is just getting started.",
+  "member_bios": [
+    {{"username": "...", "bio": "One sentence about this member and what they bring to the group"}}
+  ]
+}}
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=600)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        result = json.loads(raw[start:end]) if start >= 0 else None
+        if result:
+            return result
+    except Exception:
+        pass
+    return {
+        'intro': f"Hey everyone! I'm excited to join this {subject} study group. Looking forward to learning together!",
+        'summary': 'The group is just getting started. Jump in and introduce yourself!',
+        'member_bios': [{'username': m.get('username', ''), 'bio': 'A fellow student in this group.'} for m in members_data],
+    }

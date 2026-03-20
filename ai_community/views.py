@@ -193,7 +193,7 @@ def create_study_group(request):
 
     group_info = ai_engine.generate_study_group(subject, members_data)
 
-    # Create a GroupWorkspace
+    # Create a GroupWorkspace (PRIVACY_REQUEST so it's discoverable)
     ws = GroupWorkspace.objects.create(
         name=group_info['group_name'],
         description=f'AI-matched study group for {subject}',
@@ -205,18 +205,97 @@ def create_study_group(request):
     for u in candidates[:5]:
         WorkspaceMember.objects.get_or_create(workspace=ws, user=u, defaults={'role': WorkspaceMember.ROLE_MEMBER})
 
-    # Post intro message
+    # Post intro message in workspace chat
     WorkspaceMessage.objects.create(
         workspace=ws,
         sender=request.user,
         content=f'🤖 {group_info["intro_message"]}',
     )
 
+    # ── Post a feed announcement so anyone can discover and join ──
+    member_count = WorkspaceMember.objects.filter(workspace=ws).count()
+    announcement = (
+        f'📚 New AI Study Group: **{group_info["group_name"]}**\n\n'
+        f'Subject: {subject}\n'
+        f'{member_count} member{"s" if member_count != 1 else ""} matched by AI\n\n'
+        f'{group_info["intro_message"]}\n\n'
+        f'🔗 workspace_id:{ws.id}'   # parsed by feed template to render join button
+    )
+    feed_post = Post.objects.create(
+        author=request.user,
+        feed_only=True,
+        title=f'Study Group: {group_info["group_name"]}',
+        content=announcement,
+        category='study_group',
+    )
+
     return JsonResponse({
         'ok': True,
         'workspace_id': str(ws.id),
         'group_name': group_info['group_name'],
+        'member_count': member_count,
+        'post_id': str(feed_post.id),
+    })
+
+
+# ── Join study group (AI briefing on join) ────────────────────────────────────
+
+@login_required
+def join_study_group(request, ws_id):
+    """
+    Join a study group workspace and get an AI-generated briefing:
+    - personalised self-intro to post
+    - summary of where studies have gotten to
+    - brief bio of each member
+    """
+    ws = get_object_or_404(GroupWorkspace, id=ws_id, is_active=True)
+
+    # Add member (idempotent)
+    member, created = WorkspaceMember.objects.get_or_create(
+        workspace=ws, user=request.user,
+        defaults={'role': WorkspaceMember.ROLE_MEMBER}
+    )
+
+    # Build context for AI
+    members_qs = WorkspaceMember.objects.filter(workspace=ws).select_related(
+        'user', 'user__community_profile'
+    ).exclude(user=request.user)
+    members_data = [_user_to_dict(m.user) for m in members_qs]
+
+    recent_msgs = list(
+        ws.chat_messages.order_by('-created_at')
+        .values('content', 'sender__username')[:15]
+    )
+    recent_msgs_clean = [
+        {'sender': m['sender__username'], 'content': m['content'][:120]}
+        for m in reversed(recent_msgs)
+    ]
+
+    briefing = ai_engine.generate_join_briefing(
+        joining_user=_user_to_dict(request.user),
+        group_name=ws.name,
+        subject=ws.subject or ws.name,
+        members_data=members_data,
+        recent_messages=recent_msgs_clean,
+    )
+
+    # Post the AI-generated intro as a chat message from the joining user
+    if created and briefing.get('intro'):
+        WorkspaceMessage.objects.create(
+            workspace=ws,
+            sender=request.user,
+            content=f'👋 {briefing["intro"]}',
+        )
+
+    return JsonResponse({
+        'ok': True,
+        'workspace_id': str(ws.id),
+        'workspace_name': ws.name,
+        'subject': ws.subject,
+        'invite_code': ws.invite_code,
+        'briefing': briefing,
         'member_count': WorkspaceMember.objects.filter(workspace=ws).count(),
+        'already_member': not created,
     })
 
 

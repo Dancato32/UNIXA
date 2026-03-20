@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/find-people/', views.find_people, name='find_people'),
     path('api/assistant/', views.campus_assistant, name='assistant'),
     path('api/study-group/', views.create_study_group, name='study_group'),
+    path('api/study-group/<uuid:ws_id>/join/', views.join_study_group, name='join_study_group'),
     path('api/startup/create/', views.create_startup, name='create_startup'),
     path('api/startup/<uuid:team_id>/respond/', views.respond_startup_invite, name='respond_invite'),
     path('api/opportunities/', views.opportunities, name='opportunities'),

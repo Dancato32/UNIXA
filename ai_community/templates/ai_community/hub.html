@@ -484,9 +484,12 @@ function createStudyGroup(btn) {
         <div style="font-size:1.5rem;">🎓</div>
         <div>
           <div style="font-weight:700;">${d.group_name}</div>
-          <div style="font-size:.8125rem;color:var(--t3);">${d.member_count} members matched</div>
+          <div style="font-size:.8125rem;color:var(--t3);">${d.member_count} members matched · announced in feed</div>
         </div>
-        <a href="/community/workspaces/${d.workspace_id}/" class="btn btn-primary btn-sm" style="margin-left:auto;">Open Workspace →</a>
+        <div style="display:flex;gap:.5rem;margin-left:auto;flex-wrap:wrap;">
+          <a href="/community/?tab=all" class="btn btn-ghost btn-sm">View in Feed</a>
+          <a href="/community/workspaces/${d.workspace_id}/" class="btn btn-primary btn-sm">Open Workspace →</a>
+        </div>
       </div>`;
     } else {
       res.style.display = 'block';
