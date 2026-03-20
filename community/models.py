@@ -491,7 +491,10 @@ class CommunityProfile(models.Model):
         on_delete=models.CASCADE,
         related_name='community_profile',
     )
+    display_name = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True, max_length=500)
+    location = models.CharField(max_length=100, blank=True)
+    website = models.URLField(blank=True)
     avatar = models.ImageField(upload_to='community/profiles/avatars/', null=True, blank=True)
     banner = models.ImageField(upload_to='community/profiles/banners/', null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
