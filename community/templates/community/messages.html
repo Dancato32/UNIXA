@@ -808,16 +808,32 @@ function makePeerId(username) {
 const MY_PEER_ID    = makePeerId(MY_USERNAME);
 const OTHER_PEER_ID = makePeerId(OTHER_USERNAME);
 
+// Free TURN servers via openrelay.metered.ca — needed for NAT traversal
+const ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'turn:openrelay.metered.ca:80',    username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443',   username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+];
+
+const PEER_CONFIG = {
+  config: { iceServers: ICE_SERVERS, iceTransportPolicy: 'all' },
+  debug: 0,
+};
+
+function makePeer(id) {
+  return new Peer(id, PEER_CONFIG);
+}
+
 // Register this user's peer on page load so they can receive calls
 (function initListenerPeer() {
-  listenerPeer = new Peer(MY_PEER_ID);
+  listenerPeer = makePeer(MY_PEER_ID);
   listenerPeer.on('error', function(err) {
-    // ID already taken (e.g. same tab open twice) — ignore
-    if (err.type === 'unavailable-id') return;
+    if (err.type === 'unavailable-id') return; // same tab open twice — ignore
     console.warn('listener peer error:', err.type);
   });
   listenerPeer.on('call', function(incomingCall) {
-    // Someone is calling us — show incoming call UI
     handleIncomingCall(incomingCall);
   });
 })();
@@ -876,7 +892,7 @@ function startCall(type) {
         listenerPeer = null;
       }
 
-      activePeer = new Peer(MY_PEER_ID);
+      activePeer = makePeer(MY_PEER_ID);
       activePeer.on('open', function() {
         activeCall = activePeer.call(OTHER_PEER_ID, stream);
         if (!activeCall) {
@@ -896,7 +912,7 @@ function startCall(type) {
         if (err.type === 'unavailable-id') {
           // Our ID is taken (listener still registered) — retry with a random suffix
           activePeer.destroy();
-          activePeer = new Peer(MY_PEER_ID + Math.floor(Math.random()*9000+1000));
+          activePeer = makePeer(MY_PEER_ID + Math.floor(Math.random()*9000+1000));
           activePeer.on('open', function() {
             activeCall = activePeer.call(OTHER_PEER_ID, stream);
             if (activeCall) {
@@ -958,7 +974,7 @@ function endCall() {
   {% if active_convo %}
   setTimeout(function() {
     if (!listenerPeer || listenerPeer.destroyed) {
-      listenerPeer = new Peer(MY_PEER_ID);
+      listenerPeer = makePeer(MY_PEER_ID);
       listenerPeer.on('call', handleIncomingCall);
       listenerPeer.on('error', function(err) { if (err.type !== 'unavailable-id') console.warn(err.type); });
     }
