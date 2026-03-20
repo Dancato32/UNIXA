@@ -114,4 +114,5 @@ urlpatterns = [
     path('api/friends/respond/<uuid:friendship_id>/', views.friend_request_respond, name='friend_request_respond'),
     path('api/friends/status/<str:username>/', views.friend_status, name='friend_status'),
     path('api/friends/pending/', views.pending_friend_requests, name='pending_friend_requests'),
+    path('api/users/search/', views.search_users, name='search_users'),
 ]

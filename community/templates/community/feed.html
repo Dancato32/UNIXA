@@ -13,6 +13,26 @@
 .feed-shell{display:flex;gap:1.25rem;align-items:start;}
 .feed-main{flex:1;min-width:0;}
 .feed-right{width:268px;flex-shrink:0;}
+/* Find friends search results */
+.fs-item{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;transition:background .12s;}
+.fs-item:hover{background:var(--s3);}
+.fs-av{width:34px;height:34px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.fs-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.fs-info{flex:1;min-width:0;}
+.fs-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fs-user{font-size:.6875rem;color:var(--t3);}
+.fs-actions{display:flex;gap:.25rem;flex-shrink:0;}
+.fs-btn{padding:.25rem .5rem;border-radius:6px;font-size:.6875rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.fs-btn.add{background:var(--white);color:#000;}
+.fs-btn.add:hover{background:#e8e8e8;}
+.fs-btn.pending{background:var(--s4);color:var(--t3);border:1px solid var(--b2);}
+.fs-btn.friends{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2);}
+.fs-btn.follow{background:var(--s3);color:var(--t2);border:1px solid var(--b2);}
+.fs-btn.follow:hover{background:var(--s4);}
+.fs-btn.following{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.15);font-size:.6rem;}
+.fs-empty{padding:.75rem;font-size:.75rem;color:var(--t3);text-align:center;}
+.fs-loading{padding:.5rem .75rem;font-size:.75rem;color:var(--t3);}
+
 
 /* ── Sort bar ── */
 .sort-bar{display:flex;align-items:center;gap:.25rem;background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;margin-bottom:.75rem;}
@@ -466,6 +486,17 @@
 
   <!-- Right sidebar -->
   <div class="feed-right">
+    <!-- Find Friends -->
+    <div class="right-card" id="find-friends-card">
+      <div class="rc-head">Find Friends</div>
+      <div style="position:relative;margin:.5rem .75rem .625rem;">
+        <svg style="position:absolute;left:.625rem;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--t3);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="friend-search-input" type="text" placeholder="Search by username…" autocomplete="off"
+          style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.45rem .75rem .45rem 2rem;color:var(--t1);font-size:.8125rem;outline:none;box-sizing:border-box;transition:border-color .15s;"
+          oninput="friendSearch(this.value)">
+      </div>
+      <div id="friend-search-results"></div>
+    </div>
     <!-- School communities -->
     <div class="right-card">
       <div class="rc-head">School Communities</div>
@@ -891,6 +922,80 @@ function setMobSort(type, btn) {
     const txt = b.textContent.trim().toLowerCase();
     b.classList.toggle('active', txt === (map[type] || type));
   });
+}
+
+/* ── Friend Search ── */
+let _fsTimer = null;
+function friendSearch(val) {
+  clearTimeout(_fsTimer);
+  const res = document.getElementById('friend-search-results');
+  if (!val || val.length < 2) { res.innerHTML = ''; return; }
+  res.innerHTML = '<div class="fs-loading">Searching…</div>';
+  _fsTimer = setTimeout(function() {
+    fetch('/community/api/users/search/?q=' + encodeURIComponent(val))
+      .then(r => r.json())
+      .then(d => {
+        if (!d.users || !d.users.length) {
+          res.innerHTML = '<div class="fs-empty">No users found.</div>';
+          return;
+        }
+        res.innerHTML = d.users.map(u => {
+          const av = u.avatar
+            ? '<img src="' + u.avatar + '" alt="">'
+            : u.username.slice(0,1).toUpperCase();
+          const friendBtn = u.friendship_status === 'friends'
+            ? '<button class="fs-btn friends" disabled>Friends</button>'
+            : u.friendship_status === 'pending_sent'
+            ? '<button class="fs-btn pending" disabled>Pending</button>'
+            : u.friendship_status === 'pending_received'
+            ? '<button class="fs-btn add" onclick="fsAccept(\'' + u.username + '\',\'' + u.friendship_id + '\',this)">Accept</button>'
+            : '<button class="fs-btn add" onclick="fsAddFriend(\'' + u.username + '\',this)">+ Add</button>';
+          const followBtn = u.is_following
+            ? '<button class="fs-btn following" onclick="fsFollow(\'' + u.username + '\',this)">Following</button>'
+            : '<button class="fs-btn follow" onclick="fsFollow(\'' + u.username + '\',this)">Follow</button>';
+          return '<div class="fs-item">' +
+            '<div class="fs-av">' + av + '</div>' +
+            '<div class="fs-info"><div class="fs-name">' + u.display_name + '</div><div class="fs-user">@' + u.username + '</div></div>' +
+            '<div class="fs-actions">' + friendBtn + followBtn + '</div>' +
+            '</div>';
+        }).join('');
+      })
+      .catch(() => { res.innerHTML = '<div class="fs-empty">Search failed.</div>'; });
+  }, 300);
+}
+
+function fsAddFriend(username, btn) {
+  btn.disabled = true; btn.textContent = '…';
+  fetch('/community/api/friends/request/' + username + '/', {
+    method: 'POST', headers: {'X-CSRFToken': CSRF}
+  }).then(r => r.json()).then(d => {
+    if (d.status === 'sent') { btn.className = 'fs-btn pending'; btn.textContent = 'Pending'; }
+    else if (d.status === 'already_friends') { btn.className = 'fs-btn friends'; btn.textContent = 'Friends'; }
+    else { btn.disabled = false; btn.textContent = '+ Add'; }
+  }).catch(() => { btn.disabled = false; btn.textContent = '+ Add'; });
+}
+
+function fsAccept(username, friendId, btn) {
+  btn.disabled = true; btn.textContent = '…';
+  fetch('/community/api/friends/respond/' + friendId + '/', {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({action: 'accept'})
+  }).then(r => r.json()).then(d => {
+    if (d.status === 'accepted') { btn.className = 'fs-btn friends'; btn.textContent = 'Friends'; }
+    else { btn.disabled = false; btn.textContent = 'Accept'; }
+  }).catch(() => { btn.disabled = false; btn.textContent = 'Accept'; });
+}
+
+function fsFollow(username, btn) {
+  btn.disabled = true;
+  fetch('/community/api/follows/', {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({username})
+  }).then(r => r.json()).then(d => {
+    btn.disabled = false;
+    if (d.following) { btn.className = 'fs-btn following'; btn.textContent = 'Following'; }
+    else { btn.className = 'fs-btn follow'; btn.textContent = 'Follow'; }
+  }).catch(() => { btn.disabled = false; });
 }
 
 /* ── Expand long posts ── */

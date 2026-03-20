@@ -105,7 +105,31 @@ def schools(request):
         CommunityMembership.objects.filter(user=request.user)
         .values_list('community_id', flat=True)
     )
+
+    TECHNICAL_KEYWORDS = ['technical university', 'university of mines', 'university of technology']
+    INTERNATIONAL_KEYWORDS = ['lancaster', 'academic city', 'bluecrest']
+    PRIVATE_KEYWORDS = [
+        'ashesi', 'central university', 'valley view', 'methodist university',
+        'presbyterian university', 'pentecost university', 'catholic university',
+        'islamic university', 'christian university', 'garden city', 'knutsford',
+        'kings university', 'wisconsin', 'regent university', 'african university college',
+        'ghana technology university', 'ghana christian',
+    ]
+
+    def get_type(name):
+        n = name.lower()
+        if any(k in n for k in TECHNICAL_KEYWORDS):
+            return 'technical'
+        if any(k in n for k in INTERNATIONAL_KEYWORDS):
+            return 'international'
+        if any(k in n for k in PRIVATE_KEYWORDS):
+            return 'private'
+        return 'public'
+
+    schools_with_type = [(sc, get_type(sc.name)) for sc in qs]
+
     return render(request, 'community/schools.html', {
+        'schools_with_type': schools_with_type,
         'schools': qs,
         'query': query,
         'joined_ids': joined_ids,
@@ -483,11 +507,33 @@ def messages_view(request, convo_id=None):
                 is_read=False,
             ).update(is_read=True)
 
+    # Get accepted friends (excluding those already in conversations)
+    accepted_friendships = Friendship.objects.filter(
+        Q(requester=request.user, status=Friendship.STATUS_ACCEPTED) |
+        Q(recipient=request.user, status=Friendship.STATUS_ACCEPTED)
+    ).select_related('requester', 'requester__community_profile', 'recipient', 'recipient__community_profile')
+
+    convo_participant_ids = set()
+    for convo in user_convos:
+        if convo.other_participant:
+            convo_participant_ids.add(convo.other_participant.id)
+
+    friends = []
+    for f in accepted_friendships:
+        friend_user = f.recipient if f.requester_id == request.user.id else f.requester
+        if friend_user.id not in convo_participant_ids:
+            try:
+                CommunityProfile.objects.get_or_create(user=friend_user)
+            except Exception:
+                pass
+            friends.append(friend_user)
+
     return render(request, 'community/messages.html', {
         'conversations': user_convos,
         'active_convo': active_convo,
         'messages_list': messages_list,
         'other_user': other_user,
+        'friends': friends,
     })
 
 
@@ -1285,3 +1331,65 @@ def pending_friend_requests(request):
             'created_at': fr.created_at.isoformat(),
         })
     return JsonResponse({'requests': data})
+
+
+@login_required
+def search_users(request):
+    """Search users by username for friend/follow discovery."""
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2:
+        return JsonResponse({'users': []})
+
+    users = (
+        User.objects.filter(username__icontains=q)
+        .exclude(id=request.user.id)
+        .select_related('community_profile')
+        [:10]
+    )
+
+    # Get friendship statuses in bulk
+    user_ids = [u.id for u in users]
+    friendships = Friendship.objects.filter(
+        Q(requester=request.user, recipient_id__in=user_ids) |
+        Q(requester_id__in=user_ids, recipient=request.user)
+    ).select_related('requester', 'recipient')
+
+    friendship_map = {}
+    for f in friendships:
+        other_id = f.recipient_id if f.requester_id == request.user.id else f.requester_id
+        if f.status == Friendship.STATUS_ACCEPTED:
+            friendship_map[other_id] = ('friends', str(f.id))
+        elif f.requester_id == request.user.id:
+            friendship_map[other_id] = ('pending_sent', str(f.id))
+        else:
+            friendship_map[other_id] = ('pending_received', str(f.id))
+
+    from community.models import Follow
+    following_ids = set(
+        Follow.objects.filter(follower=request.user, following_id__in=user_ids)
+        .values_list('following_id', flat=True)
+    )
+
+    data = []
+    for u in users:
+        avatar = None
+        display_name = u.username
+        try:
+            cp = u.community_profile
+            if cp.avatar:
+                avatar = cp.avatar.url
+            if cp.display_name:
+                display_name = cp.display_name
+        except Exception:
+            pass
+        status, fid = friendship_map.get(u.id, ('none', ''))
+        data.append({
+            'id': u.id,
+            'username': u.username,
+            'display_name': display_name,
+            'avatar': avatar,
+            'friendship_status': status,
+            'friendship_id': fid,
+            'is_following': u.id in following_ids,
+        })
+    return JsonResponse({'users': data})

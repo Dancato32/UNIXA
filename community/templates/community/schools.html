@@ -148,7 +148,7 @@
           {% if school.logo %}
             <img src="{{ school.logo.url }}" alt="{{ school.name }}">
           {% elif school.logo_url %}
-            <img src="{{ school.logo_url }}" alt="{{ school.name }}" onerror="this.style.display='none';this.parentNode.textContent='{{ school.name|slice:':1'|upper }}'">
+            <img src="{{ school.logo_url }}" alt="{{ school.name }}" onerror="this.style.display='none';if(!this.parentNode.querySelector('.logo-fallback')){var s=document.createElement('span');s.className='logo-fallback';s.textContent='{{ school.name|slice:":1"|upper }}';this.parentNode.appendChild(s);}">
           {% else %}
             {{ school.name|slice:":1"|upper }}
           {% endif %}

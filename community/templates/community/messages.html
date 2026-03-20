@@ -241,6 +241,28 @@
     <input type="text" placeholder="Search conversations…" id="convo-search">
   </div>
   <div class="convos-list" id="convos-list">
+    {% if friends %}
+    <div style="padding:.375rem .75rem .25rem;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);">Friends</div>
+    {% for friend in friends %}
+    <a href="{% url 'community:dm_start' friend.username %}" class="convo-row">
+      <div class="convo-av">
+        {% if friend.community_profile and friend.community_profile.avatar %}
+          <img src="{{ friend.community_profile.avatar.url }}" alt="">
+        {% else %}
+          {{ friend.username|slice:":1"|upper }}
+        {% endif %}
+      </div>
+      <div class="convo-info">
+        <div class="convo-name">{{ friend.username }}</div>
+        <div class="convo-preview" style="color:#4ade80;font-size:.6875rem;">● Friend</div>
+      </div>
+      <span style="font-size:.6875rem;color:var(--t3);flex-shrink:0;">DM</span>
+    </a>
+    {% endfor %}
+    {% if conversations %}
+    <div style="padding:.375rem .75rem .25rem;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);border-top:1px solid var(--b1);margin-top:.25rem;">Messages</div>
+    {% endif %}
+    {% endif %}
     {% for convo in conversations %}
     {% if convo.other_participant %}
     <a href="{% url 'community:conversation_detail' convo.id %}" class="convo-row {% if active_convo and active_convo.id == convo.id %}active{% endif %}">
@@ -259,10 +281,12 @@
     </a>
     {% endif %}
     {% empty %}
+    {% if not friends %}
     <div style="padding:2rem;text-align:center;color:var(--t3);font-size:.8125rem;">
       No conversations yet.<br>
       <a href="{% url 'community:conversation_create' %}" style="color:var(--t2);">Start one</a>
     </div>
+    {% endif %}
     {% endfor %}
   </div>
 </div>

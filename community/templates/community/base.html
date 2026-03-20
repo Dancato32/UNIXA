@@ -278,6 +278,9 @@ input,textarea,select{font-family:inherit;}
       <div class="topbar-sep"></div>
       <span class="topbar-desc">{% block topbar_desc %}{% endblock %}</span>
       <div class="topbar-right">
+        <button class="tb-btn" onclick="openFriendDrawer()" title="Find Friends">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+        </button>
         <a href="{% url 'community:notifications' %}" class="tb-btn" title="Notifications" style="position:relative;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           {% if unread_notif_count %}<span style="position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-size:.5rem;font-weight:700;min-width:13px;height:13px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;line-height:1;">{{ unread_notif_count }}</span>{% endif %}
@@ -329,6 +332,10 @@ input,textarea,select{font-family:inherit;}
   <a href="{% url 'community:post_create' %}" class="bn-item bn-post" title="New Post">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </a>
+  <!-- Find Friends search icon -->
+  <button class="bn-item" id="bn-search-btn" onclick="openFriendDrawer()" title="Find Friends" style="background:none;border:none;">
+    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+  </button>
   <a href="{% url 'community:messages' %}" class="bn-item {% block bn_msgs %}{% endblock %}" title="Messages">
     <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
     <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -340,10 +347,150 @@ input,textarea,select{font-family:inherit;}
   </a>
 </nav>
 
+<!-- Friend Search Drawer (global, works on all pages) -->
+<div id="friend-drawer-overlay" onclick="closeFriendDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;"></div>
+<div id="friend-drawer" style="
+  position:fixed;bottom:0;left:0;right:0;z-index:3001;
+  background:#161616;border-top:1px solid #242424;border-radius:16px 16px 0 0;
+  padding:1rem;max-height:80vh;display:none;flex-direction:column;gap:.75rem;
+  transform:translateY(100%);transition:transform .25s ease;
+">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:.9375rem;font-weight:700;">Find Friends</span>
+    <button onclick="closeFriendDrawer()" style="background:none;border:none;color:#666;font-size:1.25rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#1c1c1c;">✕</button>
+  </div>
+  <div style="position:relative;">
+    <svg style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#666;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="drawer-search-input" type="text" placeholder="Search by username…" autocomplete="off"
+      style="width:100%;background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:.625rem .875rem .625rem 2.5rem;color:#f0f0f0;font-size:.9375rem;outline:none;transition:border-color .15s;"
+      oninput="drawerSearch(this.value)">
+  </div>
+  <div id="drawer-search-results" style="overflow-y:auto;flex:1;"></div>
+</div>
+
 <script>
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('mob-overlay').classList.toggle('open');
+}
+
+/* ── Friend Search Drawer ── */
+function openFriendDrawer() {
+  const overlay = document.getElementById('friend-drawer-overlay');
+  const drawer = document.getElementById('friend-drawer');
+  overlay.style.display = 'block';
+  drawer.style.display = 'flex';
+  requestAnimationFrame(function() {
+    drawer.style.transform = 'translateY(0)';
+  });
+  setTimeout(function() {
+    document.getElementById('drawer-search-input').focus();
+  }, 280);
+}
+function closeFriendDrawer() {
+  const drawer = document.getElementById('friend-drawer');
+  drawer.style.transform = 'translateY(100%)';
+  setTimeout(function() {
+    drawer.style.display = 'none';
+    document.getElementById('friend-drawer-overlay').style.display = 'none';
+    document.getElementById('drawer-search-input').value = '';
+    document.getElementById('drawer-search-results').innerHTML = '';
+  }, 250);
+}
+
+let _drawerTimer = null;
+function drawerSearch(val) {
+  clearTimeout(_drawerTimer);
+  const res = document.getElementById('drawer-search-results');
+  if (!val || val.length < 2) { res.innerHTML = ''; return; }
+  res.innerHTML = '<div style="padding:.5rem .75rem;font-size:.8125rem;color:#666;">Searching…</div>';
+  _drawerTimer = setTimeout(function() {
+    fetch('/community/api/users/search/?q=' + encodeURIComponent(val))
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d.users || !d.users.length) {
+          res.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.875rem;color:#666;">No users found.</div>';
+          return;
+        }
+        const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
+          || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
+        res.innerHTML = d.users.map(function(u) {
+          const av = u.avatar
+            ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+            : u.username.slice(0,1).toUpperCase();
+          let friendBtn = '';
+          if (u.friendship_status === 'friends') {
+            friendBtn = '<button style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:1px solid rgba(74,222,128,.2);background:rgba(74,222,128,.1);color:#4ade80;cursor:default;">Friends</button>';
+          } else if (u.friendship_status === 'pending_sent') {
+            friendBtn = '<button style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:1px solid #303030;background:#222;color:#666;cursor:default;">Pending</button>';
+          } else if (u.friendship_status === 'pending_received') {
+            friendBtn = '<button onclick="drawerAccept(\'' + u.username + '\',\'' + u.friendship_id + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#818cf8;color:#fff;cursor:pointer;">Accept</button>';
+          } else {
+            friendBtn = '<button onclick="drawerAddFriend(\'' + u.username + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#fff;color:#000;cursor:pointer;">+ Add</button>';
+          }
+          const followBtn = u.is_following
+            ? '<button onclick="drawerFollow(\'' + u.username + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.15);background:rgba(74,222,128,.08);color:#4ade80;cursor:pointer;">Following</button>'
+            : '<button onclick="drawerFollow(\'' + u.username + '\',this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid #303030;background:#1c1c1c;color:#aaa;cursor:pointer;">Follow</button>';
+          return '<div style="display:flex;align-items:center;gap:.75rem;padding:.625rem .25rem;border-bottom:1px solid #1a1a1a;">' +
+            '<div style="width:40px;height:40px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;">' + av + '</div>' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div style="font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + u.display_name + '</div>' +
+              '<div style="font-size:.75rem;color:#666;">@' + u.username + '</div>' +
+            '</div>' +
+            '<div style="display:flex;gap:.375rem;flex-shrink:0;">' + friendBtn + followBtn + '</div>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function() { res.innerHTML = '<div style="padding:1rem;text-align:center;font-size:.875rem;color:#666;">Search failed.</div>'; });
+  }, 300);
+}
+
+function drawerAddFriend(username, btn) {
+  btn.disabled = true; btn.textContent = '…';
+  const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
+    || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
+  fetch('/community/api/friends/request/' + username + '/', {
+    method: 'POST', headers: {'X-CSRFToken': csrf}
+  }).then(function(r){return r.json();}).then(function(d) {
+    if (d.status === 'sent' || d.status === 'already_friends') {
+      btn.style.background = '#222'; btn.style.color = '#666';
+      btn.style.border = '1px solid #303030'; btn.textContent = 'Pending';
+    } else { btn.disabled = false; btn.textContent = '+ Add'; }
+  }).catch(function(){ btn.disabled = false; btn.textContent = '+ Add'; });
+}
+
+function drawerAccept(username, friendId, btn) {
+  btn.disabled = true; btn.textContent = '…';
+  const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
+    || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
+  fetch('/community/api/friends/respond/' + friendId + '/', {
+    method: 'POST', headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/json'},
+    body: JSON.stringify({action: 'accept'})
+  }).then(function(r){return r.json();}).then(function(d) {
+    if (d.status === 'accepted') {
+      btn.style.background = 'rgba(74,222,128,.1)'; btn.style.color = '#4ade80';
+      btn.style.border = '1px solid rgba(74,222,128,.2)'; btn.textContent = 'Friends';
+    } else { btn.disabled = false; btn.textContent = 'Accept'; }
+  }).catch(function(){ btn.disabled = false; btn.textContent = 'Accept'; });
+}
+
+function drawerFollow(username, btn) {
+  btn.disabled = true;
+  const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
+    || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
+  fetch('/community/api/follows/', {
+    method: 'POST', headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/json'},
+    body: JSON.stringify({username: username})
+  }).then(function(r){return r.json();}).then(function(d) {
+    btn.disabled = false;
+    if (d.following) {
+      btn.style.background = 'rgba(74,222,128,.08)'; btn.style.color = '#4ade80';
+      btn.style.border = '1px solid rgba(74,222,128,.15)'; btn.textContent = 'Following';
+    } else {
+      btn.style.background = '#1c1c1c'; btn.style.color = '#aaa';
+      btn.style.border = '1px solid #303030'; btn.textContent = 'Follow';
+    }
+  }).catch(function(){ btn.disabled = false; });
 }
 </script>
 {% block extra_js %}{% endblock %}

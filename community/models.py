@@ -28,6 +28,7 @@ class SchoolCommunity(models.Model):
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(blank=True)
     logo = models.ImageField(upload_to='community/school/logos/', null=True, blank=True)
+    logo_url = models.URLField(max_length=500, blank=True, default='')
     banner = models.ImageField(upload_to='community/school/banners/', null=True, blank=True)
     verified = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
