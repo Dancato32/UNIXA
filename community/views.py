@@ -1546,3 +1546,113 @@ def workspace_call_participants(request, ws_id):
         'participants': list(participants.values()),
         'count': len(participants),
     })
+
+
+# ── Workspace AI Manager ──────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def workspace_ai_chat(request, ws_id):
+    """Conversational AI manager endpoint."""
+    import json as _json
+    from ai_community.ai_engine import workspace_ai_chat as _ai_chat
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    try:
+        body = _json.loads(request.body)
+        message = body.get('message', '').strip()
+    except Exception:
+        message = request.POST.get('message', '').strip()
+
+    if not message:
+        return JsonResponse({'error': 'Message required'}, status=400)
+
+    members = list(
+        WorkspaceMember.objects.filter(workspace=ws)
+        .values_list('user__username', flat=True)
+    )
+    tasks = list(
+        ws.tasks.values('title', 'status', 'assigned_to__username')
+    )
+    tasks_clean = [
+        {'title': t['title'], 'status': t['status'], 'assigned_to': t['assigned_to__username']}
+        for t in tasks
+    ]
+    files = list(ws.files.values_list('original_name', flat=True))
+    recent_chat = list(
+        ws.chat_messages.order_by('-created_at')
+        .values('sender__username', 'content')[:8]
+    )
+
+    context = {
+        'workspace_name': ws.name,
+        'members': members,
+        'tasks': tasks_clean,
+        'files': list(files),
+        'recent_chat': list(reversed(recent_chat)),
+    }
+
+    result = _ai_chat(message, context)
+    return JsonResponse(result)
+
+
+@login_required
+def workspace_ai_analyze(request, ws_id):
+    """Analyze workspace files and generate project brief + suggested tasks."""
+    from ai_community.ai_engine import analyze_project_files as _analyze
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    files = ws.files.select_related('uploaded_by').order_by('-uploaded_at')[:10]
+    members = list(
+        WorkspaceMember.objects.filter(workspace=ws)
+        .select_related('user')
+        .values('user__username')
+    )
+    members_clean = [{'username': m['user__username']} for m in members]
+
+    files_data = []
+    for f in files:
+        preview = ''
+        try:
+            # Try to read text content for analysis
+            f.file.open('rb')
+            raw_bytes = f.file.read(3000)
+            f.file.close()
+            try:
+                preview = raw_bytes.decode('utf-8', errors='ignore')
+            except Exception:
+                preview = f'[Binary file: {f.original_name}]'
+        except Exception:
+            preview = f'[Could not read: {f.original_name}]'
+        files_data.append({'name': f.original_name, 'content_preview': preview})
+
+    if not files_data:
+        return JsonResponse({'error': 'No files uploaded yet. Upload your assignment brief first.'}, status=400)
+
+    result = _analyze(files_data, ws.name, members_clean)
+    if not result:
+        return JsonResponse({'error': 'Could not analyze files. Try again.'}, status=500)
+
+    return JsonResponse(result)
+
+
+@login_required
+def workspace_ai_health(request, ws_id):
+    """Return project health report."""
+    from ai_community.ai_engine import generate_project_health as _health
+    ws, _ = _ws_member_or_404(request, ws_id)
+
+    members = list(
+        WorkspaceMember.objects.filter(workspace=ws)
+        .values('user__username')
+    )
+    members_clean = [{'username': m['user__username']} for m in members]
+    tasks = list(ws.tasks.values('title', 'status', 'assigned_to__username'))
+    tasks_clean = [
+        {'title': t['title'], 'status': t['status'], 'assigned_to': t['assigned_to__username']}
+        for t in tasks
+    ]
+    files = list(ws.files.values_list('original_name', flat=True))
+
+    result = _health(ws.name, members_clean, tasks_clean, list(files))
+    return JsonResponse(result)

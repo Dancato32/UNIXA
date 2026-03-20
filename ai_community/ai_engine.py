@@ -279,3 +279,164 @@ Return ONLY valid JSON."""
         'summary': 'The group is just getting started. Jump in and introduce yourself!',
         'member_bios': [{'username': m.get('username', ''), 'bio': 'A fellow student in this group.'} for m in members_data],
     }
+
+
+# ── Workspace AI Manager ──────────────────────────────────────────────────────
+
+def analyze_project_files(files_data, workspace_name, members):
+    """
+    Analyze uploaded workspace files and return a full project brief.
+    files_data: list of {name, content_preview}
+    Returns {title, objectives, deliverables, deadline_hint, tasks, risks}
+    """
+    files_text = '\n\n'.join(
+        f"FILE: {f['name']}\n{f['content_preview'][:800]}" for f in files_data
+    )
+    members_list = ', '.join(m['username'] for m in members)
+    prompt = f"""You are an AI Project Manager analyzing academic project files for a university team.
+
+Workspace: {workspace_name}
+Team members: {members_list}
+
+Uploaded files:
+{files_text}
+
+Extract and return a structured project brief as JSON:
+{{
+  "title": "Project title",
+  "objectives": ["objective 1", "objective 2"],
+  "deliverables": ["deliverable 1", "deliverable 2"],
+  "deadline_hint": "any deadline mentioned or null",
+  "grading_criteria": ["criterion 1", "criterion 2"],
+  "tasks": [
+    {{
+      "title": "Task title",
+      "description": "What needs to be done",
+      "difficulty": "easy|medium|hard",
+      "estimated_hours": 2,
+      "suggested_assignee": "username or null",
+      "priority": "high|medium|low"
+    }}
+  ],
+  "risks": ["risk 1", "risk 2"],
+  "summary": "2-3 sentence project overview"
+}}
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=1500)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        return json.loads(raw[start:end]) if start >= 0 else None
+    except Exception:
+        return None
+
+
+def workspace_ai_chat(message, context):
+    """
+    Conversational AI manager for workspace.
+    context: {workspace_name, members, tasks, files, recent_chat}
+    Returns {reply, actions: [{type, data}]}
+    """
+    system = f"""You are the AI Project Manager for a university workspace called "{context.get('workspace_name', 'this workspace')}".
+
+Team members: {', '.join(context.get('members', []))}
+Current tasks: {json.dumps(context.get('tasks', []))}
+Uploaded files: {', '.join(context.get('files', []))}
+Recent chat context: {json.dumps(context.get('recent_chat', [])[:5])}
+
+You help the team with:
+- Breaking down assignments into tasks
+- Tracking progress and contributions
+- Writing assistance, research, coding help
+- Deadline management and risk alerts
+- Generating project health reports
+- Answering academic questions
+
+Be concise, structured, and actionable. When you suggest tasks, format them clearly.
+If asked to generate tasks, include them in the actions array."""
+
+    raw = _chat([
+        {'role': 'system', 'content': system},
+        {'role': 'user', 'content': message},
+    ], max_tokens=1000)
+
+    # Try to extract structured actions if present
+    actions = []
+    reply = raw
+
+    # Check if response contains task suggestions
+    if any(kw in message.lower() for kw in ['task', 'break down', 'assign', 'split', 'divide']):
+        # Try to parse tasks from the response
+        try:
+            if '```json' in raw:
+                json_part = raw.split('```json')[1].split('```')[0].strip()
+                parsed = json.loads(json_part)
+                if isinstance(parsed, list):
+                    actions = [{'type': 'tasks', 'data': parsed}]
+                    reply = raw.split('```json')[0].strip()
+        except Exception:
+            pass
+
+    return {'reply': reply, 'actions': actions}
+
+
+def generate_project_health(workspace_name, members, tasks, files, deadline_hint=None):
+    """
+    Generate a project health report.
+    Returns {completion_pct, risk_level, work_distribution, next_actions, summary}
+    """
+    todo = [t for t in tasks if t.get('status') == 'todo']
+    doing = [t for t in tasks if t.get('status') == 'doing']
+    done = [t for t in tasks if t.get('status') == 'done']
+    total = len(tasks)
+    completion = round((len(done) / total * 100) if total else 0)
+
+    # Contribution map
+    contrib = {}
+    for t in tasks:
+        assignee = t.get('assigned_to') or 'Unassigned'
+        contrib[assignee] = contrib.get(assignee, 0) + 1
+
+    prompt = f"""Generate a project health report for a university team project.
+
+Project: {workspace_name}
+Team: {', '.join(m['username'] for m in members)}
+Tasks: {total} total — {len(done)} done, {len(doing)} in progress, {len(todo)} to do
+Completion: {completion}%
+Deadline hint: {deadline_hint or 'not specified'}
+Files uploaded: {len(files)}
+Contribution map: {json.dumps(contrib)}
+
+Return JSON:
+{{
+  "completion_pct": {completion},
+  "risk_level": "low|medium|high|critical",
+  "risk_reason": "one sentence",
+  "work_distribution": [{{"member": "...", "tasks": 0, "pct": 0}}],
+  "inactive_members": ["username"],
+  "next_actions": ["action 1", "action 2", "action 3"],
+  "summary": "2-3 sentence overall assessment"
+}}
+Return ONLY valid JSON."""
+
+    raw = _chat([{'role': 'user', 'content': prompt}], max_tokens=700)
+    try:
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        result = json.loads(raw[start:end]) if start >= 0 else None
+        if result:
+            result['completion_pct'] = completion
+            return result
+    except Exception:
+        pass
+
+    return {
+        'completion_pct': completion,
+        'risk_level': 'medium',
+        'risk_reason': 'Unable to fully assess — add more tasks for better tracking.',
+        'work_distribution': [{'member': m['username'], 'tasks': contrib.get(m['username'], 0), 'pct': 0} for m in members],
+        'inactive_members': [],
+        'next_actions': ['Add tasks to the board', 'Assign tasks to members', 'Upload project files'],
+        'summary': f'Project is {completion}% complete with {len(todo)} tasks remaining.',
+    }

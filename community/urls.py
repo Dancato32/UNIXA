@@ -94,6 +94,13 @@ urlpatterns = [
     path('workspaces/<uuid:ws_id>/members/<int:user_id>/remove/', views.workspace_remove_member, name='workspace_remove_member'),
     path('workspaces/<uuid:ws_id>/leave/', views.workspace_leave, name='workspace_leave'),
     path('workspaces/<uuid:ws_id>/delete/', views.workspace_delete, name='workspace_delete'),
+    path('workspaces/<uuid:ws_id>/call/join/', views.workspace_call_join, name='workspace_call_join'),
+    path('workspaces/<uuid:ws_id>/call/leave/', views.workspace_call_leave, name='workspace_call_leave'),
+    path('workspaces/<uuid:ws_id>/call/participants/', views.workspace_call_participants, name='workspace_call_participants'),
+    # AI Manager
+    path('workspaces/<uuid:ws_id>/ai/chat/', views.workspace_ai_chat, name='workspace_ai_chat'),
+    path('workspaces/<uuid:ws_id>/ai/analyze/', views.workspace_ai_analyze, name='workspace_ai_analyze'),
+    path('workspaces/<uuid:ws_id>/ai/health/', views.workspace_ai_health, name='workspace_ai_health'),
 
     # REST API
     path('api/', include(router.urls)),

@@ -123,6 +123,67 @@
 }
 /* Call panel */
 @keyframes callpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
+/* AI Manager panel */
+.aim-shell{display:flex;height:100%;overflow:hidden;}
+.aim-sidebar{width:190px;background:var(--s2);border-right:1px solid var(--b1);display:flex;flex-direction:column;flex-shrink:0;padding:.5rem 0;}
+.aim-tab{display:flex;align-items:center;gap:.5rem;padding:.4rem .75rem;border-radius:4px;color:var(--t3);font-size:.8125rem;font-weight:500;cursor:pointer;margin:1px .375rem;border:none;background:none;width:calc(100% - .75rem);text-align:left;transition:all .12s;}
+.aim-tab:hover{background:var(--s3);color:var(--t2);}
+.aim-tab.active{background:var(--s4);color:var(--t1);}
+.aim-tab svg{width:14px;height:14px;flex-shrink:0;}
+.aim-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.aim-view{flex:1;overflow:hidden;display:none;flex-direction:column;}
+.aim-view.active{display:flex;}
+.aim-chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.625rem;}
+.aim-msg{display:flex;gap:.625rem;align-items:flex-start;}
+.aim-msg.user{flex-direction:row-reverse;}
+.aim-msg-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;flex-shrink:0;background:var(--s4);}
+.aim-msg-av.ai-av{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;}
+.aim-bubble{max-width:75%;padding:.625rem .875rem;border-radius:14px;font-size:.8125rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.aim-msg.ai .aim-bubble{background:var(--s3);color:var(--t1);border-radius:4px 14px 14px 14px;}
+.aim-msg.user .aim-bubble{background:var(--white);color:#000;border-radius:14px 4px 14px 14px;}
+.aim-chat-input-area{padding:.75rem 1rem;border-top:1px solid var(--b1);flex-shrink:0;}
+.aim-chat-form{display:flex;gap:.5rem;align-items:center;background:var(--s3);border:1px solid var(--b2);border-radius:24px;padding:.5rem .75rem;}
+.aim-chat-form:focus-within{border-color:var(--b3);}
+.aim-chat-input{flex:1;background:none;border:none;color:var(--t1);font-size:.875rem;outline:none;}
+.aim-chat-input::placeholder{color:var(--t3);}
+.aim-send-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--white);color:#000;border:none;border-radius:50%;cursor:pointer;flex-shrink:0;}
+.aim-send-btn svg{width:13px;height:13px;}
+.aim-quick-prompts{display:flex;flex-wrap:wrap;gap:.375rem;padding:.5rem 1rem;border-bottom:1px solid var(--b1);flex-shrink:0;}
+.aim-qp{font-size:.6875rem;padding:.25rem .625rem;border-radius:20px;border:1px solid var(--b2);background:var(--s3);color:var(--t2);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.aim-qp:hover{border-color:var(--b3);color:var(--t1);}
+.aim-scroll{flex:1;overflow-y:auto;padding:1rem;}
+.aim-section{margin-bottom:1.25rem;}
+.aim-section-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:.5rem;}
+.aim-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.5rem;}
+.aim-card p{font-size:.8125rem;color:var(--t2);line-height:1.55;margin:0;}
+.aim-tag{display:inline-block;font-size:.6875rem;padding:.15rem .5rem;border-radius:20px;margin:.15rem .1rem;}
+.aim-tag.high{background:rgba(239,68,68,.15);color:#ef4444;}
+.aim-tag.medium{background:rgba(245,158,11,.15);color:#f59e0b;}
+.aim-tag.low{background:rgba(34,197,94,.15);color:#22c55e;}
+.aim-task-suggest{background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.625rem .75rem;margin-bottom:.375rem;display:flex;align-items:flex-start;gap:.625rem;}
+.aim-task-suggest-info{flex:1;min-width:0;}
+.aim-task-suggest-title{font-size:.8125rem;font-weight:600;}
+.aim-task-suggest-meta{font-size:.6875rem;color:var(--t3);margin-top:.125rem;}
+.aim-task-suggest-add{flex-shrink:0;font-size:.6875rem;padding:.25rem .625rem;border-radius:4px;border:1px solid var(--b2);background:var(--s4);color:var(--t2);cursor:pointer;transition:all .12s;}
+.aim-task-suggest-add:hover{background:var(--white);color:#000;border-color:var(--white);}
+.aim-task-suggest-add.added{background:rgba(34,197,94,.15);color:#22c55e;border-color:rgba(34,197,94,.3);cursor:default;}
+.aim-health-ring{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;}
+.aim-ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0;}
+.aim-ring-wrap svg{transform:rotate(-90deg);}
+.aim-ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;}
+.aim-risk-badge{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:700;padding:.2rem .625rem;border-radius:20px;}
+.aim-risk-badge.low{background:rgba(34,197,94,.15);color:#22c55e;}
+.aim-risk-badge.medium{background:rgba(245,158,11,.15);color:#f59e0b;}
+.aim-risk-badge.high,.aim-risk-badge.critical{background:rgba(239,68,68,.15);color:#ef4444;}
+.aim-contrib-bar{height:6px;border-radius:3px;background:var(--s4);margin-top:.25rem;overflow:hidden;}
+.aim-contrib-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6);}
+.aim-loading{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:.75rem;color:var(--t3);font-size:.8125rem;}
+.aim-loading-dots{display:flex;gap:.375rem;}
+.aim-loading-dots span{width:6px;height:6px;border-radius:50%;background:var(--t3);animation:aimdot 1.2s infinite;}
+.aim-loading-dots span:nth-child(2){animation-delay:.2s;}
+.aim-loading-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes aimdot{0%,80%,100%{transform:scale(0);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+@media(max-width:700px){.aim-sidebar{width:44px;}.aim-tab span{display:none;}.aim-tab{justify-content:center;padding:.4rem;}}
 .call-panel-inner{display:flex;flex-direction:column;height:100%;padding:1rem;}
 .call-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-shrink:0;}
 .call-header-title{font-size:.9375rem;font-weight:700;}
@@ -167,6 +228,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
         AI Tools
       </button>
+      <button class="ws-nav-item" id="nav-ai-manager" onclick="showPanel('ai-manager',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+        AI Manager
+      </button>
       <button class="ws-nav-item" onclick="showPanel('files',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         Files
@@ -175,8 +240,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Tasks
       </button>
-      <button class="ws-nav-item" id="nav-call" onclick="showPanel('call',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <button class="ws-nav-item" id="nav-call" onclick="showPanel('call',this)">        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         Group Call
         <span id="call-badge" style="display:none;margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--green);animation:callpulse 2s infinite;"></span>
       </button>
@@ -425,6 +489,133 @@
         </div>
       </div>
     </div>
+    <!-- AI Manager panel -->
+    <div class="ws-panel" id="panel-ai-manager">
+      <div class="aim-shell">
+        <!-- AI Manager sub-nav -->
+        <div class="aim-sidebar">
+          <button class="aim-tab active" id="aim-tab-chat" onclick="aimShowView('chat',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>AI Chat</span>
+          </button>
+          <button class="aim-tab" id="aim-tab-brief" onclick="aimShowView('brief',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Project Brief</span>
+          </button>
+          <button class="aim-tab" id="aim-tab-health" onclick="aimShowView('health',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Health Report</span>
+          </button>
+          <button class="aim-tab" id="aim-tab-contrib" onclick="aimShowView('contrib',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Contributions</span>
+          </button>
+        </div>
+
+        <!-- AI Manager main area -->
+        <div class="aim-main">
+
+          <!-- Chat view -->
+          <div class="aim-view active" id="aim-view-chat">
+            <div class="aim-quick-prompts">
+              <button class="aim-qp" onclick="aimQuickPrompt('Break this project into tasks and assign them to team members')">📋 Generate tasks</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('What is the project deadline and what should we prioritize?')">⏰ Deadline check</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Write a project introduction paragraph for our report')">✍️ Write intro</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Who is behind on tasks and what should they do next?')">👥 Who is behind?</button>
+              <button class="aim-qp" onclick="aimQuickPrompt('Give me a full project health report')">📊 Health report</button>
+            </div>
+            <div class="aim-chat-msgs" id="aim-chat-msgs">
+              <div class="aim-msg ai">
+                <div class="aim-msg-av ai-av">AI</div>
+                <div class="aim-bubble">👋 I'm your AI Project Manager for <strong>{{ ws.name }}</strong>.<br><br>I can help you break down assignments, assign tasks, track progress, write content, and keep your team on schedule.<br><br>Upload your assignment brief in the Files tab, then ask me to analyze it — or just ask me anything!</div>
+              </div>
+            </div>
+            <div class="aim-chat-input-area">
+              <form class="aim-chat-form" onsubmit="aimSendChat(event)">
+                <input type="text" class="aim-chat-input" id="aim-chat-input" placeholder="Ask the AI Manager anything…" autocomplete="off">
+                <button type="submit" class="aim-send-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Project Brief view -->
+          <div class="aim-view" id="aim-view-brief">
+            <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+              <span style="font-size:.875rem;font-weight:700;">Project Brief</span>
+              <button class="btn btn-primary btn-sm" onclick="aimAnalyzeFiles()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+                Analyze Files
+              </button>
+            </div>
+            <div class="aim-scroll" id="aim-brief-content">
+              <div style="text-align:center;color:var(--t3);font-size:.8125rem;padding:2rem 0;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto .75rem;display:block;opacity:.3;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Upload your assignment brief or project files, then click "Analyze Files" to generate a full project breakdown.
+              </div>
+            </div>
+          </div>
+
+          <!-- Health Report view -->
+          <div class="aim-view" id="aim-view-health">
+            <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+              <span style="font-size:.875rem;font-weight:700;">Project Health</span>
+              <button class="btn btn-primary btn-sm" onclick="aimLoadHealth()">Refresh</button>
+            </div>
+            <div class="aim-scroll" id="aim-health-content">
+              <div class="aim-loading" id="aim-health-loading" style="display:none;">
+                <div class="aim-loading-dots"><span></span><span></span><span></span></div>
+                Analyzing project health…
+              </div>
+              <div style="text-align:center;color:var(--t3);font-size:.8125rem;padding:2rem 0;" id="aim-health-empty">
+                Click "Refresh" to generate a live project health report.
+              </div>
+            </div>
+          </div>
+
+          <!-- Contributions view -->
+          <div class="aim-view" id="aim-view-contrib">
+            <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);flex-shrink:0;">
+              <span style="font-size:.875rem;font-weight:700;">Team Contributions</span>
+            </div>
+            <div class="aim-scroll" id="aim-contrib-content">
+              <div id="aim-contrib-inner">
+                {% with members_list=members %}
+                {% for m in members_list %}
+                <div class="aim-card" style="margin-bottom:.5rem;">
+                  <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:.5rem;">
+                    <div class="ws-member-av" style="width:32px;height:32px;font-size:.75rem;">
+                      {% if m.user.community_profile.avatar %}<img src="{{ m.user.community_profile.avatar.url }}" alt="">{% else %}{{ m.user.username|slice:":1"|upper }}{% endif %}
+                    </div>
+                    <div>
+                      <div style="font-size:.8125rem;font-weight:600;">{{ m.user.username }}</div>
+                      <div style="font-size:.6875rem;color:var(--t3);">{{ m.get_role_display }}</div>
+                    </div>
+                    <div style="margin-left:auto;text-align:right;">
+                      <div style="font-size:.75rem;font-weight:700;" id="contrib-tasks-{{ m.user.id }}">
+                        {{ tasks|length }} tasks
+                      </div>
+                    </div>
+                  </div>
+                  <div style="font-size:.6875rem;color:var(--t3);margin-bottom:.25rem;">Task contribution</div>
+                  <div class="aim-contrib-bar">
+                    <div class="aim-contrib-fill" id="contrib-bar-{{ m.user.id }}" style="width:0%;transition:width .6s;"></div>
+                  </div>
+                </div>
+                {% endfor %}
+                {% endwith %}
+              </div>
+              <div style="margin-top:1rem;">
+                <button class="btn btn-ghost btn-sm" onclick="aimLoadContributions()" style="width:100%;">Recalculate from AI</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /aim-main -->
+      </div><!-- /aim-shell -->
+    </div><!-- /panel-ai-manager -->
+
     <!-- Call panel -->
     <div class="ws-panel" id="panel-call">
       <div class="call-panel-inner">
@@ -896,5 +1087,299 @@ function _removeTile(peerId) {
 
 // Leave call if user navigates away
 window.addEventListener('beforeunload', () => { if (inCall) leaveCall(); });
+</script>
+
+<script>
+/* ── AI Manager ── */
+function aimShowView(name, btn) {
+  document.querySelectorAll('.aim-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.aim-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('aim-view-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'health') aimLoadHealth();
+  if (name === 'contrib') aimLoadContributions();
+}
+
+/* ── AI Chat ── */
+let aimChatBusy = false;
+
+function aimSendChat(e) {
+  e.preventDefault();
+  const input = document.getElementById('aim-chat-input');
+  const msg = input.value.trim();
+  if (!msg || aimChatBusy) return;
+  input.value = '';
+  aimAppendMsg(msg, 'user');
+  aimChatBusy = true;
+  aimAppendTyping();
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ message: msg }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      aimRemoveTyping();
+      aimChatBusy = false;
+      aimAppendMsg(data.reply || 'Sorry, I could not process that.', 'ai');
+      // Handle task actions
+      if (data.actions && data.actions.length) {
+        data.actions.forEach(action => {
+          if (action.type === 'tasks' && Array.isArray(action.data)) {
+            aimAppendTaskSuggestions(action.data);
+          }
+        });
+      }
+    })
+    .catch(() => {
+      aimRemoveTyping();
+      aimChatBusy = false;
+      aimAppendMsg('Connection error. Please try again.', 'ai');
+    });
+}
+
+function aimQuickPrompt(text) {
+  document.getElementById('aim-chat-input').value = text;
+  document.getElementById('aim-chat-input').focus();
+  // Switch to chat view if not already there
+  aimShowView('chat', document.getElementById('aim-tab-chat'));
+  document.querySelector('.aim-chat-form').dispatchEvent(new Event('submit'));
+}
+
+function aimAppendMsg(content, role) {
+  const msgs = document.getElementById('aim-chat-msgs');
+  const div = document.createElement('div');
+  div.className = 'aim-msg ' + role;
+  const avHtml = role === 'ai'
+    ? '<div class="aim-msg-av ai-av">AI</div>'
+    : `<div class="aim-msg-av">${MY_USERNAME.slice(0,1).toUpperCase()}</div>`;
+  div.innerHTML = avHtml + `<div class="aim-bubble">${esc(content).replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function aimAppendTyping() {
+  const msgs = document.getElementById('aim-chat-msgs');
+  const div = document.createElement('div');
+  div.className = 'aim-msg ai';
+  div.id = 'aim-typing';
+  div.innerHTML = '<div class="aim-msg-av ai-av">AI</div><div class="aim-bubble" style="padding:.5rem .875rem;"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function aimRemoveTyping() {
+  const t = document.getElementById('aim-typing');
+  if (t) t.remove();
+}
+
+function aimAppendTaskSuggestions(tasks) {
+  const msgs = document.getElementById('aim-chat-msgs');
+  const wrap = document.createElement('div');
+  wrap.className = 'aim-msg ai';
+  let html = '<div class="aim-msg-av ai-av">AI</div><div style="flex:1;max-width:85%;">';
+  html += '<div style="font-size:.6875rem;color:var(--t3);margin-bottom:.375rem;">Suggested tasks — click + to add to board:</div>';
+  tasks.forEach((t, i) => {
+    html += `<div class="aim-task-suggest" id="aim-ts-${i}">
+      <div class="aim-task-suggest-info">
+        <div class="aim-task-suggest-title">${esc(t.title || t)}</div>
+        ${t.description ? `<div class="aim-task-suggest-meta">${esc(t.description)}</div>` : ''}
+        ${t.estimated_hours ? `<div class="aim-task-suggest-meta">~${t.estimated_hours}h · ${t.priority || 'medium'} priority</div>` : ''}
+      </div>
+      <button class="aim-task-suggest-add" onclick="aimAddSuggestedTask(${i}, ${JSON.stringify(t).replace(/"/g,'&quot;')})">+ Add</button>
+    </div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function aimAddSuggestedTask(idx, taskData) {
+  const btn = document.querySelector(`#aim-ts-${idx} .aim-task-suggest-add`);
+  if (btn && btn.classList.contains('added')) return;
+  const fd = new FormData();
+  fd.append('title', taskData.title || taskData);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  if (taskData.suggested_assignee) fd.append('assigned_to', taskData.suggested_assignee);
+  fetch('/community/workspaces/' + WS_ID + '/tasks/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (btn) { btn.textContent = '✓ Added'; btn.classList.add('added'); }
+      // Also add to task board if visible
+      const col = document.getElementById('col-todo');
+      if (col) {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        card.id = 'task-' + data.id;
+        card.innerHTML = `<div class="task-card-title">${esc(data.title)}</div><div class="task-card-meta">${data.assigned_to ? '<span>@' + esc(data.assigned_to) + '</span>' : ''}</div><div style="display:flex;gap:.375rem;margin-top:.375rem;"><button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.2rem .45rem;" onclick="wsUpdateTask('${data.id}','doing')">→ Doing</button></div>`;
+        col.appendChild(card);
+      }
+    })
+    .catch(() => {});
+}
+
+/* ── Project Brief ── */
+let aimBriefLoaded = false;
+
+function aimAnalyzeFiles() {
+  const content = document.getElementById('aim-brief-content');
+  content.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Analyzing your files with AI…</div>';
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/analyze/')
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { content.innerHTML = `<div style="padding:1rem;color:var(--red);font-size:.8125rem;">${esc(data.error)}</div>`; return; }
+      aimBriefLoaded = true;
+      aimRenderBrief(data, content);
+    })
+    .catch(() => { content.innerHTML = '<div style="padding:1rem;color:var(--red);font-size:.8125rem;">Failed to analyze. Try again.</div>'; });
+}
+
+function aimRenderBrief(d, container) {
+  let html = '';
+  if (d.title) html += `<div class="aim-section"><div class="aim-section-title">Project Title</div><div class="aim-card"><p style="font-size:.9375rem;font-weight:700;color:var(--t1);">${esc(d.title)}</p></div></div>`;
+  if (d.summary) html += `<div class="aim-section"><div class="aim-section-title">Summary</div><div class="aim-card"><p>${esc(d.summary)}</p></div></div>`;
+  if (d.objectives && d.objectives.length) {
+    html += `<div class="aim-section"><div class="aim-section-title">Objectives</div>`;
+    d.objectives.forEach(o => html += `<div class="aim-card"><p>• ${esc(o)}</p></div>`);
+    html += '</div>';
+  }
+  if (d.deliverables && d.deliverables.length) {
+    html += `<div class="aim-section"><div class="aim-section-title">Deliverables</div>`;
+    d.deliverables.forEach(o => html += `<div class="aim-card"><p>📦 ${esc(o)}</p></div>`);
+    html += '</div>';
+  }
+  if (d.deadline_hint) html += `<div class="aim-section"><div class="aim-section-title">Deadline</div><div class="aim-card"><p>⏰ ${esc(d.deadline_hint)}</p></div></div>`;
+  if (d.grading_criteria && d.grading_criteria.length) {
+    html += `<div class="aim-section"><div class="aim-section-title">Grading Criteria</div>`;
+    d.grading_criteria.forEach(c => html += `<div class="aim-card"><p>📝 ${esc(c)}</p></div>`);
+    html += '</div>';
+  }
+  if (d.tasks && d.tasks.length) {
+    html += `<div class="aim-section"><div class="aim-section-title">Suggested Tasks (${d.tasks.length})</div>`;
+    d.tasks.forEach((t, i) => {
+      const pClass = t.priority === 'high' ? 'high' : t.priority === 'low' ? 'low' : 'medium';
+      html += `<div class="aim-task-suggest" id="brief-ts-${i}">
+        <div class="aim-task-suggest-info">
+          <div class="aim-task-suggest-title">${esc(t.title)}</div>
+          <div class="aim-task-suggest-meta">${t.description ? esc(t.description.slice(0,80)) + ' · ' : ''}~${t.estimated_hours || 1}h · <span class="aim-tag ${pClass}" style="padding:.05rem .35rem;">${t.priority || 'medium'}</span>${t.suggested_assignee ? ' · @' + esc(t.suggested_assignee) : ''}</div>
+        </div>
+        <button class="aim-task-suggest-add" onclick="aimAddSuggestedTask('brief-${i}', ${JSON.stringify(t).replace(/"/g,'&quot;')})">+ Add</button>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  if (d.risks && d.risks.length) {
+    html += `<div class="aim-section"><div class="aim-section-title">Risks</div>`;
+    d.risks.forEach(r => html += `<div class="aim-card"><p>⚠️ ${esc(r)}</p></div>`);
+    html += '</div>';
+  }
+  container.innerHTML = html || '<div style="padding:1rem;color:var(--t3);font-size:.8125rem;">No structured data found. Try uploading a clearer assignment document.</div>';
+}
+
+/* ── Health Report ── */
+function aimLoadHealth() {
+  const content = document.getElementById('aim-health-content');
+  const empty = document.getElementById('aim-health-empty');
+  if (empty) empty.style.display = 'none';
+  content.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Generating health report…</div>';
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/health/')
+    .then(r => r.json())
+    .then(data => aimRenderHealth(data, content))
+    .catch(() => { content.innerHTML = '<div style="padding:1rem;color:var(--red);font-size:.8125rem;">Failed to load. Try again.</div>'; });
+}
+
+function aimRenderHealth(d, container) {
+  const pct = d.completion_pct || 0;
+  const risk = d.risk_level || 'medium';
+  const circumference = 2 * Math.PI * 28;
+  const offset = circumference - (pct / 100) * circumference;
+  const riskColor = risk === 'low' ? '#22c55e' : risk === 'critical' ? '#ef4444' : risk === 'high' ? '#ef4444' : '#f59e0b';
+
+  let html = `
+  <div class="aim-section">
+    <div class="aim-section-title">Overall Status</div>
+    <div class="aim-card" style="display:flex;align-items:center;gap:1rem;">
+      <div class="aim-ring-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="var(--s4)" stroke-width="6"/>
+          <circle cx="36" cy="36" r="28" fill="none" stroke="${riskColor}" stroke-width="6" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset .8s;"/>
+        </svg>
+        <div class="aim-ring-pct">${pct}%</div>
+      </div>
+      <div>
+        <div style="font-size:.8125rem;font-weight:600;margin-bottom:.25rem;">Completion</div>
+        <span class="aim-risk-badge ${risk}">${risk.toUpperCase()} RISK</span>
+        ${d.risk_reason ? `<div style="font-size:.6875rem;color:var(--t3);margin-top:.375rem;">${esc(d.risk_reason)}</div>` : ''}
+      </div>
+    </div>
+  </div>`;
+
+  if (d.summary) html += `<div class="aim-section"><div class="aim-section-title">Assessment</div><div class="aim-card"><p>${esc(d.summary)}</p></div></div>`;
+
+  if (d.next_actions && d.next_actions.length) {
+    html += `<div class="aim-section"><div class="aim-section-title">Next Actions</div>`;
+    d.next_actions.forEach((a, i) => html += `<div class="aim-card"><p>${i+1}. ${esc(a)}</p></div>`);
+    html += '</div>';
+  }
+
+  if (d.work_distribution && d.work_distribution.length) {
+    const maxTasks = Math.max(...d.work_distribution.map(m => m.tasks || 0), 1);
+    html += `<div class="aim-section"><div class="aim-section-title">Work Distribution</div>`;
+    d.work_distribution.forEach(m => {
+      const barPct = Math.round((m.tasks / maxTasks) * 100);
+      html += `<div class="aim-card" style="padding:.625rem 1rem;">
+        <div style="display:flex;justify-content:space-between;font-size:.8125rem;margin-bottom:.375rem;">
+          <span style="font-weight:600;">@${esc(m.member)}</span>
+          <span style="color:var(--t3);">${m.tasks} task${m.tasks !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="aim-contrib-bar"><div class="aim-contrib-fill" style="width:${barPct}%;"></div></div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  if (d.inactive_members && d.inactive_members.length) {
+    html += `<div class="aim-section"><div class="aim-section-title">Inactive Members</div><div class="aim-card"><p>⚠️ ${d.inactive_members.map(m => '@' + esc(m)).join(', ')} — no tasks assigned.</p></div></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+/* ── Contributions ── */
+function aimLoadContributions() {
+  fetch('/community/workspaces/' + WS_ID + '/ai/health/')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.work_distribution) return;
+      const maxTasks = Math.max(...data.work_distribution.map(m => m.tasks || 0), 1);
+      data.work_distribution.forEach(m => {
+        // Try to find member by username in the rendered cards
+        const barPct = Math.round((m.tasks / maxTasks) * 100);
+        // Update bars by finding elements with matching username text
+        document.querySelectorAll('#aim-contrib-inner .aim-card').forEach(card => {
+          const nameEl = card.querySelector('[style*="font-weight:600"]');
+          if (nameEl && nameEl.textContent.trim() === m.member) {
+            const bar = card.querySelector('.aim-contrib-fill');
+            if (bar) bar.style.width = barPct + '%';
+            const taskEl = card.querySelector('[id^="contrib-tasks-"]');
+            if (taskEl) taskEl.textContent = m.tasks + ' task' + (m.tasks !== 1 ? 's' : '');
+          }
+        });
+      });
+    })
+    .catch(() => {});
+}
+
+// Auto-load contributions on page load
+setTimeout(aimLoadContributions, 1000);
+
+// Enter to send in AI chat
+document.getElementById('aim-chat-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.querySelector('.aim-chat-form').dispatchEvent(new Event('submit')); }
+});
 </script>
 {% endblock %}
