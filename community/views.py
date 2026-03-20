@@ -43,15 +43,22 @@ User = get_user_model()
 @login_required
 def feed(request):
     from django.utils.dateparse import parse_datetime
+    from community.models import Follow
     cursor = request.GET.get('cursor')
+    tab = request.GET.get('tab', 'all')  # 'all' or 'following'
     limit = 20
 
-    # Show ALL posts (global feed) so dummy content is visible to everyone
-    qs = (
-        Post.objects.filter(is_deleted=False)
-        .select_related('author', 'author__community_profile', 'school_community', 'custom_community')
-        .order_by('-created_at')
+    qs = Post.objects.filter(is_deleted=False).select_related(
+        'author', 'author__community_profile', 'school_community', 'custom_community'
     )
+
+    if tab == 'following':
+        # Only posts from people the current user follows
+        following_ids = Follow.objects.filter(follower=request.user).values_list('following_id', flat=True)
+        qs = qs.filter(author_id__in=following_ids)
+    
+    qs = qs.order_by('-created_at')
+
     if cursor:
         cursor_dt = parse_datetime(cursor)
         if cursor_dt:
@@ -80,6 +87,14 @@ def feed(request):
         .values_list('community_id', flat=True)
     )
 
+    # People the current user follows (for sidebar)
+    following = (
+        Follow.objects.filter(follower=request.user)
+        .select_related('following', 'following__community_profile')
+        .order_by('-created_at')[:10]
+    )
+    following_user_ids = set(Follow.objects.filter(follower=request.user).values_list('following_id', flat=True))
+
     return render(request, 'community/feed.html', {
         'posts': posts,
         'has_more': has_more,
@@ -89,6 +104,9 @@ def feed(request):
         'joined_ids': joined_ids,
         'custom_communities': custom_communities,
         'custom_joined_ids': custom_joined_ids,
+        'tab': tab,
+        'following': following,
+        'following_user_ids': following_user_ids,
     })
 
 

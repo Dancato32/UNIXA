@@ -146,6 +146,10 @@
 .post-join-btn{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .5rem;border-radius:20px;font-size:.6875rem;font-weight:700;border:1px solid var(--b2);background:var(--s3);color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;margin-left:.25rem;}
 .post-join-btn:hover{background:var(--s4);color:var(--t1);}
 .post-join-btn.joined{background:rgba(255,255,255,.05);color:var(--t3);}
+/* Follow pill on post author */
+.post-follow-pill{display:inline-flex;align-items:center;padding:.1rem .45rem;border-radius:20px;font-size:.6rem;font-weight:700;border:1px solid var(--b2);background:var(--s3);color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;margin-left:.2rem;}
+.post-follow-pill:hover{background:var(--s4);color:var(--t1);}
+.post-follow-pill.following{background:rgba(74,222,128,.08);color:#4ade80;border-color:rgba(74,222,128,.2);}
 
 /* Share DM modal */
 .share-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:flex;align-items:flex-end;justify-content:center;}
@@ -211,6 +215,7 @@
   text-align:center;font-size:.8125rem;font-weight:600;color:var(--t3);
   background:none;border:none;cursor:pointer;
   border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;
+  text-decoration:none;display:flex;align-items:center;justify-content:center;
 }
 .mob-sort-tab.active{color:var(--white);border-bottom-color:var(--white);}
 
@@ -281,11 +286,10 @@
 {% endblock %}
 
 {% block pre_content %}
-<!-- Mobile sort tabs (hidden on desktop via CSS) -->
+<!-- Mobile feed tabs -->
 <div class="mob-sort-tabs" id="mob-sort-tabs">
-  <button class="mob-sort-tab active" onclick="setMobSort('popular',this)">Popular</button>
-  <button class="mob-sort-tab" onclick="setMobSort('trending',this)">Trending</button>
-  <button class="mob-sort-tab" onclick="setMobSort('latest',this)">Latest</button>
+  <a class="mob-sort-tab {% if tab == 'all' or not tab %}active{% endif %}" href="?tab=all">For You</a>
+  <a class="mob-sort-tab {% if tab == 'following' %}active{% endif %}" href="?tab=following">Following</a>
 </div>
 {% endblock %}
 
@@ -306,19 +310,15 @@
       </span>
     </a>
 
-    <!-- Sort bar -->
+    <!-- Feed tabs + Sort bar -->
     <div class="sort-bar">
-      <button class="sort-btn active" onclick="setSort('hot',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Hot
-      </button>
+      <a class="sort-btn {% if tab == 'all' or not tab %}active{% endif %}" href="?tab=all" style="text-decoration:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>For You
+      </a>
       <div class="sort-sep"></div>
-      <button class="sort-btn" onclick="setSort('new',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>New
-      </button>
-      <div class="sort-sep"></div>
-      <button class="sort-btn" onclick="setSort('top',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>Top
-      </button>
+      <a class="sort-btn {% if tab == 'following' %}active{% endif %}" href="?tab=following" style="text-decoration:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Following
+      </a>
     </div>
 
     <!-- Posts -->
@@ -360,6 +360,13 @@
               </div>
             </a>
             <a href="{% url 'community:profile' post.author.username %}">{{ post.author.username }}</a>
+            {% if post.author != user %}
+            <button class="post-follow-pill {% if post.author.id in following_user_ids %}following{% endif %}"
+                    id="pfp-{{ post.author.id }}"
+                    onclick="quickFollow('{{ post.author.username }}','{{ post.author.id }}',this)">
+              {% if post.author.id in following_user_ids %}Following{% else %}+ Follow{% endif %}
+            </button>
+            {% endif %}
           </span>
           <span class="post-dot">•</span>
           <span class="post-when">{{ post.created_at|timesince }} ago</span>
@@ -472,15 +479,23 @@
       </div>
     </div>
     {% empty %}
+    {% if tab == 'following' %}
+    <div class="feed-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+      <p>No posts from people you follow yet. Follow someone to see their posts here.</p>
+      <button onclick="openFriendDrawer()" class="btn btn-primary">Find People to Follow</button>
+    </div>
+    {% else %}
     <div class="feed-empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <p>No posts yet. Join a community and be the first to post!</p>
       <a href="{% url 'community:schools' %}" class="btn btn-primary">Browse Schools</a>
     </div>
+    {% endif %}
     {% endfor %}
 
     {% if has_more %}
-    <a href="?cursor={{ next_cursor }}" class="load-more">Load more posts</a>
+    <a href="?tab={{ tab }}&cursor={{ next_cursor }}" class="load-more">Load more posts</a>
     {% endif %}
   </div>
 
@@ -520,6 +535,31 @@
       <div class="rc-footer"><a href="{% url 'community:schools' %}">See all schools →</a></div>
     </div>
 
+    <!-- Following -->
+    {% if following %}
+    <div class="right-card">
+      <div class="rc-head" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Following</span>
+        <a href="?tab=following" style="font-size:.6875rem;color:var(--t3);transition:color .15s;" onmouseover="this.style.color='var(--t1)'" onmouseout="this.style.color='var(--t3)'">See feed →</a>
+      </div>
+      {% for f in following %}
+      <a href="{% url 'community:profile' f.following.username %}" class="rc-item" style="text-decoration:none;">
+        <div class="rc-icon" style="border-radius:50%;overflow:hidden;">
+          {% if f.following.community_profile.avatar %}
+            <img src="{{ f.following.community_profile.avatar.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+          {% else %}
+            {{ f.following.username|slice:":1"|upper }}
+          {% endif %}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="rc-name">{{ f.following.community_profile.display_name|default:f.following.username }}</div>
+          <div class="rc-count">@{{ f.following.username }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Custom communities -->
     {% if custom_communities %}
     <div class="right-card">
@@ -541,12 +581,6 @@
         <a href="{% url 'community:post_create' %}" class="btn btn-primary">+ New Post</a>
         <a href="{% url 'community:custom_create' %}" class="btn btn-ghost">Create Community</a>
       </div>
-    </div>
-
-    <!-- Active now -->
-    <div class="right-card" style="padding:1rem;">
-      <div style="font-size:.8125rem;font-weight:700;margin-bottom:.375rem;">Active Now</div>
-      <div style="font-size:.75rem;color:var(--t3);line-height:1.6;">When someone posts or messages, you'll see them here.</div>
     </div>
   </div>
 </div>
@@ -927,6 +961,30 @@ function setMobSort(type, btn) {
     const txt = b.textContent.trim().toLowerCase();
     b.classList.toggle('active', txt === (map[type] || type));
   });
+}
+
+/* ── Quick Follow from feed ── */
+function quickFollow(username, userId, btn) {
+  fetch('/community/api/follows/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({username})
+  })
+  .then(r => r.json())
+  .then(d => {
+    // Update all follow pills for this author on the page
+    document.querySelectorAll('#pfp-' + userId).forEach(b => {
+      if (d.following) {
+        b.textContent = 'Following';
+        b.classList.add('following');
+      } else {
+        b.textContent = '+ Follow';
+        b.classList.remove('following');
+      }
+    });
+    showToast(d.following ? 'Following ' + username : 'Unfollowed ' + username);
+  })
+  .catch(() => {});
 }
 
 /* ── Friend Search ── */
