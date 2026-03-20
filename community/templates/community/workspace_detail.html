@@ -207,6 +207,60 @@
 .call-join-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:1rem;}
 .call-join-wrap p{color:var(--t3);font-size:.875rem;text-align:center;max-width:280px;}
 @media(max-width:600px){.call-grid{grid-template-columns:1fr 1fr;}}
+
+/* ── Nexa Bird Banner ── */
+.nexa-banner{display:flex;align-items:center;gap:.75rem;padding:.5rem 1rem;background:linear-gradient(90deg,rgba(10,10,10,.98),rgba(20,20,20,.98));border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;position:relative;}
+.nexa-bird-wrap{width:52px;height:52px;flex-shrink:0;perspective:200px;}
+.nexa-bird{width:52px;height:52px;position:relative;transform-style:preserve-3d;animation:nexaBob 2.4s ease-in-out infinite;}
+@keyframes nexaBob{0%,100%{transform:translateY(0) rotateY(0deg);}25%{transform:translateY(-4px) rotateY(6deg);}75%{transform:translateY(-2px) rotateY(-4deg);}}
+/* Body */
+.nb-body{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+/* Main body shape */
+.nb-body::before{content:'';position:absolute;width:28px;height:34px;background:#fff;border-radius:50% 50% 45% 45% / 55% 55% 45% 45%;bottom:8px;left:50%;transform:translateX(-50%);box-shadow:0 2px 8px rgba(0,0,0,.5);border:2px solid #111;}
+/* Head */
+.nb-head{position:absolute;width:26px;height:24px;background:#fff;border-radius:50%;top:2px;left:50%;transform:translateX(-50%);border:2px solid #111;z-index:3;}
+/* Eyes */
+.nb-eye{position:absolute;width:8px;height:8px;background:#111;border-radius:50%;top:7px;}
+.nb-eye.left{left:3px;}
+.nb-eye.right{right:3px;}
+.nb-pupil{width:4px;height:4px;background:#fff;border-radius:50%;position:absolute;top:1px;left:1px;animation:nexaBlink 3.5s ease-in-out infinite;}
+@keyframes nexaBlink{0%,90%,100%{transform:scaleY(1);}95%{transform:scaleY(0.1);}}
+/* Beak */
+.nb-beak-top{position:absolute;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid #111;top:14px;left:50%;transform:translateX(-50%);z-index:4;}
+.nb-beak-bot{position:absolute;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid #333;top:18px;left:50%;transform:translateX(-50%);z-index:4;}
+/* Crest */
+.nb-crest{position:absolute;top:-6px;left:50%;transform:translateX(-50%);display:flex;gap:1px;z-index:5;}
+.nb-crest-f{width:4px;border-radius:2px 2px 0 0;background:#111;transform-origin:bottom center;}
+.nb-crest-f.f1{height:8px;transform:rotate(-15deg);animation:nexaCrest 2.4s ease-in-out infinite;}
+.nb-crest-f.f2{height:11px;animation:nexaCrest 2.4s ease-in-out infinite .1s;}
+.nb-crest-f.f3{height:8px;transform:rotate(15deg);animation:nexaCrest 2.4s ease-in-out infinite .2s;}
+@keyframes nexaCrest{0%,100%{transform:rotate(0deg) scaleY(1);}25%{transform:rotate(-8deg) scaleY(1.1);}75%{transform:rotate(5deg) scaleY(.95);}}
+/* Wings */
+.nb-wing{position:absolute;width:14px;height:22px;background:#111;border-radius:40% 20% 50% 20%;top:22px;transform-origin:top center;animation:nexaWingFlap 2.4s ease-in-out infinite;}
+.nb-wing.left{left:4px;transform:rotate(-15deg);border-radius:20% 40% 20% 50%;}
+.nb-wing.right{right:4px;transform:rotate(15deg);}
+@keyframes nexaWingFlap{0%,100%{transform:rotate(15deg);}25%{transform:rotate(-25deg);}75%{transform:rotate(20deg);}}
+.nb-wing.left{animation-name:nexaWingFlapL;}
+@keyframes nexaWingFlapL{0%,100%{transform:rotate(-15deg);}25%{transform:rotate(25deg);}75%{transform:rotate(-20deg);}}
+/* Belly */
+.nb-belly{position:absolute;width:16px;height:18px;background:#e8e8e8;border-radius:50%;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;border:1px solid #ccc;}
+/* Tail */
+.nb-tail{position:absolute;width:12px;height:10px;background:#111;border-radius:0 0 50% 50%;bottom:6px;left:50%;transform:translateX(-50%) rotate(0deg);z-index:1;animation:nexaTail 2.4s ease-in-out infinite;}
+@keyframes nexaTail{0%,100%{transform:translateX(-50%) rotate(0deg);}25%{transform:translateX(-50%) rotate(-8deg);}75%{transform:translateX(-50%) rotate(6deg);}}
+/* Feet */
+.nb-feet{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);display:flex;gap:6px;}
+.nb-foot{width:8px;height:3px;background:#111;border-radius:0 0 3px 3px;position:relative;}
+.nb-foot::before,.nb-foot::after{content:'';position:absolute;bottom:0;width:3px;height:4px;background:#111;border-radius:0 0 2px 2px;}
+.nb-foot::before{left:-1px;}
+.nb-foot::after{right:-1px;}
+/* Banner text */
+.nexa-banner-text{flex:1;min-width:0;}
+.nexa-name{display:block;font-size:.9375rem;font-weight:800;color:#fff;letter-spacing:.02em;}
+.nexa-status{display:flex;align-items:center;gap:.35rem;font-size:.6875rem;color:rgba(255,255,255,.5);margin-top:.1rem;}
+.nexa-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;animation:nexaPulse 2s ease-in-out infinite;}
+@keyframes nexaPulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4);}50%{opacity:.8;box-shadow:0 0 0 4px rgba(34,197,94,0);}}
+.nexa-dismiss{background:none;border:none;color:rgba(255,255,255,.3);font-size:1.25rem;cursor:pointer;padding:.25rem .5rem;line-height:1;flex-shrink:0;}
+.nexa-dismiss:hover{color:rgba(255,255,255,.7);}
 </style>
 {% endblock %}
 
@@ -285,13 +339,58 @@
   <div class="ws-main">
     <!-- Chat panel -->
     <div class="ws-panel active" id="panel-chat">
+
+      <!-- Nexa AI presence banner -->
+      <div class="nexa-banner" id="nexa-banner">
+        <div class="nexa-bird-wrap">
+          <!-- 3D CSS bird (black & white, Duolingo-style) -->
+          <div class="nexa-bird" id="nexa-bird">
+            <!-- Body -->
+            <div class="nb-body">
+              <!-- Head -->
+              <div class="nb-head">
+                <!-- Eyes -->
+                <div class="nb-eye left"><div class="nb-pupil"></div></div>
+                <div class="nb-eye right"><div class="nb-pupil"></div></div>
+                <!-- Beak -->
+                <div class="nb-beak-top"></div>
+                <div class="nb-beak-bot"></div>
+                <!-- Crest feathers -->
+                <div class="nb-crest">
+                  <div class="nb-crest-f f1"></div>
+                  <div class="nb-crest-f f2"></div>
+                  <div class="nb-crest-f f3"></div>
+                </div>
+              </div>
+              <!-- Wings -->
+              <div class="nb-wing left" id="nb-wing-l"></div>
+              <div class="nb-wing right" id="nb-wing-r"></div>
+              <!-- Belly patch -->
+              <div class="nb-belly"></div>
+              <!-- Tail -->
+              <div class="nb-tail"></div>
+              <!-- Feet -->
+              <div class="nb-feet">
+                <div class="nb-foot left"></div>
+                <div class="nb-foot right"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nexa-banner-text">
+          <span class="nexa-name">Nexa</span>
+          <span class="nexa-status"><span class="nexa-dot"></span>Active in this workspace</span>
+        </div>
+        <button class="nexa-dismiss" onclick="document.getElementById('nexa-banner').style.display='none'" title="Dismiss">×</button>
+      </div>
+
       <div class="ws-chat-msgs" id="ws-chat-msgs">
         {% for msg in messages_list %}
         {% if msg.content|slice:":4" == "[AI]" %}
         <div class="ws-msg-wrap theirs" data-id="{{ msg.id }}">
-          <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div>
+          <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div>
           <div class="ws-msg-group">
-            <span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span>
+            <span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>
             <div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">{{ msg.content|slice:"4:" }}</div>
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
@@ -607,7 +706,7 @@
                   {% elif ws.workspace_type == 'group_project' %}
                   📋 I'm your <strong>Project Manager</strong> for <strong>{{ ws.name }}</strong>.<br><br>Upload your assignment brief and I'll extract requirements, break the work into tasks, assign responsibilities, and help assemble the final submission.<br><br>Start by uploading your project files!
                   {% else %}
-                  👋 I'm your <strong>AI Assistant</strong> for <strong>{{ ws.name }}</strong>.<br><br>I can help you organize tasks, brainstorm ideas, track progress, write content, and keep your team aligned.<br><br>Ask me anything!
+                  👋 I'm your <strong>Nexa</strong> for <strong>{{ ws.name }}</strong>.<br><br>I can help you organize tasks, brainstorm ideas, track progress, write content, and keep your team aligned.<br><br>Ask me anything!
                   {% endif %}
                 </div>
               </div>
@@ -846,7 +945,7 @@ function wsSendMessage(e) {
   const typing = document.createElement('div');
   typing.id = 'ai-chat-typing';
   typing.className = 'ws-msg-wrap theirs';
-  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
+  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">Nexa</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
 
@@ -871,7 +970,7 @@ function wsSendMessage(e) {
           // @ai messages: show locally only (not saved to DB)
           const div = document.createElement('div');
           div.className = 'ws-msg-wrap theirs';
-          div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
+          div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">Nexa</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
           msgs.appendChild(div);
           msgs.scrollTop = msgs.scrollHeight;
         }
@@ -932,7 +1031,7 @@ function appendWsMsg(data, isMine) {
   }
 
   const senderLabel = isAI
-    ? `<span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span>`
+    ? `<span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>`
     : (!isMine ? `<span class="ws-msg-sender">${esc(data.sender)}</span>` : '');
 
   const wrap = document.createElement('div');
@@ -1841,9 +1940,9 @@ function checkProactiveAI(newCount) {
       const div = document.createElement('div');
       div.className = 'ws-msg-wrap theirs';
       div.innerHTML = `
-        <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div>
+        <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div>
         <div class="ws-msg-group">
-          <span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span>
+          <span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>
           <div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(data.message)}</div>
         </div>`;
       msgs.appendChild(div);
