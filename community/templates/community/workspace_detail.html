@@ -806,13 +806,60 @@ function wsSendMessage(e) {
   const content = input.value.trim();
   if (!content) return;
   input.value = '';
-  const fd = new FormData();
-  fd.append('content', content);
-  fd.append('csrfmiddlewaretoken', CSRF);
-  fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd })
+
+  // Determine if this is a direct @ai mention
+  const isAtAI = content.toLowerCase().startsWith('@ai');
+  const question = isAtAI ? (content.slice(3).trim() || 'Hello!') : content;
+
+  // Always show user message in chat
+  if (isAtAI) {
+    appendWsMsg({ id: 'local-' + Date.now(), sender: MY_USERNAME, sender_avatar: MY_AVATAR, content: content, created_at: new Date().toISOString(), is_mine: true }, true);
+  } else {
+    // Send to group chat normally
+    const fd = new FormData();
+    fd.append('content', content);
+    fd.append('csrfmiddlewaretoken', CSRF);
+    fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(data => appendWsMsg(data, true))
+      .catch(() => {});
+  }
+
+  // Always get AI response
+  const msgs = document.getElementById('ws-chat-msgs');
+  const typing = document.createElement('div');
+  typing.id = 'ai-chat-typing';
+  typing.className = 'ws-msg-wrap theirs';
+  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ message: question }),
+  })
     .then(r => r.json())
-    .then(data => appendWsMsg(data, true))
-    .catch(() => {});
+    .then(data => {
+      const t = document.getElementById('ai-chat-typing');
+      if (t) t.remove();
+      const reply = data.reply || '';
+      if (!reply) return;
+      const div = document.createElement('div');
+      div.className = 'ws-msg-wrap theirs';
+      div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">AI</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">AI Assistant</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+      if (data.actions && data.actions.length) {
+        data.actions.forEach(action => {
+          if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
+        });
+      }
+    })
+    .catch(() => {
+      const t = document.getElementById('ai-chat-typing');
+      if (t) t.remove();
+    });
 }
 
 function wsAttachFile(input) {
