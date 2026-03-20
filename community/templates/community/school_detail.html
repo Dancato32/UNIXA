@@ -9,25 +9,22 @@
 
 {% block extra_css %}
 <style>
-/* ── Reddit-style community header ── */
-.r-wrap{margin:-1.5rem -2rem 0;}
-.r-banner{height:160px;overflow:hidden;position:relative;background:linear-gradient(135deg,#1a1a2e,#0f3460);}
-.r-banner img{width:100%;height:100%;object-fit:cover;}
-.r-head{background:var(--s2);border-bottom:1px solid var(--b2);padding:0 1.25rem;}
-.r-head-top{display:flex;align-items:flex-start;gap:.875rem;padding-top:.75rem;padding-bottom:.625rem;}
+/* ── Full-bleed banner wrapper ── */
+.r-wrap{width:100%;}
+.r-banner{height:160px;overflow:hidden;background:linear-gradient(135deg,#1a1a2e,#0f3460);width:100%;}
+.r-banner img{width:100%;height:100%;object-fit:cover;display:block;}
+.r-head{background:var(--s2);border-bottom:1px solid var(--b2);padding:0 1rem;}
+.r-head-top{display:flex;align-items:flex-start;gap:.875rem;padding-top:.75rem;padding-bottom:.5rem;}
 .r-icon{width:72px;height:72px;border-radius:50%;background:var(--s4);border:4px solid var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:var(--t1);flex-shrink:0;margin-top:-36px;overflow:hidden;position:relative;z-index:2;}
 .r-icon img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .r-info{flex:1;min-width:0;padding-top:.25rem;}
-.r-name-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
-.r-name{font-size:1.25rem;font-weight:800;line-height:1.2;}
-.r-refresh{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:none;border:none;color:var(--t3);cursor:pointer;transition:all .15s;}
-.r-refresh:hover{background:var(--s3);color:var(--t1);}
-.r-refresh svg{width:15px;height:15px;}
-.r-edit{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--s3);border:1px solid var(--b2);color:var(--t2);cursor:pointer;margin-left:auto;flex-shrink:0;}
+.r-name{font-size:1.125rem;font-weight:800;line-height:1.3;word-break:break-word;}
+.r-sub{font-size:.75rem;color:var(--t3);margin-top:.125rem;}
+.r-edit{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--s3);border:1px solid var(--b2);color:var(--t2);cursor:pointer;flex-shrink:0;text-decoration:none;margin-top:.25rem;}
 .r-edit svg{width:15px;height:15px;}
-/* Action buttons row */
-.r-actions{display:flex;align-items:center;gap:.5rem;padding-bottom:.75rem;flex-wrap:wrap;}
-.r-btn{display:inline-flex;align-items:center;gap:.375rem;padding:.45rem .875rem;border-radius:999px;font-size:.8125rem;font-weight:700;border:1px solid var(--b3);background:none;color:var(--t1);cursor:pointer;transition:all .15s;white-space:nowrap;}
+/* Action row */
+.r-actions{display:flex;align-items:center;gap:.5rem;padding:.5rem 0 .75rem;flex-wrap:wrap;}
+.r-btn{display:inline-flex;align-items:center;gap:.375rem;padding:.45rem .875rem;border-radius:999px;font-size:.8125rem;font-weight:700;border:1px solid var(--b3);background:none;color:var(--t1);cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;}
 .r-btn:hover{background:var(--s3);}
 .r-btn.primary{background:var(--white);color:#000;border-color:transparent;}
 .r-btn.primary:hover{background:#e8e8e8;}
@@ -35,22 +32,19 @@
 .r-btn-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--b3);background:none;color:var(--t2);cursor:pointer;transition:all .15s;flex-shrink:0;}
 .r-btn-icon:hover{background:var(--s3);color:var(--t1);}
 .r-btn-icon svg{width:16px;height:16px;}
-/* Tab bar */
-.r-tabs{display:flex;align-items:center;border-top:1px solid var(--b1);margin:0 -1.25rem;padding:0 1.25rem;}
+/* Tabs */
+.r-tabs{display:flex;align-items:center;border-top:1px solid var(--b1);margin:0 -1rem;padding:0 1rem;}
 .r-tab{padding:.625rem .875rem;font-size:.875rem;font-weight:600;color:var(--t3);border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;background:none;border-left:none;border-right:none;border-top:none;}
 .r-tab:hover{color:var(--t2);}
 .r-tab.active{color:var(--t1);border-bottom-color:var(--white);}
 .r-tab-spacer{flex:1;}
-.r-sort{display:flex;align-items:center;gap:.25rem;}
 .r-sort-btn{display:inline-flex;align-items:center;gap:.25rem;padding:.3rem .625rem;border-radius:999px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:1px solid transparent;cursor:pointer;transition:all .15s;}
 .r-sort-btn:hover,.r-sort-btn.active{background:var(--s3);color:var(--t1);border-color:var(--b2);}
 .r-sort-btn svg{width:13px;height:13px;}
-
-/* Layout */
+/* Body */
 .r-body{display:flex;gap:1.25rem;align-items:start;margin-top:1rem;}
 .r-main{flex:1;min-width:0;}
 .r-side{width:268px;flex-shrink:0;}
-
 /* Post card */
 .post-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;margin-bottom:.5rem;display:flex;overflow:hidden;transition:border-color .15s;}
 .post-card:hover{border-color:var(--b3);}
@@ -65,29 +59,84 @@
 .post-by{font-size:.75rem;color:var(--t3);display:flex;align-items:center;gap:.375rem;}
 .post-by a{color:var(--t2);font-weight:500;}
 .post-by a:hover{color:var(--t1);}
+</style>
+{% endblock %}
+
+{% block pre_content %}
+<!-- Full-bleed banner OUTSIDE .page padding -->
+<div class="r-wrap">
+  <div class="r-banner">
+    {% if community.banner %}<img src="{{ community.banner.url }}" alt="">
+    {% elif community.logo_url %}<img src="{{ community.logo_url }}" alt="" onerror="this.style.display='none'">
+    {% endif %}
+  </div>
+  <div class="r-head">
+    <div class="r-head-top">
+      <div class="r-icon">
+        {% if community.logo %}<img src="{{ community.logo.url }}" alt="{{ community.name }}">
+        {% elif community.logo_url %}<img src="{{ community.logo_url }}" alt="{{ community.name }}" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span>{{ community.name|slice:":1"|upper }}</span>')">
+        {% else %}{{ community.name|slice:":1"|upper }}{% endif %}
+      </div>
+      <div class="r-info">
+        <div class="r-name">r/{{ community.name }}</div>
+        <div class="r-sub">{{ community.memberships.count }} member{{ community.memberships.count|pluralize }}</div>
+      </div>
+      <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="r-edit" title="Create Post">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </a>
+    </div>
+    <div class="r-actions">
+      <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="r-btn primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create Post
+      </a>
+      <button class="r-btn-icon" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="4" y1="4" x2="20" y2="20"/></svg>
+      </button>
+      {% if is_member %}
+        <form method="post" action="{% url 'community:school_leave' community.slug %}" style="margin:0;">
+          {% csrf_token %}<button type="submit" class="r-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Joined</button>
+        </form>
+      {% else %}
+        <form method="post" action="{% url 'community:school_join' community.slug %}" style="margin:0;">
+          {% csrf_token %}<button type="submit" class="r-btn primary">Join</button>
+        </form>
+      {% endif %}
+      <button class="r-btn-icon" title="More">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      </button>
+    </div>
+    <div class="r-tabs">
+      <button class="r-tab active" onclick="switchTab('feed',this)">Feed</button>
+      <button class="r-tab" onclick="switchTab('about',this)">About</button>
+      <div class="r-tab-spacer"></div>
+      <button class="r-sort-btn active" id="sort-btn">Best <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <button class="r-sort-btn" title="Grid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<style>
 .post-av{width:20px;height:20px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.5625rem;font-weight:700;color:var(--t2);flex-shrink:0;overflow:hidden;}
 .post-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .post-when{font-size:.75rem;color:var(--t3);}
 .post-cat{font-size:.6875rem;font-weight:600;padding:.1rem .4rem;border-radius:3px;background:rgba(88,101,242,.12);color:#818cf8;margin-left:auto;}
+.post-title{font-size:.9375rem;font-weight:700;margin-bottom:.375rem;line-height:1.4;}
 .post-text{font-size:.875rem;line-height:1.65;color:var(--t2);margin-bottom:.75rem;white-space:pre-wrap;max-height:240px;overflow:hidden;position:relative;}
 .post-text.expanded{max-height:none;}
 .post-fade{position:absolute;bottom:0;left:0;right:0;height:48px;background:linear-gradient(transparent,var(--s2));cursor:pointer;}
 .post-img{width:100%;border-radius:4px;margin-bottom:.75rem;max-height:480px;object-fit:cover;display:block;}
 .post-actions{display:flex;align-items:center;gap:.125rem;flex-wrap:wrap;}
-.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.35rem .625rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:none;transition:all .15s;cursor:pointer;white-space:nowrap;}
+.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.35rem .625rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:none;transition:all .15s;cursor:pointer;white-space:nowrap;text-decoration:none;}
 .pa:hover{background:var(--s3);color:var(--t2);}
 .pa svg{width:14px;height:14px;}
 .pa-del:hover{color:var(--red);}
-</style>
-{% endblock %}
-
-{% block content %}
-<style>
-/* inline comment */
+/* inline comments */
 .inline-comment{display:none;margin-top:.625rem;padding-top:.625rem;border-top:1px solid var(--b1);}
 .inline-comment.open{display:block;}
 .ic-form{display:flex;gap:.5rem;align-items:flex-start;}
-.ic-av{width:28px;height:28px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;margin-top:.25rem;}
+.ic-av{width:28px;height:28px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;margin-top:.25rem;overflow:hidden;}
+.ic-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .ic-wrap{flex:1;}
 .ic-input{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:.5rem .75rem;color:var(--t1);font-size:.8125rem;resize:none;min-height:64px;outline:none;transition:border-color .15s;line-height:1.5;}
 .ic-input:focus{border-color:var(--b3);}
@@ -105,7 +154,7 @@
 .ic-item-text{font-size:.8125rem;line-height:1.55;color:var(--t2);white-space:pre-wrap;}
 .ic-replies{margin-top:.375rem;padding-left:.75rem;border-left:2px solid var(--b2);}
 .ic-loading{font-size:.75rem;color:var(--t3);padding:.5rem 0;text-align:center;}
-.ic-view-all{display:block;text-align:center;font-size:.75rem;color:var(--t3);padding:.375rem 0;transition:color .15s;cursor:pointer;background:none;border:none;width:100%;}
+.ic-view-all{display:block;text-align:center;font-size:.75rem;color:var(--t3);padding:.375rem 0;cursor:pointer;background:none;border:none;width:100%;text-decoration:none;}
 .ic-view-all:hover{color:var(--t2);}
 .ic-item-actions{display:flex;align-items:center;gap:.2rem;margin-top:.375rem;flex-wrap:wrap;}
 .ic-vote-pill{display:inline-flex;align-items:center;background:var(--s4);border:1px solid var(--b2);border-radius:20px;overflow:hidden;}
@@ -142,106 +191,23 @@
 .member-row:last-child{border-bottom:none;}
 .member-av{width:28px;height:28px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;}
 .member-name{font-size:.8125rem;font-weight:500;flex:1;color:var(--t2);}
-/* empty state */
+/* empty */
 .r-empty{padding:3rem 1rem;text-align:left;}
 .r-empty h2{font-size:1.25rem;font-weight:800;margin-bottom:.5rem;}
 .r-empty p{font-size:.875rem;color:var(--t3);margin-bottom:1.25rem;}
 /* toast */
-.share-toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--s5);color:var(--t1);padding:.5rem 1.25rem;border-radius:6px;font-size:.8125rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;}
+.share-toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:var(--s5);color:var(--t1);padding:.5rem 1.25rem;border-radius:6px;font-size:.8125rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;}
 .share-toast.show{opacity:1;}
-/* about panel */
+/* panels */
 .about-panel{display:none;}
 .about-panel.active{display:block;}
-.feed-panel{display:block;}
 .feed-panel.hidden{display:none;}
 @media(max-width:900px){.r-body{flex-direction:column;}.r-side{width:100%;}.r-banner{height:130px;}.r-icon{width:60px;height:60px;font-size:1.375rem;margin-top:-30px;}}
-@media(max-width:600px){.vote-col{display:none;}.post-body{padding:.625rem .75rem;}.post-actions{gap:0;}.pa{padding:.3rem .4rem;font-size:.7rem;}.ic-act{padding:.15rem .3rem;font-size:.65rem;}.r-actions{gap:.375rem;}.r-btn{padding:.4rem .7rem;font-size:.75rem;}}
+@media(max-width:600px){.vote-col{display:none;}.post-body{padding:.625rem .75rem;}.pa{padding:.3rem .4rem;font-size:.7rem;}.r-actions{gap:.375rem;}.r-btn{padding:.4rem .7rem;font-size:.75rem;}}
 </style>
 
-<!-- Reddit-style community header -->
-<div class="r-wrap">
-  <!-- Banner -->
-  <div class="r-banner">
-    {% if community.banner %}<img src="{{ community.banner.url }}" alt="">{% endif %}
-  </div>
-
-  <!-- Head -->
-  <div class="r-head">
-    <div class="r-head-top">
-      <!-- Circle icon overlapping banner -->
-      <div class="r-icon">
-        {% if community.logo %}
-          <img src="{{ community.logo.url }}" alt="{{ community.name }}">
-        {% elif community.logo_url %}
-          <img src="{{ community.logo_url }}" alt="{{ community.name }}" onerror="this.style.display='none';if(!this.parentNode.querySelector('.lf')){var s=document.createElement('span');s.className='lf';s.textContent=this.alt.slice(0,1).toUpperCase();this.parentNode.appendChild(s);}">
-        {% else %}
-          {{ community.name|slice:":1"|upper }}
-        {% endif %}
-      </div>
-      <!-- Name + refresh -->
-      <div class="r-info">
-        <div class="r-name-row">
-          <span class="r-name">r/{{ community.name }}</span>
-          <button class="r-refresh" onclick="location.reload()" title="Refresh">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          </button>
-          <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="r-edit" title="Edit / Post">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Action buttons -->
-    <div class="r-actions">
-      <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="r-btn primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Create Post
-      </a>
-      <button class="r-btn-icon" title="Notifications">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="4" y1="4" x2="20" y2="20"/></svg>
-      </button>
-      {% if is_member %}
-        <form method="post" action="{% url 'community:school_leave' community.slug %}" style="margin:0;">
-          {% csrf_token %}
-          <button type="submit" class="r-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Joined
-          </button>
-        </form>
-      {% else %}
-        <form method="post" action="{% url 'community:school_join' community.slug %}" style="margin:0;">
-          {% csrf_token %}
-          <button type="submit" class="r-btn primary">Join</button>
-        </form>
-      {% endif %}
-      <button class="r-btn-icon" title="More options">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-      </button>
-    </div>
-
-    <!-- Tabs + sort -->
-    <div class="r-tabs">
-      <button class="r-tab active" onclick="switchTab('feed',this)">Feed</button>
-      <button class="r-tab" onclick="switchTab('about',this)">About</button>
-      <div class="r-tab-spacer"></div>
-      <div class="r-sort">
-        <button class="r-sort-btn active" onclick="setSort(this)">
-          Best <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <button class="r-sort-btn" onclick="setSort(this)" title="Layout">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Body -->
 <div class="r-body">
   <div class="r-main">
-
-    <!-- Feed tab -->
     <div class="feed-panel" id="feed-panel">
       {% for post in posts %}
       <div class="post-card" id="post-{{ post.id }}">
@@ -265,8 +231,11 @@
             {% if post.category %}<span class="post-cat">{{ post.category }}</span>{% endif %}
           </div>
           <div class="post-text" id="pt-{{ post.id }}">{{ post.content }}<div class="post-fade" id="ptf-{{ post.id }}"></div></div>
-          {% if post.media and post.media_type == 'image' %}<img src="{{ post.media.url }}" alt="" class="post-img">
-          {% elif post.media and post.media_type == 'video' %}<video src="{{ post.media.url }}" controls class="post-img" style="background:#000;max-height:400px;"></video>{% endif %}
+          {% if post.media %}
+            {% if post.media_type == 'image' %}<img src="{{ post.media.url }}" alt="" class="post-img">
+            {% elif post.media_type == 'video' %}<video src="{{ post.media.url }}" controls class="post-img" style="background:#000;max-height:400px;"></video>
+            {% endif %}
+          {% endif %}
           <div class="post-actions">
             <button class="pa" onclick="toggleCommentBox('{{ post.id }}')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -288,7 +257,7 @@
             <div class="ic-comments" id="ic-list-{{ post.id }}"></div>
             <form class="ic-form" onsubmit="submitComment(event,'{{ post.id }}')">
               {% csrf_token %}
-              <div class="ic-av">{{ user.username|slice:":1"|upper }}</div>
+              <div class="ic-av">{% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</div>
               <div class="ic-wrap">
                 <textarea class="ic-input" placeholder="Add a comment…" rows="2" id="ic-text-{{ post.id }}"></textarea>
                 <div class="ic-actions">
@@ -309,7 +278,6 @@
       {% endfor %}
     </div>
 
-    <!-- About tab -->
     <div class="about-panel" id="about-panel">
       <div class="side-card">
         <div class="side-body">
@@ -328,22 +296,13 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
             Public Community
           </div>
-          {% if community.verified %}
-          <div class="side-meta-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Verified School
-          </div>
-          {% endif %}
+          {% if community.verified %}<div class="side-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Verified School</div>{% endif %}
           <div class="side-actions">
             <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="btn btn-primary">+ Create Post</a>
             {% if is_member %}
-            <form method="post" action="{% url 'community:school_leave' community.slug %}">{% csrf_token %}
-              <button type="submit" class="btn btn-ghost">Leave Community</button>
-            </form>
+            <form method="post" action="{% url 'community:school_leave' community.slug %}">{% csrf_token %}<button type="submit" class="btn btn-ghost">Leave Community</button></form>
             {% else %}
-            <form method="post" action="{% url 'community:school_join' community.slug %}">{% csrf_token %}
-              <button type="submit" class="btn btn-ghost">Join Community</button>
-            </form>
+            <form method="post" action="{% url 'community:school_join' community.slug %}">{% csrf_token %}<button type="submit" class="btn btn-ghost">Join Community</button></form>
             {% endif %}
           </div>
         </div>
@@ -361,10 +320,8 @@
       </div>
       {% endif %}
     </div>
-
   </div>
 
-  <!-- Desktop sidebar -->
   <div class="r-side">
     <div class="side-card">
       <div class="side-body">
@@ -383,22 +340,13 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Public
         </div>
-        {% if community.verified %}
-        <div class="side-meta-row">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Verified School
-        </div>
-        {% endif %}
+        {% if community.verified %}<div class="side-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Verified School</div>{% endif %}
         <div class="side-actions">
           <a href="{% url 'community:post_create' %}?sc={{ community.id }}" class="btn btn-primary">+ Create Post</a>
           {% if is_member %}
-          <form method="post" action="{% url 'community:school_leave' community.slug %}">{% csrf_token %}
-            <button type="submit" class="btn btn-ghost">Leave Community</button>
-          </form>
+          <form method="post" action="{% url 'community:school_leave' community.slug %}">{% csrf_token %}<button type="submit" class="btn btn-ghost">Leave Community</button></form>
           {% else %}
-          <form method="post" action="{% url 'community:school_join' community.slug %}">{% csrf_token %}
-            <button type="submit" class="btn btn-ghost">Join Community</button>
-          </form>
+          <form method="post" action="{% url 'community:school_join' community.slug %}">{% csrf_token %}<button type="submit" class="btn btn-ghost">Join Community</button></form>
           {% endif %}
         </div>
       </div>
@@ -417,7 +365,6 @@
     {% endif %}
   </div>
 </div>
-
 <div class="share-toast" id="share-toast">Link copied!</div>
 {% endblock %}
 
@@ -434,95 +381,138 @@ function switchTab(tab, btn) {
 }
 
 function toggleLike(id, btn) {
-  fetch(`/community/api/posts/${id}/like/`, {
-    method:'POST', headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'}
-  }).then(r=>r.json()).then(d=>{
+  fetch('/community/api/posts/' + id + '/like/', {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'}
+  }).then(r => r.json()).then(d => {
     btn.classList.toggle('up', d.liked);
     btn.querySelector('svg').setAttribute('fill', d.liked ? 'currentColor' : 'none');
-    const el = document.getElementById('lc-'+id);
+    const el = document.getElementById('lc-' + id);
     if (el) el.textContent = d.like_count;
   });
 }
 
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function timeAgo(iso){const s=Math.floor((Date.now()-new Date(iso))/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
-function avatarEl(author,size='26px'){if(author.profile_picture)return'<div class="ic-item-av" style="width:'+size+';height:'+size+';"><img src="'+esc(author.profile_picture)+'" alt=""></div>';return'<div class="ic-item-av" style="width:'+size+';height:'+size+';">'+esc(author.username.slice(0,1).toUpperCase())+'</div>';}
-function voteHtml(id){return'<div class="ic-vote-pill"><button class="ic-vbtn" onclick="icLike(\''+id+'\',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button><span class="ic-vcount" id="ic-lc-'+id+'">0</span><button class="ic-vbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button></div>';}
-function buildCommentHtml(c){
-  const rep=c.replies&&c.replies.length?'<div class="ic-replies">'+c.replies.map(function(r){return'<div class="ic-item" style="padding:.375rem 0;" id="ic-comment-'+r.id+'">'+avatarEl(r.author,'22px')+'<div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">'+esc(r.author.username)+'</span><span class="ic-item-time">'+timeAgo(r.created_at)+'</span></div><div class="ic-item-text">'+esc(r.content)+'</div><div class="ic-item-actions">'+voteHtml(r.id)+'</div></div></div>';}).join('')+'</div>':'';
-  return'<div class="ic-item" id="ic-comment-'+c.id+'">'+avatarEl(c.author)+'<div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">'+esc(c.author.username)+'</span><span class="ic-item-time">'+timeAgo(c.created_at)+'</span></div><div class="ic-item-text">'+esc(c.content)+'</div><div class="ic-item-actions">'+voteHtml(c.id)+'<button class="ic-act" onclick="icToggleReply(\''+c.id+'\',\''+esc(c.author.username)+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Reply</button></div><div class="ic-reply-box" id="ic-rb-'+c.id+'"><textarea class="ic-reply-input" id="ic-ri-'+c.id+'" placeholder="Reply…" rows="2"></textarea><div class="ic-reply-actions"><button class="btn btn-primary btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icSubmitReply(\''+c.postId+'\',\''+c.id+'\')">Reply</button><button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icToggleReply(\''+c.id+'\',\'\')">✕</button></div></div>'+rep+'</div></div>';
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function timeAgo(iso) {
+  const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+function avatarEl(author, size) {
+  size = size || '26px';
+  if (author.profile_picture) return '<div class="ic-item-av" style="width:'+size+';height:'+size+';"><img src="'+esc(author.profile_picture)+'" alt=""></div>';
+  return '<div class="ic-item-av" style="width:'+size+';height:'+size+';">'+esc(author.username.slice(0,1).toUpperCase())+'</div>';
+}
+function voteHtml(id) {
+  return '<div class="ic-vote-pill"><button class="ic-vbtn" onclick="icLike(\''+id+'\',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button><span class="ic-vcount" id="ic-lc-'+id+'">0</span><button class="ic-vbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button></div>';
+}
+function buildCommentHtml(c) {
+  const rep = c.replies && c.replies.length ? '<div class="ic-replies">' + c.replies.map(function(r) {
+    return '<div class="ic-item" style="padding:.375rem 0;" id="ic-comment-'+r.id+'">'+avatarEl(r.author,'22px')+'<div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">'+esc(r.author.username)+'</span><span class="ic-item-time">'+timeAgo(r.created_at)+'</span></div><div class="ic-item-text">'+esc(r.content)+'</div><div class="ic-item-actions">'+voteHtml(r.id)+'</div></div></div>';
+  }).join('') + '</div>' : '';
+  return '<div class="ic-item" id="ic-comment-'+c.id+'">'+avatarEl(c.author)+'<div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">'+esc(c.author.username)+'</span><span class="ic-item-time">'+timeAgo(c.created_at)+'</span></div><div class="ic-item-text">'+esc(c.content)+'</div><div class="ic-item-actions">'+voteHtml(c.id)+'<button class="ic-act" onclick="icToggleReply(\''+c.id+'\',\''+esc(c.author.username)+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Reply</button></div><div class="ic-reply-box" id="ic-rb-'+c.id+'"><textarea class="ic-reply-input" id="ic-ri-'+c.id+'" placeholder="Reply…" rows="2"></textarea><div class="ic-reply-actions"><button class="btn btn-primary btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icSubmitReply(\''+c.postId+'\',\''+c.id+'\')">Reply</button><button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icToggleReply(\''+c.id+'\',\'\')">✕</button></div></div>'+rep+'</div></div>';
 }
 
 function toggleCommentBox(id) {
-  const box = document.getElementById('ic-'+id);
+  const box = document.getElementById('ic-' + id);
   const open = box.classList.toggle('open');
   if (open) {
     if (!loadedComments[id]) loadComments(id);
-    document.getElementById('ic-text-'+id).focus();
+    document.getElementById('ic-text-' + id).focus();
   }
 }
 
 function loadComments(postId) {
-  const listEl = document.getElementById('ic-list-'+postId);
+  const listEl = document.getElementById('ic-list-' + postId);
   if (!listEl) return;
   listEl.innerHTML = '<div class="ic-loading">Loading comments…</div>';
-  fetch(`/community/api/posts/${postId}/comments/`, {headers:{'X-CSRFToken':CSRF}})
-    .then(r=>r.json())
-    .then(comments=>{
-      loadedComments[postId]=true;
-      if(!comments.length){listEl.innerHTML='<div class="ic-loading">No comments yet. Be the first!</div>';return;}
-      const shown=comments.slice(0,5);
-      let html=shown.map(function(c){c.postId=postId;return buildCommentHtml(c);}).join('');
-      if(comments.length>5) html+=`<a href="/community/posts/${postId}/" class="ic-view-all">View all ${comments.length} comments →</a>`;
-      listEl.innerHTML=html;
-    })
-    .catch(()=>{listEl.innerHTML='<div class="ic-loading">Could not load comments.</div>';});
+  fetch('/community/api/posts/' + postId + '/comments/', {headers: {'X-CSRFToken': CSRF}})
+    .then(r => r.json()).then(comments => {
+      loadedComments[postId] = true;
+      if (!comments.length) { listEl.innerHTML = '<div class="ic-loading">No comments yet. Be the first!</div>'; return; }
+      const shown = comments.slice(0, 5);
+      let html = shown.map(function(c) { c.postId = postId; return buildCommentHtml(c); }).join('');
+      if (comments.length > 5) html += '<a href="/community/posts/'+postId+'/" class="ic-view-all">View all '+comments.length+' comments →</a>';
+      listEl.innerHTML = html;
+    }).catch(function() { listEl.innerHTML = '<div class="ic-loading">Could not load comments.</div>'; });
 }
 
 function submitComment(e, postId) {
   e.preventDefault();
-  const ta = document.getElementById('ic-text-'+postId);
+  const ta = document.getElementById('ic-text-' + postId);
   const content = ta.value.trim();
   if (!content) return;
-  fetch(`/community/api/posts/${postId}/comments/`, {
-    method:'POST', headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},
-    body: JSON.stringify({content})
-  }).then(r=>r.json()).then(data=>{
+  fetch('/community/api/posts/' + postId + '/comments/', {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({content: content})
+  }).then(r => r.json()).then(data => {
     ta.value = '';
-    const cc = document.getElementById('cc-'+postId);
-    if (cc) cc.textContent = parseInt(cc.textContent||0)+1;
-    const listEl = document.getElementById('ic-list-'+postId);
+    const cc = document.getElementById('cc-' + postId);
+    if (cc) cc.textContent = parseInt(cc.textContent || 0) + 1;
+    const listEl = document.getElementById('ic-list-' + postId);
     if (listEl) {
       const empty = listEl.querySelector('.ic-loading');
       if (empty) empty.remove();
-      listEl.insertAdjacentHTML('afterbegin', buildCommentHtml(Object.assign(data,{postId})));
-      loadedComments[postId]=true;
+      listEl.insertAdjacentHTML('afterbegin', buildCommentHtml(Object.assign(data, {postId: postId})));
+      loadedComments[postId] = true;
     }
-  }).catch(()=>{ window.location.href=`/community/posts/${postId}/`; });
+  }).catch(function() { window.location.href = '/community/posts/' + postId + '/'; });
 }
 
 function sharePost(path) {
   const url = location.origin + path;
-  if (navigator.clipboard) { navigator.clipboard.writeText(url).then(showToast); }
-  else { const ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast(); }
+  if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function() { showToast('Link copied!'); }); }
+  else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Link copied!'); }
 }
 function showToast(msg) {
   const t = document.getElementById('share-toast');
-  t.textContent = msg || 'Link copied!';
+  t.textContent = msg || 'Done!';
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2000);
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
 }
-function icLike(id,btn){fetch('/community/comments/'+id+'/like/',{method:'POST',headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'}}).then(r=>r.json()).then(d=>{btn.classList.toggle('active',d.liked);const el=document.getElementById('ic-lc-'+id);if(el)el.textContent=d.like_count;});}
-function icToggleReply(commentId,username){const box=document.getElementById('ic-rb-'+commentId);if(!box)return;const open=box.classList.toggle('open');if(open){const ta=document.getElementById('ic-ri-'+commentId);if(ta){ta.placeholder='Reply to '+username+'…';ta.focus();}}}
-function icSubmitReply(postId,parentId){const ta=document.getElementById('ic-ri-'+parentId);if(!ta)return;const content=ta.value.trim();if(!content)return;fetch('/community/api/posts/'+postId+'/comments/',{method:'POST',headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},body:JSON.stringify({content,parent:parentId})}).then(r=>r.json()).then(data=>{ta.value='';icToggleReply(parentId,'');const parentEl=document.getElementById('ic-comment-'+parentId);if(parentEl){let rep=parentEl.querySelector('.ic-replies');if(!rep){rep=document.createElement('div');rep.className='ic-replies';parentEl.querySelector('.ic-item-body').appendChild(rep);}rep.insertAdjacentHTML('beforeend','<div class="ic-item" style="padding:.375rem 0;"><div class="ic-item-av" style="width:22px;height:22px;">{{ user.username|slice:":1"|upper }}</div><div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">{{ user.username }}</span><span class="ic-item-time">just now</span></div><div class="ic-item-text">'+esc(content)+'</div></div></div>');}showToast('Reply posted!');}).catch(()=>showToast('Failed'));}
-function setSort(btn){document.querySelectorAll('.r-sort-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function icLike(id, btn) {
+  fetch('/community/comments/' + id + '/like/', {method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'}})
+    .then(r => r.json()).then(d => {
+      btn.classList.toggle('active', d.liked);
+      const el = document.getElementById('ic-lc-' + id);
+      if (el) el.textContent = d.like_count;
+    });
+}
+function icToggleReply(commentId, username) {
+  const box = document.getElementById('ic-rb-' + commentId);
+  if (!box) return;
+  const open = box.classList.toggle('open');
+  if (open) { const ta = document.getElementById('ic-ri-' + commentId); if (ta) { ta.placeholder = 'Reply to ' + username + '…'; ta.focus(); } }
+}
+function icSubmitReply(postId, parentId) {
+  const ta = document.getElementById('ic-ri-' + parentId);
+  if (!ta) return;
+  const content = ta.value.trim();
+  if (!content) return;
+  fetch('/community/api/posts/' + postId + '/comments/', {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({content: content, parent: parentId})
+  }).then(r => r.json()).then(data => {
+    ta.value = '';
+    icToggleReply(parentId, '');
+    const parentEl = document.getElementById('ic-comment-' + parentId);
+    if (parentEl) {
+      let rep = parentEl.querySelector('.ic-replies');
+      if (!rep) { rep = document.createElement('div'); rep.className = 'ic-replies'; parentEl.querySelector('.ic-item-body').appendChild(rep); }
+      rep.insertAdjacentHTML('beforeend', '<div class="ic-item" style="padding:.375rem 0;"><div class="ic-item-av" style="width:22px;height:22px;">{{ user.username|slice:":1"|upper }}</div><div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">{{ user.username }}</span><span class="ic-item-time">just now</span></div><div class="ic-item-text">' + esc(content) + '</div></div></div>');
+    }
+    showToast('Reply posted!');
+  }).catch(function() { showToast('Failed'); });
+}
 
-document.querySelectorAll('.post-text').forEach(el => {
+// Expand long posts
+document.querySelectorAll('.post-text').forEach(function(el) {
   if (el.scrollHeight <= el.clientHeight + 4) {
     const f = el.querySelector('.post-fade'); if (f) f.remove();
   } else {
     const f = el.querySelector('.post-fade');
-    if (f) f.addEventListener('click', ()=>{ el.classList.add('expanded'); f.remove(); });
+    if (f) f.addEventListener('click', function() { el.classList.add('expanded'); f.remove(); });
   }
 });
 </script>
