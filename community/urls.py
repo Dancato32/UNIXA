@@ -90,6 +90,7 @@ urlpatterns = [
     path('workspaces/users/search/', views.workspace_search_users, name='workspace_search_users'),
     path('workspaces/<uuid:ws_id>/', views.workspace_detail, name='workspace_detail'),
     path('workspaces/<uuid:ws_id>/chat/', views.workspace_send_message, name='workspace_send_message'),
+    path('workspaces/<uuid:ws_id>/chat/<uuid:msg_id>/delete/', views.workspace_delete_message, name='workspace_delete_message'),
     path('workspaces/<uuid:ws_id>/poll/', views.workspace_poll_messages, name='workspace_poll_messages'),
     path('workspaces/<uuid:ws_id>/files/', views.workspace_upload_file, name='workspace_upload_file'),
     path('workspaces/<uuid:ws_id>/tasks/', views.workspace_add_task, name='workspace_add_task'),

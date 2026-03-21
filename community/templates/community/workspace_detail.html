@@ -153,6 +153,13 @@
 .ws-msg-wrap.mine .ws-reply-btn{left:-36px;}
 .ws-msg-wrap.theirs .ws-reply-btn{right:-36px;}
 .ws-msg-wrap:hover .ws-reply-btn{display:flex;}
+/* Delete button — only on own messages */
+.ws-delete-btn{position:absolute;top:50%;transform:translateY(-50%);background:var(--s3);border:1px solid var(--b2);border-radius:50%;width:28px;height:28px;display:none;align-items:center;justify-content:center;cursor:pointer;color:#f87171;z-index:10;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.ws-delete-btn svg{width:12px;height:12px;}
+.ws-delete-btn:hover{background:#fee2e2;border-color:#f87171;}
+.ws-msg-wrap.mine .ws-delete-btn{left:-68px;}
+.ws-msg-wrap:hover .ws-delete-btn{display:flex;}
+.ws-msg-wrap.deleted .ws-msg-bubble{color:var(--t3)!important;font-style:italic;background:transparent!important;border:1px dashed var(--b2)!important;}
 /* Highlight flash on scroll-to */
 @keyframes msgHighlight{0%{background:rgba(99,102,241,.18);}100%{background:transparent;}}
 .ws-msg-highlight{animation:msgHighlight 1.2s ease-out forwards;}
@@ -573,6 +580,7 @@
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
           <button class="ws-reply-btn" onclick="setReply('{{ msg.id }}','{{ msg.sender.username|escapejs }}','{{ msg.content|truncatechars:60|escapejs }}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
+          {% if msg.sender == user %}<button class="ws-delete-btn" onclick="wsDeleteMsg('{{ msg.id }}', this)" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>{% endif %}
         </div>
         {% endif %}
         {% empty %}
@@ -1465,6 +1473,20 @@ function clearReply() {
   document.getElementById('ws-reply-bar').classList.remove('visible');
 }
 
+function wsDeleteMsg(msgId, btn) {
+  if (!confirm('Delete this message?')) return;
+  const wrap = btn.closest('.ws-msg-wrap');
+  fetch('/community/workspaces/' + WS_ID + '/chat/' + msgId + '/delete/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok && wrap) wrap.remove();
+    })
+    .catch(() => {});
+}
+
 function scrollToMsg(msgId) {
   const el = document.querySelector('[data-id="' + msgId + '"]');
   if (!el) return;
@@ -1845,6 +1867,7 @@ function appendWsMsg(data, isMine) {
   const replyBtnSender = isAI ? 'Nexa' : (isMine ? MY_USERNAME : (data.sender || '?'));
   const replyBtnText = (data.content || '').slice(0, 60).replace(/'/g, "\\'");
   const replyBtn = `<button class="ws-reply-btn" onclick="setReply('${data.id}','${esc(replyBtnSender)}','${replyBtnText}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>`;
+  const deleteBtn = isMine && !isAI ? `<button class="ws-delete-btn" onclick="wsDeleteMsg('${data.id}', this)" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>` : '';
 
   const senderLabel = isAI
     ? `<span class="ws-msg-sender nexa-sender">Nexa</span>`
@@ -1853,7 +1876,7 @@ function appendWsMsg(data, isMine) {
   const wrap = document.createElement('div');
   wrap.className = 'ws-msg-wrap ' + (isMine ? 'mine' : 'theirs');
   wrap.dataset.id = data.id;
-  wrap.innerHTML = `${avHtml}<div class="ws-msg-group">${senderLabel}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>${replyBtn}`;
+  wrap.innerHTML = `${avHtml}<div class="ws-msg-group">${senderLabel}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>${replyBtn}${deleteBtn}`;
   msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
 }

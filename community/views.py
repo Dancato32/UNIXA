@@ -1109,6 +1109,18 @@ def workspace_join(request, invite_code):
 
 @login_required
 @require_POST
+def workspace_delete_message(request, ws_id, msg_id):
+    ws, _ = _ws_member_or_404(request, ws_id)
+    try:
+        msg = ws.chat_messages.get(id=msg_id, sender=request.user)
+    except WorkspaceMessage.DoesNotExist:
+        return JsonResponse({'error': 'Not found or not yours'}, status=404)
+    msg.delete()
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
 def workspace_send_message(request, ws_id):
     ws, _ = _ws_member_or_404(request, ws_id)
     content = request.POST.get('content', '').strip()
