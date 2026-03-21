@@ -579,7 +579,7 @@
           <div class="ws-msg-group">
             <span class="ws-msg-sender nexa-sender">Nexa</span>
             {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}Nexa{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
-            <div class="ws-msg-bubble nexa-bubble nexa-render" data-raw="{{ msg.content|slice:"4:"|escapejs }}"></div>
+            <div class="ws-msg-bubble nexa-bubble nexa-render" data-raw="{{ msg.content|slice:"4:"|escape }}"></div>
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
           <button class="ws-reply-btn" onclick="setReply('{{ msg.id }}','Nexa','{{ msg.content|slice:"4:"|truncatechars:60|escapejs }}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
