@@ -462,38 +462,65 @@
     <!-- AI Tools panel -->
     <div class="ws-panel" id="panel-tools">
       <div class="panel-scroll">
-        <div style="padding:1rem 1rem .5rem;font-size:.8125rem;color:var(--t3);">All tools run in the context of this workspace. Outputs are shared with all members.</div>
+        <div style="padding:1rem 1rem .5rem;font-size:.8125rem;color:var(--t3);">These tools are scoped entirely to this workspace — no personal data, no outside accounts.</div>
         <div class="ai-tools-grid">
-          <a href="{% url 'ai_chat' %}" class="ai-tool-card" target="_blank">
-            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-            <div class="ai-tool-name">AI Tutor</div>
-            <div class="ai-tool-desc">Ask questions, get explanations, and learn together with AI assistance.</div>
-          </a>
-          <a href="{% url 'assignment_create' %}" class="ai-tool-card" target="_blank">
-            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-            <div class="ai-tool-name">Homework Solver</div>
-            <div class="ai-tool-desc">Upload assignments and get AI-generated solutions and structured answers.</div>
-          </a>
-          <a href="{% url 'essay_request' %}" class="ai-tool-card" target="_blank">
+
+          <!-- Ask Nexa -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="showPanel('ai-manager', document.getElementById('nav-ai-manager'))">
+            <div class="ai-tool-icon" style="background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.2));"><svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div class="ai-tool-name">Ask Nexa</div>
+            <div class="ai-tool-desc">Chat with your AI team member. Ask anything about this workspace, get advice, brainstorm ideas.</div>
+          </div>
+
+          <!-- Analyze Files -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="showPanel('ai-manager', document.getElementById('nav-ai-manager')); setTimeout(()=>{ const t=document.querySelector('.aim-tab[onclick*=brief]'); if(t) t.click(); },200)">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div class="ai-tool-name">Analyze Files</div>
+            <div class="ai-tool-desc">Upload workspace files and let Nexa extract requirements, deliverables, and generate a full project brief.</div>
+          </div>
+
+          <!-- Deep Search -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="wsOpenDeepSearch()">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <div class="ai-tool-name">Deep Search</div>
+            <div class="ai-tool-desc">Nexa searches the live web and returns a research brief with sources — like ChatGPT Deep Research.</div>
+          </div>
+
+          <!-- Generate Document -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="showPanel('ai-manager', document.getElementById('nav-ai-manager')); setTimeout(()=>{ const t=document.querySelector('[onclick*=autocomplete]'); if(t) t.click(); },200)">
             <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
-            <div class="ai-tool-name">Essay Writer</div>
-            <div class="ai-tool-desc">Generate well-researched essays on any topic with AI.</div>
-          </a>
-          <a href="{% url 'list_materials' %}" class="ai-tool-card" target="_blank">
-            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
-            <div class="ai-tool-name">Study Materials</div>
-            <div class="ai-tool-desc">Upload and manage PDFs, notes, and study resources.</div>
-          </a>
-          <a href="{% url 'dashboard' %}" class="ai-tool-card" target="_blank">
-            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-            <div class="ai-tool-name">Dashboard</div>
-            <div class="ai-tool-desc">Access your personal dashboard and all study tools.</div>
-          </a>
-          <a href="{% url 'assignment_list' %}" class="ai-tool-card" target="_blank">
+            <div class="ai-tool-name">Generate Document</div>
+            <div class="ai-tool-desc">Auto-generate a report, presentation outline, or executive summary from this workspace's tasks and files.</div>
+          </div>
+
+          <!-- Health Report -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="showPanel('ai-manager', document.getElementById('nav-ai-manager')); setTimeout(()=>{ const t=document.querySelector('[onclick*=health]'); if(t) t.click(); },200)">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <div class="ai-tool-name">Health Report</div>
+            <div class="ai-tool-desc">Get a live progress report — completion %, risk level, who's contributing, and what's blocking the team.</div>
+          </div>
+
+          <!-- Meeting Notes -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="showPanel('ai-manager', document.getElementById('nav-ai-manager')); setTimeout(()=>{ const t=document.querySelector('[onclick*=meeting]'); if(t) t.click(); },200)">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div class="ai-tool-name">Meeting Notes</div>
+            <div class="ai-tool-desc">Paste a meeting transcript and Nexa extracts the summary, decisions, and action items automatically.</div>
+          </div>
+
+          <!-- Schedule Meeting -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="wsQuickSchedule()">
+            <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="ai-tool-name">Schedule Meeting</div>
+            <div class="ai-tool-desc">Tell Nexa when to meet — it DMs every member and auto-starts the call when the time comes.</div>
+          </div>
+
+          <!-- Task Board -->
+          <div class="ai-tool-card" style="cursor:pointer;" onclick="showPanel('tasks', document.querySelectorAll('.ws-nav-item')[4])">
             <div class="ai-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-            <div class="ai-tool-name">Assignments</div>
-            <div class="ai-tool-desc">View and manage all your assignments and results.</div>
-          </a>
+            <div class="ai-tool-name">Task Board</div>
+            <div class="ai-tool-desc">View and manage all workspace tasks. Ask Nexa to break down work and assign tasks to members.</div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1430,6 +1457,22 @@ function copyInviteLink() {
 /* ── Mobile: override mobile-bar hamburger to open ws sidebar ── */
 const mobBtn = document.querySelector('.mob-btn');
 if (mobBtn) mobBtn.onclick = toggleWsSidebar;
+
+/* ── AI Tools panel helpers ── */
+function wsOpenDeepSearch() {
+  showPanel('chat', document.querySelector('.ws-nav-item'));
+  setTimeout(() => {
+    const input = document.getElementById('ws-chat-input');
+    if (input) { input.value = 'search '; input.focus(); }
+  }, 150);
+}
+function wsQuickSchedule() {
+  showPanel('chat', document.querySelector('.ws-nav-item'));
+  setTimeout(() => {
+    const input = document.getElementById('ws-chat-input');
+    if (input) { input.value = 'schedule a meeting in '; input.focus(); }
+  }, 150);
+}
 </script>
 
 <script>
