@@ -1534,20 +1534,21 @@ function wsSendMessage(e) {
     /\bsearch\b|\blook up\b|\bfind\b|\bresearch\b|\bdeep search\b/i.test(question)
   );
 
-  if (isAtAI) {
-    appendWsMsg({ id: 'local-' + Date.now(), sender: MY_USERNAME, sender_avatar: MY_AVATAR, content: content, created_at: new Date().toISOString(), is_mine: true }, true);
-  } else {
-    const fd = new FormData();
-    fd.append('content', content);
-    if (replyToId) fd.append('reply_to_id', replyToId);
-    fd.append('csrfmiddlewaretoken', CSRF);
-    fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd })
-      .then(r => r.json())
-      .then(data => appendWsMsg(data, true))
-      .catch(() => {});
-  }
+  // Always save the message to DB (so all members see it)
+  const fd = new FormData();
+  fd.append('content', content);
+  if (replyToId) fd.append('reply_to_id', replyToId);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => appendWsMsg(data, true))
+    .catch(() => {
+      // fallback: show locally if save failed
+      appendWsMsg({ id: 'local-' + Date.now(), sender: MY_USERNAME, sender_avatar: MY_AVATAR, content: content, created_at: new Date().toISOString(), is_mine: true }, true);
+    });
   clearReply();
 
+  if (!isAtAI) return;
   if (aiTyping) return;
   aiTyping = true;
 
@@ -1605,7 +1606,7 @@ function triggerNormalAIChat(question, isAtAI) {
   fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-    body: JSON.stringify({ message: question, source: isAtAI ? 'manager' : 'group' }),
+    body: JSON.stringify({ message: question, source: 'group' }),
   })
     .then(r => r.json())
     .then(data => {
@@ -1614,14 +1615,15 @@ function triggerNormalAIChat(question, isAtAI) {
       aiTyping = false;
       const reply = data.reply || '';
       if (!reply) return;
-      if (isAtAI) {
-        const msgs = document.getElementById('ws-chat-msgs');
-        const div = document.createElement('div');
-        div.className = 'ws-msg-wrap theirs';
-        div.innerHTML = `<div class="ws-msg-av nexa-av">NX</div><div class="ws-msg-group"><span class="ws-msg-sender nexa-sender">Nexa</span><div class="ws-msg-bubble nexa-bubble">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
-        msgs.appendChild(div);
-        msgs.scrollTop = msgs.scrollHeight;
-      }
+      // Reply is saved to DB and will appear via polling for all members.
+      // Render immediately for the sender only to avoid waiting for next poll tick.
+      const msgs = document.getElementById('ws-chat-msgs');
+      const div = document.createElement('div');
+      div.className = 'ws-msg-wrap theirs';
+      div.setAttribute('data-ai-instant', '1');
+      div.innerHTML = `<div class="ws-msg-av nexa-av">NX</div><div class="ws-msg-group"><span class="ws-msg-sender nexa-sender">Nexa</span><div class="ws-msg-bubble nexa-bubble">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
       if (data.actions && data.actions.length) {
         data.actions.forEach(action => {
           if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
@@ -1882,6 +1884,11 @@ function wsPoll() {
         if (seenIds.has(msg.id)) return;
         seenIds.add(msg.id);
         lastTs = msg.created_at;
+        // If this is an AI reply and we already rendered it instantly, remove the instant copy first
+        if (msg.content && msg.content.startsWith('[AI]')) {
+          const instant = document.querySelector('[data-ai-instant="1"]');
+          if (instant) instant.remove();
+        }
         if (!msg.is_mine) { appendWsMsg(msg, false); newCount++; }
       });
       if (newCount > 0) checkProactiveAI(newCount);
