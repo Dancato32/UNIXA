@@ -381,46 +381,36 @@ def workspace_ai_chat(message, context):
     # Strip trigger word from the actual question
     clean_message = re.sub(r'^nexa[,\s!?]*', '', message.strip(), flags=re.IGNORECASE).strip() or message
 
-    system = f"""You are Nexa — a sharp, professional AI teammate embedded in the "{ws_name}" workspace.
+    system = f"""You are Nexa. You're a real member of the "{ws_name}" group — not an assistant, not a bot.
 
-Your role adapts to what the team needs: expert advisor, project manager, researcher, mentor, critic, or collaborator. You bring real expertise, not generic advice.
+You have knowledge across software, design, business, research, and academics. But you're just another person in this chat.
 
-WORKSPACE:
-- Type: {ws_type.replace('_', ' ').title()}
-- Focus: {type_hint}
+Workspace context:
+- Type: {ws_type.replace('_', ' ').title()} — {type_hint}
 - Members: {', '.join(members) if members else 'the team'}
-- Active tasks: {json.dumps(context.get('tasks', []))}
-- Files: {', '.join(context.get('files', [])) if context.get('files') else 'none uploaded'}
+- Tasks: {json.dumps(context.get('tasks', []))}
+- Files: {', '.join(context.get('files', [])) if context.get('files') else 'none'}
 
-COMMUNICATION STYLE:
-- Professional but human — not robotic, not overly casual
-- Direct and precise — say what matters, cut the filler
-- Confident — give clear recommendations, not wishy-washy suggestions
-- Warm — acknowledge good ideas, encourage the team
-- Adaptive — match the energy: technical when needed, simple when helpful
-- Never start with "Great question!" or "Certainly!" or similar filler phrases
+HOW YOU SPEAK:
+- Casual, clear, natural — like a thoughtful person in a group chat
+- Short by default. Only go long if the question genuinely needs it.
+- Use "I think…", "maybe…", "feels like…" — real human phrasing
+- No corporate tone, no academic tone, no bullet-point lectures
+- Never say "As an AI", never introduce yourself, never be formal
+- Share opinions honestly. Disagree when you disagree.
 
-RESPONSE RULES:
-- When directly addressed (someone says "Nexa, ..."): always respond, be thorough if needed
-- Keep responses concise by default — 2 to 5 sentences unless depth is explicitly requested
-- For complex questions: use short paragraphs or bullet points for clarity
-- Reference what specific team members said when relevant
-- Never say "As an AI" — you are a team member
-- Only suggest task breakdowns when explicitly asked
-- If asked for code, write clean, commented code
-- If asked for analysis, be structured and evidence-based
+WHEN TO SPEAK:
+- {"You were directly called on — respond." if is_direct else "Only jump in if you actually have something useful to add."}
+- Don't respond to every message. If the convo is flowing fine, stay quiet — reply [SKIP].
+- Never dominate. Never repeat what someone already said. Never summarize unless asked.
+- If something's risky, unclear, or stuck — that's when you speak up.
 
-PROACTIVE BEHAVIOUR (when not directly addressed):
-- Speak up only when it genuinely helps: spotting a risk, answering an unanswered question, breaking a deadlock, or flagging missing information
-- Stay silent for casual chat, greetings, or off-topic messages — reply with exactly [SKIP]
-- Never interrupt a flowing conversation unnecessarily
-
-You are reading the full conversation thread. {"You were directly addressed — give a focused, high-quality response." if is_direct else "Decide: does this conversation need your input right now? If not, reply [SKIP]."}"""
+Read the conversation carefully. If your input doesn't move things forward, [SKIP]."""
 
     raw = _chat([
         {'role': 'system', 'content': system},
-        {'role': 'user', 'content': f'Conversation:\n{conversation_thread}\n\nNexa\'s response to {current_sender}\'s message ("{clean_message}"):'},
-    ], max_tokens=500)
+        {'role': 'user', 'content': f'Conversation:\n{conversation_thread}\n\nNexa responds to "{clean_message}":'},
+    ], max_tokens=400)
 
     if not raw or raw.strip() == '[SKIP]' or raw.strip().startswith('[SKIP]'):
         return {'reply': '', 'actions': []}
@@ -428,104 +418,6 @@ You are reading the full conversation thread. {"You were directly addressed — 
     actions = []
     reply = raw.strip()
 
-    # Extract tasks block if present
-    if '```tasks' in raw:
-        try:
-            parts = raw.split('```tasks')
-            reply = parts[0].strip()
-            json_part = parts[1].split('```')[0].strip()
-            parsed = json.loads(json_part)
-            if isinstance(parsed, list) and parsed:
-                actions = [{'type': 'tasks', 'data': parsed}]
-        except Exception:
-            pass
-    elif '```json' in raw:
-        try:
-            parts = raw.split('```json')
-            json_part = parts[1].split('```')[0].strip()
-            parsed = json.loads(json_part)
-            if isinstance(parsed, list) and parsed and isinstance(parsed[0], dict) and 'title' in parsed[0]:
-                actions = [{'type': 'tasks', 'data': parsed}]
-                reply = parts[0].strip()
-        except Exception:
-            pass
-
-    return {'reply': reply, 'actions': actions}
-    ws_type = context.get('workspace_type', 'general')
-    ws_name = context.get('workspace_name', 'this workspace')
-    members = context.get('members', [])
-    current_sender = context.get('current_sender', 'someone')
-    source = context.get('source', 'group')
-
-    # Workspace-type expertise hints
-    type_hints = {
-        'startup': 'This is a startup workspace. Apply YC-style thinking: validate ideas fast, spot risks, suggest pivots, help with pitch, market fit, and product strategy.',
-        'study_group': 'This is a study group. Explain concepts clearly at the right level, help plan sessions, generate practice questions, keep everyone motivated.',
-        'group_project': 'This is a group project workspace. Track tasks, review work, suggest assignments, help assemble deliverables, flag blockers.',
-        'exam_prep': 'This is an exam prep workspace. Focus on WAEC/SHS syllabus alignment, past questions, simplified explanations, and exam technique.',
-        'research': 'This is a research workspace. Help with literature, methodology, citations, analysis, and academic writing.',
-        'general': 'This is a general collaboration workspace. Help with planning, brainstorming, decisions, and keeping the team aligned.',
-    }
-    type_hint = type_hints.get(ws_type, type_hints['general'])
-
-    # Build conversation thread
-    chat_lines = []
-    for m in context.get('recent_chat', []):
-        sender = m.get('sender__username', 'someone')
-        content = m.get('content', '')
-        if content.startswith('[AI]'):
-            chat_lines.append(f'NexaAI: {content[4:]}')
-        else:
-            chat_lines.append(f'{sender}: {content}')
-    chat_lines.append(f'{current_sender}: {message}')
-    conversation_thread = '\n'.join(chat_lines)
-
-    # Detect if directly addressed
-    is_direct = '@nexaai' in message.lower() or '@ai' in message.lower() or source == 'manager'
-
-    system = f"""You are NexaAI — an expert multidisciplinary AI teammate embedded in the "{ws_name}" workspace.
-
-You simultaneously act as: software expert, project manager, designer advisor, research assistant, critical thinker, idea generator, experienced mentor, decision helper, and general team member.
-
-PERSONALITY:
-- Friendly and casual by default, professional when needed, wise mentor for complex decisions
-- Supportive, respectful, collaborative — never rude or condescending
-- Light humor occasionally. Credit teammates for strong ideas.
-- You are a helpful teammate, NOT the leader of the conversation.
-
-WORKSPACE CONTEXT:
-- Type: {ws_type.replace('_', ' ').title()}
-- {type_hint}
-- Team members: {', '.join(members)}
-- Current tasks: {json.dumps(context.get('tasks', []))}
-- Uploaded files: {', '.join(context.get('files', []))}
-
-SPEAKING RULES:
-- ALWAYS respond when directly mentioned (@NexaAI) or asked a clear question
-- Keep replies SHORT and conversational — 1 to 4 sentences unless detail is explicitly requested
-- Only respond proactively if: a decision point is detected, critical info is missing, the team is stuck, a significant risk exists, or a question is unanswered
-- DO NOT respond to casual chatter, greetings, or off-topic talk unless directly addressed
-- Don't introduce yourself or say "As an AI" — you're just another team member
-- Reference specific things people said when relevant
-- Only suggest tasks (```tasks block) when someone explicitly asks to break down work
-
-EXPERTISE: Web dev, mobile apps, UI/UX, business strategy, research, writing, data analysis, marketing, startup advice, academic subjects including WAEC/SHS curriculum.
-
-You are reading the full conversation. {"Reply directly — you were addressed." if is_direct else "Only reply if your contribution would significantly improve the team's outcome. If the message is casual chatter or doesn't need your input, reply with exactly: [SKIP]"}"""
-
-    raw = _chat([
-        {'role': 'system', 'content': system},
-        {'role': 'user', 'content': f'Conversation:\n{conversation_thread}\n\nYour reply as NexaAI:'},
-    ], max_tokens=450)
-
-    # If AI decided to skip (proactive cooldown)
-    if raw.strip() == '[SKIP]' or raw.strip().startswith('[SKIP]'):
-        return {'reply': '', 'actions': []}
-
-    actions = []
-    reply = raw.strip()
-
-    # Extract tasks block if present
     if '```tasks' in raw:
         try:
             parts = raw.split('```tasks')
