@@ -37,7 +37,9 @@
 <style>
 /* Override base page padding — workspace uses full height */
 .content-scroll{overflow:hidden!important;}
-.page{padding:0!important;max-width:100%!important;height:calc(100dvh - 48px);height:calc(100vh - 48px);}
+.page{padding:0!important;max-width:100%!important;height:calc(100dvh - 48px);height:calc(100vh - 48px);overflow:hidden!important;}
+/* Kill ALL horizontal scroll at every level */
+html,body,.shell,.main-area,.content-scroll,.page,.ws-shell,.ws-main,.ws-panel,.ws-panel.active{overflow-x:hidden!important;max-width:100vw;}
 @media(max-width:900px){
   .page{height:calc(100dvh - 52px - 54px)!important;max-height:calc(100dvh - 52px - 54px)!important;padding-bottom:0!important;overflow-x:hidden!important;}
   .ws-shell{height:100%;overflow:hidden;}
@@ -99,7 +101,7 @@
   .ws-hub-item-label{font-size:.6875rem;font-weight:600;text-align:center;color:var(--t2);}
 }
 /* ── Chat UI ── */
-.ws-chat-msgs{flex:1;overflow-y:auto;padding:.75rem 1rem;display:flex;flex-direction:column;gap:.125rem;scroll-behavior:smooth;opacity:0;transition:opacity .15s;}
+.ws-chat-msgs{flex:1;overflow-y:auto;overflow-x:hidden;padding:.75rem 1rem;display:flex;flex-direction:column;gap:.125rem;scroll-behavior:smooth;opacity:0;transition:opacity .15s;width:100%;box-sizing:border-box;}
 .ws-chat-input-area{padding:.625rem .875rem;border-top:1px solid var(--b1);flex-shrink:0;background:var(--s1);}
 .ws-chat-form{display:flex;gap:.5rem;align-items:center;background:var(--s3);border:1px solid var(--b2);border-radius:14px;padding:.4rem .5rem .4rem .75rem;transition:border-color .15s;}
 .ws-chat-form:focus-within{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.08);}
@@ -112,11 +114,11 @@
 .ws-attach-btn:hover{background:var(--s4);color:var(--t1);}
 .ws-attach-btn svg{width:16px;height:16px;}
 /* Message layout */
-.ws-msg-wrap{display:flex;align-items:flex-end;gap:.5rem;padding:.125rem 0;position:relative;}
+.ws-msg-wrap{display:flex;align-items:flex-end;gap:.5rem;padding:.125rem 0;position:relative;min-width:0;max-width:100%;}
 .ws-msg-wrap.mine{flex-direction:row-reverse;}
 .ws-msg-av{width:26px;height:26px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.5625rem;font-weight:700;flex-shrink:0;overflow:hidden;align-self:flex-end;}
 .ws-msg-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.ws-msg-group{display:flex;flex-direction:column;gap:.125rem;max-width:68%;}
+.ws-msg-group{display:flex;flex-direction:column;gap:.125rem;max-width:68%;min-width:0;overflow:hidden;}
 .mine .ws-msg-group{align-items:flex-end;}
 .theirs .ws-msg-group{align-items:flex-start;}
 .ws-msg-sender{font-size:.6875rem;color:var(--t3);padding:0 .375rem;font-weight:500;}
@@ -129,7 +131,7 @@
 .ws-date-divider{text-align:center;font-size:.6875rem;color:var(--t3);padding:.5rem 0;display:flex;align-items:center;gap:.5rem;margin:.25rem 0;}
 .ws-date-divider::before,.ws-date-divider::after{content:'';flex:1;height:1px;background:var(--b1);}
 /* Nexa AI bubble */
-.nexa-bubble{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.08))!important;border:1px solid rgba(99,102,241,.2)!important;color:var(--t1)!important;border-radius:4px 18px 18px 18px!important;}
+.nexa-bubble{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.08))!important;border:1px solid rgba(99,102,241,.2)!important;color:var(--t1)!important;border-radius:4px 18px 18px 18px!important;max-width:100%;overflow-x:hidden;word-break:break-word;}
 .nexa-av{background:linear-gradient(135deg,#6366f1,#8b5cf6)!important;color:#fff!important;font-size:.5rem!important;font-weight:800!important;letter-spacing:-.02em;}
 .nexa-sender{color:#818cf8!important;font-weight:600!important;}
 /* Textbook-style math inside Nexa bubbles */
@@ -139,10 +141,14 @@
   margin:.75em 0;
   overflow-x:auto;
   overflow-y:hidden;
+  max-width:100%;
+  scrollbar-width:none;
 }
+.nexa-bubble .katex-display::-webkit-scrollbar{display:none;}
 .nexa-bubble .katex-display > .katex{
   display:inline-block;
   text-align:center;
+  max-width:100%;
 }
 .nexa-bubble .katex{
   font-size:1.05em;
