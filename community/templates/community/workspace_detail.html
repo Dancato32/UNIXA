@@ -1683,14 +1683,14 @@ function wsSendMessage(e) {
           if (data.ok) {
             startMeetingCountdown(data.meeting_title, data.time_label, data.delay_seconds);
           } else {
-            triggerNormalAIChat(question, isAtAI);
+            triggerNormalAIChat(question, isAtAI, content);
           }
         })
         .catch(() => {
           const t = document.getElementById('ai-chat-typing');
           if (t) t.remove();
           aiTyping = false;
-          triggerNormalAIChat(question, isAtAI);
+          triggerNormalAIChat(question, isAtAI, content);
         });
     }, thinkDelay);
   } else if (looksLikeSearch) {
@@ -1704,15 +1704,15 @@ function wsSendMessage(e) {
       triggerDeepSearch(question, isAtAI);
     }, thinkDelay);
   } else {
-    setTimeout(() => triggerNormalAIChat(question, isAtAI), thinkDelay);
+    setTimeout(() => triggerNormalAIChat(question, isAtAI, content), thinkDelay);
   }
 }
 
-function triggerNormalAIChat(question, isAtAI) {
+function triggerNormalAIChat(question, isAtAI, originalContent) {
   fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-    body: JSON.stringify({ message: question, source: 'group' }),
+    body: JSON.stringify({ message: originalContent || question, source: 'group' }),
   })
     .then(r => r.json())
     .then(data => {
