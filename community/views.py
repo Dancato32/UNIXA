@@ -89,6 +89,7 @@ def community_home(request):
     # User's workspaces — guard against missing is_personal column before migration runs
     workspace_memberships = []
     personal_ws = None
+    nexa_ws = None
     last_workspace = None
     try:
         workspace_memberships = list(
@@ -100,7 +101,12 @@ def community_home(request):
             .order_by('-workspace__updated_at')[:6]
         )
         personal_ws = GroupWorkspace.objects.filter(
-            owner=request.user, is_personal=True, is_active=True
+            owner=request.user, is_personal=True, is_active=True,
+            workspace_type=GroupWorkspace.TYPE_GENERAL,
+        ).first()
+        nexa_ws = GroupWorkspace.objects.filter(
+            owner=request.user, is_personal=True, is_active=True,
+            workspace_type=GroupWorkspace.TYPE_NEXA,
         ).first()
         last_ws_member = (
             WorkspaceMember.objects.filter(
@@ -146,6 +152,7 @@ def community_home(request):
         'suggested_communities': suggested_communities,
         'workspace_memberships': workspace_memberships,
         'personal_ws': personal_ws,
+        'nexa_ws': nexa_ws,
         'last_workspace': last_workspace,
         'unread_msgs': unread_msgs,
         'workspace_type_choices': GroupWorkspace.TYPE_CHOICES,
@@ -981,6 +988,31 @@ def workspace_list(request):
     return render(request, 'community/workspace_list.html', {
         'memberships': memberships,
     })
+
+
+@login_required
+def nexa_workspace(request):
+    """Get or create the user's personal Nexa workspace and redirect to it."""
+    ws = GroupWorkspace.objects.filter(
+        owner=request.user,
+        workspace_type=GroupWorkspace.TYPE_NEXA,
+        is_personal=True,
+    ).first()
+    if not ws:
+        ws = GroupWorkspace.objects.create(
+            name='My Nexa Workspace',
+            description='Your personal AI-powered learning hub.',
+            workspace_type=GroupWorkspace.TYPE_NEXA,
+            privacy=GroupWorkspace.PRIVACY_PRIVATE,
+            owner=request.user,
+            is_personal=True,
+        )
+        WorkspaceMember.objects.create(
+            workspace=ws,
+            user=request.user,
+            role=WorkspaceMember.ROLE_OWNER,
+        )
+    return redirect('community:workspace_detail', ws_id=ws.id)
 
 
 @login_required

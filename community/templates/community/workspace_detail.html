@@ -362,10 +362,32 @@
     <div class="ws-sidebar-head">
       <div class="ws-sidebar-name">{{ ws.name }}</div>
       {% if ws.subject %}<div class="ws-sidebar-sub">{{ ws.subject }}</div>{% endif %}
-      <div style="margin-top:.25rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);">{% if ws.workspace_type == 'startup' %}🚀 Startup{% elif ws.workspace_type == 'study_group' %}📚 Study Group{% elif ws.workspace_type == 'group_project' %}📋 Group Project{% else %}🤝 General{% endif %}</div>
+      <div style="margin-top:.25rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);">{% if ws.workspace_type == 'startup' %}🚀 Startup{% elif ws.workspace_type == 'study_group' %}📚 Study Group{% elif ws.workspace_type == 'group_project' %}📋 Group Project{% elif ws.workspace_type == 'nexa' %}✨ Nexa Workspace{% else %}🤝 General{% endif %}</div>
     </div>
     <div class="ws-nav">
-      <div class="ws-nav-section">Workspace</div>
+      <div class="ws-nav-section">{% if ws.workspace_type == 'nexa' %}Your AI Hub{% else %}Workspace{% endif %}</div>
+      {% if ws.workspace_type == 'nexa' %}
+      <button class="ws-nav-item active" id="nav-nexa-tutor" onclick="showPanel('nexa-tutor',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI Tutor
+      </button>
+      <button class="ws-nav-item" id="nav-nexa-essay" onclick="showPanel('nexa-essay',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Essay Writer
+      </button>
+      <button class="ws-nav-item" id="nav-nexa-assignment" onclick="showPanel('nexa-assignment',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Assignments
+      </button>
+      <button class="ws-nav-item" id="nav-nexa-search" onclick="showPanel('nexa-search',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Deep Search
+      </button>
+      <button class="ws-nav-item" id="nav-nexa-files" onclick="showPanel('files',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        My Files
+      </button>
+      {% else %}
       <button class="ws-nav-item active" onclick="showPanel('chat',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Group Chat
@@ -394,6 +416,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Members
       </button>
+      {% endif %}{# end nexa else #}
       {% if is_owner %}
       <div class="ws-nav-section" style="margin-top:.5rem;">Settings</div>
       <form method="post" action="{% url 'community:workspace_delete' ws.id %}" onsubmit="return confirm('Delete this workspace? This cannot be undone.')">
@@ -1012,11 +1035,210 @@
   </div><!-- /ws-main -->
 </div><!-- /ws-shell -->
 
+<!-- ── Nexa Workspace Panels (injected after ws-shell for Nexa type) ── -->
+{% if ws.workspace_type == 'nexa' %}
+<script>
+// For Nexa workspaces, override the default active panel to nexa-tutor
+document.addEventListener('DOMContentLoaded', function() {
+  // Move nexa panels into ws-main
+  var wsMain = document.querySelector('.ws-main');
+  if (!wsMain) return;
+  ['nexa-tutor','nexa-essay','nexa-assignment','nexa-search'].forEach(function(id) {
+    var el = document.getElementById('panel-' + id);
+    if (el) wsMain.appendChild(el);
+  });
+  // Deactivate chat panel, activate nexa-tutor
+  document.querySelectorAll('.ws-panel').forEach(function(p){ p.classList.remove('active'); });
+  var tp = document.getElementById('panel-nexa-tutor');
+  if (tp) tp.classList.add('active');
+});
+</script>
+{% endif %}
+
 <!-- Mobile sidebar overlay -->
 <div class="mob-overlay" id="ws-mob-overlay" onclick="toggleWsSidebar()" style="display:none;"></div>
 
+<!-- ── Nexa Workspace Panels ── -->
+{% if ws.workspace_type == 'nexa' %}
+
+<!-- Nexa AI Tutor Panel -->
+<div class="ws-panel" id="panel-nexa-tutor" style="display:none;flex-direction:column;">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;background:linear-gradient(90deg,rgba(99,102,241,.08),transparent);">
+    <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div>
+      <div style="font-size:.875rem;font-weight:800;">Nexa AI Tutor</div>
+      <div style="font-size:.6875rem;color:var(--t3);">Your personal AI — ask anything, learn anything</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:.375rem;flex-wrap:wrap;">
+      <button class="aim-qp" onclick="nexaTutorPrompt('Explain this concept to me step by step')">📖 Explain</button>
+      <button class="aim-qp" onclick="nexaTutorPrompt('Quiz me on what I just learned')">❓ Quiz me</button>
+      <button class="aim-qp" onclick="nexaTutorPrompt('Summarize the key points')">📝 Summarize</button>
+      <button class="aim-qp" onclick="nexaTutorPrompt('Give me practice problems')">🎯 Practice</button>
+    </div>
+  </div>
+  <div class="aim-chat-msgs" id="nexa-tutor-msgs">
+    <div class="aim-msg ai">
+      <div class="aim-msg-av ai-av">N</div>
+      <div class="aim-bubble">
+        👋 Hey {{ user.username }}! I'm <strong>Nexa</strong>, your personal AI tutor.<br><br>
+        I can help you understand any topic, explain concepts, quiz you, summarize notes, solve problems, and much more.<br><br>
+        What would you like to learn today?
+      </div>
+    </div>
+  </div>
+  <div class="aim-chat-input-area">
+    <form class="aim-chat-form" onsubmit="nexaTutorSend(event)">
+      <input type="text" class="aim-chat-input" id="nexa-tutor-input" placeholder="Ask Nexa anything…" autocomplete="off">
+      <button type="submit" class="aim-send-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Nexa Essay Writer Panel -->
+<div class="ws-panel" id="panel-nexa-essay" style="display:none;flex-direction:column;">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
+    <div style="font-size:.875rem;font-weight:800;">✍️ Essay Writer</div>
+    <a href="{% url 'essay_request' %}" class="btn btn-primary btn-sm" style="margin-left:auto;">Open Full Editor →</a>
+  </div>
+  <div class="panel-scroll" style="padding:1rem;">
+    <div style="font-size:.8125rem;color:var(--t3);margin-bottom:1rem;">Generate a full essay with AI. For the full editor with formatting, export, and restyle — use the button above.</div>
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <div>
+        <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Essay Topic / Prompt</label>
+        <textarea id="nexa-essay-topic" rows="3" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.625rem .75rem;color:var(--t1);font-size:.875rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="e.g. The impact of social media on mental health…"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
+        <div>
+          <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Word Count</label>
+          <select id="nexa-essay-words" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;">
+            <option value="300">~300 words</option>
+            <option value="500" selected>~500 words</option>
+            <option value="800">~800 words</option>
+            <option value="1200">~1200 words</option>
+            <option value="2000">~2000 words</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Style</label>
+          <select id="nexa-essay-style" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;">
+            <option value="academic">Academic</option>
+            <option value="persuasive">Persuasive</option>
+            <option value="narrative">Narrative</option>
+            <option value="descriptive">Descriptive</option>
+            <option value="analytical">Analytical</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="nexaGenerateEssay()" id="nexa-essay-btn" style="justify-content:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+        Generate Essay
+      </button>
+      <div id="nexa-essay-result" style="margin-top:.5rem;"></div>
+    </div>
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--b1);">
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:.625rem;">Your Recent Essays</div>
+      <a href="{% url 'essay_request' %}" class="ws-card" style="text-decoration:none;">
+        <div class="ws-icon" style="font-size:1.125rem;">📄</div>
+        <div class="ws-info">
+          <div class="ws-name">Essay Manager</div>
+          <div class="ws-meta">View, edit, and export all your essays</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--t3);flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Nexa Assignment Panel -->
+<div class="ws-panel" id="panel-nexa-assignment" style="display:none;flex-direction:column;">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
+    <div style="font-size:.875rem;font-weight:800;">📋 Assignments</div>
+    <a href="{% url 'assignment_list' %}" class="btn btn-primary btn-sm" style="margin-left:auto;">Open Full Solver →</a>
+  </div>
+  <div class="panel-scroll" style="padding:1rem;">
+    <div style="font-size:.8125rem;color:var(--t3);margin-bottom:1rem;">Upload an assignment and let Nexa solve it with AI. For full upload, RAG, and document export — use the button above.</div>
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <div>
+        <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Paste Assignment Question</label>
+        <textarea id="nexa-assign-text" rows="5" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.625rem .75rem;color:var(--t1);font-size:.875rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Paste your assignment question or instructions here…"></textarea>
+      </div>
+      <div>
+        <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Subject (optional)</label>
+        <input id="nexa-assign-subject" type="text" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;box-sizing:border-box;" placeholder="e.g. Economics, Computer Science…">
+      </div>
+      <button class="btn btn-primary" onclick="nexaSolveAssignment()" id="nexa-assign-btn" style="justify-content:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+        Solve with Nexa
+      </button>
+      <div id="nexa-assign-result" style="margin-top:.5rem;"></div>
+    </div>
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--b1);">
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:.625rem;">Assignment Tools</div>
+      <a href="{% url 'assignment_list' %}" class="ws-card" style="text-decoration:none;margin-bottom:.5rem;">
+        <div class="ws-icon" style="font-size:1.125rem;">📁</div>
+        <div class="ws-info"><div class="ws-name">My Assignments</div><div class="ws-meta">View all past assignments and results</div></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--t3);flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a href="{% url 'assignment_create' %}" class="ws-card" style="text-decoration:none;">
+        <div class="ws-icon" style="font-size:1.125rem;">➕</div>
+        <div class="ws-info"><div class="ws-name">Upload Assignment</div><div class="ws-meta">Upload a file for full AI processing</div></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--t3);flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Nexa Deep Search Panel -->
+<div class="ws-panel" id="panel-nexa-search" style="display:none;flex-direction:column;">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
+    <div style="font-size:.875rem;font-weight:800;">🔍 Deep Search</div>
+    <div style="font-size:.75rem;color:var(--t3);margin-left:.25rem;">Live web research with AI synthesis</div>
+  </div>
+  <div class="panel-scroll" style="padding:1rem;">
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+      <input id="nexa-search-input" type="text" style="flex:1;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.625rem .875rem;color:var(--t1);font-size:.875rem;outline:none;" placeholder="Search anything — Nexa researches the web for you…">
+      <button class="btn btn-primary" onclick="nexaDeepSearch()" id="nexa-search-btn">Search</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1rem;">
+      <button class="aim-qp" onclick="nexaQuickSearch('Latest research on ')">📰 Latest research</button>
+      <button class="aim-qp" onclick="nexaQuickSearch('How does ')">❓ How does…</button>
+      <button class="aim-qp" onclick="nexaQuickSearch('Compare and contrast ')">⚖️ Compare</button>
+      <button class="aim-qp" onclick="nexaQuickSearch('Best practices for ')">✅ Best practices</button>
+    </div>
+    <div id="nexa-search-result"></div>
+  </div>
+</div>
+
+{% endif %}{# end nexa panels #}
+
 <!-- Mobile workspace bottom tab bar -->
 <nav class="ws-mob-tabs" id="ws-mob-tabs">
+  {% if ws.workspace_type == 'nexa' %}
+  <button class="ws-mob-tab active" id="wstab-nexa-tutor" onclick="wsMobTab('nexa-tutor',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Tutor
+  </button>
+  <button class="ws-mob-tab" id="wstab-nexa-essay" onclick="wsMobTab('nexa-essay',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Essay
+  </button>
+  <button class="ws-mob-tab" id="wstab-nexa-assignment" onclick="wsMobTab('nexa-assignment',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Assign
+  </button>
+  <button class="ws-mob-tab" id="wstab-nexa-search" onclick="wsMobTab('nexa-search',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Search
+  </button>
+  <button class="ws-mob-tab" id="wstab-files" onclick="wsMobTab('files',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    Files
+  </button>
+  {% else %}
   <button class="ws-mob-tab active" id="wstab-chat" onclick="wsMobTab('chat',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     Chat
@@ -1041,6 +1263,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     Hub
   </button>
+  {% endif %}
 </nav>
 
 <!-- Workspace Hub Bottom Sheet -->
@@ -2590,4 +2813,231 @@ function checkProactiveAI(newCount) {
     .catch(() => {});
 }
 </script>
+
+{% if ws.workspace_type == 'nexa' %}
+<script>
+/* ── Nexa Workspace JS ── */
+
+/* AI Tutor */
+let nexaTutorBusy = false;
+
+function nexaTutorSend(e) {
+  e.preventDefault();
+  const input = document.getElementById('nexa-tutor-input');
+  const msg = input.value.trim();
+  if (!msg || nexaTutorBusy) return;
+  input.value = '';
+  nexaAppendMsg(msg, 'user');
+  nexaTutorBusy = true;
+  nexaAppendTyping('nexa-tutor-msgs');
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ message: msg, source: 'nexa_tutor' }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      nexaRemoveTyping('nexa-tutor-msgs');
+      nexaTutorBusy = false;
+      nexaAppendMsg(data.reply || 'Sorry, I could not process that.', 'ai');
+    })
+    .catch(() => {
+      nexaRemoveTyping('nexa-tutor-msgs');
+      nexaTutorBusy = false;
+      nexaAppendMsg('Connection error. Please try again.', 'ai');
+    });
+}
+
+function nexaTutorPrompt(text) {
+  const input = document.getElementById('nexa-tutor-input');
+  if (input) { input.value = text; input.focus(); }
+  document.querySelector('#panel-nexa-tutor .aim-chat-form').dispatchEvent(new Event('submit'));
+}
+
+function nexaAppendMsg(content, role) {
+  const msgs = document.getElementById('nexa-tutor-msgs');
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.className = 'aim-msg ' + role;
+  const avHtml = role === 'ai'
+    ? '<div class="aim-msg-av ai-av">N</div>'
+    : `<div class="aim-msg-av">${MY_USERNAME.slice(0,1).toUpperCase()}</div>`;
+  div.innerHTML = avHtml + `<div class="aim-bubble">${esc(content).replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function nexaAppendTyping(containerId) {
+  const msgs = document.getElementById(containerId);
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.className = 'aim-msg ai';
+  div.id = 'nexa-typing-' + containerId;
+  div.innerHTML = '<div class="aim-msg-av ai-av">N</div><div class="aim-bubble" style="padding:.5rem .875rem;"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function nexaRemoveTyping(containerId) {
+  const t = document.getElementById('nexa-typing-' + containerId);
+  if (t) t.remove();
+}
+
+/* Essay Writer */
+function nexaGenerateEssay() {
+  const topic = (document.getElementById('nexa-essay-topic') || {}).value?.trim();
+  const type = (document.getElementById('nexa-essay-type') || {}).value || 'argumentative';
+  const words = (document.getElementById('nexa-essay-words') || {}).value || '500';
+  if (!topic) { alert('Please enter an essay topic.'); return; }
+
+  const btn = document.getElementById('nexa-essay-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  const result = document.getElementById('nexa-essay-result');
+  if (result) result.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Writing your essay…</div>';
+
+  const prompt = `Write a ${words}-word ${type} essay on the following topic: "${topic}". Format it with an introduction, body paragraphs, and conclusion. Use clear academic language.`;
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ message: prompt, source: 'nexa_essay' }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg> Generate Essay'; }
+      const reply = data.reply || '';
+      if (result) result.innerHTML = reply
+        ? `<div style="background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:1rem;font-size:.8125rem;line-height:1.7;white-space:pre-wrap;color:var(--t1);">${esc(reply)}<div style="margin-top:.75rem;display:flex;gap:.5rem;"><button class="btn btn-ghost btn-sm" onclick="nexaCopyText('nexa-essay-result')">📋 Copy</button></div></div>`
+        : '<div style="color:var(--red);font-size:.8125rem;">Failed to generate. Try again.</div>';
+    })
+    .catch(() => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Generate Essay'; }
+      if (result) result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Connection error. Try again.</div>';
+    });
+}
+
+/* Assignment Solver */
+function nexaSolveAssignment() {
+  const text = (document.getElementById('nexa-assign-text') || {}).value?.trim();
+  const subject = (document.getElementById('nexa-assign-subject') || {}).value?.trim() || '';
+  if (!text) { alert('Please paste your assignment question.'); return; }
+
+  const btn = document.getElementById('nexa-assign-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Solving…'; }
+  const result = document.getElementById('nexa-assign-result');
+  if (result) result.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Solving your assignment…</div>';
+
+  const prompt = subject
+    ? `Subject: ${subject}\n\nAssignment question:\n${text}\n\nPlease provide a thorough, well-structured answer with explanations.`
+    : `Assignment question:\n${text}\n\nPlease provide a thorough, well-structured answer with explanations.`;
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ message: prompt, source: 'nexa_assignment' }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg> Solve with Nexa'; }
+      const reply = data.reply || '';
+      if (result) result.innerHTML = reply
+        ? `<div style="background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:1rem;font-size:.8125rem;line-height:1.7;white-space:pre-wrap;color:var(--t1);">${esc(reply)}<div style="margin-top:.75rem;display:flex;gap:.5rem;"><button class="btn btn-ghost btn-sm" onclick="nexaCopyText('nexa-assign-result')">📋 Copy</button></div></div>`
+        : '<div style="color:var(--red);font-size:.8125rem;">Failed to solve. Try again.</div>';
+    })
+    .catch(() => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Solve with Nexa'; }
+      if (result) result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Connection error. Try again.</div>';
+    });
+}
+
+/* Deep Search (Nexa panel) */
+function nexaDeepSearch() {
+  const input = document.getElementById('nexa-search-input');
+  const query = input ? input.value.trim() : '';
+  if (!query) { alert('Please enter a search query.'); return; }
+
+  const btn = document.getElementById('nexa-search-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Searching…'; }
+  const result = document.getElementById('nexa-search-result');
+  if (result) result.innerHTML = '<div class="nexa-search-searching"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Searching the web…</div>';
+
+  fetch('/community/workspaces/' + WS_ID + '/ai/deep-search/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ query }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Search'; }
+      if (data.ok && data.result) {
+        nexaRenderSearchCard(data.result, result);
+      } else {
+        if (result) result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Search failed. Try again.</div>';
+      }
+    })
+    .catch(() => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Search'; }
+      if (result) result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Connection error. Try again.</div>';
+    });
+}
+
+function nexaQuickSearch(prefix) {
+  const input = document.getElementById('nexa-search-input');
+  if (input) { input.value = prefix; input.focus(); }
+}
+
+function nexaRenderSearchCard(r, container) {
+  const sources = (r.sources || []).slice(0, 5);
+  const findings = (r.key_findings || []).slice(0, 6);
+  const followups = (r.follow_up_questions || []).slice(0, 3);
+
+  const sourcesHtml = sources.map(s => `
+    <a class="nexa-source" href="${esc(s.url || '#')}" target="_blank" rel="noopener">
+      <div class="nexa-source-dot"></div>
+      <div class="nexa-source-info">
+        <div class="nexa-source-title">${esc(s.title || s.url || 'Source')}</div>
+        ${s.snippet ? `<div class="nexa-source-snippet">${esc(s.snippet)}</div>` : ''}
+      </div>
+    </a>`).join('');
+
+  const findingsHtml = findings.map(f => `<div class="nexa-finding">${esc(f)}</div>`).join('');
+  const followupsHtml = followups.map(q =>
+    `<button class="nexa-followup" onclick="nexaQuickSearch(${JSON.stringify(q)})">${esc(q)}</button>`
+  ).join('');
+
+  if (container) container.innerHTML = `
+    <div class="nexa-search-card">
+      <div class="nexa-search-header">
+        <div class="nexa-search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div><div class="nexa-search-title">Deep Search Results</div><div class="nexa-search-query">${esc(r.search_query || '')}</div></div>
+      </div>
+      <div class="nexa-search-summary">${esc(r.summary || '')}</div>
+      ${findings.length ? `<div class="nexa-findings"><div class="nexa-findings-title">Key Findings</div>${findingsHtml}</div>` : ''}
+      ${sources.length ? `<div class="nexa-sources"><div class="nexa-findings-title" style="margin-bottom:.375rem;">Sources</div>${sourcesHtml}</div>` : ''}
+      ${followups.length ? `<div><div class="nexa-findings-title" style="margin-bottom:.375rem;">Explore Further</div><div class="nexa-followups">${followupsHtml}</div></div>` : ''}
+    </div>`;
+}
+
+/* Utility: copy text from a container */
+function nexaCopyText(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const text = el.innerText || el.textContent;
+  navigator.clipboard && navigator.clipboard.writeText(text).then(() => {
+    if (typeof showUXToast === 'function') showUXToast('Copied to clipboard');
+  });
+}
+
+/* Enter key for tutor input */
+document.getElementById('nexa-tutor-input') && document.getElementById('nexa-tutor-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.querySelector('#panel-nexa-tutor .aim-chat-form').dispatchEvent(new Event('submit')); }
+});
+
+/* Enter key for search input */
+document.getElementById('nexa-search-input') && document.getElementById('nexa-search-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') nexaDeepSearch();
+});
+</script>
+{% endif %}
 {% endblock %}

@@ -126,6 +126,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Create Workspace
       </button>
+      <a href="{% url 'community:nexa_workspace' %}" class="qa-btn" style="background:linear-gradient(135deg,#0d0d1a,#12122a);border-color:rgba(99,102,241,.4);color:#c4b5fd;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Open Nexa
+      </a>
       <a href="{% url 'community:workspace_list' %}" class="qa-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         My Workspaces
@@ -211,7 +215,30 @@
     </div>
     {% endif %}
 
-    <!-- My Workspaces -->
+    <!-- Nexa Workspace -->
+    {% if nexa_ws %}
+    <div style="margin-bottom:1.25rem;">
+      <div class="sec-head"><span class="sec-title">Nexa Workspace</span></div>
+      <a href="{% url 'community:workspace_detail' ws_id=nexa_ws.id %}" class="ws-card" style="background:linear-gradient(135deg,#0d0d1a,#12122a);border-color:rgba(99,102,241,.3);">
+        <div class="ws-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:1.125rem;">✨</div>
+        <div class="ws-info">
+          <div class="ws-name" style="color:#c4b5fd;">{{ nexa_ws.name }}</div>
+          <div class="ws-meta" style="color:#6b7280;">AI Tutor · Essay · Assignments · Search</div>
+        </div>
+        <span class="pulse-dot" style="background:#818cf8;"></span>
+      </a>
+    </div>
+    {% else %}
+    <div style="margin-bottom:1.25rem;">
+      <a href="{% url 'community:nexa_workspace' %}" class="ws-card" style="background:linear-gradient(135deg,#0d0d1a,#12122a);border-color:rgba(99,102,241,.3);">
+        <div class="ws-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:1.125rem;">✨</div>
+        <div class="ws-info">
+          <div class="ws-name" style="color:#c4b5fd;">Open Nexa Workspace</div>
+          <div class="ws-meta" style="color:#6b7280;">Your personal AI hub</div>
+        </div>
+      </a>
+    </div>
+    {% endif %}    <!-- My Workspaces -->
     {% if workspace_memberships %}
     <div style="margin-bottom:1.25rem;" id="panel-workspaces">
       <div class="sec-head collapsible-head" onclick="togglePanel('workspaces')">
