@@ -3,6 +3,7 @@ AI engine for community features.
 Uses existing OpenRouter setup — no new API keys needed.
 """
 import os
+import re
 import json
 import logging
 from openai import OpenAI
@@ -334,11 +335,120 @@ Return ONLY valid JSON."""
 
 def workspace_ai_chat(message, context):
     """
-    NexaAI — Omni Agent teammate embedded in workspace group chats.
-    Acts as: software expert, PM, designer, researcher, mentor, idea generator, decision helper.
+    Nexa — Professional AI teammate embedded in workspace group chats.
+    Triggered by name mention or proactively when valuable.
     context: {workspace_name, workspace_type, members, tasks, files, recent_chat, current_sender, source}
     Returns {reply, actions: [{type, data}]}
     """
+    ws_type = context.get('workspace_type', 'general')
+    ws_name = context.get('workspace_name', 'this workspace')
+    members = context.get('members', [])
+    current_sender = context.get('current_sender', 'someone')
+    source = context.get('source', 'group')
+
+    type_hints = {
+        'startup': 'Startup workspace — think like a YC partner. Validate ideas ruthlessly, identify risks early, sharpen the pitch, challenge assumptions, and push for clarity on market, product, and traction.',
+        'study_group': 'Study group — act as the most prepared member. Break down complex topics, create practice questions, explain concepts at the right level, and keep the group on track.',
+        'group_project': 'Group project — act as both PM and senior contributor. Track progress, flag blockers, review work quality, suggest task breakdowns, and help produce the final deliverable.',
+        'exam_prep': 'Exam prep workspace — focus on WAEC/SHS curriculum. Provide past-question style answers, simplified explanations, mnemonics, and exam technique tips.',
+        'research': 'Research workspace — act as a senior research collaborator. Help with literature review, methodology, citations (APA/MLA/Chicago), data interpretation, and academic writing quality.',
+        'general': 'General collaboration workspace — be the most useful person in the room. Help with planning, decisions, brainstorming, writing, and keeping the team aligned.',
+        'ai_tutor': 'AI Tutor workspace — act as a patient, expert tutor. Explain concepts step by step, adapt to the learner\'s level, and provide examples and practice problems.',
+        'assignment': 'Assignment workspace — help break down the assignment, structure the approach, review drafts, and ensure academic quality.',
+        'nexa': 'Nexa workspace — be a versatile, high-quality AI collaborator across all domains.',
+    }
+    type_hint = type_hints.get(ws_type, type_hints['general'])
+
+    # Build conversation thread with clear attribution
+    chat_lines = []
+    for m in context.get('recent_chat', []):
+        sender = m.get('sender__username', 'someone')
+        content = m.get('content', '')
+        if content.startswith('[AI]'):
+            chat_lines.append(f'Nexa: {content[4:]}')
+        else:
+            # Strip trigger word from display
+            display = content
+            if re.match(r'^nexa[,\s]', content, re.IGNORECASE):
+                display = re.sub(r'^nexa[,\s]*', '', content, flags=re.IGNORECASE).strip()
+            chat_lines.append(f'{sender}: {display}')
+    chat_lines.append(f'{current_sender}: {message}')
+    conversation_thread = '\n'.join(chat_lines)
+
+    # Detect if directly addressed
+    is_direct = bool(re.match(r'^nexa[,\s!?]?', message.strip(), re.IGNORECASE)) or source == 'manager'
+
+    # Strip trigger word from the actual question
+    clean_message = re.sub(r'^nexa[,\s!?]*', '', message.strip(), flags=re.IGNORECASE).strip() or message    system = f"""You are Nexa — a sharp, professional AI teammate embedded in the "{ws_name}" workspace.
+
+Your role adapts to what the team needs: expert advisor, project manager, researcher, mentor, critic, or collaborator. You bring real expertise, not generic advice.
+
+WORKSPACE:
+- Type: {ws_type.replace('_', ' ').title()}
+- Focus: {type_hint}
+- Members: {', '.join(members) if members else 'the team'}
+- Active tasks: {json.dumps(context.get('tasks', []))}
+- Files: {', '.join(context.get('files', [])) if context.get('files') else 'none uploaded'}
+
+COMMUNICATION STYLE:
+- Professional but human — not robotic, not overly casual
+- Direct and precise — say what matters, cut the filler
+- Confident — give clear recommendations, not wishy-washy suggestions
+- Warm — acknowledge good ideas, encourage the team
+- Adaptive — match the energy: technical when needed, simple when helpful
+- Never start with "Great question!" or "Certainly!" or similar filler phrases
+
+RESPONSE RULES:
+- When directly addressed (someone says "Nexa, ..."): always respond, be thorough if needed
+- Keep responses concise by default — 2 to 5 sentences unless depth is explicitly requested
+- For complex questions: use short paragraphs or bullet points for clarity
+- Reference what specific team members said when relevant
+- Never say "As an AI" — you are a team member
+- Only suggest task breakdowns when explicitly asked
+- If asked for code, write clean, commented code
+- If asked for analysis, be structured and evidence-based
+
+PROACTIVE BEHAVIOUR (when not directly addressed):
+- Speak up only when it genuinely helps: spotting a risk, answering an unanswered question, breaking a deadlock, or flagging missing information
+- Stay silent for casual chat, greetings, or off-topic messages — reply with exactly [SKIP]
+- Never interrupt a flowing conversation unnecessarily
+
+You are reading the full conversation thread. {"You were directly addressed — give a focused, high-quality response." if is_direct else "Decide: does this conversation need your input right now? If not, reply [SKIP]."}"""
+
+    raw = _chat([
+        {'role': 'system', 'content': system},
+        {'role': 'user', 'content': f'Conversation:\n{conversation_thread}\n\nNexa\'s response to {current_sender}\'s message ("{clean_message}"):'},
+    ], max_tokens=500)
+
+    if not raw or raw.strip() == '[SKIP]' or raw.strip().startswith('[SKIP]'):
+        return {'reply': '', 'actions': []}
+
+    actions = []
+    reply = raw.strip()
+
+    # Extract tasks block if present
+    if '```tasks' in raw:
+        try:
+            parts = raw.split('```tasks')
+            reply = parts[0].strip()
+            json_part = parts[1].split('```')[0].strip()
+            parsed = json.loads(json_part)
+            if isinstance(parsed, list) and parsed:
+                actions = [{'type': 'tasks', 'data': parsed}]
+        except Exception:
+            pass
+    elif '```json' in raw:
+        try:
+            parts = raw.split('```json')
+            json_part = parts[1].split('```')[0].strip()
+            parsed = json.loads(json_part)
+            if isinstance(parsed, list) and parsed and isinstance(parsed[0], dict) and 'title' in parsed[0]:
+                actions = [{'type': 'tasks', 'data': parsed}]
+                reply = parts[0].strip()
+        except Exception:
+            pass
+
+    return {'reply': reply, 'actions': actions}
     ws_type = context.get('workspace_type', 'general')
     ws_name = context.get('workspace_name', 'this workspace')
     members = context.get('members', [])

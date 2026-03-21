@@ -97,31 +97,69 @@
   .ws-hub-item-icon{width:36px;height:36px;border-radius:10px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:1.125rem;}
   .ws-hub-item-label{font-size:.6875rem;font-weight:600;text-align:center;color:var(--t2);}
 }
-/* Chat */
-.ws-chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.375rem;}
-.ws-chat-input-area{padding:.75rem 1rem;border-top:1px solid var(--b1);flex-shrink:0;}
-.ws-chat-form{display:flex;gap:.5rem;align-items:center;background:var(--s3);border:1px solid var(--b2);border-radius:24px;padding:.5rem .75rem;}
-.ws-chat-form:focus-within{border-color:var(--b3);}
-.ws-chat-input{flex:1;background:none;border:none;color:var(--t1);font-size:.875rem;outline:none;}
+/* ── Chat UI ── */
+.ws-chat-msgs{flex:1;overflow-y:auto;padding:.75rem 1rem;display:flex;flex-direction:column;gap:.125rem;scroll-behavior:smooth;}
+.ws-chat-input-area{padding:.625rem .875rem;border-top:1px solid var(--b1);flex-shrink:0;background:var(--s1);}
+.ws-chat-form{display:flex;gap:.5rem;align-items:center;background:var(--s3);border:1px solid var(--b2);border-radius:14px;padding:.4rem .5rem .4rem .75rem;transition:border-color .15s;}
+.ws-chat-form:focus-within{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.08);}
+.ws-chat-input{flex:1;background:none;border:none;color:var(--t1);font-size:.875rem;outline:none;padding:.25rem 0;}
 .ws-chat-input::placeholder{color:var(--t3);}
-.ws-send-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--white);color:#000;border:none;border-radius:50%;flex-shrink:0;cursor:pointer;}
-.ws-send-btn:hover{background:#e8e8e8;}
+.ws-send-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--white);color:#000;border:none;border-radius:10px;flex-shrink:0;cursor:pointer;transition:all .15s;}
+.ws-send-btn:hover{background:#e8e8e8;transform:scale(1.05);}
 .ws-send-btn svg{width:14px;height:14px;}
-.ws-attach-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);border-radius:50%;cursor:pointer;}
+.ws-attach-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t3);border-radius:8px;cursor:pointer;transition:all .15s;}
 .ws-attach-btn:hover{background:var(--s4);color:var(--t1);}
 .ws-attach-btn svg{width:16px;height:16px;}
-.ws-msg-wrap{display:flex;align-items:flex-end;gap:.5rem;}
+/* Message layout */
+.ws-msg-wrap{display:flex;align-items:flex-end;gap:.5rem;padding:.125rem 0;position:relative;}
 .ws-msg-wrap.mine{flex-direction:row-reverse;}
-.ws-msg-av{width:26px;height:26px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.ws-msg-av{width:26px;height:26px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.5625rem;font-weight:700;flex-shrink:0;overflow:hidden;align-self:flex-end;}
 .ws-msg-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .ws-msg-group{display:flex;flex-direction:column;gap:.125rem;max-width:68%;}
 .mine .ws-msg-group{align-items:flex-end;}
 .theirs .ws-msg-group{align-items:flex-start;}
-.ws-msg-sender{font-size:.6875rem;color:var(--t3);padding:0 .25rem;}
-.ws-msg-bubble{padding:.5rem .875rem;border-radius:18px;font-size:.875rem;line-height:1.55;word-break:break-word;}
+.ws-msg-sender{font-size:.6875rem;color:var(--t3);padding:0 .375rem;font-weight:500;}
+/* Bubbles */
+.ws-msg-bubble{padding:.5rem .875rem;border-radius:18px;font-size:.875rem;line-height:1.6;word-break:break-word;position:relative;}
 .mine .ws-msg-bubble{background:var(--white);color:#000;border-radius:18px 18px 4px 18px;}
 .theirs .ws-msg-bubble{background:var(--s3);color:var(--t1);border-radius:18px 18px 18px 4px;}
-.ws-msg-time{font-size:.625rem;color:var(--t3);padding:0 .25rem;}
+.ws-msg-time{font-size:.5625rem;color:var(--t3);padding:0 .375rem;letter-spacing:.01em;}
+/* Date divider */
+.ws-date-divider{text-align:center;font-size:.6875rem;color:var(--t3);padding:.5rem 0;display:flex;align-items:center;gap:.5rem;margin:.25rem 0;}
+.ws-date-divider::before,.ws-date-divider::after{content:'';flex:1;height:1px;background:var(--b1);}
+/* Nexa AI bubble */
+.nexa-bubble{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.08))!important;border:1px solid rgba(99,102,241,.2)!important;color:var(--t1)!important;border-radius:4px 18px 18px 18px!important;}
+.nexa-av{background:linear-gradient(135deg,#6366f1,#8b5cf6)!important;color:#fff!important;font-size:.5rem!important;font-weight:800!important;letter-spacing:-.02em;}
+.nexa-sender{color:#818cf8!important;font-weight:600!important;}
+/* Reply quote bubble */
+.ws-reply-quote{background:rgba(99,102,241,.08);border-left:3px solid rgba(99,102,241,.5);border-radius:0 8px 8px 0;padding:.3rem .625rem;margin-bottom:.25rem;cursor:pointer;max-width:100%;transition:background .15s;}
+.ws-reply-quote:hover{background:rgba(99,102,241,.14);}
+.ws-reply-quote-sender{font-size:.6875rem;font-weight:700;color:#818cf8;margin-bottom:.1rem;}
+.ws-reply-quote-text{font-size:.75rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
+.mine .ws-reply-quote{border-left-color:rgba(165,180,252,.7);background:rgba(165,180,252,.1);}
+/* Reply bar above input */
+.ws-reply-bar{display:none;align-items:center;gap:.625rem;padding:.5rem .875rem;background:var(--s2);border-bottom:1px solid var(--b1);}
+.ws-reply-bar.visible{display:flex;}
+.ws-reply-bar-line{width:3px;height:34px;background:linear-gradient(180deg,#6366f1,#8b5cf6);border-radius:2px;flex-shrink:0;}
+.ws-reply-bar-info{flex:1;min-width:0;}
+.ws-reply-bar-sender{font-size:.6875rem;font-weight:700;color:#818cf8;margin-bottom:.1rem;}
+.ws-reply-bar-text{font-size:.75rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ws-reply-bar-close{background:none;border:none;color:var(--t3);font-size:1.25rem;cursor:pointer;padding:.125rem .5rem;line-height:1;border-radius:6px;flex-shrink:0;}
+.ws-reply-bar-close:hover{background:var(--s4);color:var(--t1);}
+/* Reply button on hover */
+.ws-reply-btn{position:absolute;top:50%;transform:translateY(-50%);background:var(--s3);border:1px solid var(--b2);border-radius:50%;width:28px;height:28px;display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);z-index:10;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.ws-reply-btn svg{width:12px;height:12px;}
+.ws-reply-btn:hover{background:var(--s4);color:var(--t1);border-color:var(--b3);}
+.ws-msg-wrap.mine .ws-reply-btn{left:-36px;}
+.ws-msg-wrap.theirs .ws-reply-btn{right:-36px;}
+.ws-msg-wrap:hover .ws-reply-btn{display:flex;}
+/* Highlight flash on scroll-to */
+@keyframes msgHighlight{0%{background:rgba(99,102,241,.18);}100%{background:transparent;}}
+.ws-msg-highlight{animation:msgHighlight 1.2s ease-out forwards;}
+@media(max-width:900px){
+  .ws-reply-btn{display:flex!important;opacity:0;transition:opacity .15s;}
+  .ws-msg-wrap:active .ws-reply-btn,.ws-msg-wrap.swiping .ws-reply-btn{opacity:1;}
+}
 /* Files */
 .ws-files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;padding:1rem;}
 .ws-file-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.875rem;display:flex;flex-direction:column;gap:.5rem;transition:border-color .15s;}
@@ -174,32 +212,6 @@
   .task-board{grid-template-columns:1fr;}
   .ai-tools-grid{grid-template-columns:1fr 1fr;}
   .ws-files-grid{grid-template-columns:1fr 1fr;}
-}
-/* Reply quote bubble */
-.ws-reply-quote{background:rgba(99,102,241,.1);border-left:3px solid #818cf8;border-radius:6px;padding:.3rem .625rem;margin-bottom:.25rem;cursor:pointer;max-width:100%;}
-.ws-reply-quote-sender{font-size:.6875rem;font-weight:700;color:#818cf8;margin-bottom:.1rem;}
-.ws-reply-quote-text{font-size:.75rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;}
-.mine .ws-reply-quote{border-left-color:#a5b4fc;background:rgba(165,180,252,.12);}
-/* Reply bar above input */
-.ws-reply-bar{display:none;align-items:center;gap:.625rem;padding:.5rem .875rem;background:var(--s3);border-top:1px solid var(--b2);border-bottom:1px solid var(--b2);}
-.ws-reply-bar.visible{display:flex;}
-.ws-reply-bar-line{width:3px;height:32px;background:#818cf8;border-radius:2px;flex-shrink:0;}
-.ws-reply-bar-info{flex:1;min-width:0;}
-.ws-reply-bar-sender{font-size:.6875rem;font-weight:700;color:#818cf8;}
-.ws-reply-bar-text{font-size:.75rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ws-reply-bar-close{background:none;border:none;color:var(--t3);font-size:1.125rem;cursor:pointer;padding:.125rem .375rem;line-height:1;flex-shrink:0;}
-.ws-reply-bar-close:hover{color:var(--t1);}
-/* Swipe / hover reply button */
-.ws-msg-wrap{position:relative;}
-.ws-reply-btn{position:absolute;top:50%;transform:translateY(-50%);background:var(--s4);border:none;border-radius:50%;width:28px;height:28px;display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);z-index:10;transition:background .15s;}
-.ws-reply-btn svg{width:13px;height:13px;}
-.ws-reply-btn:hover{background:var(--s5);color:var(--t1);}
-.ws-msg-wrap.mine .ws-reply-btn{left:-36px;}
-.ws-msg-wrap.theirs .ws-reply-btn{right:-36px;}
-.ws-msg-wrap:hover .ws-reply-btn{display:flex;}
-@media(max-width:900px){
-  .ws-reply-btn{display:flex!important;opacity:0;transition:opacity .15s;}
-  .ws-msg-wrap:active .ws-reply-btn,.ws-msg-wrap.swiping .ws-reply-btn{opacity:1;}
 }
 /* Call panel */
 @keyframes callpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
@@ -524,7 +536,7 @@
         </div>
         <div class="nexa-banner-text">
           <span class="nexa-name">Nexa</span>
-          <span class="nexa-status"><span class="nexa-dot"></span>Active in this workspace</span>
+          <span class="nexa-status"><span class="nexa-dot"></span>Active · say "Nexa, ..." to ask me anything</span>
         </div>
         <button class="nexa-dismiss" onclick="document.getElementById('nexa-banner').style.display='none'" title="Dismiss">×</button>
       </div>
@@ -533,14 +545,14 @@
         {% for msg in messages_list %}
         {% if msg.content|slice:":4" == "[AI]" %}
         <div class="ws-msg-wrap theirs" data-id="{{ msg.id }}">
-          <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div>
+          <div class="ws-msg-av nexa-av">NX</div>
           <div class="ws-msg-group">
-            <span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span>
-            {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}NexaAI{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
-            <div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">{{ msg.content|slice:"4:" }}</div>
+            <span class="ws-msg-sender nexa-sender">Nexa</span>
+            {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}Nexa{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
+            <div class="ws-msg-bubble nexa-bubble">{{ msg.content|slice:"4:" }}</div>
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
-          <button class="ws-reply-btn" onclick="setReply('{{ msg.id }}','NexaAI','{{ msg.content|slice:"4:"|truncatechars:60|escapejs }}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
+          <button class="ws-reply-btn" onclick="setReply('{{ msg.id }}','Nexa','{{ msg.content|slice:"4:"|truncatechars:60|escapejs }}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
         </div>
         {% else %}
         <div class="ws-msg-wrap {% if msg.sender == user %}mine{% else %}theirs{% endif %}" data-id="{{ msg.id }}">
@@ -549,7 +561,7 @@
           </div>
           <div class="ws-msg-group">
             {% if msg.sender != user %}<span class="ws-msg-sender">{{ msg.sender.username }}</span>{% endif %}
-            {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}NexaAI{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
+            {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}Nexa{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
             {% if msg.media %}
             <div class="ws-msg-bubble" style="padding:.375rem .625rem;">
               <a href="{{ msg.media.url }}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 {{ msg.media_name|default:"File" }}</a>
@@ -1457,9 +1469,8 @@ function scrollToMsg(msgId) {
   const el = document.querySelector('[data-id="' + msgId + '"]');
   if (!el) return;
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  el.style.transition = 'background .2s';
-  el.style.background = 'rgba(99,102,241,.15)';
-  setTimeout(() => { el.style.background = ''; }, 1200);
+  el.classList.add('ws-msg-highlight');
+  setTimeout(() => el.classList.remove('ws-msg-highlight'), 1400);
 }
 
 /* ── Mobile swipe-to-reply ── */
@@ -1514,9 +1525,9 @@ function wsSendMessage(e) {
   if (!content) return;
   input.value = '';
 
-  const isAtAI = /^@(nexaai|ai)\b/i.test(content);
-  const atLen = isAtAI ? content.match(/^@(nexaai|ai)\b/i)[0].length : 0;
-  const question = isAtAI ? (content.slice(atLen).trim() || 'Hello!') : content;
+  // Nexa is triggered by starting message with "nexa" (no @ needed)
+  const isAtAI = /^nexa[,\s!?]/i.test(content) || /^nexa$/i.test(content);
+  const question = isAtAI ? (content.replace(/^nexa[,\s!?]*/i, '').trim() || 'Hello!') : content;
   const looksLikeMeeting = MEETING_KEYWORDS.test(content) || /meeting|start.*call|call.*start/i.test(content);
   // Deep search: triggered by "search ..." or "nexa search ..." patterns
   const looksLikeSearch = SEARCH_KEYWORDS.test(question) && (
@@ -1544,7 +1555,7 @@ function wsSendMessage(e) {
   const typing = document.createElement('div');
   typing.id = 'ai-chat-typing';
   typing.className = 'ws-msg-wrap theirs';
-  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
+  typing.innerHTML = `<div class="ws-msg-av nexa-av">NX</div><div class="ws-msg-group"><span class="ws-msg-sender nexa-sender">Nexa</span><div class="ws-msg-bubble nexa-bubble"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
 
@@ -1607,7 +1618,7 @@ function triggerNormalAIChat(question, isAtAI) {
         const msgs = document.getElementById('ws-chat-msgs');
         const div = document.createElement('div');
         div.className = 'ws-msg-wrap theirs';
-        div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
+        div.innerHTML = `<div class="ws-msg-av nexa-av">NX</div><div class="ws-msg-group"><span class="ws-msg-sender nexa-sender">Nexa</span><div class="ws-msg-bubble nexa-bubble">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
         msgs.appendChild(div);
         msgs.scrollTop = msgs.scrollHeight;
       }
@@ -1726,9 +1737,9 @@ function renderSearchCard(result) {
   const div = document.createElement('div');
   div.className = 'ws-msg-wrap theirs';
   div.innerHTML = `
-    <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div>
+    <div class="ws-msg-av nexa-av">NX</div>
     <div class="ws-msg-group" style="max-width:85%;">
-      <span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span>
+      <span class="ws-msg-sender nexa-sender">Nexa</span>
       <div class="nexa-search-card">
         <div class="nexa-search-header">
           <div class="nexa-search-icon">
@@ -1818,7 +1829,7 @@ function appendWsMsg(data, isMine) {
 
   let avHtml;
   if (isAI) {
-    avHtml = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">NX</div>`;
+    avHtml = `<div class="ws-msg-av nexa-av">NX</div>`;
   } else {
     const av = isMine ? MY_AVATAR : data.sender_avatar;
     const initial = (isMine ? MY_USERNAME : data.sender || '?').slice(0,1).toUpperCase();
@@ -1833,17 +1844,17 @@ function appendWsMsg(data, isMine) {
   if (data.media_url) {
     bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble" style="padding:.375rem .625rem;"><a href="${data.media_url}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 ${esc(data.media_name || 'File')}</a>${data.content ? '<div style="margin-top:.25rem;">' + esc(data.content) + '</div>' : ''}</div>`;
   } else if (isAI) {
-    bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(data.content).replace(/\n/g,'<br>')}</div>`;
+    bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble nexa-bubble">${esc(data.content).replace(/\n/g,'<br>')}</div>`;
   } else {
     bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble">${esc(data.content)}</div>`;
   }
 
-  const replyBtnSender = isAI ? 'NexaAI' : (isMine ? MY_USERNAME : (data.sender || '?'));
+  const replyBtnSender = isAI ? 'Nexa' : (isMine ? MY_USERNAME : (data.sender || '?'));
   const replyBtnText = (data.content || '').slice(0, 60).replace(/'/g, "\\'");
   const replyBtn = `<button class="ws-reply-btn" onclick="setReply('${data.id}','${esc(replyBtnSender)}','${replyBtnText}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>`;
 
   const senderLabel = isAI
-    ? `<span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span>`
+    ? `<span class="ws-msg-sender nexa-sender">Nexa</span>`
     : (!isMine ? `<span class="ws-msg-sender">${esc(data.sender)}</span>` : '');
 
   const wrap = document.createElement('div');
@@ -1903,7 +1914,7 @@ function checkProactiveAI(newMsgCount) {
   const typing = document.createElement('div');
   typing.id = 'ai-chat-typing';
   typing.className = 'ws-msg-wrap theirs';
-  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
+  typing.innerHTML = `<div class="ws-msg-av nexa-av">NX</div><div class="ws-msg-group"><span class="ws-msg-sender nexa-sender">Nexa</span><div class="ws-msg-bubble nexa-bubble"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
 

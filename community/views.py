@@ -1143,7 +1143,7 @@ def workspace_send_message(request, ws_id):
             is_ai = rt.content.startswith('[AI]')
             reply_preview = {
                 'id': str(rt.id),
-                'sender': 'NexaAI' if is_ai else rt.sender.username,
+                'sender': 'Nexa' if is_ai else rt.sender.username,
                 'content': rt.content[4:] if is_ai else rt.content,
             }
         except Exception:
@@ -1193,7 +1193,7 @@ def workspace_poll_messages(request, ws_id):
                 rt_is_ai = rt.content.startswith('[AI]')
                 reply_preview = {
                     'id': str(rt.id),
-                    'sender': 'NexaAI' if rt_is_ai else rt.sender.username,
+                    'sender': 'Nexa' if rt_is_ai else rt.sender.username,
                     'content': (rt.content[4:] if rt_is_ai else rt.content)[:80],
                 }
             except Exception:
@@ -1202,7 +1202,7 @@ def workspace_poll_messages(request, ws_id):
         data.append({
             'id': str(msg.id),
             'content': content,
-            'sender': 'NexaAI' if is_ai_msg else msg.sender.username,
+            'sender': 'Nexa' if is_ai_msg else msg.sender.username,
             'sender_avatar': avatar,
             'is_mine': (not is_ai_msg) and (msg.sender_id == request.user.id),
             'is_ai': is_ai_msg,
