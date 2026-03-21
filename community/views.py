@@ -425,8 +425,11 @@ def post_create(request):
     school_communities = SchoolCommunity.objects.filter(
         id__in=joined_community_ids, is_active=True
     )
+    joined_cc_ids = CustomCommunityMembership.objects.filter(
+        user=request.user
+    ).values_list('community_id', flat=True)
     custom_communities = CustomCommunity.objects.filter(
-        Q(creator=request.user) | Q(privacy=CustomCommunity.PRIVACY_PUBLIC),
+        Q(id__in=joined_cc_ids) | Q(creator=request.user),
         is_active=True,
     )
 
@@ -473,6 +476,16 @@ def post_create(request):
                     'custom_communities': custom_communities,
                 })
             post.custom_community_id = cc_id
+            if not CustomCommunityMembership.objects.filter(
+                user=request.user, community_id=cc_id
+            ).exists() and not CustomCommunity.objects.filter(
+                id=cc_id, creator=request.user
+            ).exists():
+                django_messages.error(request, 'You must join this community before posting.')
+                return render(request, 'community/post_create.html', {
+                    'school_communities': school_communities,
+                    'custom_communities': custom_communities,
+                })
 
         if 'media' in request.FILES:
             post.media = request.FILES['media']
