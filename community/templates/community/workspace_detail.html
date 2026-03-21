@@ -1594,9 +1594,12 @@ function wsSendMessage(e) {
   if (!content) return;
   input.value = '';
 
-  // Nexa is triggered only when "nexa" appears as a word in the message
+  // Nexa is triggered when "nexa" appears as a word anywhere in the message
   const isAtAI = /\bnexa\b/i.test(content);
-  const question = isAtAI ? (content.replace(/\bnexa[,\s!?]*/gi, '').trim() || content) : content;
+  // Strip "nexa" (with any surrounding punctuation/spaces) cleanly from any position
+  const question = isAtAI
+    ? content.replace(/[,\s]*\bnexa\b[,\s!?.]*/gi, ' ').replace(/\s{2,}/g, ' ').trim() || content
+    : content;
   const looksLikeMeeting = MEETING_KEYWORDS.test(content) || /meeting|start.*call|call.*start/i.test(content);
   // Deep search: triggered by "search ..." or "nexa search ..." patterns
   const looksLikeSearch = SEARCH_KEYWORDS.test(question) && (

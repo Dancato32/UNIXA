@@ -378,8 +378,8 @@ def workspace_ai_chat(message, context):
     # Only triggered when "nexa" appears as a standalone word/name in the message
     is_direct = bool(re.search(r'\bnexa\b', message.strip(), re.IGNORECASE)) or source == 'manager'
 
-    # Strip trigger word from the actual question
-    clean_message = re.sub(r'\bnexa[,\s!?]*', '', message.strip(), flags=re.IGNORECASE).strip() or message
+    # Strip "nexa" cleanly from any position in the message
+    clean_message = re.sub(r'[,\s]*\bnexa\b[,\s!?.]*', ' ', message.strip(), flags=re.IGNORECASE).strip() or message
 
     system = f"""You are Nexa. You are one member of the "{ws_name}" group chat — not a moderator, not a host, not an assistant.
 
