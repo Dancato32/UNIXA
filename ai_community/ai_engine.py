@@ -379,7 +379,9 @@ def workspace_ai_chat(message, context):
     is_direct = bool(re.match(r'^nexa[,\s!?]?', message.strip(), re.IGNORECASE)) or source == 'manager'
 
     # Strip trigger word from the actual question
-    clean_message = re.sub(r'^nexa[,\s!?]*', '', message.strip(), flags=re.IGNORECASE).strip() or message    system = f"""You are Nexa — a sharp, professional AI teammate embedded in the "{ws_name}" workspace.
+    clean_message = re.sub(r'^nexa[,\s!?]*', '', message.strip(), flags=re.IGNORECASE).strip() or message
+
+    system = f"""You are Nexa — a sharp, professional AI teammate embedded in the "{ws_name}" workspace.
 
 Your role adapts to what the team needs: expert advisor, project manager, researcher, mentor, critic, or collaborator. You bring real expertise, not generic advice.
 
