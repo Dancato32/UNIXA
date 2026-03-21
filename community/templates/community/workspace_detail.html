@@ -1613,17 +1613,8 @@ function triggerNormalAIChat(question, isAtAI) {
       const t = document.getElementById('ai-chat-typing');
       if (t) t.remove();
       aiTyping = false;
-      const reply = data.reply || '';
-      if (!reply) return;
-      // Reply is saved to DB and will appear via polling for all members.
-      // Render immediately for the sender only to avoid waiting for next poll tick.
-      const msgs = document.getElementById('ws-chat-msgs');
-      const div = document.createElement('div');
-      div.className = 'ws-msg-wrap theirs';
-      div.setAttribute('data-ai-instant', '1');
-      div.innerHTML = `<div class="ws-msg-av nexa-av">NX</div><div class="ws-msg-group"><span class="ws-msg-sender nexa-sender">Nexa</span><div class="ws-msg-bubble nexa-bubble">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
-      msgs.appendChild(div);
-      msgs.scrollTop = msgs.scrollHeight;
+      // Reply is saved to DB — polling will render it for everyone within 2.5s.
+      // Don't render here to avoid duplicates.
       if (data.actions && data.actions.length) {
         data.actions.forEach(action => {
           if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
@@ -1884,11 +1875,6 @@ function wsPoll() {
         if (seenIds.has(msg.id)) return;
         seenIds.add(msg.id);
         lastTs = msg.created_at;
-        // If this is an AI reply and we already rendered it instantly, remove the instant copy first
-        if (msg.content && msg.content.startsWith('[AI]')) {
-          const instant = document.querySelector('[data-ai-instant="1"]');
-          if (instant) instant.remove();
-        }
         if (!msg.is_mine) { appendWsMsg(msg, false); newCount++; }
       });
       if (newCount > 0) checkProactiveAI(newCount);

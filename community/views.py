@@ -1878,10 +1878,10 @@ def workspace_ai_chat(request, ws_id):
     ]
     files = list(ws.files.values_list('original_name', flat=True))
 
-    # Pass last 20 messages so AI has full conversation context
+    # Pass last 60 messages so Nexa has full conversation context
     recent_chat = list(
         ws.chat_messages.order_by('-created_at')
-        .values('sender__username', 'content')[:20]
+        .values('sender__username', 'content')[:60]
     )
     recent_chat = list(reversed(recent_chat))
 
