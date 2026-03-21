@@ -157,6 +157,7 @@
 <script>
 const CSRF = '{{ csrf_token }}';
 let selectedMembers = {};
+let _memberData = {};  // store full data by username
 
 function selectPrivacy(radio) {
   document.getElementById('opt-private').classList.toggle('selected', radio.value === 'private');
@@ -170,14 +171,29 @@ function selectType(radio) {
 
 // Member search
 let searchTimeout = null;
-document.getElementById('member-search').addEventListener('input', function() {
+const memberSearchInput = document.getElementById('member-search');
+const memberResultsEl = document.getElementById('member-results');
+
+memberSearchInput.addEventListener('input', function() {
   clearTimeout(searchTimeout);
   const q = this.value.trim();
   if (q.length < 2) { closeResults(); return; }
   searchTimeout = setTimeout(() => searchUsers(q), 250);
 });
-document.getElementById('member-search').addEventListener('blur', function() {
-  setTimeout(closeResults, 200);
+
+// Use mousedown instead of click on results so it fires before blur
+memberResultsEl.addEventListener('mousedown', function(e) {
+  const item = e.target.closest('.member-result-item');
+  if (item) {
+    e.preventDefault(); // prevent input blur from firing first
+    const username = item.dataset.username;
+    const display = item.dataset.display;
+    addMember(username, display);
+  }
+});
+
+memberSearchInput.addEventListener('blur', function() {
+  setTimeout(closeResults, 150);
 });
 
 function searchUsers(q) {
@@ -186,27 +202,32 @@ function searchUsers(q) {
   })
   .then(r => r.json())
   .then(data => {
-    const res = document.getElementById('member-results');
-    if (!data.users.length) { closeResults(); return; }
-    res.innerHTML = data.users.map(u =>
-      `<div class="member-result-item" onclick="addMember('${u.username}','${u.display}')">
+    if (!data.users || !data.users.length) { closeResults(); return; }
+    memberResultsEl.innerHTML = data.users.map(u => {
+      const safeUser = u.username.replace(/"/g, '&quot;');
+      const safeDisplay = (u.display || u.username).replace(/"/g, '&quot;');
+      return `<div class="member-result-item" data-username="${safeUser}" data-display="${safeDisplay}">
         <div class="member-result-av">${u.username.slice(0,1).toUpperCase()}</div>
-        <div><div style="font-weight:600;">${u.username}</div><div style="color:var(--t3);font-size:.7rem;">${u.display}</div></div>
-      </div>`
-    ).join('');
-    res.classList.add('open');
-  });
+        <div>
+          <div style="font-weight:600;">${u.username}</div>
+          <div style="color:var(--t3);font-size:.7rem;">${u.display || ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+    memberResultsEl.classList.add('open');
+  })
+  .catch(() => closeResults());
 }
 
 function closeResults() {
-  document.getElementById('member-results').classList.remove('open');
+  memberResultsEl.classList.remove('open');
 }
 
 function addMember(username, display) {
   if (selectedMembers[username]) { closeResults(); return; }
-  selectedMembers[username] = display;
+  selectedMembers[username] = display || username;
   renderSelected();
-  document.getElementById('member-search').value = '';
+  memberSearchInput.value = '';
   closeResults();
 }
 
@@ -222,11 +243,11 @@ function renderSelected() {
     `<div class="sel-member">
       <div class="sel-member-av">${u.slice(0,1).toUpperCase()}</div>
       <span>${u}</span>
-      <button type="button" class="sel-member-rm" onclick="removeMember('${u}')">✕</button>
+      <button type="button" class="sel-member-rm" onclick="removeMember('${u.replace(/'/g,"\\'")}')">✕</button>
     </div>`
   ).join('');
   inputs.innerHTML = Object.keys(selectedMembers).map(u =>
-    `<input type="hidden" name="members" value="${u}">`
+    `<input type="hidden" name="members" value="${u.replace(/"/g,'&quot;')}">`
   ).join('');
 }
 </script>
