@@ -35,11 +35,15 @@
 .member-result-item{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;cursor:pointer;transition:background .12s;font-size:.8125rem;}
 .member-result-item:hover{background:var(--s3);}
 .member-result-av{width:28px;height:28px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;}
-.selected-members{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.5rem;}
-.sel-member{display:flex;align-items:center;gap:.375rem;background:var(--s4);border:1px solid var(--b2);border-radius:20px;padding:.2rem .5rem .2rem .375rem;font-size:.75rem;}
-.sel-member-av{width:20px;height:20px;background:var(--s5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;}
-.sel-member-rm{background:none;border:none;color:var(--t3);cursor:pointer;font-size:.75rem;line-height:1;padding:0 .125rem;}
+.selected-members{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.625rem;}
+.sel-member{display:flex;align-items:center;gap:.375rem;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:20px;padding:.25rem .625rem .25rem .375rem;font-size:.75rem;color:#4ade80;animation:memberPop .2s ease;}
+@keyframes memberPop{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+.sel-member-av{width:20px;height:20px;background:rgba(34,197,94,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;color:#4ade80;}
+.sel-member-rm{background:none;border:none;color:rgba(74,222,128,.5);cursor:pointer;font-size:.75rem;line-height:1;padding:0 .125rem;transition:color .15s;}
 .sel-member-rm:hover{color:var(--red);}
+/* Toast */
+.member-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2e1a;border:1px solid rgba(34,197,94,.4);color:#4ade80;font-size:.8125rem;font-weight:600;padding:.5rem 1rem;border-radius:20px;z-index:9999;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;}
+.member-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .invite-code-box{background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.625rem .875rem;display:flex;align-items:center;justify-content:space-between;font-size:.8125rem;}
 .invite-code-box code{font-family:monospace;font-size:.875rem;letter-spacing:.08em;color:var(--t1);}
 .type-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
@@ -134,7 +138,7 @@
     <div class="form-section">
       <h2>Step 2 — Add Members</h2>
       <div class="field">
-        <label>Search users to add</label>
+        <label>Search users to add <span id="member-count-label" style="color:var(--green);font-weight:400;font-size:.75rem;margin-left:.5rem;"></span></label>
         <div class="member-search-wrap">
           <input type="text" id="member-search" placeholder="Search by username or name…" autocomplete="off">
           <div class="member-results" id="member-results"></div>
@@ -229,6 +233,7 @@ function addMember(username, display) {
   renderSelected();
   memberSearchInput.value = '';
   closeResults();
+  showMemberToast(username);
 }
 
 function removeMember(username) {
@@ -239,9 +244,10 @@ function removeMember(username) {
 function renderSelected() {
   const container = document.getElementById('selected-members');
   const inputs = document.getElementById('member-inputs');
+  const count = Object.keys(selectedMembers).length;
   container.innerHTML = Object.entries(selectedMembers).map(([u, d]) =>
     `<div class="sel-member">
-      <div class="sel-member-av">${u.slice(0,1).toUpperCase()}</div>
+      <div class="sel-member-av">✓</div>
       <span>${u}</span>
       <button type="button" class="sel-member-rm" onclick="removeMember('${u.replace(/'/g,"\\'")}')">✕</button>
     </div>`
@@ -249,6 +255,20 @@ function renderSelected() {
   inputs.innerHTML = Object.keys(selectedMembers).map(u =>
     `<input type="hidden" name="members" value="${u.replace(/"/g,'&quot;')}">`
   ).join('');
+  // Update member count label
+  const label = document.getElementById('member-count-label');
+  if (label) label.textContent = count ? `${count} member${count > 1 ? 's' : ''} added` : '';
 }
+
+let _toastTimer = null;
+function showMemberToast(username) {
+  let toast = document.getElementById('member-toast');
+  toast.textContent = `✓ ${username} added`;
+  toast.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+<!-- Member added toast -->
+<div id="member-toast" class="member-toast"></div>
 </script>
 {% endblock %}
