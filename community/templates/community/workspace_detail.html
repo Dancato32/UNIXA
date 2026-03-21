@@ -30,6 +30,7 @@
 .ws-panel.active{display:flex;}
 .panel-scroll{flex:1;overflow-y:auto;}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 {% endblock %}
 
 {% block pre_content %}
@@ -1398,8 +1399,25 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <script>
 const CSRF = '{{ csrf_token }}';
+
+/* ── Math rendering ── */
+function renderMath(el) {
+  if (!el || typeof renderMathInElement === 'undefined') return;
+  renderMathInElement(el, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\[', right: '\\]', display: true },
+      { left: '\\(', right: '\\)', display: false },
+    ],
+    throwOnError: false,
+    output: 'html',
+  });
+}
 
 /* ── Mobile workspace tab bar ── */
 function wsMobTab(panelId, tabEl) {
@@ -1526,9 +1544,12 @@ function scrollToMsg(msgId) {
   }, { passive: true });
 })();
 
-/* ── Scroll chat to bottom ── */
+/* ── Scroll chat to bottom + render math on existing messages ── */
 const chatMsgs = document.getElementById('ws-chat-msgs');
-if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
+if (chatMsgs) {
+  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  renderMath(chatMsgs);
+}
 
 /* ── Send chat message ── */
 // Track AI typing state to avoid duplicate responses
@@ -1635,8 +1656,11 @@ function triggerNormalAIChat(question, isAtAI) {
       const t = document.getElementById('ai-chat-typing');
       if (t) t.remove();
       aiTyping = false;
-      // Reply is saved to DB — polling will render it for everyone within 2.5s.
-      // Don't render here to avoid duplicates.
+      // If Nexa triggered an autonomous deep search, render the card immediately
+      if (data.deep_search) {
+        renderSearchCard(data.deep_search);
+      }
+      // Text reply is saved to DB — polling will render it for everyone within 2.5s.
       if (data.actions && data.actions.length) {
         data.actions.forEach(action => {
           if (action.type === 'tasks' && Array.isArray(action.data)) aimAppendTaskSuggestions(action.data);
@@ -1879,6 +1903,7 @@ function appendWsMsg(data, isMine) {
   wrap.innerHTML = `${avHtml}<div class="ws-msg-group">${senderLabel}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>${replyBtn}${deleteBtn}`;
   msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
+  renderMath(wrap);
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

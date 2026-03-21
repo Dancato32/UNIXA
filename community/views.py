@@ -1912,13 +1912,27 @@ def workspace_ai_chat(request, ws_id):
 
     # Save AI reply to group chat DB so all members see it via polling
     if result.get('reply') and source == 'group':
-        # Use a system/bot user approach — save as a special marker message
-        # We store it as a WorkspaceMessage with content prefixed so polling can identify it
         WorkspaceMessage.objects.create(
             workspace=ws,
-            sender=request.user,  # sender field required; we override display on frontend
+            sender=request.user,
             content=f'[AI]{result["reply"]}',
         )
+
+    # Auto deep search triggered by Nexa internally
+    if result.get('deep_search'):
+        search_result = result['deep_search']
+        search_query = result.get('search_query', '')
+        summary_msg = (
+            f"[AI]🔍 **{search_query}**\n\n"
+            f"{search_result.get('summary', '')}\n\n"
+            + '\n'.join(f"• {f}" for f in search_result.get('key_findings', [])[:5])
+        )
+        WorkspaceMessage.objects.create(
+            workspace=ws,
+            sender=request.user,
+            content=summary_msg,
+        )
+        return JsonResponse({'reply': '', 'actions': [], 'deep_search': search_result})
 
     return JsonResponse(result)
 

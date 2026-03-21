@@ -398,6 +398,7 @@ HOW YOU SPEAK:
 - No corporate tone, no academic tone, no bullet-point lectures
 - Never say "As an AI", never introduce yourself, never be formal
 - Share opinions honestly. Disagree when you disagree.
+- For any math: write expressions using LaTeX notation — inline with $...$ and display equations with $$...$$ — so they render properly like a textbook. Never write math as plain text like "x^2" or "sqrt(x)".
 
 WHEN TO SPEAK:
 - {"You were directly called on — respond." if is_direct else "Only jump in if you actually have something useful to add."}
@@ -405,7 +406,11 @@ WHEN TO SPEAK:
 - Never dominate. Never repeat what someone already said. Never summarize unless asked.
 - If something's risky, unclear, or stuck — that's when you speak up.
 
-Read the conversation carefully. If your input doesn't move things forward, [SKIP]."""
+Read the conversation carefully. If your input doesn't move things forward, [SKIP].
+
+AUTONOMOUS WEB SEARCH:
+If the question needs current facts, recent events, statistics, prices, news, or anything you're not certain about — reply with exactly: [SEARCH: your refined search query]
+Only do this when a web search would genuinely improve your answer. Don't search for things you already know well."""
 
     raw = _chat([
         {'role': 'system', 'content': system},
@@ -414,6 +419,24 @@ Read the conversation carefully. If your input doesn't move things forward, [SKI
 
     if not raw or raw.strip() == '[SKIP]' or raw.strip().startswith('[SKIP]'):
         return {'reply': '', 'actions': []}
+
+    # Autonomous web search trigger
+    search_match = re.match(r'^\[SEARCH:\s*(.+?)\]', raw.strip(), re.IGNORECASE)
+    if search_match:
+        search_query = search_match.group(1).strip()
+        try:
+            search_result = deep_search(search_query, workspace_context=f"{ws_name} ({ws_type})")
+            if search_result:
+                return {'reply': '', 'actions': [], 'deep_search': search_result, 'search_query': search_query}
+        except Exception as e:
+            logger.error('Auto deep search error: %s', e)
+        # fallback if search fails — ask AI again without search instruction
+        raw = _chat([
+            {'role': 'system', 'content': system},
+            {'role': 'user', 'content': f'Conversation:\n{conversation_thread}\n\nNexa responds (web search unavailable, use your knowledge):'},
+        ], max_tokens=400)
+        if not raw or raw.strip().startswith('[SKIP]'):
+            return {'reply': '', 'actions': []}
 
     actions = []
     reply = raw.strip()
