@@ -560,6 +560,7 @@ class GroupWorkspace(models.Model):
     TYPE_ASSIGNMENT = 'assignment'
     TYPE_EXAM_PREP = 'exam_prep'
     TYPE_RESEARCH = 'research'
+    TYPE_NEXA = 'nexa'
     TYPE_CHOICES = [
         (TYPE_STARTUP, 'Startup'),
         (TYPE_STUDY, 'Study Group'),
@@ -569,6 +570,7 @@ class GroupWorkspace(models.Model):
         (TYPE_ASSIGNMENT, 'Assignment Solver'),
         (TYPE_EXAM_PREP, 'Exam Prep'),
         (TYPE_RESEARCH, 'Research'),
+        (TYPE_NEXA, 'Nexa Workspace'),
     ]
 
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)

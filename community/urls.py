@@ -84,6 +84,7 @@ urlpatterns = [
 
     # Group Workspaces
     path('workspaces/', views.workspace_list, name='workspace_list'),
+    path('workspaces/nexa/', views.nexa_workspace, name='nexa_workspace'),
     path('workspaces/create/', views.workspace_create, name='workspace_create'),
     path('workspaces/join/<str:invite_code>/', views.workspace_join, name='workspace_join'),
     path('workspaces/users/search/', views.workspace_search_users, name='workspace_search_users'),

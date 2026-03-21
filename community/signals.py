@@ -195,11 +195,12 @@ def on_custom_community_join(sender, instance, created, **kwargs):
 from django.contrib.auth import get_user_model as _get_user_model
 
 def _create_personal_workspace(sender, instance, created, **kwargs):
-    """Create a private personal workspace for every new user."""
+    """Create a private personal workspace + a Nexa workspace for every new user."""
     if not created:
         return
     try:
         from community.models import GroupWorkspace, WorkspaceMember
+        # Personal workspace
         ws = GroupWorkspace.objects.create(
             name='My Personal Workspace',
             description='Your private workspace — only visible to you.',
@@ -210,6 +211,20 @@ def _create_personal_workspace(sender, instance, created, **kwargs):
         )
         WorkspaceMember.objects.create(
             workspace=ws,
+            user=instance,
+            role=WorkspaceMember.ROLE_OWNER,
+        )
+        # Nexa workspace — personal AI hub
+        nexa_ws = GroupWorkspace.objects.create(
+            name='My Nexa Workspace',
+            description='Your personal AI-powered learning hub. Chat with Nexa, write essays, solve assignments, and more.',
+            workspace_type=GroupWorkspace.TYPE_NEXA,
+            privacy=GroupWorkspace.PRIVACY_PRIVATE,
+            owner=instance,
+            is_personal=True,
+        )
+        WorkspaceMember.objects.create(
+            workspace=nexa_ws,
             user=instance,
             role=WorkspaceMember.ROLE_OWNER,
         )
