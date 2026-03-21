@@ -1,6 +1,7 @@
 {% extends "community/base.html" %}
 {% block title %}{{ ws.name }}{% endblock %}
 {% block mobile_title %}{{ ws.name }}{% endblock %}
+{% block breadcrumb_label %}{{ ws.name }}{% endblock %}
 {% block topbar_title %}{{ ws.name }}{% endblock %}
 {% block topbar_desc %}{{ ws.subject }}{% endblock %}
 {% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>{% endblock %}
@@ -42,6 +43,54 @@
   .ws-sidebar{position:fixed;top:52px;left:0;bottom:0;z-index:400;transform:translateX(-100%);transition:transform .25s;width:260px;}
   .ws-sidebar.open{transform:translateX(0);}
   .bottom-nav{display:none!important;}
+  /* Mobile workspace bottom tab bar */
+  .ws-mob-tabs{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    background:rgba(10,10,10,.97);border-top:1px solid var(--b1);
+    z-index:200;height:54px;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    padding:0 .25rem env(safe-area-inset-bottom,0);
+  }
+  .ws-mob-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;color:var(--t3);background:none;border:none;cursor:pointer;
+    font-size:.5625rem;font-weight:600;padding:.375rem .25rem;
+    transition:color .15s;
+  }
+  .ws-mob-tab svg{width:20px;height:20px;}
+  .ws-mob-tab.active{color:var(--white);}
+  /* Hub FAB */
+  .ws-hub-fab{
+    display:flex;position:fixed;bottom:62px;right:1rem;
+    width:44px;height:44px;border-radius:14px;
+    background:var(--white);color:#000;border:none;
+    box-shadow:0 4px 20px rgba(0,0,0,.5);
+    align-items:center;justify-content:center;
+    z-index:190;cursor:pointer;transition:transform .15s;
+  }
+  .ws-hub-fab:active{transform:scale(.92);}
+  .ws-hub-fab svg{width:20px;height:20px;}
+  /* Hub bottom sheet */
+  .ws-hub-sheet{
+    position:fixed;bottom:0;left:0;right:0;z-index:500;
+    background:var(--s2);border-top:1px solid var(--b2);
+    border-radius:16px 16px 0 0;
+    transform:translateY(100%);transition:transform .28s ease;
+    max-height:80vh;display:flex;flex-direction:column;
+    padding-bottom:env(safe-area-inset-bottom,0);
+  }
+  .ws-hub-sheet.open{transform:translateY(0);}
+  .ws-hub-sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--b3);margin:.75rem auto .5rem;}
+  .ws-hub-sheet-head{padding:.25rem 1rem .75rem;display:flex;align-items:center;justify-content:space-between;}
+  .ws-hub-sheet-title{font-size:.9375rem;font-weight:800;}
+  .ws-hub-sheet-close{background:var(--s3);border:none;color:var(--t3);font-size:1.25rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+  .ws-hub-sheet-body{overflow-y:auto;padding:.25rem 1rem 1rem;flex:1;}
+  .ws-hub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem;}
+  .ws-hub-item{display:flex;flex-direction:column;align-items:center;gap:.375rem;padding:.75rem .5rem;background:var(--s3);border:1px solid var(--b2);border-radius:10px;cursor:pointer;transition:all .15s;border:none;color:var(--t1);}
+  .ws-hub-item:active{background:var(--s4);}
+  .ws-hub-item-icon{width:36px;height:36px;border-radius:10px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:1.125rem;}
+  .ws-hub-item-label{font-size:.6875rem;font-weight:600;text-align:center;color:var(--t2);}
+  .page{padding-bottom:54px!important;}
 }
 /* Chat */
 .ws-chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.375rem;}
@@ -965,11 +1014,131 @@
 
 <!-- Mobile sidebar overlay -->
 <div class="mob-overlay" id="ws-mob-overlay" onclick="toggleWsSidebar()" style="display:none;"></div>
+
+<!-- Mobile workspace bottom tab bar -->
+<nav class="ws-mob-tabs" id="ws-mob-tabs">
+  <button class="ws-mob-tab active" id="wstab-chat" onclick="wsMobTab('chat',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Chat
+  </button>
+  <button class="ws-mob-tab" id="wstab-tools" onclick="wsMobTab('tools',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    Tools
+  </button>
+  <button class="ws-mob-tab" id="wstab-tasks" onclick="wsMobTab('tasks',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Tasks
+  </button>
+  <button class="ws-mob-tab" id="wstab-files" onclick="wsMobTab('files',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    Files
+  </button>
+  <button class="ws-mob-tab" id="wstab-members" onclick="wsMobTab('members',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Members
+  </button>
+  <button class="ws-mob-tab" id="wstab-hub" onclick="openWsHub()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Hub
+  </button>
+</nav>
+
+<!-- Workspace Hub Bottom Sheet -->
+<div class="ws-hub-sheet" id="ws-hub-sheet">
+  <div class="ws-hub-sheet-handle"></div>
+  <div class="ws-hub-sheet-head">
+    <span class="ws-hub-sheet-title">{{ ws.name }}</span>
+    <button class="ws-hub-sheet-close" onclick="closeWsHub()">✕</button>
+  </div>
+  <div class="ws-hub-sheet-body">
+    <div style="font-size:.75rem;color:var(--t3);margin-bottom:.875rem;">
+      {% if ws.workspace_type == 'startup' %}🚀 Startup{% elif ws.workspace_type == 'study_group' %}📚 Study Group{% elif ws.workspace_type == 'group_project' %}📋 Group Project{% else %}🤝 General{% endif %}
+      {% if ws.subject %} · {{ ws.subject }}{% endif %}
+    </div>
+    <div class="ws-hub-grid">
+      <button class="ws-hub-item" onclick="wsMobTab('chat',document.getElementById('wstab-chat'));closeWsHub()">
+        <div class="ws-hub-item-icon">💬</div>
+        <span class="ws-hub-item-label">Group Chat</span>
+      </button>
+      <button class="ws-hub-item" onclick="wsMobTab('tools',document.getElementById('wstab-tools'));closeWsHub()">
+        <div class="ws-hub-item-icon">🤖</div>
+        <span class="ws-hub-item-label">AI Tools</span>
+      </button>
+      <button class="ws-hub-item" onclick="wsMobTab('tasks',document.getElementById('wstab-tasks'));closeWsHub()">
+        <div class="ws-hub-item-icon">✅</div>
+        <span class="ws-hub-item-label">Tasks</span>
+      </button>
+      <button class="ws-hub-item" onclick="wsMobTab('files',document.getElementById('wstab-files'));closeWsHub()">
+        <div class="ws-hub-item-icon">📁</div>
+        <span class="ws-hub-item-label">Files</span>
+      </button>
+      <button class="ws-hub-item" onclick="wsMobTab('members',document.getElementById('wstab-members'));closeWsHub()">
+        <div class="ws-hub-item-icon">👥</div>
+        <span class="ws-hub-item-label">Members</span>
+      </button>
+      <button class="ws-hub-item" onclick="showPanel('ai-manager',document.getElementById('nav-ai-manager'));closeWsHub()">
+        <div class="ws-hub-item-icon">🧠</div>
+        <span class="ws-hub-item-label">AI Manager</span>
+      </button>
+      <button class="ws-hub-item" onclick="showPanel('call',document.getElementById('nav-call'));closeWsHub()">
+        <div class="ws-hub-item-icon">📞</div>
+        <span class="ws-hub-item-label">Group Call</span>
+      </button>
+      <button class="ws-hub-item" onclick="toggleWsSidebar();closeWsHub()">
+        <div class="ws-hub-item-icon">⚙️</div>
+        <span class="ws-hub-item-label">Settings</span>
+      </button>
+    </div>
+    <div style="margin-top:1rem;padding-top:.875rem;border-top:1px solid var(--b1);">
+      <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:.5rem;">Members ({{ members|length }})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.375rem;">
+        {% for m in members %}
+        <div style="display:flex;align-items:center;gap:.375rem;background:var(--s3);border-radius:20px;padding:.25rem .625rem .25rem .375rem;font-size:.75rem;">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;overflow:hidden;flex-shrink:0;">
+            {% if m.user.community_profile.avatar %}<img src="{{ m.user.community_profile.avatar.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">{% else %}{{ m.user.username|slice:":1"|upper }}{% endif %}
+          </div>
+          {{ m.user.username }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<div id="ws-hub-overlay" onclick="closeWsHub()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:499;"></div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const CSRF = '{{ csrf_token }}';
+
+/* ── Mobile workspace tab bar ── */
+function wsMobTab(panelId, tabEl) {
+  // Switch panel
+  showPanel(panelId, document.querySelector('.ws-nav-item.active') || document.querySelector('.ws-nav-item'));
+  // Update tab active state
+  document.querySelectorAll('.ws-mob-tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+}
+
+function openWsHub() {
+  document.getElementById('ws-hub-sheet').classList.add('open');
+  document.getElementById('ws-hub-overlay').style.display = 'block';
+}
+function closeWsHub() {
+  document.getElementById('ws-hub-sheet').classList.remove('open');
+  document.getElementById('ws-hub-overlay').style.display = 'none';
+}
+
+/* Swipe up to open hub sheet */
+(function() {
+  var startY = 0;
+  var tabs = document.getElementById('ws-mob-tabs');
+  if (!tabs) return;
+  tabs.addEventListener('touchstart', function(e){ startY = e.touches[0].clientY; }, {passive:true});
+  tabs.addEventListener('touchend', function(e){
+    if (startY - e.changedTouches[0].clientY > 40) openWsHub();
+  }, {passive:true});
+})();
 const WS_ID = '{{ ws.id }}';
 const MY_USERNAME = '{{ user.username }}';
 const WS_TYPE = '{{ ws.workspace_type }}';

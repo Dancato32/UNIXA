@@ -1,6 +1,7 @@
 ﻿﻿{% extends "community/base.html" %}
 {% block title %}Feed{% endblock %}
 {% block mobile_title %}# feed{% endblock %}
+{% block breadcrumb_label %}Feed{% endblock %}
 {% block nav_feed %}active{% endblock %}
 {% block rail_feed %}active{% endblock %}
 {% block bn_feed %}active{% endblock %}
@@ -219,6 +220,17 @@
 }
 .mob-sort-tab.active{color:var(--white);border-bottom-color:var(--white);}
 
+/* Mobile sticky composer */
+@media(max-width:600px){
+  .composer{
+    position:sticky;top:0;z-index:140;
+    background:var(--bg);border-radius:0;
+    border-left:none;border-right:none;
+    margin:0 0 .375rem;
+    padding:.625rem .875rem;
+  }
+}
+
 /* Mobile post card header */
 .mob-post-header{display:none;align-items:center;gap:.5rem;margin-bottom:.5rem;}
 .mob-comm-av{
@@ -248,7 +260,9 @@
 .mob-act{
   display:flex;align-items:center;gap:.3rem;
   font-size:.75rem;font-weight:600;color:var(--t3);
-  background:none;border:none;cursor:pointer;padding:.25rem .375rem;border-radius:4px;
+  background:none;border:none;cursor:pointer;
+  padding:.375rem .5rem;border-radius:8px;
+  min-height:40px;
 }
 .mob-act:active{background:var(--s3);}
 .mob-act svg{width:18px;height:18px;}
