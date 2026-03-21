@@ -100,10 +100,11 @@ def community_home(request):
             ).select_related('workspace', 'workspace__owner')
             .order_by('-workspace__updated_at')[:6]
         )
+        # Personal workspace — any is_personal=True workspace that isn't Nexa
         personal_ws = GroupWorkspace.objects.filter(
             owner=request.user, is_personal=True, is_active=True,
-            workspace_type=GroupWorkspace.TYPE_GENERAL,
-        ).first()
+        ).exclude(workspace_type=GroupWorkspace.TYPE_NEXA).first()
+        # Nexa workspace
         nexa_ws = GroupWorkspace.objects.filter(
             owner=request.user, is_personal=True, is_active=True,
             workspace_type=GroupWorkspace.TYPE_NEXA,
