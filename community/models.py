@@ -659,6 +659,10 @@ class WorkspaceMessage(models.Model):
     content = models.TextField(blank=True)
     media = models.FileField(upload_to='workspace/files/', null=True, blank=True)
     media_name = models.CharField(max_length=255, blank=True)
+    reply_to = models.ForeignKey(
+        'self', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='replies'
+    )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

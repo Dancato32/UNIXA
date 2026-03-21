@@ -1113,6 +1113,7 @@ def workspace_send_message(request, ws_id):
     ws, _ = _ws_member_or_404(request, ws_id)
     content = request.POST.get('content', '').strip()
     file = request.FILES.get('file')
+    reply_to_id = request.POST.get('reply_to_id', '').strip()
     if not content and not file:
         return JsonResponse({'error': 'Empty message'}, status=400)
 
@@ -1120,6 +1121,11 @@ def workspace_send_message(request, ws_id):
     if file:
         msg.media = file
         msg.media_name = file.name
+    if reply_to_id:
+        try:
+            msg.reply_to_id = reply_to_id
+        except Exception:
+            pass
     msg.save()
     ws.updated_at = timezone.now()
     ws.save(update_fields=['updated_at'])
@@ -1130,6 +1136,19 @@ def workspace_send_message(request, ws_id):
     except Exception:
         pass
 
+    reply_preview = None
+    if msg.reply_to_id:
+        try:
+            rt = msg.reply_to
+            is_ai = rt.content.startswith('[AI]')
+            reply_preview = {
+                'id': str(rt.id),
+                'sender': 'NexaAI' if is_ai else rt.sender.username,
+                'content': rt.content[4:] if is_ai else rt.content,
+            }
+        except Exception:
+            pass
+
     return JsonResponse({
         'id': str(msg.id),
         'content': msg.content,
@@ -1137,6 +1156,7 @@ def workspace_send_message(request, ws_id):
         'sender_avatar': avatar,
         'media_url': msg.media.url if msg.media else None,
         'media_name': msg.media_name,
+        'reply_preview': reply_preview,
         'created_at': msg.created_at.isoformat(),
     })
 
@@ -1145,7 +1165,10 @@ def workspace_send_message(request, ws_id):
 def workspace_poll_messages(request, ws_id):
     ws, _ = _ws_member_or_404(request, ws_id)
     since_raw = request.GET.get('since')
-    qs = ws.chat_messages.select_related('sender', 'sender__community_profile').order_by('created_at')
+    qs = ws.chat_messages.select_related(
+        'sender', 'sender__community_profile',
+        'reply_to', 'reply_to__sender'
+    ).order_by('created_at')
     if since_raw:
         from django.utils.dateparse import parse_datetime
         since_dt = parse_datetime(since_raw)
@@ -1162,15 +1185,30 @@ def workspace_poll_messages(request, ws_id):
         # Detect AI messages stored with [AI] prefix
         is_ai_msg = msg.content.startswith('[AI]')
         content = msg.content[4:] if is_ai_msg else msg.content
+
+        reply_preview = None
+        if msg.reply_to_id:
+            try:
+                rt = msg.reply_to
+                rt_is_ai = rt.content.startswith('[AI]')
+                reply_preview = {
+                    'id': str(rt.id),
+                    'sender': 'NexaAI' if rt_is_ai else rt.sender.username,
+                    'content': (rt.content[4:] if rt_is_ai else rt.content)[:80],
+                }
+            except Exception:
+                pass
+
         data.append({
             'id': str(msg.id),
             'content': content,
-            'sender': 'AI Assistant' if is_ai_msg else msg.sender.username,
+            'sender': 'NexaAI' if is_ai_msg else msg.sender.username,
             'sender_avatar': avatar,
             'is_mine': (not is_ai_msg) and (msg.sender_id == request.user.id),
             'is_ai': is_ai_msg,
             'media_url': msg.media.url if msg.media else None,
             'media_name': msg.media_name,
+            'reply_preview': reply_preview,
             'created_at': msg.created_at.isoformat(),
         })
     return JsonResponse({'messages': data})

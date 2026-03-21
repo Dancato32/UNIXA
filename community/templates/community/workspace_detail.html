@@ -175,6 +175,32 @@
   .ai-tools-grid{grid-template-columns:1fr 1fr;}
   .ws-files-grid{grid-template-columns:1fr 1fr;}
 }
+/* Reply quote bubble */
+.ws-reply-quote{background:rgba(99,102,241,.1);border-left:3px solid #818cf8;border-radius:6px;padding:.3rem .625rem;margin-bottom:.25rem;cursor:pointer;max-width:100%;}
+.ws-reply-quote-sender{font-size:.6875rem;font-weight:700;color:#818cf8;margin-bottom:.1rem;}
+.ws-reply-quote-text{font-size:.75rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;}
+.mine .ws-reply-quote{border-left-color:#a5b4fc;background:rgba(165,180,252,.12);}
+/* Reply bar above input */
+.ws-reply-bar{display:none;align-items:center;gap:.625rem;padding:.5rem .875rem;background:var(--s3);border-top:1px solid var(--b2);border-bottom:1px solid var(--b2);}
+.ws-reply-bar.visible{display:flex;}
+.ws-reply-bar-line{width:3px;height:32px;background:#818cf8;border-radius:2px;flex-shrink:0;}
+.ws-reply-bar-info{flex:1;min-width:0;}
+.ws-reply-bar-sender{font-size:.6875rem;font-weight:700;color:#818cf8;}
+.ws-reply-bar-text{font-size:.75rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ws-reply-bar-close{background:none;border:none;color:var(--t3);font-size:1.125rem;cursor:pointer;padding:.125rem .375rem;line-height:1;flex-shrink:0;}
+.ws-reply-bar-close:hover{color:var(--t1);}
+/* Swipe / hover reply button */
+.ws-msg-wrap{position:relative;}
+.ws-reply-btn{position:absolute;top:50%;transform:translateY(-50%);background:var(--s4);border:none;border-radius:50%;width:28px;height:28px;display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);z-index:10;transition:background .15s;}
+.ws-reply-btn svg{width:13px;height:13px;}
+.ws-reply-btn:hover{background:var(--s5);color:var(--t1);}
+.ws-msg-wrap.mine .ws-reply-btn{left:-36px;}
+.ws-msg-wrap.theirs .ws-reply-btn{right:-36px;}
+.ws-msg-wrap:hover .ws-reply-btn{display:flex;}
+@media(max-width:900px){
+  .ws-reply-btn{display:flex!important;opacity:0;transition:opacity .15s;}
+  .ws-msg-wrap:active .ws-reply-btn,.ws-msg-wrap.swiping .ws-reply-btn{opacity:1;}
+}
 /* Call panel */
 @keyframes callpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
 /* AI Manager panel */
@@ -507,12 +533,14 @@
         {% for msg in messages_list %}
         {% if msg.content|slice:":4" == "[AI]" %}
         <div class="ws-msg-wrap theirs" data-id="{{ msg.id }}">
-          <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div>
+          <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div>
           <div class="ws-msg-group">
-            <span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>
+            <span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span>
+            {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}NexaAI{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
             <div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">{{ msg.content|slice:"4:" }}</div>
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
+          <button class="ws-reply-btn" onclick="setReply('{{ msg.id }}','NexaAI','{{ msg.content|slice:"4:"|truncatechars:60|escapejs }}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
         </div>
         {% else %}
         <div class="ws-msg-wrap {% if msg.sender == user %}mine{% else %}theirs{% endif %}" data-id="{{ msg.id }}">
@@ -521,6 +549,7 @@
           </div>
           <div class="ws-msg-group">
             {% if msg.sender != user %}<span class="ws-msg-sender">{{ msg.sender.username }}</span>{% endif %}
+            {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}NexaAI{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
             {% if msg.media %}
             <div class="ws-msg-bubble" style="padding:.375rem .625rem;">
               <a href="{{ msg.media.url }}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 {{ msg.media_name|default:"File" }}</a>
@@ -531,6 +560,7 @@
             {% endif %}
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
+          <button class="ws-reply-btn" onclick="setReply('{{ msg.id }}','{{ msg.sender.username|escapejs }}','{{ msg.content|truncatechars:60|escapejs }}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
         </div>
         {% endif %}
         {% empty %}
@@ -538,6 +568,14 @@
         {% endfor %}
       </div>
       <div class="ws-chat-input-area">
+        <div class="ws-reply-bar" id="ws-reply-bar">
+          <div class="ws-reply-bar-line"></div>
+          <div class="ws-reply-bar-info">
+            <div class="ws-reply-bar-sender" id="ws-reply-bar-sender"></div>
+            <div class="ws-reply-bar-text" id="ws-reply-bar-text"></div>
+          </div>
+          <button class="ws-reply-bar-close" onclick="clearReply()" title="Cancel reply">×</button>
+        </div>
         <form class="ws-chat-form" id="ws-chat-form" onsubmit="wsSendMessage(event)">
           {% csrf_token %}
           <button type="button" class="ws-attach-btn" onclick="document.getElementById('ws-file-input').click()" title="Attach file">
@@ -1399,6 +1437,62 @@ function toggleWsSidebar() {
   ov.style.display = open ? 'block' : 'none';
 }
 
+/* ── Reply-to state ── */
+let replyToId = null;
+
+function setReply(msgId, sender, text) {
+  replyToId = msgId;
+  document.getElementById('ws-reply-bar-sender').textContent = sender;
+  document.getElementById('ws-reply-bar-text').textContent = text;
+  document.getElementById('ws-reply-bar').classList.add('visible');
+  document.getElementById('ws-chat-input').focus();
+}
+
+function clearReply() {
+  replyToId = null;
+  document.getElementById('ws-reply-bar').classList.remove('visible');
+}
+
+function scrollToMsg(msgId) {
+  const el = document.querySelector('[data-id="' + msgId + '"]');
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.style.transition = 'background .2s';
+  el.style.background = 'rgba(99,102,241,.15)';
+  setTimeout(() => { el.style.background = ''; }, 1200);
+}
+
+/* ── Mobile swipe-to-reply ── */
+(function() {
+  let touchStartX = 0, touchEl = null;
+  document.addEventListener('touchstart', function(e) {
+    const wrap = e.target.closest('.ws-msg-wrap');
+    if (!wrap) return;
+    touchStartX = e.touches[0].clientX;
+    touchEl = wrap;
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e) {
+    if (!touchEl) return;
+    const dx = e.touches[0].clientX - touchStartX;
+    const isMine = touchEl.classList.contains('mine');
+    // Swipe right on theirs, swipe left on mine
+    if ((!isMine && dx > 40) || (isMine && dx < -40)) {
+      touchEl.classList.add('swiping');
+    }
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    if (!touchEl) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const isMine = touchEl.classList.contains('mine');
+    if ((!isMine && dx > 55) || (isMine && dx < -55)) {
+      const btn = touchEl.querySelector('.ws-reply-btn');
+      if (btn) btn.click();
+    }
+    touchEl.classList.remove('swiping');
+    touchEl = null;
+  }, { passive: true });
+})();
+
 /* ── Scroll chat to bottom ── */
 const chatMsgs = document.getElementById('ws-chat-msgs');
 if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
@@ -1420,8 +1514,9 @@ function wsSendMessage(e) {
   if (!content) return;
   input.value = '';
 
-  const isAtAI = content.toLowerCase().startsWith('@ai');
-  const question = isAtAI ? (content.slice(3).trim() || 'Hello!') : content;
+  const isAtAI = /^@(nexaai|ai)\b/i.test(content);
+  const atLen = isAtAI ? content.match(/^@(nexaai|ai)\b/i)[0].length : 0;
+  const question = isAtAI ? (content.slice(atLen).trim() || 'Hello!') : content;
   const looksLikeMeeting = MEETING_KEYWORDS.test(content) || /meeting|start.*call|call.*start/i.test(content);
   // Deep search: triggered by "search ..." or "nexa search ..." patterns
   const looksLikeSearch = SEARCH_KEYWORDS.test(question) && (
@@ -1433,12 +1528,14 @@ function wsSendMessage(e) {
   } else {
     const fd = new FormData();
     fd.append('content', content);
+    if (replyToId) fd.append('reply_to_id', replyToId);
     fd.append('csrfmiddlewaretoken', CSRF);
     fetch('/community/workspaces/' + WS_ID + '/chat/', { method: 'POST', body: fd })
       .then(r => r.json())
       .then(data => appendWsMsg(data, true))
       .catch(() => {});
   }
+  clearReply();
 
   if (aiTyping) return;
   aiTyping = true;
@@ -1447,7 +1544,7 @@ function wsSendMessage(e) {
   const typing = document.createElement('div');
   typing.id = 'ai-chat-typing';
   typing.className = 'ws-msg-wrap theirs';
-  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">Nexa</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
+  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
 
@@ -1510,7 +1607,7 @@ function triggerNormalAIChat(question, isAtAI) {
         const msgs = document.getElementById('ws-chat-msgs');
         const div = document.createElement('div');
         div.className = 'ws-msg-wrap theirs';
-        div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">Nexa</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
+        div.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(reply).replace(/\n/g,'<br>')}</div></div>`;
         msgs.appendChild(div);
         msgs.scrollTop = msgs.scrollHeight;
       }
@@ -1629,9 +1726,9 @@ function renderSearchCard(result) {
   const div = document.createElement('div');
   div.className = 'ws-msg-wrap theirs';
   div.innerHTML = `
-    <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div>
+    <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div>
     <div class="ws-msg-group" style="max-width:85%;">
-      <span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>
+      <span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span>
       <div class="nexa-search-card">
         <div class="nexa-search-header">
           <div class="nexa-search-icon">
@@ -1721,7 +1818,7 @@ function appendWsMsg(data, isMine) {
 
   let avHtml;
   if (isAI) {
-    avHtml = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">AI</div>`;
+    avHtml = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">NX</div>`;
   } else {
     const av = isMine ? MY_AVATAR : data.sender_avatar;
     const initial = (isMine ? MY_USERNAME : data.sender || '?').slice(0,1).toUpperCase();
@@ -1730,22 +1827,29 @@ function appendWsMsg(data, isMine) {
 
   const timeStr = new Date(data.created_at).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
   let bubbleHtml = '';
+  const replyQuoteHtml = data.reply_preview
+    ? `<div class="ws-reply-quote" onclick="scrollToMsg('${esc(data.reply_preview.id)}')"><div class="ws-reply-quote-sender">${esc(data.reply_preview.sender)}</div><div class="ws-reply-quote-text">${esc(data.reply_preview.content)}</div></div>`
+    : '';
   if (data.media_url) {
-    bubbleHtml = `<div class="ws-msg-bubble" style="padding:.375rem .625rem;"><a href="${data.media_url}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 ${esc(data.media_name || 'File')}</a>${data.content ? '<div style="margin-top:.25rem;">' + esc(data.content) + '</div>' : ''}</div>`;
+    bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble" style="padding:.375rem .625rem;"><a href="${data.media_url}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 ${esc(data.media_name || 'File')}</a>${data.content ? '<div style="margin-top:.25rem;">' + esc(data.content) + '</div>' : ''}</div>`;
   } else if (isAI) {
-    bubbleHtml = `<div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(data.content).replace(/\n/g,'<br>')}</div>`;
+    bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(data.content).replace(/\n/g,'<br>')}</div>`;
   } else {
-    bubbleHtml = `<div class="ws-msg-bubble">${esc(data.content)}</div>`;
+    bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble">${esc(data.content)}</div>`;
   }
 
+  const replyBtnSender = isAI ? 'NexaAI' : (isMine ? MY_USERNAME : (data.sender || '?'));
+  const replyBtnText = (data.content || '').slice(0, 60).replace(/'/g, "\\'");
+  const replyBtn = `<button class="ws-reply-btn" onclick="setReply('${data.id}','${esc(replyBtnSender)}','${replyBtnText}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>`;
+
   const senderLabel = isAI
-    ? `<span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>`
+    ? `<span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span>`
     : (!isMine ? `<span class="ws-msg-sender">${esc(data.sender)}</span>` : '');
 
   const wrap = document.createElement('div');
   wrap.className = 'ws-msg-wrap ' + (isMine ? 'mine' : 'theirs');
   wrap.dataset.id = data.id;
-  wrap.innerHTML = `${avHtml}<div class="ws-msg-group">${senderLabel}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>`;
+  wrap.innerHTML = `${avHtml}<div class="ws-msg-group">${senderLabel}${bubbleHtml}<span class="ws-msg-time">${timeStr}</span></div>${replyBtn}`;
   msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -1774,6 +1878,57 @@ function wsPoll() {
     .catch(() => {});
 }
 setInterval(wsPoll, 2500);
+
+/* ── Proactive AI: NexaAI may chime in autonomously ── */
+let proactiveCooldown = false;
+function checkProactiveAI(newMsgCount) {
+  // Don't interrupt if AI is already typing or on cooldown
+  if (aiTyping || proactiveCooldown) return;
+  // Only trigger proactively occasionally (not every message)
+  if (Math.random() > 0.35) return;
+  // Grab the latest message text from the DOM
+  const msgs = document.getElementById('ws-chat-msgs');
+  if (!msgs) return;
+  const bubbles = msgs.querySelectorAll('.ws-msg-bubble');
+  if (!bubbles.length) return;
+  const lastBubble = bubbles[bubbles.length - 1];
+  const lastText = lastBubble.textContent.trim();
+  if (!lastText || lastText.length < 10) return;
+
+  // Set cooldown (60s between proactive messages)
+  proactiveCooldown = true;
+  setTimeout(() => { proactiveCooldown = false; }, 60000);
+
+  aiTyping = true;
+  const typing = document.createElement('div');
+  typing.id = 'ai-chat-typing';
+  typing.className = 'ws-msg-wrap theirs';
+  typing.innerHTML = `<div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">NX</div><div class="ws-msg-group"><span class="ws-msg-sender" style="color:#818cf8;">NexaAI</span><div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(() => {
+    fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ message: lastText, source: 'group' }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        const t = document.getElementById('ai-chat-typing');
+        if (t) t.remove();
+        aiTyping = false;
+        // If AI returned [SKIP] or empty, do nothing
+        if (!data.reply || data.reply.trim() === '') return;
+        // AI reply is already saved to DB by the view — it will appear via polling
+      })
+      .catch(() => {
+        const t = document.getElementById('ai-chat-typing');
+        if (t) t.remove();
+        aiTyping = false;
+      });
+  }, 1200 + Math.random() * 1000);
+}
 
 /* ── Enter to send ── */
 document.getElementById('ws-chat-input').addEventListener('keydown', function(e) {
@@ -2800,33 +2955,8 @@ function aimGenerateAssembly() {
 }
 
 /* ── Proactive AI Chat Participation ── */
-let proactiveMsgCount = 0;
-const PROACTIVE_THRESHOLD = 8; // check every 8 new messages from others
+// checkProactiveAI is defined above (NexaAI Omni Agent)
 
-function checkProactiveAI(newCount) {
-  proactiveMsgCount += (newCount || 1);
-  if (proactiveMsgCount < PROACTIVE_THRESHOLD) return;
-  proactiveMsgCount = 0;
-
-  fetch('/community/workspaces/' + WS_ID + '/ai/proactive/')
-    .then(r => r.json())
-    .then(data => {
-      if (!data.should_post || !data.message) return;
-      const msgs = document.getElementById('ws-chat-msgs');
-      if (!msgs) return;
-      const div = document.createElement('div');
-      div.className = 'ws-msg-wrap theirs';
-      div.innerHTML = `
-        <div class="ws-msg-av" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.5625rem;font-weight:700;">N</div>
-        <div class="ws-msg-group">
-          <span class="ws-msg-sender" style="color:#818cf8;">Nexa</span>
-          <div class="ws-msg-bubble" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--t1);">${esc(data.message)}</div>
-        </div>`;
-      msgs.appendChild(div);
-      msgs.scrollTop = msgs.scrollHeight;
-    })
-    .catch(() => {});
-}
 </script>
 
 {% if ws.workspace_type == 'nexa' %}

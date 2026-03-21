@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nexa Research</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f5f5f0;--white:#fff;--border:#e8e8e4;--text:#111;--text2:#555;--text3:#999;
+  --accent:#2563eb;--accent-hover:#1d4ed8;--rail-w:56px;--nsl-w:268px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04)}
+html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+a{text-decoration:none;color:inherit}button{font-family:inherit;cursor:pointer}
+.shell{display:flex;height:100vh;overflow:hidden}
+.rail{width:var(--rail-w);background:var(--white);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px;flex-shrink:0;overflow-y:auto;z-index:50}
+.rail-logo{width:34px;height:34px;background:#111;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-weight:800;font-size:12px;margin-bottom:10px;flex-shrink:0}
+.rail-btn{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  color:var(--text3);cursor:pointer;transition:background .15s,color .15s;position:relative;border:none;background:none;flex-shrink:0}
+.rail-btn:hover,.rail-btn.active{background:#f0f0ec;color:var(--text)}
+.rail-btn svg{width:18px;height:18px}
+.rail-tip{position:absolute;left:48px;background:#111;color:#fff;font-size:11px;font-weight:500;
+  padding:4px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:100;top:50%;transform:translateY(-50%)}
+.rail-btn:hover .rail-tip{opacity:1}
+.rail-sep{width:28px;height:1px;background:var(--border);margin:4px 0;flex-shrink:0}
+.rail-spacer{flex:1}
+.rail-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;cursor:pointer}
+/* NSL SIDEBAR */
+.nsl{width:var(--nsl-w);background:var(--white);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .25s ease,opacity .25s ease}
+.nsl.collapsed{width:0;opacity:0;pointer-events:none}
+.nsl-inner{width:var(--nsl-w);height:100%;display:flex;flex-direction:column;overflow-y:auto;padding:12px 0}
+.nsl-head{display:flex;align-items:center;justify-content:space-between;padding:0 14px 10px;
+  border-bottom:1px solid var(--border);margin-bottom:6px}
+.nsl-title{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.02em;text-transform:uppercase}
+.nsl-close{width:24px;height:24px;border:none;background:none;color:var(--text3);border-radius:6px;
+  display:flex;align-items:center;justify-content:center}
+.nsl-close:hover{background:var(--bg);color:var(--text)}
+.nsl-close svg{width:14px;height:14px}
+.nsl-sec{border-bottom:1px solid var(--border)}
+.nsl-sec-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;cursor:pointer;user-select:none}
+.nsl-sec-hd:hover{background:#fafaf8}
+.nsl-sec-label{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text)}
+.nsl-sec-label svg{width:14px;height:14px;color:var(--accent)}
+.nsl-chevron{width:14px;height:14px;color:var(--text3);transition:transform .2s}
+.nsl-sec.open .nsl-chevron{transform:rotate(180deg)}
+.nsl-sec-body{display:none;padding:8px 14px 12px}
+.nsl-sec.open .nsl-sec-body{display:block}
+.nsl-input-row{display:flex;gap:6px;margin-bottom:8px}
+.nsl-input{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:inherit;font-size:12px;color:var(--text);outline:none;background:var(--bg)}
+.nsl-input:focus{border-color:var(--accent)}
+.nsl-send{padding:7px 11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600}
+.nsl-send:hover{background:var(--accent-hover)}
+.nsl-response{font-size:12px;line-height:1.65;color:var(--text);background:#f8f8f5;border-radius:8px;
+  padding:10px;margin-top:6px;display:none;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+.nsl-response.visible{display:block}
+.nsl-loading{display:flex;gap:3px;align-items:center;padding:6px 0}
+.nsl-loading span{width:4px;height:4px;border-radius:50%;background:var(--accent);animation:dp 1.2s infinite}
+.nsl-loading span:nth-child(2){animation-delay:.2s}
+.nsl-loading span:nth-child(3){animation-delay:.4s}
+@keyframes dp{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.nsl-actions{display:flex;flex-direction:column;gap:5px}
+.nsl-action{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--border);
+  border-radius:8px;background:none;font-size:12px;color:var(--text2);text-align:left;transition:background .15s,border-color .15s}
+.nsl-action:hover{background:#eff6ff;border-color:#bfdbfe;color:var(--accent)}
+.nsl-action svg{width:13px;height:13px;flex-shrink:0}
+.nsl-cite-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.cite-fmt{padding:4px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;background:none;color:var(--text2)}
+.cite-fmt.active,.cite-fmt:hover{background:#eff6ff;border-color:#bfdbfe;color:var(--accent)}
+.nsl-ws-list{display:flex;flex-direction:column;gap:4px}
+.nsl-ws-item{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;font-size:12px;color:var(--text2);transition:background .15s}
+.nsl-ws-item:hover{background:#f0f0ec;color:var(--text)}
+.nsl-ws-item svg{width:13px;height:13px;flex-shrink:0;color:var(--text3)}/* MAIN CONTENT */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px 32px;text-align:center}
+.hero-logo{display:flex;align-items:center;gap:8px;margin-bottom:20px;justify-content:center}
+.hero-logo-icon{width:32px;height:32px;background:#111;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px}
+.hero-logo-text{font-size:16px;font-weight:700;color:var(--text)}
+.hero h1{font-size:clamp(26px,4.5vw,44px);font-weight:700;line-height:1.18;margin-bottom:12px;color:var(--text);letter-spacing:-.02em;max-width:600px}
+.hero p{font-size:15px;color:var(--text2);margin-bottom:36px;max-width:460px;line-height:1.6}
+.ask-wrap{width:100%;max-width:640px}
+.ask-box{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:16px 16px 12px;box-shadow:var(--shadow);transition:border-color .2s,box-shadow .2s}
+.ask-box:focus-within{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.ask-textarea{width:100%;border:none;outline:none;resize:none;font-family:inherit;font-size:15px;color:var(--text);background:transparent;min-height:56px;line-height:1.55}
+.ask-textarea::placeholder{color:var(--text3)}
+.ask-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px;flex-wrap:wrap}
+.ask-chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:20px;border:1px solid var(--border);
+  background:var(--white);font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s}
+.chip:hover,.chip.active{background:#eff6ff;border-color:#bfdbfe;color:var(--accent)}
+.chip svg{width:12px;height:12px}
+.ask-right{display:flex;align-items:center;gap:6px}
+.attach-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:none;
+  display:flex;align-items:center;justify-content:center;color:var(--text3);transition:background .15s}
+.attach-btn:hover{background:var(--bg)}
+.attach-btn svg{width:14px;height:14px}
+.ask-send{display:flex;align-items:center;justify-content:center;width:32px;height:32px;
+  background:var(--accent);color:#fff;border:none;border-radius:9px;transition:background .15s;flex-shrink:0}
+.ask-send:hover{background:var(--accent-hover)}
+.ask-send:disabled{opacity:.4;cursor:not-allowed}
+.ask-send svg{width:14px;height:14px}
+.answer-wrap{width:100%;max-width:640px;margin-top:16px;display:none}
+.answer-wrap.visible{display:block}
+.answer-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+.answer-header{display:flex;align-items:center;gap:7px;margin-bottom:10px;font-size:12px;font-weight:600;color:var(--text2)}
+.answer-header svg{width:14px;height:14px;color:var(--accent)}
+.answer-body{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap}
+.dot-pulse{display:flex;gap:4px;align-items:center}
+.dot-pulse span{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:dp 1.2s infinite}
+.dot-pulse span:nth-child(2){animation-delay:.2s}
+.dot-pulse span:nth-child(3){animation-delay:.4s}
+.section{padding:0 24px 56px;max-width:960px;margin:0 auto;width:100%}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-size:14px;font-weight:700;color:var(--text)}
+.btn-new{display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;transition:background .15s}
+.btn-new:hover{background:var(--accent-hover)}
+.btn-new svg{width:13px;height:13px}
+.ws-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.ws-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:box-shadow .15s,border-color .15s;display:block}
+.ws-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.09);border-color:#d8d8d4}
+.ws-icon{width:38px;height:38px;border-radius:10px;background:#f0f0ec;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px}
+.ws-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-meta{font-size:11px;color:var(--text3)}
+.ws-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;background:#f0f0ec;color:var(--text2);margin-top:8px}
+.ws-empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;grid-column:1/-1}
+.ws-empty svg{width:36px;height:36px;margin:0 auto 10px;display:block;opacity:.25}/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:24px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.modal h2{font-size:17px;font-weight:700;margin-bottom:18px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;background:var(--white)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:64px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.btn-cancel{padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:none;font-size:12px;font-weight:500;color:var(--text2)}
+.btn-cancel:hover{background:var(--bg)}
+.btn-create{padding:7px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;transition:background .15s}
+.btn-create:hover{background:var(--accent-hover)}
+/* NSL TOGGLE BUTTON (desktop, shown when sidebar collapsed) */
+.nsl-toggle{position:fixed;left:calc(var(--rail-w) + 8px);top:12px;z-index:60;
+  display:none;align-items:center;gap:5px;padding:6px 10px;background:var(--white);
+  border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;color:var(--text2);box-shadow:var(--shadow)}
+.nsl-toggle:hover{background:var(--bg);color:var(--text)}
+.nsl-toggle svg{width:14px;height:14px}
+.nsl-toggle.show{display:flex}
+/* MOBILE */
+.mob-bar{display:none;align-items:center;justify-content:space-between;padding:10px 16px;
+  background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40;flex-shrink:0}
+.mob-logo{font-size:16px;font-weight:800;color:var(--text)}
+.mob-nav{display:flex;gap:6px}
+.mob-nav a,.mob-nav button{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;color:var(--text2);background:var(--bg);border:none}
+.mob-nav a svg,.mob-nav button svg{width:17px;height:17px}
+/* Mobile NSL drawer */
+.mob-nsl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150;display:none}
+.mob-nsl-overlay.open{display:block}
+.mob-nsl-drawer{position:fixed;left:0;top:0;bottom:0;width:min(var(--nsl-w),85vw);background:var(--white);
+  z-index:160;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto;padding:12px 0}
+.mob-nsl-drawer.open{transform:translateX(0)}
+@media(max-width:640px){
+  .rail{display:none}
+  .nsl{display:none}
+  .mob-bar{display:flex}
+  .nsl-toggle{display:none!important}
+  .hero{padding:28px 16px 20px}
+  .section{padding:0 16px 40px}
+  .ws-grid{grid-template-columns:1fr 1fr}
+  .ask-chips{gap:4px}
+  .chip{padding:4px 9px;font-size:11px}
+}
+@media(min-width:641px){.mob-bar{display:none}}
+</style>
+</head>
+<body><!-- ICON RAIL (desktop) -->
+<nav class="rail">
+  <div class="rail-logo">NX</div>
+  <a href="{% url 'research:home' %}" class="rail-btn active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+    <span class="rail-tip">Research</span>
+  </a>
+  <a href="{% url 'dashboard' %}" class="rail-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span class="rail-tip">Dashboard</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="rail-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span class="rail-tip">AI Tutor</span>
+  </a>
+  <a href="{% url 'community:feed' %}" class="rail-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    <span class="rail-tip">Community</span>
+  </a>
+  <div class="rail-sep"></div>
+  <a href="{% url 'list_materials' %}" class="rail-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span class="rail-tip">Materials</span>
+  </a>
+  <div class="rail-spacer"></div>
+  <a href="/dashboard/" class="rail-avatar">{{ request.user.username|first|upper }}</a>
+</nav><div class="shell">
+<!-- NSL SIDEBAR (desktop) -->
+<aside class="nsl" id="nslSidebar">
+  <div class="nsl-inner">
+    <div class="nsl-head">
+      <span class="nsl-title">NSL Tools</span>
+      <button class="nsl-close" onclick="toggleNSL()" title="Collapse">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <!-- A: NEXT AI -->
+    <div class="nsl-sec open" id="sec-ai">
+      <div class="nsl-sec-hd" onclick="toggleSec('sec-ai')">
+        <span class="nsl-sec-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Next AI
+        </span>
+        <svg class="nsl-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="nsl-sec-body">
+        <div class="nsl-input-row">
+          <input class="nsl-input" id="nslAiInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')nslAsk()">
+          <button class="nsl-send" onclick="nslAsk()">Ask</button>
+        </div>
+        <div class="nsl-response" id="nslAiResp"></div>
+      </div>
+    </div>
+
+    <!-- B: LIBRARY (workspace list) -->
+    <div class="nsl-sec open" id="sec-lib">
+      <div class="nsl-sec-hd" onclick="toggleSec('sec-lib')">
+        <span class="nsl-sec-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+          Library
+        </span>
+        <svg class="nsl-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="nsl-sec-body">
+        <div class="nsl-ws-list">
+          {% for ws in workspaces %}
+          <a href="{% url 'research:workspace_detail' ws.id %}" class="nsl-ws-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            {{ ws.name }}
+          </a>
+          {% empty %}
+          <span style="font-size:11px;color:var(--text3)">No workspaces yet.</span>
+          {% endfor %}
+        </div>
+        <button class="nsl-action" style="margin-top:8px" onclick="openModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Workspace
+        </button>
+      </div>
+    </div>    <!-- C: SMART ACTIONS -->
+    <div class="nsl-sec" id="sec-smart">
+      <div class="nsl-sec-hd" onclick="toggleSec('sec-smart')">
+        <span class="nsl-sec-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Smart Actions
+        </span>
+        <svg class="nsl-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="nsl-sec-body">
+        <div class="nsl-input-row" style="margin-bottom:10px">
+          <input class="nsl-input" id="nslSmartTopic" placeholder="Topic or paste text...">
+        </div>
+        <div class="nsl-actions">
+          <button class="nsl-action" onclick="nslSmartAction('Summarize this topic in simple terms: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Summarize Topic
+          </button>
+          <button class="nsl-action" onclick="nslSmartAction('Generate a detailed research outline for: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Research Outline
+          </button>
+          <button class="nsl-action" onclick="nslSmartAction('Create a comprehensive study guide for: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            Study Guide
+          </button>
+          <button class="nsl-action" onclick="nslSmartAction('Extract and list all key points from: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Key Points
+          </button>
+          <button class="nsl-action" onclick="nslSmartAction('Identify and explain the key concepts in: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Key Concepts
+          </button>
+          <button class="nsl-action" onclick="nslSmartAction('Suggest 5 research directions and questions for: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            Research Directions
+          </button>
+        </div>
+        <div class="nsl-response" id="nslSmartResp"></div>
+      </div>
+    </div>
+
+    <!-- D: CITATIONS -->
+    <div class="nsl-sec" id="sec-cite">
+      <div class="nsl-sec-hd" onclick="toggleSec('sec-cite')">
+        <span class="nsl-sec-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+          Citations
+        </span>
+        <svg class="nsl-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="nsl-sec-body">
+        <div class="nsl-cite-row">
+          <button class="cite-fmt active" onclick="setCiteFmt(this,'APA')">APA</button>
+          <button class="cite-fmt" onclick="setCiteFmt(this,'MLA')">MLA</button>
+          <button class="cite-fmt" onclick="setCiteFmt(this,'Chicago')">Chicago</button>
+          <button class="cite-fmt" onclick="setCiteFmt(this,'Harvard')">Harvard</button>
+          <button class="cite-fmt" onclick="setCiteFmt(this,'IEEE')">IEEE</button>
+        </div>
+        <div class="nsl-input-row">
+          <input class="nsl-input" id="nslCiteInput" placeholder="Paste title, URL, or DOI...">
+          <button class="nsl-send" onclick="nslCite()">Cite</button>
+        </div>
+        <div class="nsl-response" id="nslCiteResp"></div>
+      </div>
+    </div>    <!-- E: PODCAST / AUDIO -->
+    <div class="nsl-sec" id="sec-audio">
+      <div class="nsl-sec-hd" onclick="toggleSec('sec-audio')">
+        <span class="nsl-sec-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+          Podcast / Audio
+        </span>
+        <svg class="nsl-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="nsl-sec-body">
+        <div class="nsl-input-row" style="margin-bottom:10px">
+          <input class="nsl-input" id="nslAudioTopic" placeholder="Topic for audio script...">
+        </div>
+        <div class="nsl-actions">
+          <button class="nsl-action" onclick="nslAudio('podcast')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            Generate Podcast Script
+          </button>
+          <button class="nsl-action" onclick="nslAudio('narration')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Narration Text
+          </button>
+          <button class="nsl-action" id="nslTtsBtn" onclick="nslSpeak()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+            Read Aloud (TTS)
+          </button>
+        </div>
+        <div class="nsl-response" id="nslAudioResp"></div>
+      </div>
+    </div>
+
+    <!-- F: ETHICS & ANALYSIS -->
+    <div class="nsl-sec" id="sec-ethics">
+      <div class="nsl-sec-hd" onclick="toggleSec('sec-ethics')">
+        <span class="nsl-sec-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Ethics & Analysis
+        </span>
+        <svg class="nsl-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="nsl-sec-body">
+        <div class="nsl-input-row" style="margin-bottom:10px">
+          <input class="nsl-input" id="nslEthicsTopic" placeholder="Topic to analyse...">
+        </div>
+        <div class="nsl-actions">
+          <button class="nsl-action" onclick="nslEthics('Analyse the ethical implications of: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Ethical Implications
+          </button>
+          <button class="nsl-action" onclick="nslEthics('Identify potential biases and perspectives in: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Bias Analysis
+          </button>
+          <button class="nsl-action" onclick="nslEthics('List strong counterarguments against: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Counterarguments
+          </button>
+          <button class="nsl-action" onclick="nslEthics('Explain the broader societal impact of: ')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            Societal Impact
+          </button>
+        </div>
+        <div class="nsl-response" id="nslEthicsResp"></div>
+      </div>
+    </div>
+
+  </div><!-- /nsl-inner -->
+</aside><!-- MAIN CONTENT -->
+<div class="main" id="mainContent">
+  <!-- MOBILE TOP BAR -->
+  <div class="mob-bar">
+    <span class="mob-logo">NX Research</span>
+    <div class="mob-nav">
+      <button onclick="openMobNSL()" title="NSL Tools">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <a href="{% url 'dashboard' %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></a>
+      <a href="{% url 'community:feed' %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></a>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-logo">
+      <div class="hero-logo-icon">NX</div>
+      <span class="hero-logo-text">Nexa Research</span>
+    </div>
+    <h1>How can I help with your research?</h1>
+    <p>Ask anything, upload documents, search papers, or get WAEC-focused explanations.</p>
+
+    <div class="ask-wrap">
+      <div class="ask-box">
+        <textarea class="ask-textarea" id="quickInput" rows="2" placeholder="Give me any task to work on..."></textarea>
+        <div class="ask-footer">
+          <div class="ask-chips">
+            <button class="chip active" data-mode="auto" onclick="selectMode(this,'auto')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              Auto
+            </button>
+            <button class="chip" data-mode="search" onclick="selectMode(this,'search')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              Search Papers
+            </button>
+            <button class="chip" data-mode="simplify" onclick="selectMode(this,'simplify')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Simplify
+            </button>
+            <button class="chip" data-mode="waec" onclick="selectMode(this,'waec')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              WAEC Prep
+            </button>
+          </div>
+          <div class="ask-right">
+            <button class="attach-btn" title="Upload file" onclick="document.getElementById('quickFile').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" id="quickFile" accept=".pdf,.docx,.txt" style="display:none">
+            <button class="ask-send" id="askBtn" onclick="quickAsk()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="answer-wrap" id="answerWrap">
+        <div class="answer-card">
+          <div class="answer-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Nexa AI
+          </div>
+          <div class="answer-body" id="answerBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKSPACES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Your Workspaces</span>
+      <button class="btn-new" onclick="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Workspace
+      </button>
+    </div>
+    <div class="ws-grid">
+      {% for ws in workspaces %}
+      <a href="{% url 'research:workspace_detail' ws.id %}" class="ws-card">
+        <div class="ws-icon">
+          {% if ws.subject == 'mathematics' %}{% elif ws.subject == 'physics' %}{% elif ws.subject == 'chemistry' %}{% elif ws.subject == 'biology' %}{% elif ws.subject == 'english' %}{% elif ws.subject == 'economics' %}{% elif ws.subject == 'computer_science' %}{% else %}{% endif %}
+        </div>
+        <div class="ws-name">{{ ws.name }}</div>
+        <div class="ws-meta">{{ ws.doc_count }} doc{{ ws.doc_count|pluralize }}  {{ ws.chat_count }} msg{{ ws.chat_count|pluralize }}</div>
+        <span class="ws-badge">{{ ws.get_subject_display }}</span>
+      </a>
+      {% empty %}
+      <div class="ws-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        No workspaces yet. Create one to start studying.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div><!-- /main -->
+</div><!-- /shell --><!-- MAIN CONTENT AREA -->
+<div class="main" id="mainContent">
+
+  <!-- MOBILE TOP BAR -->
+  <div class="mob-bar">
+    <span class="mob-logo">NX Research</span>
+    <div class="mob-nav">
+      <button onclick="openMobNSL()" title="AI Tools">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </button>
+      <a href="{% url 'dashboard' %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></a>
+      <a href="{% url 'community:feed' %}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></a>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-logo">
+      <div class="hero-logo-icon">NX</div>
+      <span class="hero-logo-text">Nexa Research</span>
+    </div>
+    <h1>How can I help with your research?</h1>
+    <p>Ask anything, upload documents, search papers, or get WAEC-focused explanations.</p>
+
+    <div class="ask-wrap">
+      <div class="ask-box">
+        <textarea class="ask-textarea" id="quickInput" rows="2" placeholder="Give me any task to work on..."></textarea>
+        <div class="ask-footer">
+          <div class="ask-chips">
+            <button class="chip active" data-mode="auto" onclick="selectMode(this,'auto')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              Auto
+            </button>
+            <button class="chip" data-mode="search" onclick="selectMode(this,'search')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              Search Papers
+            </button>
+            <button class="chip" data-mode="simplify" onclick="selectMode(this,'simplify')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Simplify
+            </button>
+            <button class="chip" data-mode="waec" onclick="selectMode(this,'waec')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              WAEC Prep
+            </button>
+          </div>
+          <div class="ask-right">
+            <button class="attach-btn" title="Upload file" onclick="document.getElementById('quickFile').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" id="quickFile" accept=".pdf,.docx,.txt" style="display:none">
+            <button class="ask-send" id="askBtn" onclick="quickAsk()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="answer-wrap" id="answerWrap">
+        <div class="answer-card">
+          <div class="answer-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Nexa AI
+          </div>
+          <div class="answer-body" id="answerBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKSPACES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Your Workspaces</span>
+      <button class="btn-new" onclick="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Workspace
+      </button>
+    </div>
+    <div class="ws-grid">
+      {% for ws in workspaces %}
+      <a href="{% url 'research:workspace_detail' ws.id %}" class="ws-card">
+        <div class="ws-icon">
+          {% if ws.subject == 'mathematics' %}{% elif ws.subject == 'physics' %}{% elif ws.subject == 'chemistry' %}{% elif ws.subject == 'biology' %}{% elif ws.subject == 'english' %}{% elif ws.subject == 'economics' %}{% elif ws.subject == 'computer_science' %}{% else %}{% endif %}
+        </div>
+        <div class="ws-name">{{ ws.name }}</div>
+        <div class="ws-meta">{{ ws.doc_count }} doc{{ ws.doc_count|pluralize }}  {{ ws.chat_count }} msg{{ ws.chat_count|pluralize }}</div>
+        <span class="ws-badge">{{ ws.get_subject_display }}</span>
+      </a>
+      {% empty %}
+      <div class="ws-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        No workspaces yet. Create one to start studying.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div><!-- /main -->
+</div><!-- /shell -->
+<!-- CREATE MODAL -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal">
+    <h2>New Research Workspace</h2>
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="wsName" placeholder="e.g. Physics WAEC Prep">
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <select id="wsSubject">
+        <option value="general">General</option>
+        <option value="mathematics">Mathematics</option>
+        <option value="physics">Physics</option>
+        <option value="chemistry">Chemistry</option>
+        <option value="biology">Biology</option>
+        <option value="english">English</option>
+        <option value="history">History</option>
+        <option value="economics">Economics</option>
+        <option value="geography">Geography</option>
+        <option value="computer_science">Computer Science</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Description (optional)</label>
+      <textarea id="wsDesc" placeholder="What will you study here?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-create" onclick="createWorkspace()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE NSL DRAWER -->
+<div class="mob-nsl-overlay" id="mobNslOverlay" onclick="closeMobNSL()"></div>
+<div class="mob-nsl-drawer" id="mobNslDrawer">
+  <!-- reuse same nsl-inner content via JS clone -->
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+const QUICK_ASK_URL = '{% url "research:quick_ask" %}';
+let currentMode = 'auto';
+let citeFmt = 'APA';
+
+/*  MODE CHIPS  */
+function selectMode(el, mode) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentMode = mode;
+}
+
+/*  MAIN ASK BOX  */
+async function quickAsk() {
+  const msg = document.getElementById('quickInput').value.trim();
+  if (!msg) return;
+  const btn = document.getElementById('askBtn');
+  const wrap = document.getElementById('answerWrap');
+  const body = document.getElementById('answerBody');
+  btn.disabled = true;
+  wrap.classList.add('visible');
+  body.innerHTML = '<div class="dot-pulse"><span></span><span></span><span></span></div>';
+  try {
+    const res = await fetch(QUICK_ASK_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({message: msg, mode: currentMode})
+    });
+    const data = await res.json();
+    body.textContent = data.error ? 'Error: ' + data.error : data.response;
+  } catch(e) { body.textContent = 'Something went wrong. Please try again.'; }
+  btn.disabled = false;
+}
+document.getElementById('quickInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); quickAsk(); }
+});
+
+/*  WORKSPACE MODAL  */
+function openModal() { document.getElementById('createModal').classList.add('open'); }
+function closeModal() { document.getElementById('createModal').classList.remove('open'); }
+document.getElementById('createModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+async function createWorkspace() {
+  const name = document.getElementById('wsName').value.trim();
+  if (!name) { alert('Please enter a workspace name'); return; }
+  const subject = document.getElementById('wsSubject').value;
+  const description = document.getElementById('wsDesc').value.trim();
+  try {
+    const res = await fetch('{% url "research:workspace_create" %}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF},
+      body: new URLSearchParams({name, subject, description})
+    });
+    const data = await res.json();
+    if (data.id) window.location.href = '/research/workspace/' + data.id + '/';
+    else alert(data.error || 'Failed to create workspace');
+  } catch(e) { alert('Something went wrong'); }
+}
+
+/*  NSL SIDEBAR TOGGLE  */
+function toggleNSL() {
+  const sb = document.getElementById('nslSidebar');
+  const tog = document.getElementById('nslToggleBtn');
+  sb.classList.toggle('collapsed');
+  tog.classList.toggle('show', sb.classList.contains('collapsed'));
+}
+
+/*  NSL SECTION ACCORDION  */
+function toggleSec(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+/*  NSL HELPERS  */
+function showNslLoading(el) {
+  el.innerHTML = '<div class="nsl-loading"><span></span><span></span><span></span></div>';
+  el.classList.add('visible');
+}
+async function nslPost(prompt, respEl) {
+  showNslLoading(respEl);
+  try {
+    const res = await fetch(QUICK_ASK_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({message: prompt, mode: 'auto'})
+    });
+    const data = await res.json();
+    respEl.textContent = data.error ? 'Error: ' + data.error : data.response;
+    respEl.classList.add('visible');
+  } catch(e) { respEl.textContent = 'Something went wrong.'; }
+}
+
+/* A: NEXT AI */
+async function nslAsk() {
+  const q = document.getElementById('nslAiInput').value.trim();
+  if (!q) return;
+  await nslPost(q, document.getElementById('nslAiResp'));
+}
+
+/* C: SMART ACTIONS */
+async function nslSmartAction(prefix) {
+  const topic = document.getElementById('nslSmartTopic').value.trim();
+  if (!topic) { alert('Enter a topic first'); return; }
+  await nslPost(prefix + topic, document.getElementById('nslSmartResp'));
+}
+
+/* D: CITATIONS */
+function setCiteFmt(el, fmt) {
+  document.querySelectorAll('.cite-fmt').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  citeFmt = fmt;
+}
+async function nslCite() {
+  const src = document.getElementById('nslCiteInput').value.trim();
+  if (!src) return;
+  const prompt = `Generate a ${citeFmt} citation for: ${src}. Also provide an in-text citation example.`;
+  await nslPost(prompt, document.getElementById('nslCiteResp'));
+}
+
+/* E: AUDIO */
+async function nslAudio(type) {
+  const topic = document.getElementById('nslAudioTopic').value.trim();
+  if (!topic) { alert('Enter a topic first'); return; }
+  const prompt = type === 'podcast'
+    ? `Write an engaging 2-minute podcast script about: ${topic}. Include intro, main points, and outro.`
+    : `Write a clear narration text explaining: ${topic}. Make it suitable for text-to-speech.`;
+  await nslPost(prompt, document.getElementById('nslAudioResp'));
+}
+function nslSpeak() {
+  const resp = document.getElementById('nslAudioResp');
+  const text = resp.textContent.trim();
+  if (!text || text.includes('loading')) { alert('Generate a script first'); return; }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.95; utt.pitch = 1;
+    window.speechSynthesis.speak(utt);
+  } else { alert('TTS not supported in this browser'); }
+}
+
+/* F: ETHICS */
+async function nslEthics(prefix) {
+  const topic = document.getElementById('nslEthicsTopic').value.trim();
+  if (!topic) { alert('Enter a topic first'); return; }
+  await nslPost(prefix + topic, document.getElementById('nslEthicsResp'));
+}
+
+/*  MOBILE NSL DRAWER  */
+function openMobNSL() {
+  const drawer = document.getElementById('mobNslDrawer');
+  const overlay = document.getElementById('mobNslOverlay');
+  // Clone sidebar content into drawer if empty
+  if (!drawer.querySelector('.nsl-inner')) {
+    const clone = document.getElementById('nslSidebar').querySelector('.nsl-inner').cloneNode(true);
+    drawer.appendChild(clone);
+  }
+  drawer.classList.add('open');
+  overlay.classList.add('open');
+}
+function closeMobNSL() {
+  document.getElementById('mobNslDrawer').classList.remove('open');
+  document.getElementById('mobNslOverlay').classList.remove('open');
+}
+</script>
+</body>
+</html>
