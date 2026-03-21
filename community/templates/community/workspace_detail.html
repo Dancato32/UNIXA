@@ -1912,17 +1912,39 @@ function appendWsMsg(data, isMine) {
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-/* Sanitize AI content — preserve LaTeX math chars, only strip dangerous tags */
+/* Render AI content — preserve LaTeX, convert markdown, strip dangerous tags */
 function sanitizeAI(s) {
-  // Strip script/iframe/on* attributes but keep LaTeX-safe chars ($, \, {, })
-  return String(s)
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    .replace(/on\w+="[^"]*"/gi, '')
-    .replace(/on\w+='[^']*'/gi, '')
-    .replace(/</g, '&lt;').replace(/>/g, '&gt;')  // escape remaining HTML tags
-    .replace(/&lt;br&gt;|\\n/g, '<br>')
-    .replace(/\n/g, '<br>');
+  let t = String(s);
+  // 1. Strip dangerous tags
+  t = t.replace(/<script[\s\S]*?<\/script>/gi, '')
+       .replace(/<iframe[\s\S]*?<\/iframe>/gi, '');
+  // 2. Temporarily protect LaTeX blocks from markdown processing
+  //    Replace $$ ... $$ and $ ... $ with placeholders
+  const mathBlocks = [];
+  t = t.replace(/\$\$[\s\S]+?\$\$/g, m => { mathBlocks.push(m); return `\x00MATH${mathBlocks.length-1}\x00`; });
+  t = t.replace(/\$[^\$\n]+?\$/g,    m => { mathBlocks.push(m); return `\x00MATH${mathBlocks.length-1}\x00`; });
+  // 3. Escape HTML in non-math parts
+  t = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // 4. Convert markdown
+  t = t.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  t = t.replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>');
+  t = t.replace(/\*(.+?)\*/g,         '<em>$1</em>');
+  t = t.replace(/`([^`]+)`/g,         '<code style="background:rgba(255,255,255,.1);padding:.1em .3em;border-radius:3px;font-size:.85em;">$1</code>');
+  // 5. Numbered lists
+  t = t.replace(/((?:^\d+\..+\n?)+)/gm, match => {
+    const items = match.trim().split('\n').map(l => `<li>${l.replace(/^\d+\.\s*/,'')}</li>`).join('');
+    return `<ol style="margin:.4em 0 .4em 1.2em;padding:0;">${items}</ol>`;
+  });
+  // 6. Bullet lists
+  t = t.replace(/((?:^[-•*]\s.+\n?)+)/gm, match => {
+    const items = match.trim().split('\n').map(l => `<li>${l.replace(/^[-•*]\s/,'')}</li>`).join('');
+    return `<ul style="margin:.4em 0 .4em 1.2em;padding:0;">${items}</ul>`;
+  });
+  // 7. Line breaks
+  t = t.replace(/\n/g, '<br>');
+  // 8. Restore math placeholders (raw LaTeX — KaTeX will render these)
+  t = t.replace(/\x00MATH(\d+)\x00/g, (_, i) => mathBlocks[parseInt(i)]);
+  return t;
 }
 
 /* ── Live polling ── */
