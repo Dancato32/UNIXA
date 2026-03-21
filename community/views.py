@@ -51,7 +51,8 @@ def community_home(request):
 
     # Recent feed posts (top 8)
     try:
-        feed_posts = list(get_personalized_feed(request.user, limit=8))
+        result = get_personalized_feed(request.user, limit=8)
+        feed_posts = result.get('posts', [])
     except Exception:
         feed_posts = []
 

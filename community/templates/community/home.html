@@ -149,11 +149,13 @@
       <a href="{% url 'community:post_detail' pk=post.id %}" class="fp-card">
         <div class="fp-top">
           <div class="fp-av">
-            {% if post.author.community_profile.avatar %}
-              <img src="{{ post.author.community_profile.avatar.url }}" alt="">
+            {% with profile=post.author.community_profile %}
+            {% if profile and profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="">
             {% else %}
               {{ post.author.username|slice:":1"|upper }}
             {% endif %}
+            {% endwith %}
           </div>
           <span class="fp-author">{{ post.author.username }}</span>
           {% if post.school_community %}<span style="font-size:.7rem;color:var(--t3);">in {{ post.school_community.name|truncatechars:20 }}</span>{% endif %}
