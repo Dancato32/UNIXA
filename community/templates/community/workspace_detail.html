@@ -99,7 +99,7 @@
   .ws-hub-item-label{font-size:.6875rem;font-weight:600;text-align:center;color:var(--t2);}
 }
 /* ── Chat UI ── */
-.ws-chat-msgs{flex:1;overflow-y:auto;padding:.75rem 1rem;display:flex;flex-direction:column;gap:.125rem;scroll-behavior:smooth;}
+.ws-chat-msgs{flex:1;overflow-y:auto;padding:.75rem 1rem;display:flex;flex-direction:column;gap:.125rem;scroll-behavior:smooth;opacity:0;transition:opacity .15s;}
 .ws-chat-input-area{padding:.625rem .875rem;border-top:1px solid var(--b1);flex-shrink:0;background:var(--s1);}
 .ws-chat-form{display:flex;gap:.5rem;align-items:center;background:var(--s3);border:1px solid var(--b2);border-radius:14px;padding:.4rem .5rem .4rem .75rem;transition:border-color .15s;}
 .ws-chat-form:focus-within{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.08);}
@@ -1574,7 +1574,41 @@ if (chatMsgs) {
     el.innerHTML = sanitizeAI(el.dataset.raw);
     renderMath(el);
   });
-  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+  // Restore last scroll position for this workspace, or go to bottom
+  const storageKey = 'ws-scroll-' + WS_ID;
+  const lastMsgId = localStorage.getItem(storageKey);
+  let scrolled = false;
+  if (lastMsgId) {
+    const target = chatMsgs.querySelector('[data-id="' + lastMsgId + '"]');
+    if (target) {
+      // Scroll so the saved message is at the top of the view
+      chatMsgs.scrollTop = target.offsetTop - 12;
+      scrolled = true;
+    }
+  }
+  if (!scrolled) {
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  }
+
+  // Fade in after position is set (no flash of top)
+  requestAnimationFrame(() => { chatMsgs.style.opacity = '1'; });
+
+  // Save scroll position as user reads — debounced
+  let saveTimer;
+  chatMsgs.addEventListener('scroll', () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      // Find the last message fully visible in the viewport
+      const msgs = chatMsgs.querySelectorAll('.ws-msg-wrap[data-id]');
+      const containerBottom = chatMsgs.scrollTop + chatMsgs.clientHeight;
+      let lastVisible = null;
+      msgs.forEach(m => {
+        if (m.offsetTop + m.offsetHeight <= containerBottom + 40) lastVisible = m;
+      });
+      if (lastVisible) localStorage.setItem(storageKey, lastVisible.dataset.id);
+    }, 300);
+  });
 }
 
 /* ── Send chat message ── */
@@ -1937,6 +1971,8 @@ function appendWsMsg(data, isMine) {
   msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
   renderMath(wrap);
+  // Save this message as last seen
+  if (data.id) localStorage.setItem('ws-scroll-' + WS_ID, String(data.id));
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
