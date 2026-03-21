@@ -23,7 +23,10 @@
     padding-bottom:.25rem;margin-bottom:1rem;
   }
   .qa-grid::-webkit-scrollbar{display:none;}
-  .qa-btn{min-width:140px;flex-shrink:0;}
+  .qa-btn{min-width:130px;flex-shrink:0;}
+}
+@media(max-width:380px){
+  .qa-btn{min-width:115px;font-size:.8125rem;padding:.625rem .75rem;}
 }
 .qa-btn{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;}
 .qa-btn:hover{background:var(--s3);border-color:var(--b3);}
