@@ -47,54 +47,96 @@ def community_home(request):
     Shows feed preview, communities, quick actions, and user's workspaces.
     This is the new post-login landing page — the old dashboard remains at /dashboard/.
     """
-    from community.models import Follow
     from community.services.feed import get_personalized_feed
 
     # Recent feed posts (top 8)
-    feed_posts = get_personalized_feed(request.user, limit=8)
+    try:
+        feed_posts = list(get_personalized_feed(request.user, limit=8))
+    except Exception:
+        feed_posts = []
 
     # User's school memberships
-    school_memberships = CommunityMembership.objects.filter(
-        user=request.user
-    ).select_related('community').order_by('-joined_at')[:6]
+    try:
+        school_memberships = list(
+            CommunityMembership.objects.filter(user=request.user)
+            .select_related('community').order_by('-joined_at')[:6]
+        )
+    except Exception:
+        school_memberships = []
 
     # User's custom community memberships
-    custom_memberships = CustomCommunityMembership.objects.filter(
-        user=request.user
-    ).select_related('community').order_by('-joined_at')[:6]
+    try:
+        custom_memberships = list(
+            CustomCommunityMembership.objects.filter(user=request.user)
+            .select_related('community').order_by('-joined_at')[:6]
+        )
+    except Exception:
+        custom_memberships = []
 
     # Suggested communities (public, not already joined)
-    joined_custom_ids = custom_memberships.values_list('community_id', flat=True)
-    suggested_communities = CustomCommunity.objects.filter(
-        privacy=CustomCommunity.PRIVACY_PUBLIC,
-        is_active=True,
-    ).exclude(id__in=joined_custom_ids).order_by('-created_at')[:4]
+    try:
+        joined_custom_ids = [m.community_id for m in custom_memberships]
+        suggested_communities = list(
+            CustomCommunity.objects.filter(
+                privacy=CustomCommunity.PRIVACY_PUBLIC,
+                is_active=True,
+            ).exclude(id__in=joined_custom_ids).order_by('-created_at')[:4]
+        )
+    except Exception:
+        suggested_communities = []
 
-    # User's workspaces (non-personal, most recent)
-    workspace_memberships = WorkspaceMember.objects.filter(
-        user=request.user,
-        workspace__is_active=True,
-        workspace__is_personal=False,
-    ).select_related('workspace', 'workspace__owner').order_by('-workspace__updated_at')[:6]
+    # User's workspaces — guard against missing is_personal column before migration runs
+    workspace_memberships = []
+    personal_ws = None
+    last_workspace = None
+    try:
+        workspace_memberships = list(
+            WorkspaceMember.objects.filter(
+                user=request.user,
+                workspace__is_active=True,
+                workspace__is_personal=False,
+            ).select_related('workspace', 'workspace__owner')
+            .order_by('-workspace__updated_at')[:6]
+        )
+        personal_ws = GroupWorkspace.objects.filter(
+            owner=request.user, is_personal=True, is_active=True
+        ).first()
+        last_ws_member = (
+            WorkspaceMember.objects.filter(
+                user=request.user,
+                workspace__is_active=True,
+                workspace__is_personal=False,
+            ).select_related('workspace').order_by('-workspace__updated_at').first()
+        )
+        last_workspace = last_ws_member.workspace if last_ws_member else None
+    except Exception:
+        # Migration hasn't run yet — fall back to queries without is_personal
+        try:
+            workspace_memberships = list(
+                WorkspaceMember.objects.filter(
+                    user=request.user,
+                    workspace__is_active=True,
+                ).select_related('workspace', 'workspace__owner')
+                .order_by('-workspace__updated_at')[:6]
+            )
+            last_ws_member = (
+                WorkspaceMember.objects.filter(
+                    user=request.user, workspace__is_active=True,
+                ).select_related('workspace').order_by('-workspace__updated_at').first()
+            )
+            last_workspace = last_ws_member.workspace if last_ws_member else None
+        except Exception:
+            pass
 
-    # Personal workspace
-    personal_ws = GroupWorkspace.objects.filter(
-        owner=request.user, is_personal=True, is_active=True
-    ).first()
-
-    # Last visited workspace (most recently updated)
-    last_workspace = (
-        WorkspaceMember.objects.filter(user=request.user, workspace__is_active=True, workspace__is_personal=False)
-        .select_related('workspace')
-        .order_by('-workspace__updated_at')
-        .first()
-    )
-
-    # Unread notifications count (already in context processor, but also pass for quick actions)
-    unread_msgs = Conversation.objects.filter(
-        participants=request.user,
-        messages__is_read=False,
-    ).exclude(messages__sender=request.user).distinct().count()
+    # Unread message count (simple approach)
+    try:
+        from community.models import Message as _Msg
+        unread_msgs = _Msg.objects.filter(
+            conversation__participants=request.user,
+            is_read=False,
+        ).exclude(sender=request.user).count()
+    except Exception:
+        unread_msgs = 0
 
     return render(request, 'community/home.html', {
         'feed_posts': feed_posts,
@@ -103,7 +145,7 @@ def community_home(request):
         'suggested_communities': suggested_communities,
         'workspace_memberships': workspace_memberships,
         'personal_ws': personal_ws,
-        'last_workspace': last_workspace.workspace if last_workspace else None,
+        'last_workspace': last_workspace,
         'unread_msgs': unread_msgs,
         'workspace_type_choices': GroupWorkspace.TYPE_CHOICES,
     })
