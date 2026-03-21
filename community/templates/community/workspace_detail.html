@@ -132,6 +132,28 @@
 .nexa-bubble{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.08))!important;border:1px solid rgba(99,102,241,.2)!important;color:var(--t1)!important;border-radius:4px 18px 18px 18px!important;}
 .nexa-av{background:linear-gradient(135deg,#6366f1,#8b5cf6)!important;color:#fff!important;font-size:.5rem!important;font-weight:800!important;letter-spacing:-.02em;}
 .nexa-sender{color:#818cf8!important;font-weight:600!important;}
+/* Textbook-style math inside Nexa bubbles */
+.nexa-bubble .katex-display{
+  display:block;
+  text-align:center;
+  margin:.75em 0;
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+.nexa-bubble .katex-display > .katex{
+  display:inline-block;
+  text-align:center;
+}
+.nexa-bubble .katex{
+  font-size:1.05em;
+  color:var(--t1);
+}
+.nexa-bubble ol,.nexa-bubble ul{
+  margin:.4em 0 .4em 1.4em;
+  padding:0;
+  line-height:1.7;
+}
+.nexa-bubble li{margin:.15em 0;}
 /* Reply quote bubble */
 .ws-reply-quote{background:rgba(99,102,241,.08);border-left:3px solid rgba(99,102,241,.5);border-radius:0 8px 8px 0;padding:.3rem .625rem;margin-bottom:.25rem;cursor:pointer;max-width:100%;transition:background .15s;}
 .ws-reply-quote:hover{background:rgba(99,102,241,.14);}
@@ -557,7 +579,7 @@
           <div class="ws-msg-group">
             <span class="ws-msg-sender nexa-sender">Nexa</span>
             {% if msg.reply_to %}<div class="ws-reply-quote" onclick="scrollToMsg('{{ msg.reply_to.id }}')"><div class="ws-reply-quote-sender">{% if msg.reply_to.content|slice:":4" == "[AI]" %}Nexa{% else %}{{ msg.reply_to.sender.username }}{% endif %}</div><div class="ws-reply-quote-text">{% if msg.reply_to.content|slice:":4" == "[AI]" %}{{ msg.reply_to.content|slice:"4:"|truncatechars:80 }}{% else %}{{ msg.reply_to.content|truncatechars:80 }}{% endif %}</div></div>{% endif %}
-            <div class="ws-msg-bubble nexa-bubble">{{ msg.content|slice:"4:" }}</div>
+            <div class="ws-msg-bubble nexa-bubble nexa-render" data-raw="{{ msg.content|slice:"4:"|escapejs }}"></div>
             <span class="ws-msg-time">{{ msg.created_at|time:"g:i A" }}</span>
           </div>
           <button class="ws-reply-btn" onclick="setReply('{{ msg.id }}','Nexa','{{ msg.content|slice:"4:"|truncatechars:60|escapejs }}')" title="Reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg></button>
@@ -1547,8 +1569,12 @@ function scrollToMsg(msgId) {
 /* ── Scroll chat to bottom + render math on existing messages ── */
 const chatMsgs = document.getElementById('ws-chat-msgs');
 if (chatMsgs) {
+  // Render all server-side AI bubbles through sanitizeAI + KaTeX
+  chatMsgs.querySelectorAll('.nexa-render[data-raw]').forEach(el => {
+    el.innerHTML = sanitizeAI(el.dataset.raw);
+    renderMath(el);
+  });
   chatMsgs.scrollTop = chatMsgs.scrollHeight;
-  renderMath(chatMsgs);
 }
 
 /* ── Send chat message ── */

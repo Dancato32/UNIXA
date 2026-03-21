@@ -403,10 +403,16 @@ STRICT RULES — READ CAREFULLY:
 6. MATH FORMATTING — CRITICAL:
    - NEVER use **...** or *...* around math expressions. NEVER write **2x + 3 = 11**.
    - ALL math MUST be in LaTeX. No exceptions.
-   - Inline math: $2x + 3 = 11$, $x = 4$, $E = mc^2$
-   - Display/block math (standalone equation on its own line): $$x = \\frac{{-b \\pm \\sqrt{{b^2 - 4ac}}}}{{2a}}$$
-   - Use proper LaTeX: \\frac{{a}}{{b}} for fractions, \\sqrt{{x}} for roots, \\int, \\sum, \\alpha, \\beta, etc.
-   - Example of correct step-by-step: "Subtract 3 from both sides: $$2x = 8$$ Divide by 2: $$x = 4$$"
+   - Inline math (inside a sentence): $2x + 3 = 11$, $x = 4$, $E = mc^2$
+   - Display math (standalone equation, own line, centred): $$x = \\frac{{-b \\pm \\sqrt{{b^2 - 4ac}}}}{{2a}}$$
+   - Use proper LaTeX: \\frac{{a}}{{b}} for fractions, \\sqrt{{x}} for roots, \\int, \\sum, \\alpha, \\beta, x^2, x_n etc.
+   - CORRECT example of a step-by-step solution:
+     "Subtract 3 from both sides:
+     $$2x = 8$$
+     Divide both sides by 2:
+     $$x = 4$$
+     So the solution is $x = 4$."
+   - WRONG: "**2x = 8**" or "2x = 8" (no LaTeX) — never do this.
 7. FORMATTING — NO MARKDOWN:
    - Do NOT use **bold**, *italic*, or any markdown syntax in your replies.
    - Plain text only, except for LaTeX math.
