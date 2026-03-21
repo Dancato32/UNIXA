@@ -1568,9 +1568,9 @@ function wsSendMessage(e) {
   if (!content) return;
   input.value = '';
 
-  // Nexa is triggered by starting message with "nexa" (no @ needed)
-  const isAtAI = /^nexa[,\s!?]/i.test(content) || /^nexa$/i.test(content);
-  const question = isAtAI ? (content.replace(/^nexa[,\s!?]*/i, '').trim() || 'Hello!') : content;
+  // Nexa is triggered only when "nexa" appears as a word in the message
+  const isAtAI = /\bnexa\b/i.test(content);
+  const question = isAtAI ? (content.replace(/\bnexa[,\s!?]*/gi, '').trim() || content) : content;
   const looksLikeMeeting = MEETING_KEYWORDS.test(content) || /meeting|start.*call|call.*start/i.test(content);
   // Deep search: triggered by "search ..." or "nexa search ..." patterns
   const looksLikeSearch = SEARCH_KEYWORDS.test(question) && (
@@ -1925,62 +1925,11 @@ function wsPoll() {
         lastTs = msg.created_at;
         if (!msg.is_mine) { appendWsMsg(msg, false); newCount++; }
       });
-      if (newCount > 0) checkProactiveAI(newCount);
+      if (newCount > 0) { /* proactive AI disabled — Nexa only responds when called */ }
     })
     .catch(() => {});
 }
 setInterval(wsPoll, 2500);
-
-/* ── Proactive AI: NexaAI may chime in autonomously ── */
-let proactiveCooldown = false;
-function checkProactiveAI(newMsgCount) {
-  // Don't interrupt if AI is already typing or on cooldown
-  if (aiTyping || proactiveCooldown) return;
-  // Only trigger proactively occasionally (not every message)
-  if (Math.random() > 0.35) return;
-  // Grab the latest message text from the DOM
-  const msgs = document.getElementById('ws-chat-msgs');
-  if (!msgs) return;
-  const bubbles = msgs.querySelectorAll('.ws-msg-bubble');
-  if (!bubbles.length) return;
-  const lastBubble = bubbles[bubbles.length - 1];
-  const lastText = lastBubble.textContent.trim();
-  if (!lastText || lastText.length < 10) return;
-
-  // Set cooldown (60s between proactive messages)
-  proactiveCooldown = true;
-  setTimeout(() => { proactiveCooldown = false; }, 60000);
-
-  aiTyping = true;
-  const typing = document.createElement('div');
-  typing.id = 'ai-chat-typing';
-  typing.className = 'ws-msg-wrap theirs';
-  typing.innerHTML = `<div class="ws-msg-av nexa-av">NX</div><div class="ws-msg-group"><span class="ws-msg-sender nexa-sender">Nexa</span><div class="ws-msg-bubble nexa-bubble"><div class="aim-loading-dots" style="margin:0;"><span></span><span></span><span></span></div></div></div>`;
-  msgs.appendChild(typing);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  setTimeout(() => {
-    fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ message: lastText, source: 'group' }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        const t = document.getElementById('ai-chat-typing');
-        if (t) t.remove();
-        aiTyping = false;
-        // If AI returned [SKIP] or empty, do nothing
-        if (!data.reply || data.reply.trim() === '') return;
-        // AI reply is already saved to DB by the view — it will appear via polling
-      })
-      .catch(() => {
-        const t = document.getElementById('ai-chat-typing');
-        if (t) t.remove();
-        aiTyping = false;
-      });
-  }, 1200 + Math.random() * 1000);
-}
 
 /* ── Enter to send ── */
 document.getElementById('ws-chat-input').addEventListener('keydown', function(e) {
