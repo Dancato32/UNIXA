@@ -1766,7 +1766,7 @@ function renderSearchCard(result) {
     </a>`).join('');
 
   const findingsHtml = findings.map(f =>
-    `<div class="nexa-finding">${esc(f)}</div>`
+    `<div class="nexa-finding">${sanitizeAI(f)}</div>`
   ).join('');
 
   const followupsHtml = followups.map(q =>
@@ -1789,7 +1789,7 @@ function renderSearchCard(result) {
             <div class="nexa-search-query">${esc(result.search_query || '')}</div>
           </div>
         </div>
-        <div class="nexa-search-summary">${esc(result.summary || '')}</div>
+        <div class="nexa-search-summary">${sanitizeAI(result.summary || '')}</div>
         ${findings.length ? `<div class="nexa-findings"><div class="nexa-findings-title">Key Findings</div>${findingsHtml}</div>` : ''}
         ${sources.length ? `<div class="nexa-sources"><div class="nexa-findings-title" style="margin-bottom:.375rem;">Sources</div>${sourcesHtml}</div>` : ''}
         ${followups.length ? `<div><div class="nexa-findings-title" style="margin-bottom:.375rem;">Explore Further</div><div class="nexa-followups">${followupsHtml}</div></div>` : ''}
@@ -1798,6 +1798,7 @@ function renderSearchCard(result) {
     </div>`;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
+  renderMath(div);
 }
 
 function nexaFollowUp(btn) {
@@ -1883,7 +1884,10 @@ function appendWsMsg(data, isMine) {
   if (data.media_url) {
     bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble" style="padding:.375rem .625rem;"><a href="${data.media_url}" target="_blank" style="color:var(--blue);font-size:.8125rem;">📎 ${esc(data.media_name || 'File')}</a>${data.content ? '<div style="margin-top:.25rem;">' + esc(data.content) + '</div>' : ''}</div>`;
   } else if (isAI) {
-    bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble nexa-bubble">${esc(data.content).replace(/\n/g,'<br>')}</div>`;
+    // Don't escape AI content — KaTeX needs raw LaTeX chars ($, \, {, })
+    // Only sanitize dangerous HTML tags, preserve math notation
+    const safeAI = sanitizeAI(data.content || '');
+    bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble nexa-bubble">${safeAI}</div>`;
   } else {
     bubbleHtml = `${replyQuoteHtml}<div class="ws-msg-bubble">${esc(data.content)}</div>`;
   }
@@ -1907,6 +1911,19 @@ function appendWsMsg(data, isMine) {
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* Sanitize AI content — preserve LaTeX math chars, only strip dangerous tags */
+function sanitizeAI(s) {
+  // Strip script/iframe/on* attributes but keep LaTeX-safe chars ($, \, {, })
+  return String(s)
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/on\w+="[^"]*"/gi, '')
+    .replace(/on\w+='[^']*'/gi, '')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;')  // escape remaining HTML tags
+    .replace(/&lt;br&gt;|\\n/g, '<br>')
+    .replace(/\n/g, '<br>');
+}
 
 /* ── Live polling ── */
 let lastTs = new Date().toISOString();
