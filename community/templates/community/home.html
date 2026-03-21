@@ -15,14 +15,12 @@
 @media(max-width:860px){.home-grid{grid-template-columns:1fr;}}
 
 /* Quick Actions */
-.qa-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.625rem;margin-bottom:1.25rem;}
+.qa-wrap{overflow:hidden;margin-bottom:1.25rem;}
+.qa-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.625rem;}
 @media(max-width:600px){
-  .qa-grid{
-    display:flex;flex-direction:row;overflow-x:auto;gap:.5rem;
-    -webkit-overflow-scrolling:touch;scrollbar-width:none;
-    padding-bottom:.25rem;margin-bottom:1rem;
-  }
-  .qa-grid::-webkit-scrollbar{display:none;}
+  .qa-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-left:-.875rem;margin-right:-.875rem;padding:0 .875rem .25rem;}
+  .qa-wrap::-webkit-scrollbar{display:none;}
+  .qa-grid{display:flex;flex-direction:row;gap:.5rem;width:max-content;}
   .qa-btn{min-width:130px;flex-shrink:0;}
 }
 @media(max-width:380px){
@@ -71,14 +69,14 @@
 .collapsible-body.collapsed{max-height:0!important;}
 
 /* Feed preview */
-.fp-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.75rem .875rem;margin-bottom:.5rem;transition:border-color .15s;text-decoration:none;display:block;color:var(--t1);}
+.fp-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.75rem .875rem;margin-bottom:.5rem;transition:border-color .15s;text-decoration:none;display:block;color:var(--t1);overflow:hidden;width:100%;box-sizing:border-box;}
 .fp-card:hover{border-color:var(--b3);}
-.fp-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.375rem;}
+.fp-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.375rem;min-width:0;}
 .fp-av{width:24px;height:24px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0;overflow:hidden;}
 .fp-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.fp-author{font-size:.75rem;font-weight:600;}
-.fp-when{font-size:.7rem;color:var(--t3);margin-left:auto;}
-.fp-content{font-size:.8125rem;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.fp-author{font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
+.fp-when{font-size:.7rem;color:var(--t3);margin-left:auto;white-space:nowrap;flex-shrink:0;}
+.fp-content{font-size:.8125rem;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;}
 .fp-stats{display:flex;gap:.75rem;margin-top:.5rem;}
 .fp-stat{font-size:.7rem;color:var(--t3);display:flex;align-items:center;gap:.25rem;}
 .fp-stat svg{width:12px;height:12px;}
@@ -112,18 +110,19 @@
   <!-- Left: main content -->
   <div>
     <!-- Welcome bar -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
-      <div>
-        <div style="font-size:1.125rem;font-weight:800;">Welcome back, {{ user.username }} 👋</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;gap:.75rem;min-width:0;overflow:hidden;">
+      <div style="min-width:0;">
+        <div style="font-size:1.125rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Welcome back, {{ user.username }} 👋</div>
         <div style="font-size:.8125rem;color:var(--t3);margin-top:.2rem;">Here's what's happening in your community</div>
       </div>
-      <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm">
+      <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm" style="flex-shrink:0;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Old Dashboard
       </a>
     </div>
 
     <!-- Quick Actions -->
+    <div class="qa-wrap">
     <div class="qa-grid">
       <button class="qa-btn primary" onclick="openCreateWs()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -165,6 +164,7 @@
         Messages{% if unread_msgs %} <span style="background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:8px;">{{ unread_msgs }}</span>{% endif %}
       </a>
     </div>
+    </div><!-- /qa-wrap -->
 
     <!-- Feed Preview -->
     <div class="sec-head">
