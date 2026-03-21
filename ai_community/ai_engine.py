@@ -479,13 +479,30 @@ Return ONLY valid JSON."""
     }
 
 
-def analyze_meeting_transcript(transcript, workspace_name, members):
+def analyze_meeting_transcript(transcript=None, workspace_name='', members=None, messages=None):
     """
     Analyze a meeting transcript and extract:
     - summary, decisions, action_items (with assignee + deadline hints)
-    Returns {summary, decisions, action_items}
+    Accepts either a raw transcript string or a list of {sender, content, time} dicts.
+    Returns {summary, decisions, action_items, key_topics}
     """
-    members_list = ', '.join(members)
+    if members is None:
+        members = []
+    members_list = ', '.join(members) if members else 'unknown'
+
+    # Build transcript text from messages list if provided
+    if messages and not transcript:
+        lines = [f"[{m.get('time', '')}] {m.get('sender', 'unknown')}: {m.get('content', '')}" for m in messages]
+        transcript = '\n'.join(lines)
+
+    if not transcript or not transcript.strip():
+        return {
+            'summary': 'No messages were captured during this meeting.',
+            'decisions': [],
+            'action_items': [],
+            'key_topics': [],
+        }
+
     prompt = f"""You are an AI meeting analyst for a university project team.
 
 Workspace: {workspace_name}

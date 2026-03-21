@@ -37,6 +37,9 @@ router.register(r'blocks', BlockViewSet, basename='block')
 
 # ── Template URL patterns ─────────────────────────────────────────────────────
 urlpatterns = [
+    # Community Home (new post-login landing)
+    path('home/', views.community_home, name='community_home'),
+
     # Feed
     path('', views.feed, name='feed'),
 
@@ -109,6 +112,8 @@ urlpatterns = [
     path('workspaces/<uuid:ws_id>/assembly/', views.workspace_final_assembly, name='workspace_final_assembly'),
     path('workspaces/<uuid:ws_id>/ai/meeting-schedule/', views.workspace_ai_schedule_meeting, name='workspace_ai_schedule_meeting'),
     path('workspaces/<uuid:ws_id>/ai/deep-search/', views.workspace_ai_deep_search, name='workspace_ai_deep_search'),
+    path('workspaces/<uuid:ws_id>/meetings/', views.workspace_meeting_records, name='workspace_meeting_records'),
+    path('workspaces/<uuid:ws_id>/meetings/<uuid:record_id>/summarize/', views.workspace_meeting_summarize, name='workspace_meeting_summarize'),
 
     # REST API
     path('api/', include(router.urls)),

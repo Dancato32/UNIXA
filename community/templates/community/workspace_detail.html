@@ -133,6 +133,22 @@
 .aim-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 .aim-view{flex:1;overflow:hidden;display:none;flex-direction:column;}
 .aim-view.active{display:flex;}
+.aim-mtab{flex:1;padding:.375rem .5rem;background:var(--s3);border:1px solid var(--b2);border-radius:6px;color:var(--t2);font-size:.75rem;cursor:pointer;transition:all .15s;}
+.aim-mtab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.meeting-card{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:.875rem;margin-bottom:.75rem;}
+.meeting-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;}
+.meeting-card-date{font-size:.8rem;font-weight:700;color:var(--t1);}
+.meeting-card-meta{font-size:.7rem;color:var(--t3);}
+.meeting-card-summary{font-size:.78rem;color:var(--t2);line-height:1.5;margin-bottom:.625rem;}
+.meeting-card-section{margin-bottom:.5rem;}
+.meeting-card-section-title{font-size:.7rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.25rem;}
+.meeting-card-item{font-size:.75rem;color:var(--t2);padding:.2rem 0;border-bottom:1px solid var(--b1);}
+.meeting-card-item:last-child{border-bottom:none;}
+.meeting-transcript-toggle{font-size:.7rem;color:var(--accent);cursor:pointer;margin-top:.5rem;display:inline-block;}
+.meeting-transcript-body{display:none;margin-top:.5rem;background:var(--s3);border-radius:6px;padding:.625rem;max-height:200px;overflow-y:auto;}
+.meeting-transcript-line{font-size:.72rem;color:var(--t3);padding:.15rem 0;border-bottom:1px solid var(--b1);}
+.meeting-transcript-line:last-child{border-bottom:none;}
+.meeting-transcript-line strong{color:var(--t2);}
 .aim-chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.625rem;}
 .aim-msg{display:flex;gap:.625rem;align-items:flex-start;}
 .aim-msg.user{flex-direction:row-reverse;}
@@ -846,19 +862,37 @@
             </div>
           </div>
 
-          <!-- Meeting Support view -->
+          <!-- Meeting Notes view -->
           <div class="aim-view" id="aim-view-meeting">
             <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-              <span style="font-size:.875rem;font-weight:700;">Meeting Support</span>
+              <span style="font-size:.875rem;font-weight:700;">Meeting Notes</span>
+              <button class="btn btn-sm" style="font-size:.7rem;padding:.25rem .6rem;" onclick="loadMeetingRecords()">↻ Refresh</button>
             </div>
-            <div class="aim-scroll">
-              <div style="font-size:.75rem;color:var(--t3);margin-bottom:.75rem;">Paste your meeting notes or transcript below. The AI will extract a summary, decisions, and action items.</div>
-              <textarea id="aim-meeting-input" style="width:100%;min-height:140px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.8125rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Paste meeting transcript or notes here…"></textarea>
-              <button class="btn btn-primary btn-sm" style="margin-top:.625rem;width:100%;" onclick="aimProcessMeeting()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
-                Process with AI
-              </button>
-              <div id="aim-meeting-result" style="margin-top:1rem;"></div>
+            <div class="aim-scroll" id="aim-meeting-scroll">
+              <!-- Tabs: Past Meetings | Manual Paste -->
+              <div style="display:flex;gap:.5rem;margin-bottom:.875rem;">
+                <button class="aim-mtab active" id="mtab-past" onclick="switchMTab('past')">Past Meetings</button>
+                <button class="aim-mtab" id="mtab-manual" onclick="switchMTab('manual')">Manual Paste</button>
+              </div>
+
+              <!-- Past Meetings list -->
+              <div id="mtab-past-content">
+                <div style="font-size:.75rem;color:var(--t3);margin-bottom:.75rem;">All group calls are automatically recorded. Nexa summarizes everything so members who missed can catch up.</div>
+                <div id="meeting-records-list">
+                  <div style="text-align:center;padding:2rem 0;color:var(--t3);font-size:.8rem;">Loading meetings…</div>
+                </div>
+              </div>
+
+              <!-- Manual Paste -->
+              <div id="mtab-manual-content" style="display:none;">
+                <div style="font-size:.75rem;color:var(--t3);margin-bottom:.75rem;">Paste a meeting transcript or notes. Nexa will extract the summary, decisions, and action items.</div>
+                <textarea id="aim-meeting-input" style="width:100%;min-height:140px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.8125rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Paste meeting transcript or notes here…"></textarea>
+                <button class="btn btn-primary btn-sm" style="margin-top:.625rem;width:100%;" onclick="aimProcessMeeting()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+                  Process with AI
+                </button>
+                <div id="aim-meeting-result" style="margin-top:1rem;"></div>
+              </div>
             </div>
           </div>
 
@@ -1760,6 +1794,7 @@ function aimShowView(name, btn) {
   if (btn) btn.classList.add('active');
   if (name === 'health') aimLoadHealth();
   if (name === 'contrib') aimLoadContributions();
+  if (name === 'meeting') loadMeetingRecords();
 }
 
 /* ── AI Chat ── */
@@ -2038,7 +2073,85 @@ function aimLoadContributions() {
     .catch(() => {});
 }
 
-/* ── Meeting Support ── */
+/* ── Meeting Notes ── */
+function switchMTab(tab) {
+  document.getElementById('mtab-past').classList.toggle('active', tab === 'past');
+  document.getElementById('mtab-manual').classList.toggle('active', tab === 'manual');
+  document.getElementById('mtab-past-content').style.display = tab === 'past' ? '' : 'none';
+  document.getElementById('mtab-manual-content').style.display = tab === 'manual' ? '' : 'none';
+  if (tab === 'past') loadMeetingRecords();
+}
+
+function loadMeetingRecords() {
+  const list = document.getElementById('meeting-records-list');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:2rem 0;color:var(--t3);font-size:.8rem;">Loading…</div>';
+  fetch('/community/workspaces/' + WS_ID + '/meetings/')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.records || !data.records.length) {
+        list.innerHTML = '<div style="text-align:center;padding:2rem 0;color:var(--t3);font-size:.8rem;">No meetings recorded yet. Meetings are auto-captured when a group call ends.</div>';
+        return;
+      }
+      list.innerHTML = data.records.map((r, i) => {
+        const participants = (r.participants || []).join(', ') || 'Unknown';
+        const duration = r.duration_mins ? `${r.duration_mins} min` : '';
+        const topics = (r.key_topics || []).map(t => `<span style="background:var(--s3);border-radius:4px;padding:.1rem .4rem;font-size:.68rem;color:var(--t2);">${esc(t)}</span>`).join(' ');
+        const decisions = (r.decisions || []).map(d => `<div class="meeting-card-item">✅ ${esc(d)}</div>`).join('');
+        const actions = (r.action_items || []).map(a => {
+          const task = typeof a === 'object' ? (a.task || '') : a;
+          const who = typeof a === 'object' && a.assignee ? ` → @${a.assignee}` : '';
+          return `<div class="meeting-card-item">📌 ${esc(task)}${esc(who)}</div>`;
+        }).join('');
+        const transcript = (r.chat_log || []).map(m =>
+          `<div class="meeting-transcript-line"><strong>${esc(m.sender)}</strong> <span style="color:var(--t3);font-size:.65rem;">${esc(m.time||'')}</span>: ${esc(m.content)}</div>`
+        ).join('');
+        const hasSummary = r.ai_summary && r.ai_summary.trim();
+        return `<div class="meeting-card">
+          <div class="meeting-card-header">
+            <span class="meeting-card-date">📅 ${esc(r.started_at)}</span>
+            <span class="meeting-card-meta">${esc(duration)}</span>
+          </div>
+          <div class="meeting-card-meta" style="margin-bottom:.5rem;">👥 ${esc(participants)}</div>
+          ${topics ? `<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.625rem;">${topics}</div>` : ''}
+          ${hasSummary
+            ? `<div class="meeting-card-section"><div class="meeting-card-section-title">AI Summary</div><div class="meeting-card-summary">${esc(r.ai_summary)}</div></div>`
+            : `<div style="font-size:.75rem;color:var(--t3);margin-bottom:.5rem;">No summary yet.</div>`
+          }
+          ${decisions ? `<div class="meeting-card-section"><div class="meeting-card-section-title">Decisions</div>${decisions}</div>` : ''}
+          ${actions ? `<div class="meeting-card-section"><div class="meeting-card-section-title">Action Items</div>${actions}</div>` : ''}
+          ${transcript ? `<span class="meeting-transcript-toggle" onclick="toggleTranscript('mt-${i}')">📄 View full transcript</span>
+          <div class="meeting-transcript-body" id="mt-${i}">${transcript}</div>` : ''}
+          ${!hasSummary ? `<button class="btn btn-sm" style="margin-top:.5rem;font-size:.7rem;width:100%;" onclick="summarizeMeeting('${r.id}', this)">✨ Summarize with AI</button>` : ''}
+        </div>`;
+      }).join('');
+    })
+    .catch(() => { list.innerHTML = '<div style="color:var(--red);font-size:.8rem;">Failed to load meetings.</div>'; });
+}
+
+function toggleTranscript(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isOpen = el.style.display === 'block';
+  el.style.display = isOpen ? 'none' : 'block';
+  const toggle = el.previousElementSibling;
+  if (toggle) toggle.textContent = isOpen ? '📄 View full transcript' : '📄 Hide transcript';
+}
+
+function summarizeMeeting(recordId, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Summarizing…'; }
+  fetch('/community/workspaces/' + WS_ID + '/meetings/' + recordId + '/summarize/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) loadMeetingRecords();
+      else if (btn) { btn.disabled = false; btn.textContent = '✨ Summarize with AI'; }
+    })
+    .catch(() => { if (btn) { btn.disabled = false; btn.textContent = '✨ Summarize with AI'; } });
+}
+
 function aimProcessMeeting() {
   const transcript = document.getElementById('aim-meeting-input').value.trim();
   if (!transcript) { alert('Please paste a meeting transcript first.'); return; }

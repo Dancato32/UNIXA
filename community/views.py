@@ -38,6 +38,77 @@ from community.services.feed import get_personalized_feed
 User = get_user_model()
 
 
+# ── Community Home ───────────────────────────────────────────────────────────
+
+@login_required
+def community_home(request):
+    """
+    Community-First Home page.
+    Shows feed preview, communities, quick actions, and user's workspaces.
+    This is the new post-login landing page — the old dashboard remains at /dashboard/.
+    """
+    from community.models import Follow
+    from community.services.feed import get_personalized_feed
+
+    # Recent feed posts (top 8)
+    feed_posts = get_personalized_feed(request.user, limit=8)
+
+    # User's school memberships
+    school_memberships = CommunityMembership.objects.filter(
+        user=request.user
+    ).select_related('community').order_by('-joined_at')[:6]
+
+    # User's custom community memberships
+    custom_memberships = CustomCommunityMembership.objects.filter(
+        user=request.user
+    ).select_related('community').order_by('-joined_at')[:6]
+
+    # Suggested communities (public, not already joined)
+    joined_custom_ids = custom_memberships.values_list('community_id', flat=True)
+    suggested_communities = CustomCommunity.objects.filter(
+        privacy=CustomCommunity.PRIVACY_PUBLIC,
+        is_active=True,
+    ).exclude(id__in=joined_custom_ids).order_by('-created_at')[:4]
+
+    # User's workspaces (non-personal, most recent)
+    workspace_memberships = WorkspaceMember.objects.filter(
+        user=request.user,
+        workspace__is_active=True,
+        workspace__is_personal=False,
+    ).select_related('workspace', 'workspace__owner').order_by('-workspace__updated_at')[:6]
+
+    # Personal workspace
+    personal_ws = GroupWorkspace.objects.filter(
+        owner=request.user, is_personal=True, is_active=True
+    ).first()
+
+    # Last visited workspace (most recently updated)
+    last_workspace = (
+        WorkspaceMember.objects.filter(user=request.user, workspace__is_active=True, workspace__is_personal=False)
+        .select_related('workspace')
+        .order_by('-workspace__updated_at')
+        .first()
+    )
+
+    # Unread notifications count (already in context processor, but also pass for quick actions)
+    unread_msgs = Conversation.objects.filter(
+        participants=request.user,
+        messages__is_read=False,
+    ).exclude(messages__sender=request.user).distinct().count()
+
+    return render(request, 'community/home.html', {
+        'feed_posts': feed_posts,
+        'school_memberships': school_memberships,
+        'custom_memberships': custom_memberships,
+        'suggested_communities': suggested_communities,
+        'workspace_memberships': workspace_memberships,
+        'personal_ws': personal_ws,
+        'last_workspace': last_workspace.workspace if last_workspace else None,
+        'unread_msgs': unread_msgs,
+        'workspace_type_choices': GroupWorkspace.TYPE_CHOICES,
+    })
+
+
 # ── Feed ──────────────────────────────────────────────────────────────────────
 
 @login_required
@@ -1490,6 +1561,8 @@ def workspace_call_join(request, ws_id):
 
     key = _call_cache_key(ws_id)
     participants = cache.get(key, {})
+    is_first = len(participants) == 0
+
     avatar = None
     try:
         avatar = request.user.community_profile.avatar.url if request.user.community_profile.avatar else None
@@ -1501,6 +1574,11 @@ def workspace_call_join(request, ws_id):
         'joined_at': timezone.now().isoformat(),
     }
     cache.set(key, participants, timeout=30)
+
+    # Record call start time when first person joins
+    if is_first:
+        start_key = f'ws_call_start_{ws_id}'
+        cache.set(start_key, timezone.now().isoformat(), timeout=86400)
 
     # Post a system message to chat (only when first joining, not on heartbeat)
     if request.POST.get('announce') == '1':
@@ -1516,8 +1594,9 @@ def workspace_call_join(request, ws_id):
 @login_required
 @require_POST
 def workspace_call_leave(request, ws_id):
-    """Remove current user from the workspace call."""
+    """Remove current user from the workspace call. When last person leaves, auto-save meeting record."""
     from django.core.cache import cache
+    from community.models import MeetingRecord
     ws = get_object_or_404(GroupWorkspace, id=ws_id, is_active=True)
     key = _call_cache_key(ws_id)
     participants = cache.get(key, {})
@@ -1526,6 +1605,85 @@ def workspace_call_leave(request, ws_id):
         cache.set(key, participants, timeout=30)
     else:
         cache.delete(key)
+        # Last person left — capture meeting record
+        start_key = f'ws_call_start_{ws_id}'
+        started_at_str = cache.get(start_key)
+        cache.delete(start_key)
+
+        if started_at_str:
+            from django.utils.dateparse import parse_datetime
+            started_at = parse_datetime(started_at_str) or timezone.now()
+            ended_at = timezone.now()
+
+            # Collect all messages sent during the call window
+            msgs_qs = WorkspaceMessage.objects.filter(
+                workspace=ws,
+                created_at__gte=started_at,
+                created_at__lte=ended_at,
+            ).values('sender__username', 'content', 'created_at')
+
+            chat_log = [
+                {
+                    'sender': m['sender__username'],
+                    'content': m['content'],
+                    'time': m['created_at'].strftime('%H:%M'),
+                }
+                for m in msgs_qs
+                if not m['content'].startswith('📞') and not m['content'].startswith('📴')
+            ]
+
+            # Collect participant usernames from all who joined
+            all_members = list(WorkspaceMember.objects.filter(workspace=ws).values_list('user__username', flat=True))
+
+            # Run AI summary
+            from ai_community.ai_engine import analyze_meeting_transcript
+            analysis = analyze_meeting_transcript(
+                messages=chat_log,
+                workspace_name=ws.name,
+                members=all_members,
+            )
+
+            summary = ''
+            decisions = []
+            action_items = []
+            key_topics = []
+            if analysis:
+                summary = analysis.get('summary', '')
+                decisions = analysis.get('decisions', [])
+                action_items = analysis.get('action_items', [])
+                key_topics = analysis.get('key_topics', [])
+
+            # Save meeting record
+            record = MeetingRecord.objects.create(
+                workspace=ws,
+                started_at=started_at,
+                ended_at=ended_at,
+                participants=all_members,
+                chat_log=chat_log,
+                ai_summary=summary,
+                decisions=decisions,
+                action_items=action_items,
+                key_topics=key_topics,
+            )
+
+            # Post Nexa summary to group chat
+            if summary:
+                duration_mins = max(1, int((ended_at - started_at).total_seconds() / 60))
+                nexa_msg = f"[AI] 📋 Meeting ended ({duration_mins} min). Here's what was covered:\n\n{summary}"
+                if decisions:
+                    nexa_msg += '\n\n✅ Decisions: ' + ' | '.join(decisions[:3])
+                if action_items:
+                    items_text = ', '.join(
+                        a.get('task', str(a)) if isinstance(a, dict) else str(a)
+                        for a in action_items[:3]
+                    )
+                    nexa_msg += f'\n\n📌 Action items: {items_text}'
+                nexa_msg += f'\n\n📁 Full transcript saved in Meeting Notes.'
+                WorkspaceMessage.objects.create(
+                    workspace=ws,
+                    sender=request.user,
+                    content=nexa_msg,
+                )
 
     WorkspaceMessage.objects.create(
         workspace=ws,
@@ -2054,3 +2212,55 @@ def workspace_ai_deep_search(request, ws_id):
     )
 
     return JsonResponse({'ok': True, 'result': result})
+
+
+@login_required
+def workspace_meeting_records(request, ws_id):
+    """Return all meeting records for a workspace."""
+    from community.models import MeetingRecord
+    ws, _ = _ws_member_or_404(request, ws_id)
+    records = MeetingRecord.objects.filter(workspace=ws).order_by('-started_at')[:20]
+    data = []
+    for r in records:
+        duration = None
+        if r.ended_at and r.started_at:
+            duration = max(1, int((r.ended_at - r.started_at).total_seconds() / 60))
+        data.append({
+            'id': str(r.id),
+            'started_at': r.started_at.strftime('%b %d, %Y %H:%M'),
+            'ended_at': r.ended_at.strftime('%H:%M') if r.ended_at else None,
+            'duration_mins': duration,
+            'participants': r.participants,
+            'ai_summary': r.ai_summary,
+            'decisions': r.decisions,
+            'action_items': r.action_items,
+            'key_topics': r.key_topics,
+            'chat_log': r.chat_log,
+        })
+    return JsonResponse({'records': data})
+
+
+@login_required
+@require_POST
+def workspace_meeting_summarize(request, ws_id, record_id):
+    """Manually trigger AI summary for a specific meeting record."""
+    import json as _json
+    from community.models import MeetingRecord
+    from ai_community.ai_engine import analyze_meeting_transcript
+    ws, _ = _ws_member_or_404(request, ws_id)
+    record = get_object_or_404(MeetingRecord, id=record_id, workspace=ws)
+
+    all_members = list(WorkspaceMember.objects.filter(workspace=ws).values_list('user__username', flat=True))
+    analysis = analyze_meeting_transcript(
+        messages=record.chat_log,
+        workspace_name=ws.name,
+        members=all_members,
+    )
+    if analysis:
+        record.ai_summary = analysis.get('summary', '')
+        record.decisions = analysis.get('decisions', [])
+        record.action_items = analysis.get('action_items', [])
+        record.key_topics = analysis.get('key_topics', [])
+        record.save()
+        return JsonResponse({'ok': True, 'summary': record.ai_summary, 'decisions': record.decisions, 'action_items': record.action_items})
+    return JsonResponse({'error': 'Could not generate summary'}, status=500)

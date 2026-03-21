@@ -188,3 +188,38 @@ def on_custom_community_join(sender, instance, created, **kwargs):
             actor=instance.user,
             type=Notification.TYPE_JOIN,
         )
+
+
+# ── Auto-create Personal Workspace on user registration ──────────────────────
+
+from django.contrib.auth import get_user_model as _get_user_model
+
+def _create_personal_workspace(sender, instance, created, **kwargs):
+    """Create a private personal workspace for every new user."""
+    if not created:
+        return
+    try:
+        from community.models import GroupWorkspace, WorkspaceMember
+        ws = GroupWorkspace.objects.create(
+            name='My Personal Workspace',
+            description='Your private workspace — only visible to you.',
+            workspace_type=GroupWorkspace.TYPE_GENERAL,
+            privacy=GroupWorkspace.PRIVACY_PRIVATE,
+            owner=instance,
+            is_personal=True,
+        )
+        WorkspaceMember.objects.create(
+            workspace=ws,
+            user=instance,
+            role=WorkspaceMember.ROLE_OWNER,
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning('personal workspace creation failed: %s', e)
+
+
+def _connect_user_signal():
+    User = _get_user_model()
+    post_save.connect(_create_personal_workspace, sender=User, weak=False)
+
+_connect_user_signal()

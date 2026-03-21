@@ -545,20 +545,30 @@ class GroupWorkspace(models.Model):
 
     PRIVACY_PRIVATE = 'private'
     PRIVACY_REQUEST = 'request'
+    PRIVACY_PUBLIC = 'public'
     PRIVACY_CHOICES = [
         (PRIVACY_PRIVATE, 'Private (invite only)'),
         (PRIVACY_REQUEST, 'Visible, join by request'),
+        (PRIVACY_PUBLIC, 'Public (anyone can join)'),
     ]
 
     TYPE_STARTUP = 'startup'
     TYPE_STUDY = 'study_group'
     TYPE_PROJECT = 'group_project'
     TYPE_GENERAL = 'general'
+    TYPE_AI_TUTOR = 'ai_tutor'
+    TYPE_ASSIGNMENT = 'assignment'
+    TYPE_EXAM_PREP = 'exam_prep'
+    TYPE_RESEARCH = 'research'
     TYPE_CHOICES = [
         (TYPE_STARTUP, 'Startup'),
         (TYPE_STUDY, 'Study Group'),
         (TYPE_PROJECT, 'Group Project'),
         (TYPE_GENERAL, 'General Collaboration'),
+        (TYPE_AI_TUTOR, 'AI Tutor Workspace'),
+        (TYPE_ASSIGNMENT, 'Assignment Solver'),
+        (TYPE_EXAM_PREP, 'Exam Prep'),
+        (TYPE_RESEARCH, 'Research'),
     ]
 
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
@@ -576,6 +586,7 @@ class GroupWorkspace(models.Model):
     )
     invite_code = models.CharField(max_length=12, unique=True, blank=True)
     is_active = models.BooleanField(default=True)
+    is_personal = models.BooleanField(default=False, db_index=True)  # auto-created personal workspace
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -734,6 +745,33 @@ class WorkspaceTask(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ── Meeting Record ───────────────────────────────────────────────────────────
+
+class MeetingRecord(models.Model):
+    """Auto-captured record of a group call with AI summary."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.CASCADE, related_name='meeting_records'
+    )
+    started_at = models.DateTimeField()
+    ended_at = models.DateTimeField(null=True, blank=True)
+    participants = models.JSONField(default=list)   # list of usernames
+    chat_log = models.JSONField(default=list)        # messages during call
+    ai_summary = models.TextField(blank=True)
+    decisions = models.JSONField(default=list)
+    action_items = models.JSONField(default=list)
+    key_topics = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-started_at']
+        verbose_name = 'Meeting Record'
+
+    def __str__(self):
+        return f'Meeting in {self.workspace} @ {self.started_at:%Y-%m-%d %H:%M}'
 
 
 # ── Friendship ────────────────────────────────────────────────────────────────

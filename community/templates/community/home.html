@@ -1,0 +1,385 @@
+{% extends "community/base.html" %}
+{% block title %}Home{% endblock %}
+{% block mobile_title %}🏠 home{% endblock %}
+{% block nav_home %}active{% endblock %}
+{% block rail_home %}active{% endblock %}
+{% block bn_home %}active{% endblock %}
+{% block topbar_title %}home{% endblock %}
+{% block topbar_desc %}Your community hub{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>{% endblock %}
+
+{% block extra_css %}
+<style>
+.home-grid{display:grid;grid-template-columns:1fr 280px;gap:1.25rem;align-items:start;}
+@media(max-width:860px){.home-grid{grid-template-columns:1fr;}}
+
+/* Quick Actions */
+.qa-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.625rem;margin-bottom:1.25rem;}
+@media(max-width:480px){.qa-grid{grid-template-columns:1fr;}}
+.qa-btn{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;}
+.qa-btn:hover{background:var(--s3);border-color:var(--b3);}
+.qa-btn svg{width:18px;height:18px;flex-shrink:0;color:var(--t3);}
+.qa-btn.primary{background:var(--white);color:#000;border-color:transparent;}
+.qa-btn.primary svg{color:#000;}
+.qa-btn.primary:hover{background:#e8e8e8;}
+
+/* Section headers */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.sec-title{font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);}
+.sec-link{font-size:.75rem;color:var(--t3);transition:color .15s;}
+.sec-link:hover{color:var(--t1);}
+
+/* Workspace cards */
+.ws-card{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;margin-bottom:.5rem;transition:all .15s;text-decoration:none;color:var(--t1);}
+.ws-card:hover{background:var(--s3);border-color:var(--b3);}
+.ws-icon{width:36px;height:36px;border-radius:8px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:800;flex-shrink:0;}
+.ws-info{flex:1;min-width:0;}
+.ws-name{font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ws-meta{font-size:.75rem;color:var(--t3);}
+.ws-badge{font-size:.65rem;font-weight:700;padding:.1rem .4rem;border-radius:4px;background:var(--s4);color:var(--t3);}
+
+/* Community chips */
+.comm-chip{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;margin-bottom:.375rem;transition:all .15s;text-decoration:none;color:var(--t1);}
+.comm-chip:hover{background:var(--s3);}
+.comm-av{width:28px;height:28px;border-radius:6px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:800;flex-shrink:0;overflow:hidden;}
+.comm-av img{width:100%;height:100%;object-fit:cover;}
+.comm-name{font-size:.8125rem;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.comm-join-btn{font-size:.7rem;font-weight:700;padding:.2rem .5rem;border-radius:4px;background:var(--white);color:#000;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.comm-join-btn:hover{background:#e8e8e8;}
+
+/* Feed preview */
+.fp-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.75rem .875rem;margin-bottom:.5rem;transition:border-color .15s;text-decoration:none;display:block;color:var(--t1);}
+.fp-card:hover{border-color:var(--b3);}
+.fp-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.375rem;}
+.fp-av{width:24px;height:24px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.fp-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.fp-author{font-size:.75rem;font-weight:600;}
+.fp-when{font-size:.7rem;color:var(--t3);margin-left:auto;}
+.fp-content{font-size:.8125rem;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.fp-stats{display:flex;gap:.75rem;margin-top:.5rem;}
+.fp-stat{font-size:.7rem;color:var(--t3);display:flex;align-items:center;gap:.25rem;}
+.fp-stat svg{width:12px;height:12px;}
+
+/* Create workspace modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:4000;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--s2);border:1px solid var(--b2);border-radius:12px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.modal-head{padding:1rem 1.25rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:.9375rem;font-weight:700;}
+.modal-close{background:none;border:none;color:var(--t3);font-size:1.25rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;}
+.modal-close:hover{background:var(--s3);color:var(--t1);}
+.modal-body{padding:1.25rem;}
+.form-group{margin-bottom:1rem;}
+.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.375rem;}
+.form-input{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;box-sizing:border-box;}
+.form-input:focus{border-color:var(--b3);}
+.form-select{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;box-sizing:border-box;}
+.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;}
+.type-opt{padding:.625rem .75rem;background:var(--s3);border:1px solid var(--b2);border-radius:6px;cursor:pointer;transition:all .15s;text-align:center;}
+.type-opt:hover{border-color:var(--b3);}
+.type-opt.selected{border-color:var(--white);background:var(--s4);}
+.type-opt-icon{font-size:1.25rem;margin-bottom:.25rem;}
+.type-opt-name{font-size:.75rem;font-weight:600;color:var(--t1);}
+.type-opt-desc{font-size:.65rem;color:var(--t3);margin-top:.1rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-grid">
+  <!-- Left: main content -->
+  <div>
+    <!-- Welcome bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
+      <div>
+        <div style="font-size:1.125rem;font-weight:800;">Welcome back, {{ user.username }} 👋</div>
+        <div style="font-size:.8125rem;color:var(--t3);margin-top:.2rem;">Here's what's happening in your community</div>
+      </div>
+      <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Old Dashboard
+      </a>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="qa-grid">
+      <button class="qa-btn primary" onclick="openCreateWs()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create Workspace
+      </button>
+      <a href="{% url 'community:workspace_list' %}" class="qa-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        My Workspaces
+      </a>
+      {% if last_workspace %}
+      <a href="{% url 'community:workspace_detail' ws_id=last_workspace.id %}" class="qa-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        Resume: {{ last_workspace.name|truncatechars:18 }}
+      </a>
+      {% else %}
+      <a href="{% url 'community:workspace_create' %}" class="qa-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        Join a Workspace
+      </a>
+      {% endif %}
+      <a href="{% url 'assignment_list' %}" class="qa-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Upload Assignment
+      </a>
+      <a href="{% url 'community:schools' %}" class="qa-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Find Study Group
+      </a>
+      <a href="{% url 'community:post_create' %}" class="qa-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        New Post
+      </a>
+      <a href="{% url 'community:messages' %}" class="qa-btn" style="position:relative;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Messages{% if unread_msgs %} <span style="background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:8px;">{{ unread_msgs }}</span>{% endif %}
+      </a>
+    </div>
+
+    <!-- Feed Preview -->
+    <div class="sec-head">
+      <span class="sec-title">Recent Activity</span>
+      <a href="{% url 'community:feed' %}" class="sec-link">See all →</a>
+    </div>
+    {% if feed_posts %}
+      {% for post in feed_posts %}
+      <a href="{% url 'community:post_detail' pk=post.id %}" class="fp-card">
+        <div class="fp-top">
+          <div class="fp-av">
+            {% if post.author.community_profile.avatar %}
+              <img src="{{ post.author.community_profile.avatar.url }}" alt="">
+            {% else %}
+              {{ post.author.username|slice:":1"|upper }}
+            {% endif %}
+          </div>
+          <span class="fp-author">{{ post.author.username }}</span>
+          {% if post.school_community %}<span style="font-size:.7rem;color:var(--t3);">in {{ post.school_community.name|truncatechars:20 }}</span>{% endif %}
+          {% if post.custom_community %}<span style="font-size:.7rem;color:var(--t3);">in {{ post.custom_community.name|truncatechars:20 }}</span>{% endif %}
+          <span class="fp-when">{{ post.created_at|timesince }} ago</span>
+        </div>
+        {% if post.title %}<div style="font-size:.875rem;font-weight:600;margin-bottom:.25rem;">{{ post.title|truncatechars:80 }}</div>{% endif %}
+        <div class="fp-content">{{ post.content|truncatechars:140 }}</div>
+        <div class="fp-stats">
+          <span class="fp-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg>{{ post.like_count }}</span>
+          <span class="fp-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>{{ post.comment_count }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+      <div style="text-align:center;padding:2rem 0;color:var(--t3);font-size:.875rem;">No posts yet. <a href="{% url 'community:post_create' %}" style="color:var(--t2);">Create the first one →</a></div>
+    {% endif %}
+  </div>
+
+  <!-- Right: sidebar panels -->
+  <div>
+    <!-- Personal Workspace -->
+    {% if personal_ws %}
+    <div style="margin-bottom:1.25rem;">
+      <div class="sec-head"><span class="sec-title">Personal Workspace</span></div>
+      <a href="{% url 'community:workspace_detail' ws_id=personal_ws.id %}" class="ws-card">
+        <div class="ws-icon" style="background:#1a1a2e;color:#818cf8;">🔒</div>
+        <div class="ws-info">
+          <div class="ws-name">{{ personal_ws.name }}</div>
+          <div class="ws-meta">Private · Only you</div>
+        </div>
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- My Workspaces -->
+    {% if workspace_memberships %}
+    <div style="margin-bottom:1.25rem;">
+      <div class="sec-head">
+        <span class="sec-title">My Workspaces</span>
+        <a href="{% url 'community:workspace_list' %}" class="sec-link">All →</a>
+      </div>
+      {% for m in workspace_memberships %}
+      {% with ws=m.workspace %}
+      <a href="{% url 'community:workspace_detail' ws_id=ws.id %}" class="ws-card">
+        <div class="ws-icon">{{ ws.name|slice:":1"|upper }}</div>
+        <div class="ws-info">
+          <div class="ws-name">{{ ws.name|truncatechars:22 }}</div>
+          <div class="ws-meta">{{ ws.get_workspace_type_display }} · {{ m.role }}</div>
+        </div>
+        <span class="ws-badge">{{ ws.members.count }}</span>
+      </a>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- My Communities -->
+    {% if school_memberships or custom_memberships %}
+    <div style="margin-bottom:1.25rem;">
+      <div class="sec-head">
+        <span class="sec-title">My Communities</span>
+        <a href="{% url 'community:custom_list' %}" class="sec-link">All →</a>
+      </div>
+      {% for m in school_memberships %}
+      <a href="{% url 'community:school_detail' slug=m.community.slug %}" class="comm-chip">
+        <div class="comm-av">
+          {% if m.community.logo_url %}<img src="{{ m.community.logo_url }}" alt="">{% else %}{{ m.community.name|slice:":1"|upper }}{% endif %}
+        </div>
+        <span class="comm-name">{{ m.community.name|truncatechars:24 }}</span>
+      </a>
+      {% endfor %}
+      {% for m in custom_memberships %}
+      <a href="{% url 'community:custom_detail' slug=m.community.slug %}" class="comm-chip">
+        <div class="comm-av">{{ m.community.name|slice:":1"|upper }}</div>
+        <span class="comm-name">{{ m.community.name|truncatechars:24 }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Suggested Communities -->
+    {% if suggested_communities %}
+    <div style="margin-bottom:1.25rem;">
+      <div class="sec-head"><span class="sec-title">Discover</span></div>
+      {% for c in suggested_communities %}
+      <div class="comm-chip" style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:.5rem;min-width:0;">
+          <div class="comm-av">{{ c.name|slice:":1"|upper }}</div>
+          <span class="comm-name">{{ c.name|truncatechars:20 }}</span>
+        </div>
+        <button class="comm-join-btn" onclick="quickJoin('{{ c.slug }}', this)">Join</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- AI Hub shortcut -->
+    <a href="{% url 'ai_community:hub' %}" class="ws-card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-color:#2a2a4a;">
+      <div class="ws-icon" style="background:#2a2a4a;color:#818cf8;font-size:1.25rem;">🤖</div>
+      <div class="ws-info">
+        <div class="ws-name" style="color:#c4b5fd;">Nexa AI Hub</div>
+        <div class="ws-meta" style="color:#6b7280;">Find people · Study groups · AI tools</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Create Workspace Modal -->
+<div class="modal-overlay" id="create-ws-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">Create Workspace</span>
+      <button class="modal-close" onclick="closeCreateWs()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="{% url 'community:workspace_create' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Workspace Name</label>
+          <input class="form-input" name="name" placeholder="e.g. CS301 Study Group" required maxlength="255">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <div class="type-grid" id="type-grid">
+            <div class="type-opt selected" data-val="general" onclick="selectType(this)">
+              <div class="type-opt-icon">🤝</div>
+              <div class="type-opt-name">General</div>
+              <div class="type-opt-desc">Collaboration</div>
+            </div>
+            <div class="type-opt" data-val="study_group" onclick="selectType(this)">
+              <div class="type-opt-icon">📚</div>
+              <div class="type-opt-name">Study Group</div>
+              <div class="type-opt-desc">Exam prep</div>
+            </div>
+            <div class="type-opt" data-val="group_project" onclick="selectType(this)">
+              <div class="type-opt-icon">🗂️</div>
+              <div class="type-opt-name">Team Project</div>
+              <div class="type-opt-desc">Academic project</div>
+            </div>
+            <div class="type-opt" data-val="startup" onclick="selectType(this)">
+              <div class="type-opt-icon">🚀</div>
+              <div class="type-opt-name">Startup</div>
+              <div class="type-opt-desc">Build a product</div>
+            </div>
+            <div class="type-opt" data-val="ai_tutor" onclick="selectType(this)">
+              <div class="type-opt-icon">🤖</div>
+              <div class="type-opt-name">AI Tutor</div>
+              <div class="type-opt-desc">AI-guided learning</div>
+            </div>
+            <div class="type-opt" data-val="assignment" onclick="selectType(this)">
+              <div class="type-opt-icon">✏️</div>
+              <div class="type-opt-name">Assignment</div>
+              <div class="type-opt-desc">Solve together</div>
+            </div>
+            <div class="type-opt" data-val="exam_prep" onclick="selectType(this)">
+              <div class="type-opt-icon">🎯</div>
+              <div class="type-opt-name">Exam Prep</div>
+              <div class="type-opt-desc">Practice & review</div>
+            </div>
+            <div class="type-opt" data-val="research" onclick="selectType(this)">
+              <div class="type-opt-icon">🔬</div>
+              <div class="type-opt-name">Research</div>
+              <div class="type-opt-desc">Deep investigation</div>
+            </div>
+          </div>
+          <input type="hidden" name="workspace_type" id="ws-type-input" value="general">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Privacy</label>
+          <select class="form-select" name="privacy">
+            <option value="private">Private (invite only)</option>
+            <option value="request">Visible, join by request</option>
+            <option value="public">Public (anyone can join)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description (optional)</label>
+          <textarea class="form-input" name="description" rows="2" placeholder="What is this workspace for?" style="resize:vertical;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject / Topic (optional)</label>
+          <input class="form-input" name="subject" placeholder="e.g. Machine Learning, Business Strategy">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.625rem;">
+          Create Workspace
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openCreateWs() {
+  document.getElementById('create-ws-modal').classList.add('open');
+}
+function closeCreateWs() {
+  document.getElementById('create-ws-modal').classList.remove('open');
+}
+document.getElementById('create-ws-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeCreateWs();
+});
+
+function selectType(el) {
+  document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('ws-type-input').value = el.dataset.val;
+}
+
+function quickJoin(slug, btn) {
+  btn.disabled = true;
+  btn.textContent = '…';
+  const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
+  fetch('/community/api/communities/' + slug + '/quick-join/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrf },
+  })
+    .then(r => r.json())
+    .then(d => {
+      btn.textContent = d.joined ? 'Joined ✓' : 'Requested ✓';
+      btn.style.background = '#22c55e';
+      btn.style.color = '#fff';
+    })
+    .catch(() => { btn.disabled = false; btn.textContent = 'Join'; });
+}
+</script>
+{% endblock %}

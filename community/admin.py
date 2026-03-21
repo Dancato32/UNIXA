@@ -242,3 +242,12 @@ class WorkspaceMemberAdmin(admin.ModelAdmin):
 class WorkspaceFileAdmin(admin.ModelAdmin):
     list_display = ('original_name', 'workspace', 'uploaded_by', 'file_size', 'uploaded_at')
     search_fields = ('original_name', 'workspace__name')
+
+from community.models import MeetingRecord
+
+@admin.register(MeetingRecord)
+class MeetingRecordAdmin(admin.ModelAdmin):
+    list_display = ('workspace', 'started_at', 'ended_at', 'created_at')
+    list_filter = ('workspace',)
+    search_fields = ('workspace__name',)
+    readonly_fields = ('id', 'created_at')

@@ -175,6 +175,9 @@ input,textarea,select{font-family:inherit;}
   <div class="rail">
     <a href="{% url 'dashboard' %}" class="rail-icon nexa" title="NEXA Dashboard">N</a>
     <div class="rail-sep"></div>
+    <a href="{% url 'community:community_home' %}" class="rail-icon {% block rail_home %}{% endblock %}" title="Home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
     <a href="{% url 'community:feed' %}" class="rail-icon {% block rail_feed %}{% endblock %}" title="Feed">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
     </a>
@@ -216,6 +219,8 @@ input,textarea,select{font-family:inherit;}
           <a href="{% url 'community:post_create' %}"><button title="New Post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></a>
         </div>
       </div>
+      <a href="{% url 'community:community_home' %}" class="ch-item {% block nav_home %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg># home</a>
       <a href="{% url 'community:feed' %}" class="ch-item {% block nav_feed %}{% endblock %}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg># feed</a>
       <a href="{% url 'community:schools' %}" class="ch-item {% block nav_schools %}{% endblock %}">
@@ -324,6 +329,10 @@ input,textarea,select{font-family:inherit;}
 <div class="mob-overlay" id="mob-overlay" onclick="toggleSidebar()"></div>
 
 <nav class="bottom-nav">
+  <a href="{% url 'community:community_home' %}" class="bn-item {% block bn_home %}{% endblock %}" title="Home">
+    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </a>
   <a href="{% url 'community:feed' %}" class="bn-item {% block bn_feed %}{% endblock %}" title="Feed">
     <!-- filled -->
     <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>

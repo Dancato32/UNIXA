@@ -8,14 +8,14 @@ User = get_user_model()
 def landing_view(request):
     """Landing page view - accessible only to unauthenticated users."""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('community:community_home')
     return render(request, 'users/landing_final.html')
 
 
 def login_view(request):
     """User login view."""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('community:community_home')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -25,7 +25,7 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('dashboard')
+                return redirect('community:community_home')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -37,7 +37,7 @@ def login_view(request):
 def register_view(request):
     """User registration view."""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('community:community_home')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -106,7 +106,7 @@ def register_view(request):
             else:
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
-            return redirect('dashboard')
+            return redirect('community:community_home')
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')
             return render(request, 'users/register_split.html')
