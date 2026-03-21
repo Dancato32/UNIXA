@@ -49,16 +49,21 @@
     background:rgba(10,10,10,.97);border-top:1px solid var(--b1);
     z-index:200;height:54px;
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-    padding:0 .25rem env(safe-area-inset-bottom,0);
+    padding:0 0 env(safe-area-inset-bottom,0);
+    overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
   }
+  .ws-mob-tabs::-webkit-scrollbar{display:none;}
   .ws-mob-tab{
-    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:2px;color:var(--t3);background:none;border:none;cursor:pointer;
-    font-size:.5625rem;font-weight:600;padding:.375rem .25rem;
-    transition:color .15s;
+    font-size:.5625rem;font-weight:600;padding:.375rem .75rem;
+    transition:color .15s;white-space:nowrap;min-width:56px;
   }
   .ws-mob-tab svg{width:20px;height:20px;}
   .ws-mob-tab.active{color:var(--white);}
+  .ws-mob-tab.active svg{filter:drop-shadow(0 0 4px rgba(255,255,255,.3));}
   /* Hub FAB */
   .ws-hub-fab{
     display:flex;position:fixed;bottom:62px;right:1rem;
@@ -1245,7 +1250,11 @@ document.addEventListener('DOMContentLoaded', function() {
   </button>
   <button class="ws-mob-tab" id="wstab-tools" onclick="wsMobTab('tools',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-    Tools
+    AI Tools
+  </button>
+  <button class="ws-mob-tab" id="wstab-ai-manager" onclick="wsMobTab('ai-manager',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+    AI Mgr
   </button>
   <button class="ws-mob-tab" id="wstab-tasks" onclick="wsMobTab('tasks',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -1259,9 +1268,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     Members
   </button>
-  <button class="ws-mob-tab" id="wstab-hub" onclick="openWsHub()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    Hub
+  <button class="ws-mob-tab" id="wstab-call" onclick="wsMobTab('call',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    Call
   </button>
   {% endif %}
 </nav>
@@ -1336,8 +1345,14 @@ const CSRF = '{{ csrf_token }}';
 
 /* ── Mobile workspace tab bar ── */
 function wsMobTab(panelId, tabEl) {
-  // Switch panel
-  showPanel(panelId, document.querySelector('.ws-nav-item.active') || document.querySelector('.ws-nav-item'));
+  // Map tab IDs to sidebar nav items where needed
+  const navMap = {
+    'ai-manager': 'nav-ai-manager',
+    'call': 'nav-call',
+  };
+  const navId = navMap[panelId];
+  const navBtn = navId ? document.getElementById(navId) : document.querySelector('.ws-nav-item');
+  showPanel(panelId, navBtn);
   // Update tab active state
   document.querySelectorAll('.ws-mob-tab').forEach(t => t.classList.remove('active'));
   if (tabEl) tabEl.classList.add('active');
