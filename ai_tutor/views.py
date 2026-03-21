@@ -378,8 +378,9 @@ def chat_stream(request):
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
         response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
-        response['Cache-Control'] = 'no-cache'
+        response['Cache-Control'] = 'no-cache, no-transform'
         response['X-Accel-Buffering'] = 'no'
+        response['Transfer-Encoding'] = 'chunked'
         return response
 
     except Exception as e:

@@ -866,8 +866,39 @@ const NexaChat = {
                 }
             }
         } catch(e) {
-            el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
-            return;
+            console.warn('Streaming failed, falling back to AJAX:', e);
+            // Fallback to regular AJAX if streaming fails
+            try {
+                const res2 = await fetch(NexaAI.ajaxUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
+                    body: JSON.stringify({ message, use_rag: useRag, learning_mode: NexaAI.currentMode })
+                });
+                const data = await res2.json();
+                if (data.success) {
+                    fullText = data.response;
+                } else {
+                    el.innerHTML = '<span style="color:#ef4444">Error: ' + (data.error || 'Request failed') + '</span>';
+                    return;
+                }
+            } catch(e2) {
+                el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
+                return;
+            }
+        }
+        // If streaming produced no text (proxy buffering), fall back to AJAX
+        if (!fullText) {
+            try {
+                const res3 = await fetch(NexaAI.ajaxUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
+                    body: JSON.stringify({ message, use_rag: useRag, learning_mode: NexaAI.currentMode })
+                });
+                const data = await res3.json();
+                fullText = data.success ? data.response : ('Error: ' + (data.error || 'No response'));
+            } catch(e3) {
+                fullText = 'Connection error. Please try again.';
+            }
         }
         el.innerHTML = NexaChat.renderBoardHTML(fullText);
         if (wrap) wrap.dataset.plain = fullText;
