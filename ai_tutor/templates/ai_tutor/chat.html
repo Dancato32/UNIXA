@@ -436,17 +436,18 @@
                         <div class="msg-avatar">{{ user.username|slice:":1"|upper }}</div>
                     </div>
                 </div>
-                <div class="msg-wrap">
+                <div class="msg-wrap history-wrap" id="history-wrap-{{ forloop.counter0 }}">
                     <div class="msg msg-ai">
                         <div class="msg-avatar">N</div>
                         <div class="msg-body">
-                            <div class="msg-text board-render">{{ conv.response|linebreaks }}</div>
+                            <div class="msg-text board-render" id="history-msg-{{ forloop.counter0 }}"></div>
+                            <template class="history-raw">{{ conv.response }}</template>
                             <div class="msg-actions">
-                                <button class="msg-action-btn" onclick="NexaVoice.speak('{{ conv.response|escapejs }}')">
+                                <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.history-wrap').dataset.plain)">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
                                     Listen
                                 </button>
-                                <button class="msg-action-btn" onclick="NexaUI.copyText('{{ conv.response|escapejs }}')">
+                                <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.history-wrap').dataset.plain)">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                                     Copy
                                 </button>
@@ -456,6 +457,10 @@
                     </div>
                 </div>
                 {% endfor %}
+                <script>
+                // Raw AI responses — safely JSON-encoded for JS rendering
+                window.NEXA_HISTORY = [{% for conv in conversations %}"{{ conv.response|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+                </script>
             {% else %}
             <div class="welcome" id="welcome-screen">
                 <h1 class="welcome-title">Welcome to Nexa AI</h1>
@@ -1294,16 +1299,25 @@ const NexaCamera = {
 document.addEventListener('DOMContentLoaded', () => {
     NexaUI.init();
     NexaVoice.init();
-    NexaUI.scrollToBottom();
 
+    // Render history messages using <template> tags as raw text source
+    // <template> content is never parsed as HTML, so text is preserved exactly
+    document.querySelectorAll('.history-wrap').forEach(function(wrap) {
+        var tmpl = wrap.querySelector('template.history-raw');
+        var el = wrap.querySelector('.board-render');
+        if (!tmpl || !el) return;
+        var raw = tmpl.innerHTML;
+        el.innerHTML = NexaChat.renderBoardHTML(raw);
+        wrap.dataset.plain = raw;
+    });
+
+    NexaUI.scrollToBottom();
     // Close attach menu on outside click
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#attach-menu') && !e.target.closest('#attach-btn')) {
             document.getElementById('attach-menu').classList.remove('open');
         }
     });
-
-
 });
 </script>
 </div>
