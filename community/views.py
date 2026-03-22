@@ -3552,34 +3552,34 @@ def micro_room_create(request):
     MicroRoomParticipant.objects.create(room=room, user=request.user)
 
     # ── Notify followers + accepted friends ──────────────────────────────────
-    from community.models import Follow, Friendship, Notification as Notif
-    # People who follow the host
-    follower_ids = set(
-        Follow.objects.filter(following=request.user)
-        .values_list('follower_id', flat=True)
-    )
-    # Accepted friends (both directions)
-    raw_friends = Friendship.objects.filter(
-        status=Friendship.STATUS_ACCEPTED
-    ).filter(
-        models.Q(requester=request.user) | models.Q(recipient=request.user)
-    ).values_list('requester_id', 'recipient_id')
-    for req_id, rec_id in raw_friends:
-        other = rec_id if req_id == request.user.pk else req_id
-        follower_ids.add(other)
-
-    follower_ids.discard(request.user.pk)  # don't notify yourself
-
-    if follower_ids:
-        Notif.objects.bulk_create([
-            Notif(
-                recipient_id=uid,
-                actor=request.user,
-                type=Notif.TYPE_LIVE,
-                extra_data=str(room.id),
-            )
-            for uid in follower_ids
-        ], ignore_conflicts=True)
+    try:
+        from community.models import Follow, Friendship, Notification as Notif
+        follower_ids = set(
+            Follow.objects.filter(following=request.user)
+            .values_list('follower_id', flat=True)
+        )
+        raw_friends = Friendship.objects.filter(
+            status=Friendship.STATUS_ACCEPTED
+        ).filter(
+            models.Q(requester=request.user) | models.Q(recipient=request.user)
+        ).values_list('requester_id', 'recipient_id')
+        for req_id, rec_id in raw_friends:
+            other = rec_id if req_id == request.user.pk else req_id
+            follower_ids.add(other)
+        follower_ids.discard(request.user.pk)
+        if follower_ids:
+            Notif.objects.bulk_create([
+                Notif(
+                    recipient_id=uid,
+                    actor=request.user,
+                    type=Notif.TYPE_LIVE,
+                    extra_data=str(room.id),
+                )
+                for uid in follower_ids
+            ], ignore_conflicts=True)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning('Live notification failed: %s', e)
 
     return JsonResponse({'ok': True, 'id': str(room.id), 'redirect': f'/community/rooms/{room.id}/'})
 
