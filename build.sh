@@ -7,6 +7,7 @@ pip install -r requirements.txt
 mkdir -p staticfiles
 python manage.py collectstatic --no-input
 python manage.py migrate
+python manage.py createcachetable
 
 # Create superuser automatically if it doesn't exist
 python manage.py shell -c "

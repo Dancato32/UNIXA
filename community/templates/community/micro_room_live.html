@@ -4,321 +4,309 @@
 
 {% block extra_css %}
 <style>
-/* ── Reset & page ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body, html { background: #000; overflow: hidden; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body,html{background:#0e0e10;overflow:hidden;}
 
-.rm-page {
-  position: fixed; inset: 0;
-  background: #000;
-  display: flex; flex-direction: column;
-  /* pull out of base layout padding */
-  margin: -1.5rem -2rem;
+/* Pull out of base padding */
+.rm-page{
+  position:fixed;inset:0;background:#0e0e10;
+  display:flex;flex-direction:column;
+  margin:-1.5rem -2rem;
 }
-@media(max-width:900px){ .rm-page { margin: -.875rem -.875rem; } }
-@media(max-width:480px){ .rm-page { margin: -.625rem -.625rem; } }
+@media(max-width:900px){.rm-page{margin:-.875rem -.875rem;}}
+@media(max-width:480px){.rm-page{margin:-.625rem -.625rem;}}
 
-/* ── Full-screen video ── */
-.rm-video-wrap {
-  position: absolute; inset: 0;
-  background: #111;
-  display: flex; align-items: center; justify-content: center;
+/* ── Top chrome ── */
+.rm-topbar{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.5rem .875rem;background:#18181b;
+  border-bottom:1px solid #26262c;flex-shrink:0;
+  height:48px;
 }
-#rm-video-host, #rm-video-viewer {
-  width: 100%; height: 100%; object-fit: cover;
-  display: block; background: #000;
+.rm-back{
+  display:flex;align-items:center;gap:.3rem;
+  color:#adadb8;font-size:.8125rem;background:none;border:none;cursor:pointer;padding:0;
+  flex-shrink:0;
 }
+.rm-back:hover{color:#fff;}
+.rm-live-badge{
+  display:inline-flex;align-items:center;gap:.3rem;
+  background:#9147ff;color:#fff;font-size:.6875rem;font-weight:800;
+  letter-spacing:.05em;padding:.2rem .6rem;border-radius:4px;flex-shrink:0;
+}
+.rm-live-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.rm-title{
+  flex:1;font-size:.875rem;font-weight:600;color:#efeff1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rm-viewer-pill{
+  display:flex;align-items:center;gap:.3rem;
+  color:#adadb8;font-size:.8125rem;font-weight:600;flex-shrink:0;
+}
+.rm-viewer-pill svg{width:14px;height:14px;}
 
-/* ── No-cam placeholder ── */
-.rm-no-cam {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 1rem; color: #444; background: #0d0d0d;
-}
-.rm-no-cam svg { width: 52px; height: 52px; opacity: .35; }
-.rm-no-cam span { font-size: .9rem; color: #555; }
-
-/* ── Connecting overlay ── */
-.rm-waiting {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 1rem; background: #0d0d0d; color: #555; font-size: .9rem;
-}
-.rm-spinner {
-  width: 40px; height: 40px; border-radius: 50%;
-  border: 3px solid #222; border-top-color: #a855f7;
-  animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Top bar (floating) ── */
-.rm-topbar {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 20;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: .75rem 1rem;
-  background: linear-gradient(to bottom, rgba(0,0,0,.7) 0%, transparent 100%);
-}
-.rm-back {
-  display: flex; align-items: center; gap: .375rem;
-  color: rgba(255,255,255,.85); font-size: .875rem;
-  background: none; border: none; cursor: pointer; padding: 0;
-}
-.rm-back:active { opacity: .7; }
-.rm-live-badge {
-  display: inline-flex; align-items: center; gap: .35rem;
-  background: #ef4444; color: #fff;
-  font-size: .7rem; font-weight: 800; letter-spacing: .04em;
-  padding: .25rem .7rem; border-radius: 6px;
-}
-.rm-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1.2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
-.rm-viewer-pill {
-  display: flex; align-items: center; gap: .3rem;
-  background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
-  color: #fff; font-size: .75rem; font-weight: 600;
-  padding: .25rem .65rem; border-radius: 20px;
+/* ── Main layout: video + chat side by side on desktop ── */
+.rm-body{
+  flex:1;display:flex;overflow:hidden;min-height:0;
 }
 
-/* ── Host info strip (floating, below topbar) ── */
-.rm-host-strip {
-  position: absolute; top: 3.25rem; left: 1rem; z-index: 20;
-  display: flex; align-items: center; gap: .5rem;
+/* ── Video column ── */
+.rm-video-col{
+  flex:1;display:flex;flex-direction:column;min-width:0;background:#000;
+  position:relative;
 }
-.rm-host-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: #333; border: 2px solid rgba(255,255,255,.25);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .75rem; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0;
+.rm-video-wrap{
+  flex:1;position:relative;background:#000;
+  display:flex;align-items:center;justify-content:center;min-height:0;
 }
-.rm-host-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.rm-host-name { font-size: .8125rem; font-weight: 600; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
-.rm-host-sub  { font-size: .7rem; color: rgba(255,255,255,.6); }
+#rm-video-host,#rm-video-viewer{
+  width:100%;height:100%;object-fit:contain;display:block;background:#000;
+}
+.rm-no-cam{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.75rem;
+  color:#3f3f46;background:#0e0e10;
+}
+.rm-no-cam svg{width:52px;height:52px;opacity:.3;}
+.rm-no-cam span{font-size:.875rem;color:#52525b;}
+.rm-waiting{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.875rem;
+  background:#0e0e10;color:#52525b;font-size:.875rem;
+}
+.rm-spinner{
+  width:38px;height:38px;border-radius:50%;
+  border:3px solid #27272a;border-top-color:#9147ff;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-/* ── Comments overlay (bottom-left, above controls) ── */
-.rm-comments-overlay {
-  position: absolute; bottom: 7rem; left: 0; right: 4.5rem;
-  padding: .5rem .875rem;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  gap: .3rem; max-height: 40vh; overflow: hidden;
-  pointer-events: none; z-index: 20;
+/* Host info bar below video */
+.rm-host-bar{
+  display:flex;align-items:center;gap:.625rem;
+  padding:.5rem .875rem;background:#18181b;
+  border-top:1px solid #26262c;flex-shrink:0;
 }
-.rm-cmt-bubble {
-  display: inline-flex; align-items: baseline; gap: .35rem;
-  background: rgba(0,0,0,.5); backdrop-filter: blur(6px);
-  border-radius: 16px; padding: .35rem .75rem;
-  font-size: .8125rem; color: #fff; max-width: 85%;
-  animation: fadeUp .2s ease; align-self: flex-start;
+.rm-host-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:#27272a;border:2px solid #9147ff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#efeff1;overflow:hidden;flex-shrink:0;
 }
-@keyframes fadeUp { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
-.rm-cmt-user { font-weight: 700; color: #c084fc; flex-shrink: 0; }
+.rm-host-avatar img{width:100%;height:100%;object-fit:cover;}
+.rm-host-name{font-size:.875rem;font-weight:700;color:#efeff1;}
+.rm-host-topic{font-size:.75rem;color:#adadb8;margin-top:.1rem;}
 
-/* ── Right-side action buttons ── */
-.rm-actions {
-  position: absolute; right: .875rem; bottom: 7rem; z-index: 20;
-  display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+/* Host controls bar */
+.rm-controls{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.5rem .875rem;background:#18181b;
+  border-top:1px solid #26262c;flex-shrink:0;
 }
-.rm-action-btn {
-  display: flex; flex-direction: column; align-items: center; gap: .25rem;
-  background: none; border: none; cursor: pointer; color: #fff;
+.rm-ctrl-btn{
+  display:flex;align-items:center;gap:.375rem;
+  background:#27272a;border:none;border-radius:6px;
+  color:#efeff1;font-size:.8125rem;font-weight:600;
+  padding:.4rem .75rem;cursor:pointer;transition:background .15s;
 }
-.rm-action-icon {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: rgba(255,255,255,.15); backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
-}
-.rm-action-icon:active { background: rgba(255,255,255,.25); }
-.rm-action-icon svg { width: 20px; height: 20px; }
-.rm-action-label { font-size: .65rem; color: rgba(255,255,255,.75); }
-.rm-action-btn.rm-off .rm-action-icon { background: rgba(255,255,255,.08); }
-.rm-action-btn.rm-off svg { opacity: .4; }
+.rm-ctrl-btn:hover{background:#3f3f46;}
+.rm-ctrl-btn.off{background:#27272a;color:#52525b;}
+.rm-ctrl-btn svg{width:16px;height:16px;flex-shrink:0;}
+.rm-ctrl-btn.danger{background:#9147ff;}
+.rm-ctrl-btn.danger:hover{background:#772ce8;}
+.rm-ctrl-spacer{flex:1;}
 
-/* ── Bottom bar: comment input + leave ── */
-.rm-bottom-bar {
-  position: absolute; bottom: 0; left: 0; right: 0; z-index: 20;
-  display: flex; align-items: center; gap: .625rem;
-  padding: .75rem 1rem 1.25rem;
-  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
+/* ── Chat column ── */
+.rm-chat-col{
+  width:340px;flex-shrink:0;display:flex;flex-direction:column;
+  background:#18181b;border-left:1px solid #26262c;
 }
-.rm-comment-input {
-  flex: 1; background: rgba(255,255,255,.12); backdrop-filter: blur(8px);
-  border: 1.5px solid rgba(255,255,255,.15); border-radius: 24px;
-  padding: .6rem 1.1rem; font-size: .875rem; color: #fff; outline: none;
-  transition: border-color .15s;
+.rm-chat-header{
+  padding:.625rem .875rem;border-bottom:1px solid #26262c;flex-shrink:0;
+  font-size:.8125rem;font-weight:700;color:#efeff1;
 }
-.rm-comment-input::placeholder { color: rgba(255,255,255,.45); }
-.rm-comment-input:focus { border-color: #a855f7; }
-.rm-comment-send {
-  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-  background: #a855f7; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
+.rm-chat-messages{
+  flex:1;overflow-y:auto;padding:.5rem .625rem;
+  display:flex;flex-direction:column;gap:.25rem;
+  scrollbar-width:thin;scrollbar-color:#3f3f46 transparent;
 }
-.rm-comment-send:active { background: #9333ea; }
-.rm-comment-send svg { width: 16px; height: 16px; color: #fff; }
-.rm-leave-btn {
-  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-  background: #ef4444; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+.rm-chat-messages::-webkit-scrollbar{width:4px;}
+.rm-chat-messages::-webkit-scrollbar-thumb{background:#3f3f46;border-radius:2px;}
+.rm-chat-msg{
+  font-size:.8125rem;line-height:1.4;color:#efeff1;
+  padding:.2rem .25rem;border-radius:4px;word-break:break-word;
+  animation:fadeIn .15s ease;
 }
-.rm-leave-btn svg { width: 18px; height: 18px; color: #fff; }
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.rm-chat-msg .rm-msg-user{font-weight:700;color:#9147ff;margin-right:.3rem;}
+.rm-chat-msg .rm-msg-user.host-color{color:#f59e0b;}
+.rm-chat-input-wrap{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.625rem .75rem;border-top:1px solid #26262c;flex-shrink:0;
+}
+.rm-chat-input{
+  flex:1;background:#27272a;border:1.5px solid #3f3f46;
+  border-radius:6px;padding:.5rem .75rem;
+  font-size:.8125rem;color:#efeff1;outline:none;
+  transition:border-color .15s;
+}
+.rm-chat-input::placeholder{color:#52525b;}
+.rm-chat-input:focus{border-color:#9147ff;}
+.rm-chat-send{
+  width:34px;height:34px;border-radius:6px;flex-shrink:0;
+  background:#9147ff;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.rm-chat-send:hover{background:#772ce8;}
+.rm-chat-send svg{width:15px;height:15px;color:#fff;}
 
-/* ── Viewers drawer (slide up) ── */
-.rm-viewers-drawer {
-  position: absolute; bottom: 0; left: 0; right: 0; z-index: 30;
-  background: #111; border-radius: 20px 20px 0 0;
-  padding: 1rem 1rem 2rem;
-  transform: translateY(100%); transition: transform .3s ease;
-  max-height: 55vh; overflow-y: auto;
+/* ── Viewers panel (inside chat col, toggled) ── */
+.rm-viewers-panel{
+  border-top:1px solid #26262c;padding:.625rem .75rem;flex-shrink:0;
+  max-height:160px;overflow-y:auto;display:none;
 }
-.rm-viewers-drawer.open { transform: translateY(0); }
-.rm-drawer-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: #333; margin: 0 auto .875rem;
+.rm-viewers-panel.open{display:block;}
+.rm-viewers-title{font-size:.75rem;font-weight:700;color:#adadb8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;}
+.rm-part-list{display:flex;flex-wrap:wrap;gap:.3rem;}
+.rm-part-chip{
+  display:inline-flex;align-items:center;gap:.3rem;
+  background:#27272a;border-radius:4px;padding:.25rem .6rem;
+  font-size:.75rem;color:#adadb8;
 }
-.rm-drawer-title {
-  font-size: .8125rem; font-weight: 700; color: #666;
-  text-transform: uppercase; letter-spacing: .06em; margin-bottom: .75rem;
+.rm-part-avatar{
+  width:18px;height:18px;border-radius:50%;background:#3f3f46;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:700;color:#adadb8;overflow:hidden;flex-shrink:0;
 }
-.rm-part-list { display: flex; flex-wrap: wrap; gap: .4rem; }
-.rm-part-chip {
-  display: inline-flex; align-items: center; gap: .35rem;
-  background: #1e1e1e; border-radius: 20px; padding: .35rem .75rem;
-  font-size: .8rem; color: #bbb;
+.rm-part-avatar img{width:100%;height:100%;object-fit:cover;}
+.rm-host-crown{color:#f59e0b;}
+
+/* ── Mobile: stack video on top, chat below ── */
+@media(max-width:768px){
+  .rm-body{flex-direction:column;}
+  .rm-chat-col{width:100%;flex:1;border-left:none;border-top:1px solid #26262c;}
+  .rm-video-wrap{aspect-ratio:16/9;flex:none;}
+  .rm-video-col{flex:none;}
 }
-.rm-part-avatar {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: #2a2a2a; display: flex; align-items: center; justify-content: center;
-  font-size: .65rem; font-weight: 700; color: #888; overflow: hidden; flex-shrink: 0;
-}
-.rm-part-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.rm-host-crown { color: #f59e0b; }
-.rm-drawer-overlay {
-  position: absolute; inset: 0; z-index: 29;
-  display: none;
-}
-.rm-drawer-overlay.open { display: block; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="rm-page">
 
-  <!-- Full-screen video -->
-  <div class="rm-video-wrap">
-    {% if is_host %}
-      <video id="rm-video-host" autoplay muted playsinline></video>
-      <div class="rm-no-cam" id="rm-no-cam" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>
-        </svg>
-        <span>Camera off</span>
-      </div>
-    {% else %}
-      <div class="rm-waiting" id="rm-waiting">
-        <div class="rm-spinner"></div>
-        <span>Connecting to stream…</span>
-      </div>
-      <video id="rm-video-viewer" autoplay playsinline style="display:none;"></video>
-    {% endif %}
-  </div>
-
-  <!-- Top bar -->
+  <!-- Top chrome -->
   <div class="rm-topbar">
     <button class="rm-back" onclick="rmLeaveAndGo()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
       Back
     </button>
     <div class="rm-live-badge"><span class="rm-live-dot"></span>LIVE</div>
+    <div class="rm-title">{{ room.topic }}</div>
     <div class="rm-viewer-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span id="rm-count-num">{{ room.participant_count }}</span>
     </div>
   </div>
 
-  <!-- Host info -->
-  <div class="rm-host-strip">
-    <div class="rm-host-avatar">
-      {% if room.host.community_profile.avatar %}
-        <img src="{{ room.host.community_profile.avatar.url }}" alt="">
-      {% else %}{{ room.host.username|slice:":1"|upper }}{% endif %}
-    </div>
-    <div>
-      <div class="rm-host-name">{{ room.host.username }}</div>
-      <div class="rm-host-sub">{{ room.topic }}</div>
-    </div>
-  </div>
+  <!-- Body: video + chat -->
+  <div class="rm-body">
 
-  <!-- Comments overlay -->
-  <div class="rm-comments-overlay" id="rm-comments-overlay"></div>
+    <!-- Video column -->
+    <div class="rm-video-col">
+      <div class="rm-video-wrap">
+        {% if is_host %}
+          <video id="rm-video-host" autoplay muted playsinline></video>
+          <div class="rm-no-cam" id="rm-no-cam" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            <span>Camera off</span>
+          </div>
+        {% else %}
+          <div class="rm-waiting" id="rm-waiting">
+            <div class="rm-spinner"></div>
+            <span>Connecting to stream…</span>
+          </div>
+          <video id="rm-video-viewer" autoplay playsinline style="display:none;"></video>
+        {% endif %}
+      </div>
 
-  <!-- Right-side actions (host only: mic + cam) -->
-  {% if is_host %}
-  <div class="rm-actions" id="rm-actions">
-    <button class="rm-action-btn" id="rm-btn-mic" onclick="rmToggleMic()">
-      <div class="rm-action-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-      </div>
-      <span class="rm-action-label">Mic</span>
-    </button>
-    <button class="rm-action-btn" id="rm-btn-cam" onclick="rmToggleCam()">
-      <div class="rm-action-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-      </div>
-      <span class="rm-action-label">Camera</span>
-    </button>
-    <button class="rm-action-btn" onclick="rmToggleDrawer()">
-      <div class="rm-action-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
-      <span class="rm-action-label">Viewers</span>
-    </button>
-  </div>
-  {% else %}
-  <div class="rm-actions">
-    <button class="rm-action-btn" onclick="rmToggleDrawer()">
-      <div class="rm-action-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
-      <span class="rm-action-label">Viewers</span>
-    </button>
-  </div>
-  {% endif %}
-
-  <!-- Bottom bar -->
-  <div class="rm-bottom-bar">
-    <input id="rm-comment-input" class="rm-comment-input" type="text"
-      placeholder="Say something…" maxlength="280" autocomplete="off"
-      onkeydown="if(event.key==='Enter')rmSendComment()">
-    <button class="rm-comment-send" onclick="rmSendComment()" aria-label="Send">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-    <button class="rm-leave-btn" onclick="rmLeaveAndGo()" aria-label="Leave">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-    </button>
-  </div>
-
-  <!-- Viewers drawer -->
-  <div class="rm-drawer-overlay" id="rm-drawer-overlay" onclick="rmToggleDrawer()"></div>
-  <div class="rm-viewers-drawer" id="rm-viewers-drawer">
-    <div class="rm-drawer-handle"></div>
-    <div class="rm-drawer-title">Watching</div>
-    <div class="rm-part-list" id="rm-part-list">
-      {% for p in participants %}
-      <div class="rm-part-chip" id="rm-chip-{{ p.user.username }}">
-        <div class="rm-part-avatar">
-          {% if p.user.community_profile.avatar %}
-            <img src="{{ p.user.community_profile.avatar.url }}" alt="">
-          {% else %}{{ p.user.username|slice:":1"|upper }}{% endif %}
+      <!-- Host info -->
+      <div class="rm-host-bar">
+        <div class="rm-host-avatar">
+          {% if room.host.community_profile.avatar %}
+            <img src="{{ room.host.community_profile.avatar.url }}" alt="">
+          {% else %}{{ room.host.username|slice:":1"|upper }}{% endif %}
         </div>
-        {{ p.user.username }}
-        {% if p.user == room.host %}<span class="rm-host-crown">♛</span>{% endif %}
+        <div>
+          <div class="rm-host-name">{{ room.host.username }}</div>
+          <div class="rm-host-topic">{{ room.topic }}</div>
+        </div>
       </div>
-      {% endfor %}
-    </div>
-  </div>
 
+      <!-- Controls (host only) -->
+      {% if is_host %}
+      <div class="rm-controls">
+        <button class="rm-ctrl-btn" id="rm-btn-mic" onclick="rmToggleMic()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          Mic
+        </button>
+        <button class="rm-ctrl-btn" id="rm-btn-cam" onclick="rmToggleCam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          Camera
+        </button>
+        <div class="rm-ctrl-spacer"></div>
+        <button class="rm-ctrl-btn danger" onclick="rmLeaveAndGo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          End Stream
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Chat column -->
+    <div class="rm-chat-col">
+      <div class="rm-chat-header">
+        Stream Chat
+        <button onclick="rmToggleViewers()" style="float:right;background:none;border:none;color:#adadb8;font-size:.75rem;cursor:pointer;">Viewers</button>
+      </div>
+
+      <!-- Viewers panel (toggled) -->
+      <div class="rm-viewers-panel" id="rm-viewers-panel">
+        <div class="rm-viewers-title">Watching</div>
+        <div class="rm-part-list" id="rm-part-list">
+          {% for p in participants %}
+          <div class="rm-part-chip" id="rm-chip-{{ p.user.username }}">
+            <div class="rm-part-avatar">
+              {% if p.user.community_profile.avatar %}
+                <img src="{{ p.user.community_profile.avatar.url }}" alt="">
+              {% else %}{{ p.user.username|slice:":1"|upper }}{% endif %}
+            </div>
+            {{ p.user.username }}
+            {% if p.user == room.host %}<span class="rm-host-crown">♛</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="rm-chat-messages" id="rm-chat-messages"></div>
+
+      <div class="rm-chat-input-wrap">
+        {% if not is_host %}
+        <button class="rm-ctrl-btn danger" onclick="rmLeaveAndGo()" style="padding:.4rem .6rem;border-radius:6px;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+        {% endif %}
+        <input id="rm-comment-input" class="rm-chat-input" type="text"
+          placeholder="Send a message…" maxlength="280" autocomplete="off"
+          onkeydown="if(event.key==='Enter')rmSendComment()">
+        <button class="rm-chat-send" onclick="rmSendComment()" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}
 
@@ -359,14 +347,17 @@ function escHtml(s) {
 function rmRenderComment(cmt) {
   if (seenCmtIds.has(cmt.id)) return;
   seenCmtIds.add(cmt.id);
-  const overlay = document.getElementById('rm-comments-overlay');
-  if (!overlay) return;
+  const box = document.getElementById('rm-chat-messages');
+  if (!box) return;
   const el = document.createElement('div');
-  el.className = 'rm-cmt-bubble';
-  el.innerHTML = `<span class="rm-cmt-user">${escHtml(cmt.username)}</span>&nbsp;<span>${escHtml(cmt.text)}</span>`;
-  overlay.appendChild(el);
-  const bubbles = overlay.querySelectorAll('.rm-cmt-bubble');
-  if (bubbles.length > 7) bubbles[0].remove();
+  el.className = 'rm-chat-msg';
+  const isHost = cmt.username === RM_HOST_NAME;
+  el.innerHTML = `<span class="rm-msg-user${isHost?' host-color':''}">${escHtml(cmt.username)}</span>${escHtml(cmt.text)}`;
+  box.appendChild(el);
+  // Keep max 200 messages
+  const msgs = box.querySelectorAll('.rm-chat-msg');
+  if (msgs.length > 200) msgs[0].remove();
+  box.scrollTop = box.scrollHeight;
 }
 
 async function rmSendComment() {
@@ -377,11 +368,8 @@ async function rmSendComment() {
   try { const d = await rmPost(RM_CMT_URL,{text}); if(d.ok&&d.comment) seenCmtIds.add(d.comment.id); } catch(e){}
 }
 
-function rmToggleDrawer() {
-  const d = document.getElementById('rm-viewers-drawer');
-  const o = document.getElementById('rm-drawer-overlay');
-  const open = d.classList.toggle('open');
-  o.classList.toggle('open', open);
+function rmToggleViewers() {
+  document.getElementById('rm-viewers-panel').classList.toggle('open');
 }
 
 // ── HOST ──────────────────────────────────────────────────────────────────
@@ -390,9 +378,9 @@ async function rmHostStart() {
   catch(e) { try { localStream = await navigator.mediaDevices.getUserMedia({video:false,audio:true}); } catch(e2){} }
   const vid = document.getElementById('rm-video-host');
   const noCam = document.getElementById('rm-no-cam');
-  if (localStream && vid) { vid.srcObject = localStream; vid.style.display='block'; if(noCam) noCam.style.display='none'; }
+  if (localStream && vid) { vid.srcObject=localStream; vid.style.display='block'; if(noCam) noCam.style.display='none'; }
   else { if(vid) vid.style.display='none'; if(noCam) noCam.style.display='flex'; }
-  await rmSendSignal('host_ready', {host:RM_USERNAME}, 'all');
+  await rmSendSignal('host_ready',{host:RM_USERNAME},'all');
   rmStartPoll();
   hostReBroadcastTimer = setInterval(()=>rmSendSignal('host_ready',{host:RM_USERNAME},'all'), 8000);
 }
@@ -410,7 +398,7 @@ async function rmHostMakeOffer(viewerUsername) {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     await rmSendSignal('offer',{sdp:pc.localDescription},viewerUsername);
-  } catch(e) { console.warn('offer error',e); pc.close(); delete peerConns[viewerUsername]; }
+  } catch(e) { console.warn('offer err',e); pc.close(); delete peerConns[viewerUsername]; }
 }
 
 async function rmHostHandleAnswer(viewerUsername, answerSdp) {
@@ -424,14 +412,14 @@ function rmToggleMic() {
   micEnabled = !micEnabled;
   localStream.getAudioTracks().forEach(t=>t.enabled=micEnabled);
   const btn = document.getElementById('rm-btn-mic');
-  if (btn) btn.classList.toggle('rm-off', !micEnabled);
+  if (btn) btn.classList.toggle('off', !micEnabled);
 }
 function rmToggleCam() {
   if (!localStream) return;
   camEnabled = !camEnabled;
   localStream.getVideoTracks().forEach(t=>t.enabled=camEnabled);
   const btn = document.getElementById('rm-btn-cam');
-  if (btn) btn.classList.toggle('rm-off', !camEnabled);
+  if (btn) btn.classList.toggle('off', !camEnabled);
   const vid = document.getElementById('rm-video-host');
   const noCam = document.getElementById('rm-no-cam');
   if (vid) vid.style.display = camEnabled ? 'block' : 'none';
@@ -478,8 +466,8 @@ async function rmViewerHandleOffer(offerSdp) {
     await rmSendSignal('answer',{sdp:answer},RM_HOST_NAME);
     setTimeout(()=>{ if(viewerPc===pc&&pc.connectionState!=='connected'){viewerConnecting=false;viewerPc=null;rmViewerRequestOffer();} },8000);
   } catch(e) {
-    console.warn('viewer offer error',e);
-    viewerConnecting=false; if(viewerPc){viewerPc.close();viewerPc=null;}
+    console.warn('viewer err',e); viewerConnecting=false;
+    if(viewerPc){viewerPc.close();viewerPc=null;}
     setTimeout(rmViewerRequestOffer,2000);
   }
 }
@@ -521,8 +509,7 @@ function rmUpdateParticipants(usernames) {
   const list=document.getElementById('rm-part-list'); if(!list) return;
   usernames.forEach(u=>{
     if(!document.getElementById('rm-chip-'+u)){
-      const chip=document.createElement('div');
-      chip.className='rm-part-chip';chip.id='rm-chip-'+u;
+      const chip=document.createElement('div');chip.className='rm-part-chip';chip.id='rm-chip-'+u;
       chip.innerHTML=`<div class="rm-part-avatar">${escHtml(u.slice(0,1).toUpperCase())}</div>${escHtml(u)}${u===RM_HOST_NAME?' <span class="rm-host-crown">♛</span>':''}`;
       list.appendChild(chip);
     }
@@ -546,7 +533,7 @@ async function rmLeaveAndGo() {
 
 function rmShowToast(msg){
   const t=document.createElement('div');t.textContent=msg;
-  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:.625rem 1.25rem;border-radius:20px;font-size:.875rem;z-index:9999;pointer-events:none;';
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#18181b;color:#efeff1;padding:.5rem 1.25rem;border-radius:6px;font-size:.875rem;z-index:9999;pointer-events:none;border:1px solid #3f3f46;';
   document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
 }
 

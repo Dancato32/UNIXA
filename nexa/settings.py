@@ -119,6 +119,15 @@ else:
         }
     }
 
+# ── Cache — DB-backed so it works across multiple Gunicorn workers ────────────
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'nexa_cache_table',
+        'TIMEOUT': 7200,
+    }
+}
+
 # ── Password Validation ───────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
