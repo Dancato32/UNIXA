@@ -304,6 +304,13 @@ async function rmSendComment() {
 }
 
 // ── HOST FLOW ──────────────────────────────────────────────────────────────
+// Host creates a proper per-viewer RTCPeerConnection with real tracks,
+// generates offer, sends it directly to that viewer via signal.
+// Viewer picks up the offer from poll signals (not host_offer cache),
+// answers, host sets remote description. Clean standard WebRTC flow.
+// To avoid race condition: host re-announces readiness every 8s so
+// viewers who join late will request an offer.
+
 async function rmHostStart() {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -320,68 +327,68 @@ async function rmHostStart() {
     if (vid) vid.style.display = 'none';
     if (noCam) noCam.style.display = 'flex';
   }
-  await rmHostBroadcastOffer();
+  // Announce host is ready — viewers will request an offer
+  await rmSendSignal('host_ready', { host: RM_USERNAME }, 'all');
   rmStartPoll();
-  hostReBroadcastTimer = setInterval(rmHostBroadcastOffer, 10000);
+  // Re-announce every 8s so late joiners get notified
+  hostReBroadcastTimer = setInterval(() => rmSendSignal('host_ready', { host: RM_USERNAME }, 'all'), 8000);
 }
 
-async function rmHostBroadcastOffer() {
-  try {
-    const tempPc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    if (localStream) localStream.getTracks().forEach(t => tempPc.addTrack(t, localStream));
-    const offer = await tempPc.createOffer();
-    await tempPc.setLocalDescription(offer);
-    await new Promise(resolve => {
-      if (tempPc.iceGatheringState === 'complete') { resolve(); return; }
-      tempPc.addEventListener('icegatheringstatechange', () => {
-        if (tempPc.iceGatheringState === 'complete') resolve();
-      });
-      setTimeout(resolve, 3000);
-    });
-    hostBroadcastOffer = tempPc.localDescription;
-    tempPc.close();
-    await rmSendSignal('offer', { sdp: hostBroadcastOffer }, 'all');
-  } catch(e) { console.warn('rmHostBroadcastOffer error', e); }
-}
-
-async function rmHostHandleAnswer(viewerUsername, answerSdp) {
+async function rmHostMakeOffer(viewerUsername) {
+  // Don't duplicate if already connected/connecting
   const existing = peerConns[viewerUsername];
-  if (existing && ['connected','connecting'].includes(existing.connectionState)) return;
+  if (existing && ['connected','connecting','have-local-offer'].includes(existing.signalingState || existing.connectionState)) return;
   if (existing) { existing.close(); delete peerConns[viewerUsername]; }
-  if (!hostBroadcastOffer) return;
 
   const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
   peerConns[viewerUsername] = pc;
   if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
   pc.onicecandidate = e => { if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, viewerUsername); };
   pc.onconnectionstatechange = () => {
     if (['disconnected','failed','closed'].includes(pc.connectionState)) {
       pc.close(); delete peerConns[viewerUsername];
     }
   };
+
   try {
-    await pc.setLocalDescription(hostBroadcastOffer);
-    await pc.setRemoteDescription(new RTCSessionDescription(answerSdp));
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await rmSendSignal('offer', { sdp: pc.localDescription }, viewerUsername);
   } catch(e) {
-    console.warn('rmHostHandleAnswer error for', viewerUsername, e);
+    console.warn('rmHostMakeOffer error for', viewerUsername, e);
     pc.close(); delete peerConns[viewerUsername];
   }
 }
 
-// ── VIEWER FLOW ────────────────────────────────────────────────────────────
-async function rmViewerHandleOffer(hostOfferSdp) {
-  if (viewerPc && ['connected','connecting'].includes(viewerPc.connectionState)) return;
-  if (viewerConnecting) return;
-  const offerKey = JSON.stringify(hostOfferSdp);
-  if (offerKey === lastHostOfferSdp && viewerPc && viewerPc.connectionState !== 'failed') return;
+async function rmHostHandleAnswer(viewerUsername, answerSdp) {
+  const pc = peerConns[viewerUsername];
+  if (!pc) return;
+  if (pc.signalingState !== 'have-local-offer') return;
+  try {
+    await pc.setRemoteDescription(new RTCSessionDescription(answerSdp));
+  } catch(e) { console.warn('rmHostHandleAnswer error', e); }
+}
 
+// ── VIEWER FLOW ────────────────────────────────────────────────────────────
+// On host_ready signal → send viewer_request to host → host sends offer
+// On offer signal → answer it
+// On failed → reset and re-request
+
+function rmViewerRequestOffer() {
+  if (viewerPc && ['connected','connecting'].includes(viewerPc.connectionState)) return;
+  rmSendSignal('viewer_request', { viewer: RM_USERNAME }, RM_HOST_NAME);
+}
+
+async function rmViewerHandleOffer(offerSdp) {
+  if (viewerConnecting) return;
   viewerConnecting = true;
-  lastHostOfferSdp = offerKey;
   if (viewerPc) { viewerPc.close(); viewerPc = null; }
 
   try {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     viewerPc = pc;
+
     pc.ontrack = e => {
       const vid = document.getElementById('rm-video-viewer');
       const waiting = document.getElementById('rm-waiting');
@@ -397,27 +404,34 @@ async function rmViewerHandleOffer(hostOfferSdp) {
       }
       if (['disconnected','failed'].includes(pc.connectionState)) {
         viewerConnecting = false;
-        lastHostOfferSdp = null;
         const w = document.getElementById('rm-waiting');
         if (w) { w.style.display = 'flex'; w.innerHTML = '<div class="rm-waiting-spinner"></div><span>Reconnecting…</span>'; }
         const vid = document.getElementById('rm-video-viewer');
         if (vid) vid.style.display = 'none';
         if (viewerPc === pc) viewerPc = null;
+        // Re-request offer after short delay
+        setTimeout(rmViewerRequestOffer, 2000);
       }
     };
-    await pc.setRemoteDescription(new RTCSessionDescription(hostOfferSdp));
+
+    await pc.setRemoteDescription(new RTCSessionDescription(offerSdp));
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
     await rmSendSignal('answer', { sdp: answer }, RM_HOST_NAME);
+
+    // Safety timeout — if not connected in 8s, retry
     setTimeout(() => {
-      if (viewerPc === pc && !['connected','connecting'].includes(pc.connectionState)) {
-        viewerConnecting = false; lastHostOfferSdp = null;
+      if (viewerPc === pc && !['connected'].includes(pc.connectionState)) {
+        viewerConnecting = false;
+        if (viewerPc === pc) { viewerPc = null; }
+        rmViewerRequestOffer();
       }
-    }, 5000);
+    }, 8000);
   } catch(e) {
     console.warn('rmViewerHandleOffer error', e);
-    viewerConnecting = false; lastHostOfferSdp = null;
+    viewerConnecting = false;
     if (viewerPc) { viewerPc.close(); viewerPc = null; }
+    setTimeout(rmViewerRequestOffer, 2000);
   }
 }
 
@@ -441,7 +455,9 @@ async function rmPoll() {
     if (RM_IS_HOST) {
       for (const sig of (data.signals || [])) {
         const { type, payload, from } = sig;
-        if (type === 'answer') {
+        if (type === 'viewer_request') {
+          await rmHostMakeOffer(from);
+        } else if (type === 'answer') {
           await rmHostHandleAnswer(from, payload.sdp);
         } else if (type === 'ice') {
           const pc = peerConns[from];
@@ -449,12 +465,18 @@ async function rmPoll() {
         }
       }
     } else {
-      if (data.host_offer && data.host_offer.sdp && data.host_offer.sdp.sdp) {
-        await rmViewerHandleOffer(data.host_offer.sdp.sdp);
+      // Check host_offer cache as fallback for first connection
+      if (data.host_offer && data.host_offer.sdp && data.host_offer.sdp.sdp && !viewerPc && !viewerConnecting) {
+        rmViewerRequestOffer();
       }
       for (const sig of (data.signals || [])) {
-        if (sig.type === 'ice' && viewerPc && sig.payload.candidate) {
-          try { await viewerPc.addIceCandidate(new RTCIceCandidate(sig.payload.candidate)); } catch(e) {}
+        const { type, payload } = sig;
+        if (type === 'host_ready' && !viewerPc && !viewerConnecting) {
+          rmViewerRequestOffer();
+        } else if (type === 'offer') {
+          await rmViewerHandleOffer(payload.sdp);
+        } else if (type === 'ice' && viewerPc && payload.candidate) {
+          try { await viewerPc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
         }
       }
     }
@@ -524,7 +546,11 @@ function rmShowToast(msg) {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (RM_IS_HOST) { rmHostStart(); }
-  else { rmStartPoll(); }
+  else {
+    rmStartPoll();
+    // Request offer immediately — host may already be live
+    setTimeout(rmViewerRequestOffer, 1000);
+  }
 });
 
 window.addEventListener('beforeunload', () => {
