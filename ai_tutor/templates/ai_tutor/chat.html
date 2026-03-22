@@ -678,6 +678,7 @@
             <div class="voice-text-container">
                 <div class="voice-user-text" id="voice-user-text"></div>
                 <div class="voice-ai-text" id="voice-ai-text"></div>
+                <div id="interrupt-hint" style="display:none;font-size:11px;color:#f97316;margin-top:6px;animation:blink .8s step-end infinite;">🎙 Speak to interrupt</div>
             </div>
             <div class="voice-controls">
                 <button class="voice-control-btn" onclick="NexaVoice.stopSpeaking()">Stop</button>
@@ -1097,8 +1098,14 @@ const NexaChat = {
 // ── NexaVoice ──
 const NexaVoice = {
     overlay: null, bubble: null, status: null, userText: null, aiText: null, waves: null,
-    recognition: null, synthesis: window.speechSynthesis, currentAudio: null,
+    recognition: null, interruptRecognition: null,
+    synthesis: window.speechSynthesis, currentAudio: null,
     isListening: false, isProcessing: false, isActive: false, alwaysListen: false,
+    isSpeaking: false,
+
+    // Keywords that trigger web search
+    webSearchTriggers: /\b(search|look up|google|find out|what is happening|latest|current|today|news|who is|where is|when did|wikipedia|weather|price|stock|score)\b/i,
+
     init() {
         this.overlay = document.getElementById('voice-overlay');
         this.bubble = document.getElementById('voice-bubble');
@@ -1107,7 +1114,9 @@ const NexaVoice = {
         this.aiText = document.getElementById('voice-ai-text');
         this.waves = document.getElementById('voice-waves');
         this.setupRecognition();
+        this.setupInterruptRecognition();
     },
+
     setupRecognition() {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) return;
@@ -1122,11 +1131,47 @@ const NexaVoice = {
                 if (event.results[i].isFinal) final += event.results[i][0].transcript;
                 else interim += event.results[i][0].transcript;
             }
-            if (interim) this.userText.textContent = interim;
-            if (final) { this.userText.textContent = final; this.handleTranscript(final); }
+            if (interim && this.userText) this.userText.textContent = interim;
+            if (final) { if (this.userText) this.userText.textContent = final; this.handleTranscript(final); }
         };
         this.recognition.onerror = (event) => { this.isListening = false; if (event.error === 'not-allowed') this.updateStatus('Mic blocked', ''); };
-        this.recognition.onend = () => { this.isListening = false; if (this.isActive && !this.isProcessing) setTimeout(() => this.startListening(), 500); };
+        this.recognition.onend = () => { this.isListening = false; if (this.isActive && !this.isProcessing && !this.isSpeaking) setTimeout(() => this.startListening(), 500); };
+    },
+
+    // Separate always-on recognition used ONLY while AI is speaking — detects interruptions
+    setupInterruptRecognition() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) return;
+        this.interruptRecognition = new SR();
+        this.interruptRecognition.continuous = true;
+        this.interruptRecognition.interimResults = true;
+        this.interruptRecognition.lang = 'en-US';
+        this.interruptRecognition.onresult = (event) => {
+            // Any speech detected while AI is talking = interrupt
+            if (!this.isSpeaking) return;
+            let hasResult = false;
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i][0].transcript.trim().length > 1) { hasResult = true; break; }
+            }
+            if (hasResult) this._handleInterrupt();
+        };
+        this.interruptRecognition.onerror = () => {};
+        this.interruptRecognition.onend = () => {
+            // Restart if still speaking (continuous mode can drop)
+            if (this.isSpeaking && this.isActive) {
+                try { this.interruptRecognition.start(); } catch(e) {}
+            }
+        };
+    },
+
+    _handleInterrupt() {
+        if (!this.isSpeaking) return;
+        this.stopSpeaking();
+        try { this.interruptRecognition.stop(); } catch(e) {}
+        this.updateStatus('Interrupted — listening...', 'listening');
+        if (this.userText) this.userText.textContent = '';
+        // Small delay then start main recognition to capture what they say
+        setTimeout(() => { if (this.isActive) this.startListening(); }, 300);
     },
     handleTranscript(text) {
         if (this.isActive) this.processMessage(text);
@@ -1137,10 +1182,9 @@ const NexaVoice = {
         if (!this.overlay) this.init();
         this.isActive = true; this.isProcessing = false;
         this.overlay.classList.add('active');
-        this.userText.textContent = ''; this.aiText.textContent = '';
+        if (this.userText) this.userText.textContent = '';
+        if (this.aiText) this.aiText.textContent = '';
         this.updateStatus('Starting...', '');
-        // Unlock audio on user gesture — required by iOS/Android autoplay policy.
-        // We do this synchronously inside the click handler by touching the DOM audio element.
         const audioEl = document.getElementById('nexa-tts-audio');
         if (audioEl) {
             audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
@@ -1152,29 +1196,43 @@ const NexaVoice = {
     },
     close() {
         this.isActive = false; this.stopListening(); this.stopSpeaking();
+        try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {}
         if (this.overlay) this.overlay.classList.remove('active');
     },
     updateStatus(text, state) {
         if (this.status) this.status.textContent = text;
-        // Animate the Nexa bird based on state
         const bird = document.getElementById('nexa-bird-svg');
-        if (bird) bird.className = state; // 'listening' | 'speaking' | 'thinking' | ''
-        // Keep legacy bubble ref working if it exists
+        if (bird) bird.className = state;
         if (this.bubble) this.bubble.className = 'voice-bubble ' + state;
         if (this.waves) this.waves.style.display = 'none';
+        // Show interrupt hint only while speaking
+        const hint = document.getElementById('interrupt-hint');
+        if (hint) hint.style.display = state === 'speaking' ? 'block' : 'none';
     },
     async processMessage(message) {
         if (this.isProcessing || !message.trim()) return;
         this.isProcessing = true; this.stopListening(); this.updateStatus('Thinking...', 'thinking');
         try {
-            const data = await NexaAI.sendToAI(message, true);
+            let data;
+            // Route to web search if question matches triggers
+            if (this.webSearchTriggers.test(message)) {
+                this.updateStatus('Searching web...', 'thinking');
+                const res = await fetch('{% url "ai_web_search" %}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: JSON.stringify({ message, learning_mode: NexaAI.currentMode })
+                });
+                data = await res.json();
+            } else {
+                data = await NexaAI.sendToAI(message, true);
+            }
             if (data.success) {
                 this.updateStatus('Speaking...', 'speaking');
-                this.aiText.textContent = '';
+                if (this.aiText) this.aiText.textContent = '';
                 this.displayOnBoard(message, data.response);
                 await this.speak(data.response);
-            } else { this.updateStatus('Error', 'thinking'); this.aiText.textContent = 'Error: ' + (data.error || 'Failed'); }
-        } catch(error) { this.updateStatus('Error', 'thinking'); this.aiText.textContent = 'Error: ' + error.message; }
+            } else { this.updateStatus('Error', 'thinking'); if (this.aiText) this.aiText.textContent = 'Error: ' + (data.error || 'Failed'); }
+        } catch(error) { this.updateStatus('Error', 'thinking'); if (this.aiText) this.aiText.textContent = 'Error: ' + error.message; }
         finally { this.isProcessing = false; if (this.isActive) { this.updateStatus('Listening...', 'listening'); setTimeout(() => this.startListening(), 500); } }
     },
     speak(text) {
@@ -1183,6 +1241,18 @@ const NexaVoice = {
             const audioEl = document.getElementById('nexa-tts-audio');
             if (audioEl) { audioEl.pause(); audioEl.src = ''; }
             this.currentAudio = null;
+            this.isSpeaking = true;
+
+            // Start interrupt listener — any voice input will stop playback
+            if (this.interruptRecognition) {
+                try { this.interruptRecognition.start(); } catch(e) {}
+            }
+
+            const onDone = () => {
+                this.isSpeaking = false;
+                try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {}
+                resolve();
+            };
 
             try {
                 const response = await fetch('{% url "ai_tts" %}', {
@@ -1190,34 +1260,27 @@ const NexaVoice = {
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                     body: JSON.stringify({ text: text.substring(0, 2000) })
                 });
-                if (!response.ok) { await this.speakWithBrowserTTS(text); resolve(); return; }
+                if (!response.ok) { await this.speakWithBrowserTTS(text); onDone(); return; }
 
                 const data = await response.json();
+                if (data.use_browser_tts || !data.audio_url) { await this.speakWithBrowserTTS(text); onDone(); return; }
 
-                if (data.use_browser_tts || !data.audio_url) {
-                    await this.speakWithBrowserTTS(text); resolve(); return;
-                }
-
-                // data.audio_url is a base64 data URI — works on iOS/Android without any file serving
                 if (audioEl) {
                     audioEl.src = data.audio_url;
                     this.currentAudio = audioEl;
-                    audioEl.onended = () => { audioEl.src = ''; this.currentAudio = null; resolve(); };
-                    audioEl.onerror = () => { audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
-                    audioEl.play().catch(() => {
-                        audioEl.src = ''; this.currentAudio = null;
-                        this.speakWithBrowserTTS(text).then(resolve);
-                    });
+                    audioEl.onended = () => { audioEl.src = ''; this.currentAudio = null; onDone(); };
+                    audioEl.onerror = () => { audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); };
+                    audioEl.play().catch(() => { audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); });
                 } else {
                     const audio = new Audio(data.audio_url);
                     audio.setAttribute('playsinline', '');
                     this.currentAudio = audio;
-                    audio.onended = () => { this.currentAudio = null; resolve(); };
-                    audio.onerror = () => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); };
-                    audio.play().catch(() => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(resolve); });
+                    audio.onended = () => { this.currentAudio = null; onDone(); };
+                    audio.onerror = () => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); };
+                    audio.play().catch(() => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); });
                 }
             } catch(error) {
-                await this.speakWithBrowserTTS(text); resolve();
+                await this.speakWithBrowserTTS(text); onDone();
             }
         });
     },
@@ -1227,16 +1290,19 @@ const NexaVoice = {
             this.synthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 0.9; utterance.pitch = 1;
-            utterance.onend = () => resolve(); utterance.onerror = () => resolve();
+            utterance.onend = () => { this.isSpeaking = false; resolve(); };
+            utterance.onerror = () => { this.isSpeaking = false; resolve(); };
             this.synthesis.speak(utterance);
         });
     },
     stopSpeaking() {
+        this.isSpeaking = false;
         if (this.synthesis) this.synthesis.cancel();
         const audioEl = document.getElementById('nexa-tts-audio');
         if (audioEl) { audioEl.pause(); audioEl.src = ''; }
         if (this.currentAudio && this.currentAudio !== audioEl) { this.currentAudio.pause(); }
         this.currentAudio = null;
+        try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {}
     },
     toggleInput() { NexaVoice.open(); },
     toggleListening() { if (this.isListening) this.stopListening(); else this.startListening(); },
