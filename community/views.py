@@ -3609,58 +3609,77 @@ def micro_room_detail(request, room_id):
 @login_required
 @require_POST
 def micro_room_signal(request, room_id):
-    """Store a WebRTC signal (offer/answer/ICE candidate) for polling."""
+    """Store a WebRTC signal for polling. Host offer is stored persistently."""
     import json as _json
     room = get_object_or_404(MicroRoom, id=room_id)
     try:
         data = _json.loads(request.body)
     except Exception:
         return JsonResponse({'error': 'bad json'}, status=400)
-    signal_type = data.get('type')  # 'offer', 'answer', 'ice'
+    signal_type = data.get('type')
     payload = data.get('payload')
-    target = data.get('target')  # username of recipient, or 'all'
+    target = data.get('target', 'all')
+
     if not signal_type or payload is None:
         return JsonResponse({'error': 'missing fields'}, status=400)
-    # Store in cache keyed by room+target
+
     from django.core.cache import cache
-    key = f'room_signal_{room_id}_{target or "all"}'
+
+    # Host offer: store persistently so any viewer can pick it up on their first poll
+    if signal_type == 'offer' and request.user == room.host:
+        cache.set(f'room_host_offer_{room_id}', {
+            'sdp': payload, 'from': request.user.username
+        }, 7200)
+        return JsonResponse({'ok': True})
+
+    # Everything else: queue in target's inbox
+    key = f'room_signal_{room_id}_{target}'
     signals = cache.get(key, [])
     signals.append({'type': signal_type, 'payload': payload, 'from': request.user.username})
-    # Keep last 50 signals, expire in 60s
-    cache.set(key, signals[-50:], 60)
+    cache.set(key, signals[-50:], 120)
     return JsonResponse({'ok': True})
 
 
 @login_required
 def micro_room_poll(request, room_id):
-    """Poll for pending WebRTC signals addressed to this user."""
+    """Poll for WebRTC signals + host offer + comments + participant list."""
     from django.core.cache import cache
     username = request.user.username
-    # Signals addressed to this user specifically
+
+    # Signals addressed to this user
     key_me = f'room_signal_{room_id}_{username}'
-    # Signals addressed to 'all'
-    key_all = f'room_signal_{room_id}_all'
     signals_me = cache.get(key_me, [])
-    signals_all = cache.get(key_all, [])
-    # Clear signals addressed to this user after reading
     if signals_me:
         cache.delete(key_me)
-    # Return combined, filter out own messages from 'all'
+
+    # Signals addressed to 'all' (ICE candidates broadcast by host)
+    key_all = f'room_signal_{room_id}_all'
+    signals_all = cache.get(key_all, [])
     combined = [s for s in signals_all if s.get('from') != username] + signals_me
-    # Also return current participant list
+
+    # Host offer — always included so viewers can pick it up on any poll tick
+    host_offer = cache.get(f'room_host_offer_{room_id}')
+
+    # Participants
     participants = list(
         MicroRoomParticipant.objects.filter(room_id=room_id, left_at__isnull=True)
         .values_list('user__username', flat=True)
     )
+    viewer_count = len(participants)
     room = MicroRoom.objects.filter(id=room_id).values('status', 'participant_count').first()
-    # Return live comments (all users see the same comment feed)
-    comments_key = f'room_comments_{room_id}'
-    comments = cache.get(comments_key, [])
-    # Count active viewers from DB (authoritative)
-    viewer_count = MicroRoomParticipant.objects.filter(room_id=room_id, left_at__isnull=True).count()
     if room:
         room['viewer_count'] = viewer_count
-    return JsonResponse({'signals': combined, 'participants': participants, 'room': room, 'comments': comments})
+
+    # Comments
+    comments = cache.get(f'room_comments_{room_id}', [])
+
+    return JsonResponse({
+        'signals': combined,
+        'host_offer': host_offer,
+        'participants': participants,
+        'room': room,
+        'comments': comments,
+    })
 
 
 @login_required
