@@ -1,218 +1,309 @@
 {% extends "community/base.html" %}
-{% block title %}{{ room.topic }} — Live Room{% endblock %}
-{% block mobile_title %}Live Room{% endblock %}
+{% block title %}{{ room.topic }} — Live{% endblock %}
+{% block mobile_title %}Live{% endblock %}
 
 {% block extra_css %}
 <style>
-* { box-sizing: border-box; }
-body { background: #0d0d0d; }
+/* ── Reset & page ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body, html { background: #000; overflow: hidden; }
+
 .rm-page {
-  background: #0d0d0d; min-height: 100vh;
-  margin: -1.5rem -2rem; padding: 0;
+  position: fixed; inset: 0;
+  background: #000;
   display: flex; flex-direction: column;
+  /* pull out of base layout padding */
+  margin: -1.5rem -2rem;
 }
 @media(max-width:900px){ .rm-page { margin: -.875rem -.875rem; } }
 @media(max-width:480px){ .rm-page { margin: -.625rem -.625rem; } }
-.rm-topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: .75rem 1rem; background: #0d0d0d;
-  position: sticky; top: 0; z-index: 100;
-}
-.rm-back {
-  display: flex; align-items: center; gap: .375rem;
-  color: #aaa; font-size: .875rem; cursor: pointer;
-  background: none; border: none; padding: 0;
-}
-.rm-back:hover { color: #fff; }
-.rm-live-badge {
-  display: inline-flex; align-items: center; gap: .35rem;
-  background: #ef4444; color: #fff; font-size: .75rem; font-weight: 700;
-  padding: .25rem .625rem; border-radius: 6px;
-}
-.rm-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: blink 1.2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── Full-screen video ── */
 .rm-video-wrap {
-  position: relative; background: #111;
+  position: absolute; inset: 0;
+  background: #111;
   display: flex; align-items: center; justify-content: center;
-  width: 100%; aspect-ratio: 16/9; max-height: 56vw; min-height: 200px;
-  overflow: hidden;
 }
 #rm-video-host, #rm-video-viewer {
-  width: 100%; height: 100%; object-fit: cover; display: block; background: #111;
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; background: #000;
 }
-.rm-no-stream {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .75rem; color: #555; font-size: .9375rem; text-align: center; padding: 2rem;
+
+/* ── No-cam placeholder ── */
+.rm-no-cam {
   position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1rem; color: #444; background: #0d0d0d;
 }
-</style>
-{% endblock %}
-<style>
-.rm-no-stream svg { width: 48px; height: 48px; opacity: .4; }
-.rm-overlay-tl {
-  position: absolute; top: .75rem; left: .75rem;
-  display: flex; align-items: center; gap: .5rem;
-}
-.rm-viewer-pill {
-  background: rgba(0,0,0,.65); color: #fff;
-  font-size: .75rem; font-weight: 600; padding: .25rem .625rem;
-  border-radius: 20px; display: flex; align-items: center; gap: .35rem;
-  backdrop-filter: blur(4px);
-}
-.rm-comments-overlay {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: .5rem .75rem 1rem;
-  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
-  pointer-events: none; max-height: 45%;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  gap: .3rem; overflow: hidden;
-}
-.rm-cmt-bubble {
-  display: inline-flex; align-items: baseline; gap: .35rem;
-  background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
-  border-radius: 14px; padding: .3rem .65rem;
-  font-size: .8125rem; color: #fff; max-width: 90%;
-  animation: fadeUp .25s ease; align-self: flex-start;
-}
-@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-.rm-cmt-user { font-weight: 700; color: #a78bfa; flex-shrink: 0; }
-.rm-cmt-text { word-break: break-word; }
-.rm-info { padding: .75rem 1rem .375rem; background: #0d0d0d; }
-.rm-topic { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .2rem; }
-.rm-host-line { font-size: .8125rem; color: #666; }
-.rm-host-line span { color: #999; }
-.rm-controls {
-  display: flex; align-items: center; justify-content: center;
-  gap: .875rem; padding: .75rem 1rem 1rem; background: #0d0d0d;
-}
-.rm-btn {
-  width: 48px; height: 48px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  border: none; cursor: pointer; transition: background .15s; flex-shrink: 0;
-}
-.rm-btn svg { width: 20px; height: 20px; }
-.rm-btn-dark { background: #1e1e1e; color: #fff; }
-.rm-btn-dark:hover { background: #2a2a2a; }
-.rm-btn-red { background: #ef4444; color: #fff; }
-.rm-btn-red:hover { background: #dc2626; }
-.rm-btn-off { background: #1e1e1e; color: #444; }
-.rm-comment-bar {
-  display: flex; align-items: center; gap: .625rem;
-  padding: .625rem 1rem .875rem; background: #0d0d0d;
-  border-top: 1px solid #1a1a1a;
-}
-.rm-comment-input {
-  flex: 1; background: #1a1a1a; border: 1.5px solid #2a2a2a;
-  border-radius: 22px; padding: .55rem 1rem;
-  font-size: .875rem; color: #fff; outline: none; transition: border-color .15s;
-}
-.rm-comment-input::placeholder { color: #555; }
-.rm-comment-input:focus { border-color: #a855f7; }
-.rm-comment-send {
-  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-  background: #a855f7; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; transition: background .15s;
-}
-.rm-comment-send:hover { background: #9333ea; }
-.rm-comment-send svg { width: 16px; height: 16px; color: #fff; }
-.rm-participants { padding: .625rem 1rem 5rem; background: #0d0d0d; }
-.rm-part-title {
-  font-size: .75rem; font-weight: 600; color: #444;
-  margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .05em;
-}
-.rm-part-list { display: flex; flex-wrap: wrap; gap: .4rem; }
-.rm-part-chip {
-  display: inline-flex; align-items: center; gap: .3rem;
-  background: #1a1a1a; border-radius: 20px; padding: .3rem .65rem;
-  font-size: .8rem; color: #bbb;
-}
-.rm-part-avatar {
-  width: 20px; height: 20px; border-radius: 50%;
-  background: #2a2a2a; display: flex; align-items: center; justify-content: center;
-  font-size: .6rem; font-weight: 700; color: #888; overflow: hidden; flex-shrink: 0;
-}
-.rm-part-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.rm-host-crown { color: #f59e0b; font-size: .65rem; }
+.rm-no-cam svg { width: 52px; height: 52px; opacity: .35; }
+.rm-no-cam span { font-size: .9rem; color: #555; }
+
+/* ── Connecting overlay ── */
 .rm-waiting {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .75rem; padding: 2.5rem 1rem; color: #555; text-align: center;
   position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1rem; background: #0d0d0d; color: #555; font-size: .9rem;
 }
-.rm-waiting-spinner {
-  width: 36px; height: 36px; border: 3px solid #222;
-  border-top-color: #a855f7; border-radius: 50%;
+.rm-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid #222; border-top-color: #a855f7;
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Top bar (floating) ── */
+.rm-topbar {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .75rem 1rem;
+  background: linear-gradient(to bottom, rgba(0,0,0,.7) 0%, transparent 100%);
+}
+.rm-back {
+  display: flex; align-items: center; gap: .375rem;
+  color: rgba(255,255,255,.85); font-size: .875rem;
+  background: none; border: none; cursor: pointer; padding: 0;
+}
+.rm-back:active { opacity: .7; }
+.rm-live-badge {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: #ef4444; color: #fff;
+  font-size: .7rem; font-weight: 800; letter-spacing: .04em;
+  padding: .25rem .7rem; border-radius: 6px;
+}
+.rm-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.rm-viewer-pill {
+  display: flex; align-items: center; gap: .3rem;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+  color: #fff; font-size: .75rem; font-weight: 600;
+  padding: .25rem .65rem; border-radius: 20px;
+}
+
+/* ── Host info strip (floating, below topbar) ── */
+.rm-host-strip {
+  position: absolute; top: 3.25rem; left: 1rem; z-index: 20;
+  display: flex; align-items: center; gap: .5rem;
+}
+.rm-host-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #333; border: 2px solid rgba(255,255,255,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0;
+}
+.rm-host-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.rm-host-name { font-size: .8125rem; font-weight: 600; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+.rm-host-sub  { font-size: .7rem; color: rgba(255,255,255,.6); }
+
+/* ── Comments overlay (bottom-left, above controls) ── */
+.rm-comments-overlay {
+  position: absolute; bottom: 7rem; left: 0; right: 4.5rem;
+  padding: .5rem .875rem;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  gap: .3rem; max-height: 40vh; overflow: hidden;
+  pointer-events: none; z-index: 20;
+}
+.rm-cmt-bubble {
+  display: inline-flex; align-items: baseline; gap: .35rem;
+  background: rgba(0,0,0,.5); backdrop-filter: blur(6px);
+  border-radius: 16px; padding: .35rem .75rem;
+  font-size: .8125rem; color: #fff; max-width: 85%;
+  animation: fadeUp .2s ease; align-self: flex-start;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+.rm-cmt-user { font-weight: 700; color: #c084fc; flex-shrink: 0; }
+
+/* ── Right-side action buttons ── */
+.rm-actions {
+  position: absolute; right: .875rem; bottom: 7rem; z-index: 20;
+  display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+}
+.rm-action-btn {
+  display: flex; flex-direction: column; align-items: center; gap: .25rem;
+  background: none; border: none; cursor: pointer; color: #fff;
+}
+.rm-action-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,.15); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.rm-action-icon:active { background: rgba(255,255,255,.25); }
+.rm-action-icon svg { width: 20px; height: 20px; }
+.rm-action-label { font-size: .65rem; color: rgba(255,255,255,.75); }
+.rm-action-btn.rm-off .rm-action-icon { background: rgba(255,255,255,.08); }
+.rm-action-btn.rm-off svg { opacity: .4; }
+
+/* ── Bottom bar: comment input + leave ── */
+.rm-bottom-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; gap: .625rem;
+  padding: .75rem 1rem 1.25rem;
+  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
+}
+.rm-comment-input {
+  flex: 1; background: rgba(255,255,255,.12); backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,.15); border-radius: 24px;
+  padding: .6rem 1.1rem; font-size: .875rem; color: #fff; outline: none;
+  transition: border-color .15s;
+}
+.rm-comment-input::placeholder { color: rgba(255,255,255,.45); }
+.rm-comment-input:focus { border-color: #a855f7; }
+.rm-comment-send {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: #a855f7; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.rm-comment-send:active { background: #9333ea; }
+.rm-comment-send svg { width: 16px; height: 16px; color: #fff; }
+.rm-leave-btn {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: #ef4444; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.rm-leave-btn svg { width: 18px; height: 18px; color: #fff; }
+
+/* ── Viewers drawer (slide up) ── */
+.rm-viewers-drawer {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 30;
+  background: #111; border-radius: 20px 20px 0 0;
+  padding: 1rem 1rem 2rem;
+  transform: translateY(100%); transition: transform .3s ease;
+  max-height: 55vh; overflow-y: auto;
+}
+.rm-viewers-drawer.open { transform: translateY(0); }
+.rm-drawer-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: #333; margin: 0 auto .875rem;
+}
+.rm-drawer-title {
+  font-size: .8125rem; font-weight: 700; color: #666;
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: .75rem;
+}
+.rm-part-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+.rm-part-chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: #1e1e1e; border-radius: 20px; padding: .35rem .75rem;
+  font-size: .8rem; color: #bbb;
+}
+.rm-part-avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #2a2a2a; display: flex; align-items: center; justify-content: center;
+  font-size: .65rem; font-weight: 700; color: #888; overflow: hidden; flex-shrink: 0;
+}
+.rm-part-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.rm-host-crown { color: #f59e0b; }
+.rm-drawer-overlay {
+  position: absolute; inset: 0; z-index: 29;
+  display: none;
+}
+.rm-drawer-overlay.open { display: block; }
 </style>
+{% endblock %}
 
 {% block content %}
 <div class="rm-page">
 
+  <!-- Full-screen video -->
+  <div class="rm-video-wrap">
+    {% if is_host %}
+      <video id="rm-video-host" autoplay muted playsinline></video>
+      <div class="rm-no-cam" id="rm-no-cam" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+        <span>Camera off</span>
+      </div>
+    {% else %}
+      <div class="rm-waiting" id="rm-waiting">
+        <div class="rm-spinner"></div>
+        <span>Connecting to stream…</span>
+      </div>
+      <video id="rm-video-viewer" autoplay playsinline style="display:none;"></video>
+    {% endif %}
+  </div>
+
+  <!-- Top bar -->
   <div class="rm-topbar">
     <button class="rm-back" onclick="rmLeaveAndGo()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
       Back
     </button>
     <div class="rm-live-badge"><span class="rm-live-dot"></span>LIVE</div>
-    <div style="width:56px;"></div>
-  </div>
-
-  <div class="rm-video-wrap" id="rm-video-wrap">
-    {% if is_host %}
-      <video id="rm-video-host" autoplay muted playsinline></video>
-      <div class="rm-no-stream" id="rm-no-cam" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-        <span>Camera off</span>
-      </div>
-    {% else %}
-      <div class="rm-waiting" id="rm-waiting">
-        <div class="rm-waiting-spinner"></div>
-        <span>Connecting to stream…</span>
-      </div>
-      <video id="rm-video-viewer" autoplay playsinline style="display:none;"></video>
-    {% endif %}
-
-    <div class="rm-overlay-tl">
-      <div class="rm-viewer-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span id="rm-count-num">{{ room.participant_count }}</span>
-      </div>
+    <div class="rm-viewer-pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span id="rm-count-num">{{ room.participant_count }}</span>
     </div>
-
-    <div class="rm-comments-overlay" id="rm-comments-overlay"></div>
   </div>
 
-  <div class="rm-info">
-    <div class="rm-topic">{{ room.topic }}</div>
-    <div class="rm-host-line">Hosted by <span>{{ room.host.username }}</span></div>
+  <!-- Host info -->
+  <div class="rm-host-strip">
+    <div class="rm-host-avatar">
+      {% if room.host.community_profile.avatar %}
+        <img src="{{ room.host.community_profile.avatar.url }}" alt="">
+      {% else %}{{ room.host.username|slice:":1"|upper }}{% endif %}
+    </div>
+    <div>
+      <div class="rm-host-name">{{ room.host.username }}</div>
+      <div class="rm-host-sub">{{ room.topic }}</div>
+    </div>
   </div>
 
-  <div class="rm-controls">
-    {% if is_host %}
-    <button class="rm-btn rm-btn-dark" id="rm-btn-mic" onclick="rmToggleMic()" title="Mute/Unmute">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+  <!-- Comments overlay -->
+  <div class="rm-comments-overlay" id="rm-comments-overlay"></div>
+
+  <!-- Right-side actions (host only: mic + cam) -->
+  {% if is_host %}
+  <div class="rm-actions" id="rm-actions">
+    <button class="rm-action-btn" id="rm-btn-mic" onclick="rmToggleMic()">
+      <div class="rm-action-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </div>
+      <span class="rm-action-label">Mic</span>
     </button>
-    <button class="rm-btn rm-btn-dark" id="rm-btn-cam" onclick="rmToggleCam()" title="Camera on/off">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <button class="rm-action-btn" id="rm-btn-cam" onclick="rmToggleCam()">
+      <div class="rm-action-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      </div>
+      <span class="rm-action-label">Camera</span>
     </button>
-    {% endif %}
-    <button class="rm-btn rm-btn-red" onclick="rmLeaveAndGo()" title="Leave">
+    <button class="rm-action-btn" onclick="rmToggleDrawer()">
+      <div class="rm-action-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <span class="rm-action-label">Viewers</span>
+    </button>
+  </div>
+  {% else %}
+  <div class="rm-actions">
+    <button class="rm-action-btn" onclick="rmToggleDrawer()">
+      <div class="rm-action-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <span class="rm-action-label">Viewers</span>
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- Bottom bar -->
+  <div class="rm-bottom-bar">
+    <input id="rm-comment-input" class="rm-comment-input" type="text"
+      placeholder="Say something…" maxlength="280" autocomplete="off"
+      onkeydown="if(event.key==='Enter')rmSendComment()">
+    <button class="rm-comment-send" onclick="rmSendComment()" aria-label="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+    <button class="rm-leave-btn" onclick="rmLeaveAndGo()" aria-label="Leave">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
   </div>
 
-  <div class="rm-comment-bar">
-    <input id="rm-comment-input" class="rm-comment-input" type="text"
-      placeholder="Say something…" maxlength="280" autocomplete="off"
-      onkeydown="if(event.key==='Enter')rmSendComment()">
-    <button class="rm-comment-send" onclick="rmSendComment()" aria-label="Send comment">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-  </div>
-
-  <div class="rm-participants">
-    <div class="rm-part-title">Watching</div>
+  <!-- Viewers drawer -->
+  <div class="rm-drawer-overlay" id="rm-drawer-overlay" onclick="rmToggleDrawer()"></div>
+  <div class="rm-viewers-drawer" id="rm-viewers-drawer">
+    <div class="rm-drawer-handle"></div>
+    <div class="rm-drawer-title">Watching</div>
     <div class="rm-part-list" id="rm-part-list">
       {% for p in participants %}
       <div class="rm-part-chip" id="rm-chip-{{ p.user.username }}">
@@ -251,28 +342,18 @@ const ICE_SERVERS = [
   { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
 ];
 
-let localStream      = null;
-let peerConns        = {};
-let viewerPc         = null;
-let viewerConnecting = false;
-let micEnabled       = true;
-let camEnabled       = true;
-let pollTimer        = null;
-let leftRoom         = false;
-let seenCmtIds       = new Set();
-let lastHostOfferSdp = null;
-let hostReBroadcastTimer = null;
-let hostBroadcastOffer   = null;
+let localStream = null, peerConns = {}, viewerPc = null, viewerConnecting = false;
+let micEnabled = true, camEnabled = true, pollTimer = null, leftRoom = false;
+let seenCmtIds = new Set(), hostReBroadcastTimer = null;
 
 function rmPost(url, body) {
-  return fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': RM_CSRF },
-    body: JSON.stringify(body),
-  }).then(r => r.json());
+  return fetch(url, { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':RM_CSRF}, body:JSON.stringify(body) }).then(r=>r.json());
 }
 function rmSendSignal(type, payload, target) {
-  return rmPost(RM_SIGNAL_URL, { type, payload, target: target || 'all' });
+  return rmPost(RM_SIGNAL_URL, { type, payload, target: target||'all' });
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function rmRenderComment(cmt) {
@@ -282,281 +363,201 @@ function rmRenderComment(cmt) {
   if (!overlay) return;
   const el = document.createElement('div');
   el.className = 'rm-cmt-bubble';
-  el.innerHTML = `<span class="rm-cmt-user">${escHtml(cmt.username)}</span><span class="rm-cmt-text">${escHtml(cmt.text)}</span>`;
+  el.innerHTML = `<span class="rm-cmt-user">${escHtml(cmt.username)}</span>&nbsp;<span>${escHtml(cmt.text)}</span>`;
   overlay.appendChild(el);
   const bubbles = overlay.querySelectorAll('.rm-cmt-bubble');
-  if (bubbles.length > 6) bubbles[0].remove();
+  if (bubbles.length > 7) bubbles[0].remove();
 }
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+
 async function rmSendComment() {
   const input = document.getElementById('rm-comment-input');
-  const text = (input.value || '').trim();
-  if (!text) return;
+  const text = (input.value||'').trim(); if (!text) return;
   input.value = '';
-  const tempId = 'local_' + Date.now();
-  rmRenderComment({ id: tempId, username: RM_USERNAME, text });
-  try {
-    const d = await rmPost(RM_CMT_URL, { text });
-    if (d.ok && d.comment) seenCmtIds.add(d.comment.id);
-  } catch(e) {}
+  rmRenderComment({ id:'local_'+Date.now(), username:RM_USERNAME, text });
+  try { const d = await rmPost(RM_CMT_URL,{text}); if(d.ok&&d.comment) seenCmtIds.add(d.comment.id); } catch(e){}
 }
 
-// ── HOST FLOW ──────────────────────────────────────────────────────────────
-// Host creates a proper per-viewer RTCPeerConnection with real tracks,
-// generates offer, sends it directly to that viewer via signal.
-// Viewer picks up the offer from poll signals (not host_offer cache),
-// answers, host sets remote description. Clean standard WebRTC flow.
-// To avoid race condition: host re-announces readiness every 8s so
-// viewers who join late will request an offer.
+function rmToggleDrawer() {
+  const d = document.getElementById('rm-viewers-drawer');
+  const o = document.getElementById('rm-drawer-overlay');
+  const open = d.classList.toggle('open');
+  o.classList.toggle('open', open);
+}
 
+// ── HOST ──────────────────────────────────────────────────────────────────
 async function rmHostStart() {
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  } catch(e) {
-    try { localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true }); }
-    catch(e2) { console.warn('No media access', e2); }
-  }
+  try { localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true}); }
+  catch(e) { try { localStream = await navigator.mediaDevices.getUserMedia({video:false,audio:true}); } catch(e2){} }
   const vid = document.getElementById('rm-video-host');
   const noCam = document.getElementById('rm-no-cam');
-  if (localStream && vid) {
-    vid.srcObject = localStream; vid.style.display = 'block';
-    if (noCam) noCam.style.display = 'none';
-  } else {
-    if (vid) vid.style.display = 'none';
-    if (noCam) noCam.style.display = 'flex';
-  }
-  // Announce host is ready — viewers will request an offer
-  await rmSendSignal('host_ready', { host: RM_USERNAME }, 'all');
+  if (localStream && vid) { vid.srcObject = localStream; vid.style.display='block'; if(noCam) noCam.style.display='none'; }
+  else { if(vid) vid.style.display='none'; if(noCam) noCam.style.display='flex'; }
+  await rmSendSignal('host_ready', {host:RM_USERNAME}, 'all');
   rmStartPoll();
-  // Re-announce every 8s so late joiners get notified
-  hostReBroadcastTimer = setInterval(() => rmSendSignal('host_ready', { host: RM_USERNAME }, 'all'), 8000);
+  hostReBroadcastTimer = setInterval(()=>rmSendSignal('host_ready',{host:RM_USERNAME},'all'), 8000);
 }
 
 async function rmHostMakeOffer(viewerUsername) {
-  // Don't duplicate if already connected/connecting
-  const existing = peerConns[viewerUsername];
-  if (existing && ['connected','connecting','have-local-offer'].includes(existing.signalingState || existing.connectionState)) return;
-  if (existing) { existing.close(); delete peerConns[viewerUsername]; }
-
-  const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  const ex = peerConns[viewerUsername];
+  if (ex && ['connected','connecting'].includes(ex.connectionState)) return;
+  if (ex) { ex.close(); delete peerConns[viewerUsername]; }
+  const pc = new RTCPeerConnection({iceServers:ICE_SERVERS});
   peerConns[viewerUsername] = pc;
-  if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-
-  pc.onicecandidate = e => { if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, viewerUsername); };
-  pc.onconnectionstatechange = () => {
-    if (['disconnected','failed','closed'].includes(pc.connectionState)) {
-      pc.close(); delete peerConns[viewerUsername];
-    }
-  };
-
+  if (localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  pc.onicecandidate = e => { if(e.candidate) rmSendSignal('ice',{candidate:e.candidate},viewerUsername); };
+  pc.onconnectionstatechange = () => { if(['disconnected','failed','closed'].includes(pc.connectionState)){pc.close();delete peerConns[viewerUsername];} };
   try {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    await rmSendSignal('offer', { sdp: pc.localDescription }, viewerUsername);
-  } catch(e) {
-    console.warn('rmHostMakeOffer error for', viewerUsername, e);
-    pc.close(); delete peerConns[viewerUsername];
-  }
+    await rmSendSignal('offer',{sdp:pc.localDescription},viewerUsername);
+  } catch(e) { console.warn('offer error',e); pc.close(); delete peerConns[viewerUsername]; }
 }
 
 async function rmHostHandleAnswer(viewerUsername, answerSdp) {
   const pc = peerConns[viewerUsername];
-  if (!pc) return;
-  if (pc.signalingState !== 'have-local-offer') return;
-  try {
-    await pc.setRemoteDescription(new RTCSessionDescription(answerSdp));
-  } catch(e) { console.warn('rmHostHandleAnswer error', e); }
-}
-
-// ── VIEWER FLOW ────────────────────────────────────────────────────────────
-// On host_ready signal → send viewer_request to host → host sends offer
-// On offer signal → answer it
-// On failed → reset and re-request
-
-function rmViewerRequestOffer() {
-  if (viewerPc && ['connected','connecting'].includes(viewerPc.connectionState)) return;
-  rmSendSignal('viewer_request', { viewer: RM_USERNAME }, RM_HOST_NAME);
-}
-
-async function rmViewerHandleOffer(offerSdp) {
-  if (viewerConnecting) return;
-  viewerConnecting = true;
-  if (viewerPc) { viewerPc.close(); viewerPc = null; }
-
-  try {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    viewerPc = pc;
-
-    pc.ontrack = e => {
-      const vid = document.getElementById('rm-video-viewer');
-      const waiting = document.getElementById('rm-waiting');
-      if (vid && e.streams && e.streams[0]) { vid.srcObject = e.streams[0]; vid.style.display = 'block'; }
-      if (waiting) waiting.style.display = 'none';
-    };
-    pc.onicecandidate = e => { if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, RM_HOST_NAME); };
-    pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'connected') {
-        viewerConnecting = false;
-        const w = document.getElementById('rm-waiting');
-        if (w) w.style.display = 'none';
-      }
-      if (['disconnected','failed'].includes(pc.connectionState)) {
-        viewerConnecting = false;
-        const w = document.getElementById('rm-waiting');
-        if (w) { w.style.display = 'flex'; w.innerHTML = '<div class="rm-waiting-spinner"></div><span>Reconnecting…</span>'; }
-        const vid = document.getElementById('rm-video-viewer');
-        if (vid) vid.style.display = 'none';
-        if (viewerPc === pc) viewerPc = null;
-        // Re-request offer after short delay
-        setTimeout(rmViewerRequestOffer, 2000);
-      }
-    };
-
-    await pc.setRemoteDescription(new RTCSessionDescription(offerSdp));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    await rmSendSignal('answer', { sdp: answer }, RM_HOST_NAME);
-
-    // Safety timeout — if not connected in 8s, retry
-    setTimeout(() => {
-      if (viewerPc === pc && !['connected'].includes(pc.connectionState)) {
-        viewerConnecting = false;
-        if (viewerPc === pc) { viewerPc = null; }
-        rmViewerRequestOffer();
-      }
-    }, 8000);
-  } catch(e) {
-    console.warn('rmViewerHandleOffer error', e);
-    viewerConnecting = false;
-    if (viewerPc) { viewerPc.close(); viewerPc = null; }
-    setTimeout(rmViewerRequestOffer, 2000);
-  }
-}
-
-// ── Poll loop ──────────────────────────────────────────────────────────────
-async function rmPoll() {
-  if (leftRoom) return;
-  try {
-    const data = await fetch(RM_POLL_URL).then(r => r.json());
-    if (data.room) {
-      const el = document.getElementById('rm-count-num');
-      if (el) el.textContent = data.room.viewer_count ?? (data.participants || []).length;
-      if (data.room.status === 'closed' && !RM_IS_HOST) {
-        rmShowToast('Stream ended');
-        setTimeout(() => window.location.href = '/community/live/', 1500);
-        return;
-      }
-    }
-    if (data.participants) rmUpdateParticipants(data.participants);
-    for (const cmt of (data.comments || [])) rmRenderComment(cmt);
-
-    if (RM_IS_HOST) {
-      for (const sig of (data.signals || [])) {
-        const { type, payload, from } = sig;
-        if (type === 'viewer_request') {
-          await rmHostMakeOffer(from);
-        } else if (type === 'answer') {
-          await rmHostHandleAnswer(from, payload.sdp);
-        } else if (type === 'ice') {
-          const pc = peerConns[from];
-          if (pc && payload.candidate) try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
-        }
-      }
-    } else {
-      // Check host_offer cache as fallback for first connection
-      if (data.host_offer && data.host_offer.sdp && data.host_offer.sdp.sdp && !viewerPc && !viewerConnecting) {
-        rmViewerRequestOffer();
-      }
-      for (const sig of (data.signals || [])) {
-        const { type, payload } = sig;
-        if (type === 'host_ready' && !viewerPc && !viewerConnecting) {
-          rmViewerRequestOffer();
-        } else if (type === 'offer') {
-          await rmViewerHandleOffer(payload.sdp);
-        } else if (type === 'ice' && viewerPc && payload.candidate) {
-          try { await viewerPc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
-        }
-      }
-    }
-  } catch(e) {}
-  if (!leftRoom) pollTimer = setTimeout(rmPoll, 2000);
-}
-
-function rmStartPoll() {
-  if (pollTimer) clearTimeout(pollTimer);
-  pollTimer = setTimeout(rmPoll, 500);
-}
-
-function rmUpdateParticipants(usernames) {
-  const list = document.getElementById('rm-part-list');
-  if (!list) return;
-  usernames.forEach(u => {
-    if (!document.getElementById('rm-chip-' + u)) {
-      const chip = document.createElement('div');
-      chip.className = 'rm-part-chip'; chip.id = 'rm-chip-' + u;
-      chip.innerHTML = `<div class="rm-part-avatar">${escHtml(u.slice(0,1).toUpperCase())}</div>${escHtml(u)}${u === RM_HOST_NAME ? ' <span class="rm-host-crown">♛</span>' : ''}`;
-      list.appendChild(chip);
-    }
-  });
-  list.querySelectorAll('.rm-part-chip').forEach(chip => {
-    const u = chip.id.replace('rm-chip-', '');
-    if (!usernames.includes(u)) chip.remove();
-  });
+  if (!pc || pc.signalingState !== 'have-local-offer') return;
+  try { await pc.setRemoteDescription(new RTCSessionDescription(answerSdp)); } catch(e){}
 }
 
 function rmToggleMic() {
   if (!localStream) return;
   micEnabled = !micEnabled;
-  localStream.getAudioTracks().forEach(t => t.enabled = micEnabled);
+  localStream.getAudioTracks().forEach(t=>t.enabled=micEnabled);
   const btn = document.getElementById('rm-btn-mic');
-  if (btn) btn.className = micEnabled ? 'rm-btn rm-btn-dark' : 'rm-btn rm-btn-off';
+  if (btn) btn.classList.toggle('rm-off', !micEnabled);
 }
 function rmToggleCam() {
   if (!localStream) return;
   camEnabled = !camEnabled;
-  localStream.getVideoTracks().forEach(t => t.enabled = camEnabled);
+  localStream.getVideoTracks().forEach(t=>t.enabled=camEnabled);
   const btn = document.getElementById('rm-btn-cam');
-  if (btn) btn.className = camEnabled ? 'rm-btn rm-btn-dark' : 'rm-btn rm-btn-off';
+  if (btn) btn.classList.toggle('rm-off', !camEnabled);
   const vid = document.getElementById('rm-video-host');
   const noCam = document.getElementById('rm-no-cam');
   if (vid) vid.style.display = camEnabled ? 'block' : 'none';
   if (noCam) noCam.style.display = camEnabled ? 'none' : 'flex';
 }
 
-async function rmLeaveAndGo() {
-  leftRoom = true;
-  if (pollTimer) clearTimeout(pollTimer);
-  if (hostReBroadcastTimer) clearInterval(hostReBroadcastTimer);
-  if (localStream) localStream.getTracks().forEach(t => t.stop());
-  Object.values(peerConns).forEach(pc => pc.close());
-  if (viewerPc) viewerPc.close();
-  try { await rmPost(RM_LEAVE_URL, {}); } catch(e) {}
-  window.location.href = '/community/live/';
+// ── VIEWER ────────────────────────────────────────────────────────────────
+function rmViewerRequestOffer() {
+  if (viewerPc && ['connected','connecting'].includes(viewerPc.connectionState)) return;
+  rmSendSignal('viewer_request',{viewer:RM_USERNAME},RM_HOST_NAME);
 }
 
-function rmShowToast(msg) {
-  const t = document.createElement('div');
-  t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:.625rem 1.25rem;border-radius:20px;font-size:.875rem;z-index:9999;pointer-events:none;';
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  if (RM_IS_HOST) { rmHostStart(); }
-  else {
-    rmStartPoll();
-    // Request offer immediately — host may already be live
-    setTimeout(rmViewerRequestOffer, 1000);
+async function rmViewerHandleOffer(offerSdp) {
+  if (viewerConnecting) return;
+  viewerConnecting = true;
+  if (viewerPc) { viewerPc.close(); viewerPc = null; }
+  try {
+    const pc = new RTCPeerConnection({iceServers:ICE_SERVERS});
+    viewerPc = pc;
+    pc.ontrack = e => {
+      const vid = document.getElementById('rm-video-viewer');
+      const w = document.getElementById('rm-waiting');
+      if (vid && e.streams && e.streams[0]) { vid.srcObject=e.streams[0]; vid.style.display='block'; }
+      if (w) w.style.display='none';
+    };
+    pc.onicecandidate = e => { if(e.candidate) rmSendSignal('ice',{candidate:e.candidate},RM_HOST_NAME); };
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState==='connected') {
+        viewerConnecting=false;
+        const w=document.getElementById('rm-waiting'); if(w) w.style.display='none';
+      }
+      if (['disconnected','failed'].includes(pc.connectionState)) {
+        viewerConnecting=false;
+        const w=document.getElementById('rm-waiting');
+        if(w){w.style.display='flex';w.innerHTML='<div class="rm-spinner"></div><span>Reconnecting…</span>';}
+        const vid=document.getElementById('rm-video-viewer'); if(vid) vid.style.display='none';
+        if(viewerPc===pc) viewerPc=null;
+        setTimeout(rmViewerRequestOffer,2000);
+      }
+    };
+    await pc.setRemoteDescription(new RTCSessionDescription(offerSdp));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await rmSendSignal('answer',{sdp:answer},RM_HOST_NAME);
+    setTimeout(()=>{ if(viewerPc===pc&&pc.connectionState!=='connected'){viewerConnecting=false;viewerPc=null;rmViewerRequestOffer();} },8000);
+  } catch(e) {
+    console.warn('viewer offer error',e);
+    viewerConnecting=false; if(viewerPc){viewerPc.close();viewerPc=null;}
+    setTimeout(rmViewerRequestOffer,2000);
   }
-});
+}
 
-window.addEventListener('beforeunload', () => {
-  if (!leftRoom) {
-    if (localStream) localStream.getTracks().forEach(t => t.stop());
-    navigator.sendBeacon(RM_LEAVE_URL, JSON.stringify({ csrfmiddlewaretoken: RM_CSRF }));
+// ── POLL ──────────────────────────────────────────────────────────────────
+async function rmPoll() {
+  if (leftRoom) return;
+  try {
+    const data = await fetch(RM_POLL_URL).then(r=>r.json());
+    if (data.room) {
+      const el=document.getElementById('rm-count-num');
+      if(el) el.textContent=data.room.viewer_count??(data.participants||[]).length;
+      if(data.room.status==='closed'&&!RM_IS_HOST){rmShowToast('Stream ended');setTimeout(()=>window.location.href='/community/live/',1500);return;}
+    }
+    if (data.participants) rmUpdateParticipants(data.participants);
+    for (const cmt of (data.comments||[])) rmRenderComment(cmt);
+    if (RM_IS_HOST) {
+      for (const sig of (data.signals||[])) {
+        const {type,payload,from}=sig;
+        if(type==='viewer_request') await rmHostMakeOffer(from);
+        else if(type==='answer') await rmHostHandleAnswer(from,payload.sdp);
+        else if(type==='ice'){const pc=peerConns[from];if(pc&&payload.candidate)try{await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));}catch(e){}}
+      }
+    } else {
+      if(data.host_offer&&data.host_offer.sdp&&!viewerPc&&!viewerConnecting) rmViewerRequestOffer();
+      for (const sig of (data.signals||[])) {
+        const {type,payload}=sig;
+        if(type==='host_ready'&&!viewerPc&&!viewerConnecting) rmViewerRequestOffer();
+        else if(type==='offer') await rmViewerHandleOffer(payload.sdp);
+        else if(type==='ice'&&viewerPc&&payload.candidate)try{await viewerPc.addIceCandidate(new RTCIceCandidate(payload.candidate));}catch(e){}
+      }
+    }
+  } catch(e){}
+  if (!leftRoom) pollTimer=setTimeout(rmPoll,2000);
+}
+function rmStartPoll(){if(pollTimer)clearTimeout(pollTimer);pollTimer=setTimeout(rmPoll,500);}
+
+function rmUpdateParticipants(usernames) {
+  const list=document.getElementById('rm-part-list'); if(!list) return;
+  usernames.forEach(u=>{
+    if(!document.getElementById('rm-chip-'+u)){
+      const chip=document.createElement('div');
+      chip.className='rm-part-chip';chip.id='rm-chip-'+u;
+      chip.innerHTML=`<div class="rm-part-avatar">${escHtml(u.slice(0,1).toUpperCase())}</div>${escHtml(u)}${u===RM_HOST_NAME?' <span class="rm-host-crown">♛</span>':''}`;
+      list.appendChild(chip);
+    }
+  });
+  list.querySelectorAll('.rm-part-chip').forEach(chip=>{
+    const u=chip.id.replace('rm-chip-','');
+    if(!usernames.includes(u)) chip.remove();
+  });
+}
+
+async function rmLeaveAndGo() {
+  leftRoom=true;
+  if(pollTimer)clearTimeout(pollTimer);
+  if(hostReBroadcastTimer)clearInterval(hostReBroadcastTimer);
+  if(localStream)localStream.getTracks().forEach(t=>t.stop());
+  Object.values(peerConns).forEach(pc=>pc.close());
+  if(viewerPc)viewerPc.close();
+  try{await rmPost(RM_LEAVE_URL,{});}catch(e){}
+  window.location.href='/community/live/';
+}
+
+function rmShowToast(msg){
+  const t=document.createElement('div');t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:.625rem 1.25rem;border-radius:20px;font-size:.875rem;z-index:9999;pointer-events:none;';
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(RM_IS_HOST){rmHostStart();}
+  else{rmStartPoll();setTimeout(rmViewerRequestOffer,1000);}
+});
+window.addEventListener('beforeunload',()=>{
+  if(!leftRoom){
+    if(localStream)localStream.getTracks().forEach(t=>t.stop());
+    navigator.sendBeacon(RM_LEAVE_URL,JSON.stringify({csrfmiddlewaretoken:RM_CSRF}));
   }
 });
 </script>
