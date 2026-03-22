@@ -594,7 +594,7 @@ document.querySelectorAll('.collapsible-body').forEach(function(b){
 
     <!-- Progress bar -->
     <div style="height:4px;background:#f0f0f0;">
-      <div id="ob-progress" style="height:100%;background:linear-gradient(90deg,#f97316,#818cf8);width:50%;transition:width .4s;"></div>
+      <div id="ob-progress" style="height:100%;background:linear-gradient(90deg,#f97316,#818cf8);width:33%;transition:width .4s;"></div>
     </div>
 
     <!-- Step 1: Choose school -->
@@ -629,8 +629,48 @@ document.querySelectorAll('.collapsible-body').forEach(function(b){
       </div>
     </div>
 
-    <!-- Step 2: Follow friends -->
-    <div id="ob-step2" style="padding:2rem;display:none;flex-direction:column;flex:1;overflow:hidden;">
+    <!-- Step 2: Profile setup -->
+    <div id="ob-step2" style="padding:2rem;display:none;flex-direction:column;flex:1;overflow-y:auto;">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-size:2rem;margin-bottom:.5rem;">✨</div>
+        <div style="font-size:1.25rem;font-weight:800;color:#1a1a1a;">Set up your profile</div>
+        <div style="font-size:.875rem;color:#666;margin-top:.375rem;">Help others find you — takes 30 seconds.</div>
+      </div>
+      <!-- Avatar upload -->
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
+        <div id="ob-avatar-preview" onclick="document.getElementById('ob-avatar-input').click()"
+          style="width:72px;height:72px;border-radius:50%;background:#f0f0f4;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;border:2px dashed #e5e5e7;transition:border-color .15s;">
+          <span style="font-size:1.5rem;">📷</span>
+        </div>
+        <input id="ob-avatar-input" type="file" accept="image/*" style="display:none;" onchange="obPreviewAvatar(this)">
+        <div>
+          <div style="font-size:.875rem;font-weight:600;color:#1a1a1a;">Profile photo</div>
+          <div style="font-size:.75rem;color:#888;margin-top:.2rem;">Click to upload (optional)</div>
+        </div>
+      </div>
+      <!-- Display name -->
+      <input id="ob-display-name" type="text" placeholder="Display name (e.g. Alex Mensah)"
+        style="width:100%;padding:.75rem 1rem;border:1.5px solid #e5e5e7;border-radius:10px;font-size:.9rem;outline:none;margin-bottom:.75rem;box-sizing:border-box;">
+      <!-- Bio -->
+      <textarea id="ob-bio" placeholder="Short bio — what are you studying or working on?" rows="2"
+        style="width:100%;padding:.75rem 1rem;border:1.5px solid #e5e5e7;border-radius:10px;font-size:.9rem;outline:none;resize:none;margin-bottom:.875rem;box-sizing:border-box;font-family:inherit;"></textarea>
+      <!-- Interests -->
+      <div style="font-size:.8rem;font-weight:600;color:#555;margin-bottom:.5rem;">Your interests (pick a few)</div>
+      <div id="ob-interests-chips" style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1.25rem;">
+        {% for tag in ob_interest_tags %}
+        <button class="ob-chip" data-tag="{{ tag }}" onclick="obToggleChip(this)"
+          style="padding:.375rem .75rem;border:1.5px solid #e5e5e7;border-radius:20px;background:#fff;color:#555;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s;">{{ tag }}</button>
+        {% endfor %}
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:auto;">
+        <button onclick="obGoStep3()" style="flex:1;padding:.75rem;border:1.5px solid #e5e5e7;border-radius:10px;background:#fff;color:#666;font-size:.875rem;font-weight:600;cursor:pointer;">Skip</button>
+        <button id="ob-profile-next" onclick="obSubmitProfile()"
+          style="flex:2;padding:.75rem;border:none;border-radius:10px;background:#1a1a1a;color:#fff;font-size:.875rem;font-weight:700;cursor:pointer;">Save & Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Follow friends -->
+    <div id="ob-step3" style="padding:2rem;display:none;flex-direction:column;flex:1;overflow:hidden;">
       <div style="text-align:center;margin-bottom:1.25rem;">
         <div style="font-size:2rem;margin-bottom:.5rem;">👥</div>
         <div style="font-size:1.25rem;font-weight:800;color:#1a1a1a;">Follow people you might know</div>
@@ -652,6 +692,7 @@ document.querySelectorAll('.collapsible-body').forEach(function(b){
 <script>
 var obSelectedSchoolId = null;
 var obSelectedUsers = new Set();
+var obSelectedInterests = new Set();
 
 // ── School step ──
 function obFilterSchools(q) {
@@ -660,7 +701,6 @@ function obFilterSchools(q) {
     btn.style.display = btn.dataset.name.toLowerCase().includes(q) ? '' : 'none';
   });
 }
-
 function obSelectSchool(btn) {
   document.querySelectorAll('.ob-school-btn').forEach(function(b) {
     b.style.borderColor = '#e5e5e7'; b.style.background = '#fff'; b.style.color = '#1a1a1a';
@@ -670,12 +710,7 @@ function obSelectSchool(btn) {
   var nextBtn = document.getElementById('ob-school-next');
   nextBtn.disabled = false; nextBtn.style.opacity = '1';
 }
-
-function obSkipSchool() {
-  obSelectedSchoolId = null;
-  obGoStep2();
-}
-
+function obSkipSchool() { obSelectedSchoolId = null; obGoStep2(); }
 function obSubmitSchool() {
   var btn = document.getElementById('ob-school-next');
   btn.textContent = 'Joining…'; btn.disabled = true;
@@ -685,16 +720,56 @@ function obSubmitSchool() {
     body: JSON.stringify({ school_id: obSelectedSchoolId })
   }).then(function() { obGoStep2(); }).catch(function() { obGoStep2(); });
 }
-
 function obGoStep2() {
   document.getElementById('ob-step1').style.display = 'none';
-  var s2 = document.getElementById('ob-step2');
-  s2.style.display = 'flex';
+  document.getElementById('ob-step2').style.display = 'flex';
+  document.getElementById('ob-progress').style.width = '66%';
+}
+
+// ── Profile step ──
+function obPreviewAvatar(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var preview = document.getElementById('ob-avatar-preview');
+    preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;">';
+    preview.style.border = '2px solid #f97316';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function obToggleChip(btn) {
+  var tag = btn.dataset.tag;
+  if (obSelectedInterests.has(tag)) {
+    obSelectedInterests.delete(tag);
+    btn.style.borderColor = '#e5e5e7'; btn.style.background = '#fff'; btn.style.color = '#555';
+  } else {
+    obSelectedInterests.add(tag);
+    btn.style.borderColor = '#818cf8'; btn.style.background = '#f5f3ff'; btn.style.color = '#818cf8';
+  }
+}
+function obSubmitProfile() {
+  var btn = document.getElementById('ob-profile-next');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  var fd = new FormData();
+  fd.append('display_name', document.getElementById('ob-display-name').value.trim());
+  fd.append('bio', document.getElementById('ob-bio').value.trim());
+  fd.append('interests', Array.from(obSelectedInterests).join(','));
+  var avatarFile = document.getElementById('ob-avatar-input').files[0];
+  if (avatarFile) fd.append('avatar', avatarFile);
+  fetch('{% url "community:onboarding_save_profile" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    body: fd
+  }).then(function() { obGoStep3(); }).catch(function() { obGoStep3(); });
+}
+function obGoStep3() {
+  document.getElementById('ob-step2').style.display = 'none';
+  document.getElementById('ob-step3').style.display = 'flex';
   document.getElementById('ob-progress').style.width = '100%';
   obLoadSuggestedUsers();
 }
 
-// ── Users step ──
+// ── Follow step ──
 function obLoadSuggestedUsers() {
   fetch('{% url "community:onboarding_suggested_users" %}')
     .then(function(r) { return r.json(); })
@@ -709,11 +784,16 @@ function obLoadSuggestedUsers() {
         var avatarHtml = u.avatar
           ? '<img src="' + u.avatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">'
           : '<div style="width:40px;height:40px;border-radius:50%;background:#f0f0f4;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;">' + u.username.slice(0,1).toUpperCase() + '</div>';
+        var tagsHtml = '';
+        if (u.interests && u.interests.length) {
+          tagsHtml = '<div style="display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.2rem;">' +
+            u.interests.map(function(t) { return '<span style="font-size:.65rem;padding:.1rem .4rem;background:#f5f3ff;color:#818cf8;border-radius:8px;">' + t + '</span>'; }).join('') + '</div>';
+        }
         var row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border:1.5px solid #e5e5e7;border-radius:10px;cursor:pointer;transition:all .15s;';
         row.dataset.username = u.username;
         row.innerHTML = avatarHtml +
-          '<div style="flex:1;min-width:0;"><div style="font-size:.875rem;font-weight:600;color:#1a1a1a;">' + u.display_name + '</div><div style="font-size:.75rem;color:#888;">@' + u.username + '</div></div>' +
+          '<div style="flex:1;min-width:0;"><div style="font-size:.875rem;font-weight:600;color:#1a1a1a;">' + u.display_name + '</div><div style="font-size:.75rem;color:#888;">@' + u.username + '</div>' + tagsHtml + '</div>' +
           '<div class="ob-follow-check" style="width:24px;height:24px;border-radius:50%;border:2px solid #e5e5e7;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;"></div>';
         row.onclick = function() { obToggleUser(this); };
         list.appendChild(row);
@@ -722,27 +802,22 @@ function obLoadSuggestedUsers() {
       document.getElementById('ob-users-list').innerHTML = '<div style="text-align:center;padding:2rem;color:#aaa;font-size:.875rem;">Could not load suggestions.</div>';
     });
 }
-
 function obToggleUser(row) {
   var uname = row.dataset.username;
   var check = row.querySelector('.ob-follow-check');
   if (obSelectedUsers.has(uname)) {
     obSelectedUsers.delete(uname);
     row.style.borderColor = '#e5e5e7'; row.style.background = '#fff';
-    check.style.borderColor = '#e5e5e7'; check.style.background = '';
-    check.innerHTML = '';
+    check.style.borderColor = '#e5e5e7'; check.style.background = ''; check.innerHTML = '';
   } else {
     obSelectedUsers.add(uname);
     row.style.borderColor = '#818cf8'; row.style.background = '#f5f3ff';
     check.style.borderColor = '#818cf8'; check.style.background = '#818cf8';
     check.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
   }
-  var followBtn = document.getElementById('ob-follow-btn');
-  followBtn.textContent = obSelectedUsers.size > 0
-    ? 'Follow ' + obSelectedUsers.size + ' & Go →'
-    : 'Follow Selected & Go →';
+  document.getElementById('ob-follow-btn').textContent = obSelectedUsers.size > 0
+    ? 'Follow ' + obSelectedUsers.size + ' & Go →' : 'Follow Selected & Go →';
 }
-
 function obSubmitFollows() {
   var btn = document.getElementById('ob-follow-btn');
   btn.textContent = 'Saving…'; btn.disabled = true;
@@ -752,20 +827,16 @@ function obSubmitFollows() {
     body: JSON.stringify({ usernames: Array.from(obSelectedUsers) })
   }).then(function() { obDone(); }).catch(function() { obDone(); });
 }
-
 function obFinish() {
-  // Skip follow step — still mark onboarding complete
   fetch('{% url "community:onboarding_follow_users" %}', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
     body: JSON.stringify({ usernames: [] })
   }).then(function() { obDone(); }).catch(function() { obDone(); });
 }
-
 function obDone() {
   var overlay = document.getElementById('onboarding-overlay');
-  overlay.style.opacity = '0';
-  overlay.style.transition = 'opacity .3s';
+  overlay.style.opacity = '0'; overlay.style.transition = 'opacity .3s';
   setTimeout(function() { overlay.remove(); }, 300);
 }
 </script>

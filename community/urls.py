@@ -42,6 +42,7 @@ urlpatterns = [
 
     # Onboarding
     path('onboarding/school/', views.onboarding_join_school, name='onboarding_join_school'),
+    path('onboarding/profile/', views.onboarding_save_profile, name='onboarding_save_profile'),
     path('onboarding/follow/', views.onboarding_follow_users, name='onboarding_follow_users'),
     path('onboarding/suggested-users/', views.onboarding_suggested_users, name='onboarding_suggested_users'),
 

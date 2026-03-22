@@ -507,6 +507,7 @@ class CommunityProfile(models.Model):
     website = models.URLField(blank=True)
     avatar = models.ImageField(upload_to='community/profiles/avatars/', null=True, blank=True)
     banner = models.ImageField(upload_to='community/profiles/banners/', null=True, blank=True)
+    interests = models.CharField(max_length=500, blank=True, help_text='Comma-separated interest tags')
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

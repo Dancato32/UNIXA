@@ -153,6 +153,12 @@ def community_home(request):
         'workspace_type_choices': GroupWorkspace.TYPE_CHOICES,
         'show_onboarding': not request.user.onboarding_complete,
         'all_schools': list(SchoolCommunity.objects.filter(is_active=True).values('id', 'name', 'logo_url').order_by('name')),
+        'ob_interest_tags': [
+            'Mathematics', 'Science', 'Engineering', 'Business', 'Arts', 'Law',
+            'Medicine', 'Technology', 'Sports', 'Music', 'Literature', 'Economics',
+            'Psychology', 'Design', 'History', 'Politics', 'Philosophy',
+            'Computer Science', 'Finance', 'Education',
+        ],
     })
 
 
@@ -180,8 +186,28 @@ def onboarding_join_school(request):
 
 @login_required
 @require_POST
+def onboarding_save_profile(request):
+    """Step 2: save display name, bio, interests, avatar to CommunityProfile."""
+    profile, _ = CommunityProfile.objects.get_or_create(user=request.user)
+    display_name = request.POST.get('display_name', '').strip()
+    bio = request.POST.get('bio', '').strip()
+    interests = request.POST.get('interests', '').strip()
+    if display_name:
+        profile.display_name = display_name
+    if bio:
+        profile.bio = bio
+    if interests:
+        profile.interests = interests
+    if 'avatar' in request.FILES:
+        profile.avatar = request.FILES['avatar']
+    profile.save()
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
 def onboarding_follow_users(request):
-    """Step 2: follow suggested users (or skip). Marks onboarding complete."""
+    """Step 3: follow suggested users (or skip). Marks onboarding complete."""
     import json as _json
     from community.models import Follow
     data = _json.loads(request.body)
@@ -201,40 +227,64 @@ def onboarding_follow_users(request):
 
 @login_required
 def onboarding_suggested_users(request):
-    """Return users who share school community with the current user."""
+    """Return users who share school community or interests with the current user."""
+    from community.models import Follow, CommunityProfile
     # Get schools the user just joined or is in
     my_school_ids = CommunityMembership.objects.filter(
         user=request.user
     ).values_list('community_id', flat=True)
 
-    if my_school_ids:
-        # People in same school, not already followed, not self
-        from community.models import Follow
-        already_following = Follow.objects.filter(
-            follower=request.user
-        ).values_list('following_id', flat=True)
+    already_following = Follow.objects.filter(
+        follower=request.user
+    ).values_list('following_id', flat=True)
 
+    # Get current user's interests
+    my_interests = set()
+    try:
+        my_profile = request.user.community_profile
+        if my_profile.interests:
+            my_interests = {i.strip().lower() for i in my_profile.interests.split(',') if i.strip()}
+    except Exception:
+        pass
+
+    if my_school_ids:
         candidates = User.objects.filter(
             community_memberships__community_id__in=my_school_ids
         ).exclude(
             id=request.user.id
         ).exclude(
             id__in=already_following
-        ).distinct()[:20]
+        ).distinct()[:40]
     else:
-        # Fallback: most recent users
-        candidates = User.objects.exclude(id=request.user.id).order_by('-date_joined')[:20]
+        candidates = User.objects.exclude(id=request.user.id).order_by('-date_joined')[:40]
+
+    def _score(u):
+        """Higher score = better match."""
+        score = 0
+        try:
+            p = u.community_profile
+            if p.interests and my_interests:
+                other = {i.strip().lower() for i in p.interests.split(',') if i.strip()}
+                score = len(my_interests & other)
+        except Exception:
+            pass
+        return score
+
+    scored = sorted(candidates, key=_score, reverse=True)[:20]
 
     users_data = []
-    for u in candidates:
+    for u in scored:
         try:
             avatar = u.community_profile.avatar.url if u.community_profile.avatar else None
+            interests_list = [i.strip() for i in (u.community_profile.interests or '').split(',') if i.strip()]
         except Exception:
             avatar = None
+            interests_list = []
         users_data.append({
             'username': u.username,
             'display_name': getattr(getattr(u, 'community_profile', None), 'display_name', '') or u.username,
             'avatar': avatar,
+            'interests': interests_list[:3],
         })
     return JsonResponse({'users': users_data})
 
