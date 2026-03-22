@@ -1,0 +1,120 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Voice Rooms{% endblock %}
+{% block mobile_title %}ðŸŽ¤ Voice Rooms{% endblock %}
+{% block breadcrumb_label %}Voice Rooms{% endblock %}
+
+{% block extra_css %}
+<style>
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
+@media(max-width:480px){.rooms-grid{grid-template-columns:1fr;}}
+
+.room-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.25rem;transition:all .15s;}
+.room-card:hover{border-color:rgba(168,85,247,.3);}
+.rc-live{display:flex;align-items:center;gap:.375rem;font-size:.6875rem;font-weight:700;color:#a855f7;margin-bottom:.625rem;}
+.rc-live-dot{width:7px;height:7px;border-radius:50%;background:#a855f7;animation:livePulse 1.5s ease-in-out infinite;}
+@keyframes livePulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.rc-topic{font-size:1rem;font-weight:700;margin-bottom:.5rem;}
+.rc-host{display:flex;align-items:center;gap:.375rem;font-size:.8125rem;color:var(--text3);margin-bottom:.875rem;}
+.rc-av{width:22px;height:22px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.5625rem;font-weight:700;overflow:hidden;flex-shrink:0;}
+.rc-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.rc-footer{display:flex;align-items:center;justify-content:space-between;}
+.rc-count{display:flex;align-items:center;gap:.375rem;font-size:.8125rem;color:var(--text3);}
+.rc-count svg{width:14px;height:14px;}
+.join-room-btn{padding:.4rem .875rem;border-radius:8px;font-size:.8125rem;font-weight:700;border:none;background:rgba(168,85,247,.15);color:#a855f7;cursor:pointer;transition:background .15s;}
+.join-room-btn:hover{background:rgba(168,85,247,.25);}
+
+.create-room-card{background:var(--surface2);border:2px dashed var(--border2);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.625rem;cursor:pointer;transition:all .15s;min-height:140px;}
+.create-room-card:hover{border-color:rgba(168,85,247,.4);background:var(--surface3);}
+.create-room-card svg{width:28px;height:28px;color:var(--text3);}
+.create-room-card span{font-size:.875rem;color:var(--text3);font-weight:600;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.25rem;font-weight:800;">ðŸŽ¤ Voice Rooms</h1>
+    <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Walk into a conversation</div>
+  </div>
+</div>
+
+{% if rooms %}
+<div class="rooms-grid">
+  <div class="create-room-card" onclick="document.getElementById('create-room-modal').style.display='flex'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    <span>Start a Room</span>
+  </div>
+  {% for room in rooms %}
+  <div class="room-card">
+    <div class="rc-live"><span class="rc-live-dot"></span>LIVE</div>
+    <div class="rc-topic">{{ room.topic }}</div>
+    <div class="rc-host">
+      <div class="rc-av">
+        {% if room.host.community_profile.avatar %}<img src="{{ room.host.community_profile.avatar.url }}" alt="">{% else %}{{ room.host.username|slice:":1"|upper }}{% endif %}
+      </div>
+      @{{ room.host.username }}
+    </div>
+    <div class="rc-footer">
+      <div class="rc-count">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        {{ room.participant_count }} in room
+      </div>
+      <button class="join-room-btn" onclick="joinRoom('{{ room.id }}','{{ room.topic|escapejs }}')">Join â†’</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+  <p>No open rooms right now.</p>
+  <button class="btn btn-primary" onclick="document.getElementById('create-room-modal').style.display='flex'">Start the first room</button>
+</div>
+{% endif %}
+
+<!-- Create Room Modal -->
+<div id="create-room-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--surface2);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;border:1px solid var(--border2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <span style="font-size:1rem;font-weight:700;">ðŸŽ¤ Start a Voice Room</span>
+      <button onclick="document.getElementById('create-room-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:1.25rem;cursor:pointer;">âœ•</button>
+    </div>
+    <form id="create-room-form">
+      {% csrf_token %}
+      <input name="topic" placeholder="Room topic (e.g. Study group, Chill chat, Debateâ€¦)"
+        style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.9375rem;outline:none;margin-bottom:1rem;box-sizing:border-box;">
+      <div style="font-size:.8125rem;color:var(--text3);margin-bottom:1rem;">
+        ðŸŽ™ï¸ Voice-only. No camera. Join and leave silently.
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Create Room</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrf=()=>document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+
+document.getElementById('create-room-form').addEventListener('submit',function(e){
+  e.preventDefault();
+  const fd=new FormData(this);
+  fetch('{% url "community:micro_room_create" %}',{
+    method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'},
+    body:JSON.stringify({topic:fd.get('topic')||'Open Chat'})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){document.getElementById('create-room-modal').style.display='none';showUXToast('Room created!','success');this.reset();setTimeout(()=>location.reload(),800);}
+    else showUXToast('Error','error');
+  });
+});
+
+function joinRoom(id,topic){
+  fetch('/community/rooms/'+id+'/join/',{method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'}})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok) showUXToast('Joined: '+topic,'success');
+      else showUXToast('Could not join','error');
+    });
+}
+</script>
+{% endblock %}
+

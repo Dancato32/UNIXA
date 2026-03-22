@@ -207,8 +207,6 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
-        # Ensure post field is set
-        data['post'] = str(post.pk)
         serializer = CommentSerializer(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         comment = serializer.save(author=request.user, post=post)

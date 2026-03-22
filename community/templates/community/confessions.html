@@ -1,0 +1,167 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Confessions{% endblock %}
+{% block mobile_title %}ðŸŽ­ Confessions{% endblock %}
+{% block breadcrumb_label %}Confessions{% endblock %}
+
+{% block extra_css %}
+<style>
+.conf-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.125rem;margin-bottom:.875rem;transition:border-color .15s;}
+.conf-card:hover{border-color:var(--border3);}
+.conf-cat-badge{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:700;padding:.2rem .5rem;border-radius:4px;margin-bottom:.75rem;}
+.cat-academic{background:rgba(88,101,242,.12);color:var(--blue);}
+.cat-mental_health{background:rgba(168,85,247,.12);color:#a855f7;}
+.cat-relationships{background:rgba(249,115,22,.12);color:#f97316;}
+.cat-finance{background:rgba(34,197,94,.1);color:var(--green);}
+.cat-other{background:var(--surface4);color:var(--text2);}
+.conf-body{font-size:.9375rem;line-height:1.6;color:var(--text);margin-bottom:1rem;}
+.conf-actions{display:flex;align-items:center;gap:.75rem;}
+.conf-action-btn{display:flex;align-items:center;gap:.375rem;font-size:.8125rem;color:var(--text3);background:none;border:none;cursor:pointer;padding:.25rem .5rem;border-radius:6px;transition:all .15s;}
+.conf-action-btn:hover{background:var(--surface3);color:var(--text2);}
+.conf-action-btn.upvoted{color:#f97316;}
+.conf-action-btn svg{width:15px;height:15px;}
+.conf-time{margin-left:auto;font-size:.75rem;color:var(--text3);}
+
+.conf-replies{margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border);}
+.conf-reply{display:flex;gap:.625rem;margin-bottom:.625rem;}
+.conf-reply-av{width:28px;height:28px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.conf-reply-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.conf-reply-body{flex:1;background:var(--surface3);border-radius:8px;padding:.5rem .75rem;font-size:.8125rem;color:var(--text2);}
+.conf-reply-user{font-size:.6875rem;font-weight:700;color:var(--text3);margin-bottom:.2rem;}
+
+.reply-input-row{display:flex;gap:.5rem;margin-top:.625rem;}
+.reply-input-row input{flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.5rem .75rem;color:var(--text);font-size:.8125rem;outline:none;}
+.reply-input-row button{padding:.5rem .875rem;border-radius:8px;font-size:.8125rem;font-weight:600;border:none;background:var(--surface4);color:var(--text2);cursor:pointer;transition:all .15s;}
+.reply-input-row button:hover{background:var(--surface5);color:var(--text);}
+
+.filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.filter-chip{padding:.35rem .75rem;border-radius:20px;font-size:.8125rem;font-weight:600;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .15s;text-decoration:none;}
+.filter-chip:hover,.filter-chip.active{background:var(--surface3);color:var(--text);border-color:var(--border3);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+  <div>
+    <h1 style="font-size:1.25rem;font-weight:800;">ðŸŽ­ Confessions</h1>
+    <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Anonymous. Safe. Real.</div>
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="document.getElementById('conf-modal').style.display='flex'">+ Confess</button>
+</div>
+
+<div class="filter-bar">
+  <a href="{% url 'community:confession_feed' %}" class="filter-chip {% if not active_cat %}active{% endif %}">All</a>
+  {% for val,label in categories %}
+  <a href="?cat={{ val }}" class="filter-chip {% if active_cat == val %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% for conf in confessions %}
+<div class="conf-card" id="conf-{{ conf.id }}">
+  <div class="conf-cat-badge cat-{{ conf.category }}">{{ conf.get_category_display }}</div>
+  <div class="conf-body">{{ conf.content }}</div>
+  <div class="conf-actions">
+    <button class="conf-action-btn {% if conf.id in upvoted_ids %}upvoted{% endif %}" onclick="upvoteConf('{{ conf.id }}',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+      <span class="upvote-count">{{ conf.upvote_count }}</span>
+    </button>
+    <button class="conf-action-btn" onclick="toggleReplies('{{ conf.id }}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      {{ conf.reply_count }}
+    </button>
+    <span class="conf-time">{{ conf.created_at|timesince }} ago</span>
+  </div>
+  <div class="conf-replies" id="replies-{{ conf.id }}" style="display:none;">
+    {% for reply in conf.replies.all|slice:":5" %}
+    <div class="conf-reply">
+      <div class="conf-reply-av">
+        {% if reply.author.community_profile.avatar %}<img src="{{ reply.author.community_profile.avatar.url }}" alt="">{% else %}{{ reply.author.username|slice:":1"|upper }}{% endif %}
+      </div>
+      <div class="conf-reply-body">
+        <div class="conf-reply-user">{% if reply.is_anonymous %}Anonymous{% else %}@{{ reply.author.username }}{% endif %}</div>
+        {{ reply.content }}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="reply-input-row">
+      <input type="text" placeholder="Replyâ€¦" id="reply-input-{{ conf.id }}">
+      <button onclick="postReply('{{ conf.id }}')">Send</button>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <p>No confessions yet{% if active_cat %} in this category{% endif %}.</p>
+  <button class="btn btn-primary" onclick="document.getElementById('conf-modal').style.display='flex'">Be the first</button>
+</div>
+{% endfor %}
+
+<!-- Confession Modal -->
+<div id="conf-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--surface2);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;border:1px solid var(--border2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <span style="font-size:1rem;font-weight:700;">ðŸŽ­ Anonymous Confession</span>
+      <button onclick="document.getElementById('conf-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:1.25rem;cursor:pointer;">âœ•</button>
+    </div>
+    <div style="font-size:.8125rem;color:var(--text3);margin-bottom:1rem;padding:.625rem;background:var(--surface3);border-radius:8px;">
+      ðŸ”’ Your identity is completely hidden. No one will know it's you.
+    </div>
+    <form id="conf-form">
+      {% csrf_token %}
+      <textarea name="content" placeholder="What's on your mind? Share freelyâ€¦" rows="4" required
+        style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.9375rem;outline:none;resize:none;margin-bottom:.75rem;box-sizing:border-box;"></textarea>
+      <select name="category" style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;margin-bottom:1rem;box-sizing:border-box;">
+        {% for val,label in categories %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Post Anonymously</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrf=()=>document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+
+document.getElementById('conf-form').addEventListener('submit',function(e){
+  e.preventDefault();
+  const fd=new FormData(this);
+  fetch('{% url "community:confession_create" %}',{
+    method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'},
+    body:JSON.stringify({content:fd.get('content'),category:fd.get('category')})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){document.getElementById('conf-modal').style.display='none';showUXToast('Posted anonymously','success');this.reset();setTimeout(()=>location.reload(),800);}
+    else showUXToast(d.error||'Error','error');
+  });
+});
+
+function upvoteConf(id,btn){
+  fetch('/community/confessions/'+id+'/upvote/',{method:'POST',headers:{'X-CSRFToken':csrf()}})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){
+        btn.classList.toggle('upvoted',d.upvoted);
+        btn.querySelector('.upvote-count').textContent=d.count;
+      }
+    });
+}
+
+function toggleReplies(id){
+  const el=document.getElementById('replies-'+id);
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function postReply(confId){
+  const input=document.getElementById('reply-input-'+confId);
+  const body=input.value.trim();
+  if(!body)return;
+  fetch('/community/confessions/'+confId+'/reply/',{
+    method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'},
+    body:JSON.stringify({content:body})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){input.value='';showUXToast('Reply posted','success');}
+    else showUXToast(d.error||'Error','error');
+  });
+}
+</script>
+{% endblock %}
+

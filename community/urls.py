@@ -161,4 +161,47 @@ urlpatterns = [
     path('api/workspaces/list/', views.api_workspaces_list, name='api_workspaces_list'),
     path('api/posts/recent/', views.api_posts_recent, name='api_posts_recent'),
     path('api/communities/list/', views.api_communities_list, name='api_communities_list'),
+
+    # ── Live Campus ──────────────────────────────────────────────────────────
+    path('live/', views.live_campus, name='live_campus'),
+
+    # Skill Marketplace
+    path('skills/', views.skill_marketplace, name='skill_marketplace'),
+    path('skills/create/', views.skill_offer_create, name='skill_offer_create'),
+    path('skills/<uuid:offer_id>/deal/', views.skill_deal_initiate, name='skill_deal_initiate'),
+
+    # Confessions
+    path('confessions/', views.confession_feed, name='confession_feed'),
+    path('confessions/create/', views.confession_create, name='confession_create'),
+    path('confessions/<uuid:confession_id>/upvote/', views.confession_upvote, name='confession_upvote'),
+    path('confessions/<uuid:confession_id>/reply/', views.confession_reply, name='confession_reply'),
+
+    # Startups
+    path('startups/', views.startup_list, name='startup_list'),
+    path('startups/create/', views.startup_create, name='startup_create'),
+    path('startups/<slug:slug>/', views.startup_detail, name='startup_detail'),
+    path('startups/<slug:slug>/follow/', views.startup_follow_toggle, name='startup_follow_toggle'),
+    path('startups/<slug:slug>/update/', views.startup_post_update, name='startup_post_update'),
+
+    # Campus Pulse
+    path('pulse/', views.pulse_map, name='pulse_map'),
+    path('pulse/create/', views.pulse_event_create, name='pulse_event_create'),
+    path('pulse/<uuid:event_id>/join/', views.pulse_join, name='pulse_join'),
+    path('api/pulse/events/', views.pulse_events_api, name='pulse_events_api'),
+
+    # Micro Rooms
+    path('rooms/', views.micro_rooms_list, name='micro_rooms_list'),
+    path('rooms/create/', views.micro_room_create, name='micro_room_create'),
+    path('rooms/<uuid:room_id>/', views.micro_room_detail, name='micro_room_detail'),
+    path('rooms/<uuid:room_id>/join/', views.micro_room_join, name='micro_room_join'),
+    path('rooms/<uuid:room_id>/leave/', views.micro_room_leave, name='micro_room_leave'),
+    path('rooms/<uuid:room_id>/signal/', views.micro_room_signal, name='micro_room_signal'),
+    path('rooms/<uuid:room_id>/poll/', views.micro_room_poll, name='micro_room_poll'),
+    path('rooms/<uuid:room_id>/comment/', views.micro_room_comment, name='micro_room_comment'),
+
+    # Help Beacons
+    path('help/', views.help_beacon_list, name='help_beacon_list'),
+    path('help/create/', views.help_beacon_create, name='help_beacon_create'),
+    path('help/<uuid:beacon_id>/claim/', views.help_beacon_claim, name='help_beacon_claim'),
+    path('help/<uuid:beacon_id>/resolve/', views.help_beacon_resolve, name='help_beacon_resolve'),
 ]

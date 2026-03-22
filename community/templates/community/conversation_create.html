@@ -1,4 +1,4 @@
-{% extends "community/base.html" %}
+﻿{% extends "community/base.html" %}
 {% block title %}New Message{% endblock %}
 {% block mobile_title %}New Message{% endblock %}
 {% block nav_msgs %}active{% endblock %}
@@ -9,13 +9,13 @@
 
 {% block extra_css %}
 <style>
-.form-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:1.5rem;max-width:480px;}
+.form-card{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1.5rem;max-width:480px;}
 .form-title{font-size:1rem;font-weight:700;margin-bottom:1.25rem;}
 .form-group{margin-bottom:1.125rem;}
-.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.4rem;}
-.form-control{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:.55rem .875rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;}
-.form-control:focus{border-color:var(--b3);}
-.form-control::placeholder{color:var(--t3);}
+.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--text2);margin-bottom:.4rem;}
+.form-control{width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:.55rem .875rem;color:var(--text);font-size:.875rem;outline:none;transition:border-color .15s;}
+.form-control:focus{border-color:var(--border3);}
+.form-control::placeholder{color:var(--text3);}
 textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
 </style>
 {% endblock %}
@@ -27,11 +27,11 @@ textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
     {% csrf_token %}
     <div class="form-group">
       <label class="form-label">To (username)</label>
-      <input type="text" name="username" class="form-control" placeholder="Enter username…" required autofocus>
+      <input type="text" name="username" class="form-control" placeholder="Enter usernameâ€¦" required autofocus>
     </div>
     <div class="form-group">
       <label class="form-label">Message</label>
-      <textarea name="content" class="form-control" placeholder="Write your message…" required></textarea>
+      <textarea name="content" class="form-control" placeholder="Write your messageâ€¦" required></textarea>
     </div>
     <div style="display:flex;gap:.75rem;">
       <button type="submit" class="btn btn-primary">Send</button>
@@ -40,3 +40,4 @@ textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
   </form>
 </div>
 {% endblock %}
+

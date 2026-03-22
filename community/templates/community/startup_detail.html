@@ -1,0 +1,151 @@
+﻿{% extends "community/base.html" %}
+{% block title %}{{ startup.name }}{% endblock %}
+{% block mobile_title %}{{ startup.name }}{% endblock %}
+{% block breadcrumb_label %}{{ startup.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.startup-hero{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem;}
+.sh-top{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1rem;}
+.sh-logo{width:56px;height:56px;border-radius:14px;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:1.75rem;flex-shrink:0;}
+.sh-info{flex:1;min-width:0;}
+.sh-name{font-size:1.375rem;font-weight:800;margin-bottom:.25rem;}
+.sh-stage{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);}
+.sh-tagline{font-size:.9375rem;color:var(--text2);margin-bottom:1rem;line-height:1.5;}
+.sh-stats{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+.sh-stat{text-align:center;}
+.sh-stat-val{font-size:1.125rem;font-weight:800;}
+.sh-stat-label{font-size:.6875rem;color:var(--text3);}
+.sh-actions{display:flex;gap:.625rem;flex-wrap:wrap;}
+
+.section-title{font-size:.9375rem;font-weight:700;margin-bottom:.875rem;display:flex;align-items:center;gap:.5rem;}
+.section-title svg{width:16px;height:16px;color:var(--text3);}
+
+.update-card{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:1rem;margin-bottom:.75rem;}
+.update-meta{font-size:.75rem;color:var(--text3);margin-bottom:.5rem;}
+.update-body{font-size:.875rem;color:var(--text2);line-height:1.6;}
+
+.member-list{display:flex;flex-wrap:wrap;gap:.625rem;margin-bottom:1.25rem;}
+.member-chip{display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:.8125rem;color:var(--text2);}
+.member-av{width:24px;height:24px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;overflow:hidden;flex-shrink:0;}
+.member-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.member-role{font-size:.6875rem;color:var(--text3);}
+</style>
+{% endblock %}
+
+{% block content %}
+<button onclick="history.back()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:.375rem;font-size:.875rem;">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  Back
+</button>
+
+<div class="startup-hero">
+  <div class="sh-top">
+    <div class="sh-logo">{% if startup.logo %}<img src="{{ startup.logo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">{% else %}ðŸš€{% endif %}</div>
+    <div class="sh-info">
+      <div class="sh-name">{{ startup.name }}</div>
+      <div class="sh-stage">{{ startup.get_stage_display }}</div>
+    </div>
+  </div>
+  <div class="sh-tagline">{{ startup.tagline }}</div>
+  {% if startup.description %}
+  <div style="font-size:.875rem;color:var(--text3);margin-bottom:1rem;line-height:1.6;">{{ startup.description }}</div>
+  {% endif %}
+  <div class="sh-stats">
+    <div class="sh-stat"><div class="sh-stat-val">{{ startup.follower_count }}</div><div class="sh-stat-label">Followers</div></div>
+    <div class="sh-stat"><div class="sh-stat-val">{{ members|length }}</div><div class="sh-stat-label">Team</div></div>
+    <div class="sh-stat"><div class="sh-stat-val">{{ updates|length }}</div><div class="sh-stat-label">Updates</div></div>
+  </div>
+  <div class="sh-actions">
+    <button class="btn {% if is_following %}btn-ghost{% else %}btn-primary{% endif %} btn-sm" id="follow-btn"
+      onclick="toggleFollow()">
+      {% if is_following %}Following{% else %}Follow{% endif %}
+    </button>
+    {% if is_member %}
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('update-modal').style.display='flex'">Post Update</button>
+    {% endif %}
+    {% if startup.founder == request.user %}
+    <a href="{% url 'community:startup_create' %}" class="btn btn-ghost btn-sm">Edit</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Team -->
+{% if members %}
+<div class="section-title">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  Team
+</div>
+<div class="member-list">
+  {% for m in members %}
+  <div class="member-chip">
+    <div class="member-av">
+      {% if m.user.community_profile.avatar %}<img src="{{ m.user.community_profile.avatar.url }}" alt="">{% else %}{{ m.user.username|slice:":1"|upper }}{% endif %}
+    </div>
+    <div>
+      <div>@{{ m.user.username }}</div>
+      <div class="member-role">{{ m.role }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Updates -->
+<div class="section-title">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+  Dev Log
+</div>
+{% for update in updates %}
+<div class="update-card">
+  <div class="update-meta">{{ update.created_at|date:"M d, Y" }} Â· @{{ update.author.username }}</div>
+  <div class="update-body">{{ update.content }}</div>
+</div>
+{% empty %}
+<div style="font-size:.875rem;color:var(--text3);padding:1rem 0;">No updates yet.</div>
+{% endfor %}
+
+<!-- Post Update Modal -->
+<div id="update-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:4000;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--surface2);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;border:1px solid var(--border2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <span style="font-size:1rem;font-weight:700;">Post Update</span>
+      <button onclick="document.getElementById('update-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:1.25rem;cursor:pointer;">âœ•</button>
+    </div>
+    <form id="update-form">
+      {% csrf_token %}
+      <textarea name="content" placeholder="Share a progress update, milestone, or dev logâ€¦" rows="4" required
+        style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.9375rem;outline:none;resize:none;margin-bottom:1rem;box-sizing:border-box;"></textarea>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Post Update</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrf=()=>document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+function toggleFollow(){
+  const btn=document.getElementById('follow-btn');
+  btn.disabled=true;
+  fetch('{% url "community:startup_follow_toggle" slug=startup.slug %}',{method:'POST',headers:{'X-CSRFToken':csrf()}})
+    .then(r=>r.json()).then(d=>{
+      btn.disabled=false;
+      if(d.following){btn.textContent='Following';btn.className='btn btn-ghost btn-sm';}
+      else{btn.textContent='Follow';btn.className='btn btn-primary btn-sm';}
+    }).catch(()=>{btn.disabled=false;});
+}
+document.getElementById('update-form').addEventListener('submit',function(e){
+  e.preventDefault();
+  const fd=new FormData(this);
+  fetch('{% url "community:startup_post_update" slug=startup.slug %}',{
+    method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'},
+    body:JSON.stringify({content:fd.get('content')})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){document.getElementById('update-modal').style.display='none';showUXToast('Update posted!','success');this.reset();setTimeout(()=>location.reload(),800);}
+    else showUXToast(d.error||'Error','error');
+  });
+});
+</script>
+{% endblock %}
+

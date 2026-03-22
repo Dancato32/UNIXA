@@ -1,4 +1,4 @@
-{% extends "community/base.html" %}
+﻿{% extends "community/base.html" %}
 {% block title %}{{ profile_user.username }}'s Profile{% endblock %}
 {% block mobile_title %}Profile{% endblock %}
 {% block topbar_title %}profile{% endblock %}
@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <style>
-/* ── Banner ── */
+/* â”€â”€ Banner â”€â”€ */
 .prof-banner{
   width:100%;height:200px;border-radius:12px;overflow:hidden;position:relative;
   background:linear-gradient(135deg,#a78bfa 0%,#818cf8 40%,#f0abfc 100%);
@@ -22,13 +22,13 @@
 }
 .prof-banner-edit svg{width:13px;height:13px;}
 
-/* ── Card ── */
+/* â”€â”€ Card â”€â”€ */
 .prof-card{
-  background:var(--s2);border:1px solid var(--b2);border-radius:12px;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
   overflow:hidden;margin-bottom:1.25rem;
 }
 
-/* ── Header row ── */
+/* â”€â”€ Header row â”€â”€ */
 .prof-header{
   display:flex;align-items:flex-end;gap:1.5rem;
   padding:0 1.5rem 1.25rem;margin-top:-52px;
@@ -37,40 +37,40 @@
 .prof-av-wrap{flex-shrink:0;}
 .prof-av{
   width:104px;height:104px;border-radius:20px;
-  background:var(--s4);border:4px solid var(--s2);
+  background:var(--surface4);border:4px solid var(--surface2);
   display:flex;align-items:center;justify-content:center;
-  font-size:2.25rem;font-weight:700;color:var(--t1);
+  font-size:2.25rem;font-weight:700;color:var(--text);
   overflow:hidden;position:relative;
 }
 .prof-av img{width:100%;height:100%;object-fit:cover;}
 
-/* ── Info block ── */
+/* â”€â”€ Info block â”€â”€ */
 .prof-info{flex:1;min-width:0;padding-top:.5rem;}
 .prof-name-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;margin-bottom:.25rem;}
-.prof-name{font-size:1.25rem;font-weight:800;color:var(--t1);line-height:1.2;}
+.prof-name{font-size:1.25rem;font-weight:800;color:var(--text);line-height:1.2;}
 .prof-badge{
   display:inline-flex;align-items:center;gap:.2rem;
   background:#818cf8;color:#fff;font-size:.6875rem;font-weight:700;
   padding:.15rem .45rem;border-radius:4px;letter-spacing:.03em;
 }
-.prof-bio{font-size:.875rem;color:var(--t2);line-height:1.6;margin-bottom:.5rem;max-width:480px;}
+.prof-bio{font-size:.875rem;color:var(--text2);line-height:1.6;margin-bottom:.5rem;max-width:480px;}
 .prof-meta-row{display:flex;align-items:center;gap:.875rem;flex-wrap:wrap;}
-.prof-meta-item{display:flex;align-items:center;gap:.3rem;font-size:.8125rem;color:var(--t3);}
+.prof-meta-item{display:flex;align-items:center;gap:.3rem;font-size:.8125rem;color:var(--text3);}
 .prof-meta-item svg{width:13px;height:13px;flex-shrink:0;}
-.prof-meta-item a{color:var(--t3);transition:color .15s;}
-.prof-meta-item a:hover{color:var(--t1);}
+.prof-meta-item a{color:var(--text3);transition:color .15s;}
+.prof-meta-item a:hover{color:var(--text);}
 
-/* ── Actions ── */
+/* â”€â”€ Actions â”€â”€ */
 .prof-actions{display:flex;align-items:center;gap:.625rem;padding-top:.5rem;flex-shrink:0;}
 .prof-follow-btn{
-  padding:.5rem 1.25rem;background:var(--white);color:#000;
+  padding:.5rem 1.25rem;background:#fff;color:#000;
   border:none;border-radius:8px;font-size:.875rem;font-weight:700;
   cursor:pointer;transition:background .15s,color .15s,transform .15s,box-shadow .15s;
   white-space:nowrap;position:relative;overflow:hidden;
 }
 .prof-follow-btn:hover{background:#e8e8e8;}
 .prof-follow-btn:active{transform:scale(.95);}
-.prof-follow-btn.following{background:var(--s3);color:var(--t1);border:1px solid var(--b2);}
+.prof-follow-btn.following{background:var(--surface3);color:var(--text);border:1px solid var(--border2);}
 .prof-follow-btn.following:hover{background:#3a1a1a;color:#f87171;border-color:#f87171;}
 /* ripple */
 .prof-follow-btn .ripple{
@@ -90,52 +90,52 @@
 }
 .prof-follow-btn.pop{animation:follow-pop .35s ease;}
 .prof-msg-btn{
-  padding:.5rem 1.125rem;background:var(--s3);color:var(--t1);
-  border:1px solid var(--b2);border-radius:8px;font-size:.875rem;font-weight:600;
+  padding:.5rem 1.125rem;background:var(--surface3);color:var(--text);
+  border:1px solid var(--border2);border-radius:8px;font-size:.875rem;font-weight:600;
   cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;
   display:inline-flex;align-items:center;gap:.375rem;
 }
-.prof-msg-btn:hover{background:var(--s4);color:var(--t1);}
+.prof-msg-btn:hover{background:var(--surface4);color:var(--text);}
 .prof-msg-btn svg{width:14px;height:14px;}
 .prof-edit-btn{
-  padding:.5rem 1.125rem;background:var(--s3);color:var(--t1);
-  border:1px solid var(--b2);border-radius:8px;font-size:.875rem;font-weight:600;
+  padding:.5rem 1.125rem;background:var(--surface3);color:var(--text);
+  border:1px solid var(--border2);border-radius:8px;font-size:.875rem;font-weight:600;
   cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;
   display:inline-flex;align-items:center;gap:.375rem;
 }
-.prof-edit-btn:hover{background:var(--s4);}
+.prof-edit-btn:hover{background:var(--surface4);}
 .prof-edit-btn svg{width:14px;height:14px;}
 
-/* ── Stats row ── */
+/* â”€â”€ Stats row â”€â”€ */
 .prof-stats{
   display:flex;align-items:center;gap:0;
-  border-top:1px solid var(--b1);
+  border-top:1px solid var(--border);
   padding:.875rem 1.5rem;
 }
 .prof-stat{
   flex:1;text-align:center;padding:.25rem .5rem;
-  border-right:1px solid var(--b1);
+  border-right:1px solid var(--border);
 }
 .prof-stat:last-child{border-right:none;}
-.prof-stat-label{font-size:.75rem;color:var(--t3);margin-bottom:.2rem;}
-.prof-stat-val{font-size:1.375rem;font-weight:800;color:var(--t1);line-height:1.1;}
+.prof-stat-label{font-size:.75rem;color:var(--text3);margin-bottom:.2rem;}
+.prof-stat-val{font-size:1.375rem;font-weight:800;color:var(--text);line-height:1.1;}
 
-/* ── Posts section ── */
-.posts-head{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:.75rem;}
-.post-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;margin-bottom:.5rem;display:flex;overflow:hidden;transition:border-color .15s;}
-.post-card:hover{border-color:var(--b3);}
-.vote-col{width:40px;background:var(--s3);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.2rem;flex-shrink:0;}
-.v-count{font-size:.6875rem;font-weight:700;color:var(--t2);}
+/* â”€â”€ Posts section â”€â”€ */
+.posts-head{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.75rem;}
+.post-card{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;margin-bottom:.5rem;display:flex;overflow:hidden;transition:border-color .15s;}
+.post-card:hover{border-color:var(--border3);}
+.vote-col{width:40px;background:var(--surface3);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.2rem;flex-shrink:0;}
+.v-count{font-size:.6875rem;font-weight:700;color:var(--text2);}
 .post-body{flex:1;padding:.75rem .875rem;min-width:0;}
 .post-top{display:flex;align-items:center;gap:.375rem;margin-bottom:.375rem;flex-wrap:wrap;}
-.post-community-tag{font-size:.75rem;font-weight:700;color:var(--t1);background:var(--s4);border:1px solid var(--b2);padding:.1rem .45rem;border-radius:3px;}
-.post-dot{color:var(--t4);font-size:.75rem;}
-.post-when{font-size:.75rem;color:var(--t3);}
-.post-title{font-size:.9375rem;font-weight:600;color:var(--t1);margin-bottom:.375rem;}
-.post-text{font-size:.875rem;color:var(--t2);max-height:80px;overflow:hidden;}
+.post-community-tag{font-size:.75rem;font-weight:700;color:var(--text);background:var(--surface4);border:1px solid var(--border2);padding:.1rem .45rem;border-radius:3px;}
+.post-dot{color:var(--text4);font-size:.75rem;}
+.post-when{font-size:.75rem;color:var(--text3);}
+.post-title{font-size:.9375rem;font-weight:600;color:var(--text);margin-bottom:.375rem;}
+.post-text{font-size:.875rem;color:var(--text2);max-height:80px;overflow:hidden;}
 .post-actions{display:flex;gap:.125rem;margin-top:.5rem;}
-.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .5rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--t3);background:none;border:none;cursor:pointer;text-decoration:none;}
-.pa:hover{background:var(--s3);color:var(--t2);}
+.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .5rem;border-radius:3px;font-size:.75rem;font-weight:600;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:none;}
+.pa:hover{background:var(--surface3);color:var(--text2);}
 .pa svg{width:13px;height:13px;}
 
 @media(max-width:700px){
@@ -189,7 +189,7 @@
         <div class="prof-name-row">
           <span class="prof-name">{{ profile.display_name|default:profile_user.username }}</span>
           {% if profile_user.is_staff %}
-          <span class="prof-badge">⚡ PRO</span>
+          <span class="prof-badge">âš¡ PRO</span>
           {% endif %}
         </div>
         {% if profile.bio %}
@@ -264,13 +264,13 @@
       <div class="post-top">
         {% if post.school_community %}
           <span class="post-community-tag">{{ post.school_community.name }}</span>
-          <span class="post-dot">•</span>
+          <span class="post-dot">â€¢</span>
         {% elif post.custom_community %}
           <span class="post-community-tag">{{ post.custom_community.name }}</span>
-          <span class="post-dot">•</span>
+          <span class="post-dot">â€¢</span>
         {% else %}
           <span class="post-community-tag">Feed</span>
-          <span class="post-dot">•</span>
+          <span class="post-dot">â€¢</span>
         {% endif %}
         <span class="post-when">{{ post.created_at|timesince }} ago</span>
       </div>
@@ -292,7 +292,7 @@
     </div>
   </div>
   {% empty %}
-  <div style="background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:2.5rem;text-align:center;color:var(--t3);font-size:.875rem;">No posts yet.</div>
+  <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:2.5rem;text-align:center;color:var(--text3);font-size:.875rem;">No posts yet.</div>
   {% endfor %}
 </div>
 {% endblock %}
@@ -324,7 +324,7 @@ function spawnRipple(btn, e) {
 
 function toggleFollow(e) {
   const btn = document.getElementById('follow-btn');
-  if (btn) { spawnRipple(btn, e); btn.disabled = true; btn.textContent = '…'; }
+  if (btn) { spawnRipple(btn, e); btn.disabled = true; btn.textContent = 'â€¦'; }
   fetch('/community/api/follow-toggle/', {
     method: 'POST',
     headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
@@ -367,3 +367,4 @@ function toggleFollow(e) {
 })();
 </script>
 {% endblock %}
+

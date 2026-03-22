@@ -1,431 +1,648 @@
-﻿<!DOCTYPE html><!-- v2 -->
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{% block title %}Community{% endblock %}  NEXA</title>
+<title>{% block title %}Community{% endblock %} — NEXA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ─── Reset ─────────────────────────────────────────────────────────────── */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#0a0a0a;--s1:#111;--s2:#161616;--s3:#1c1c1c;--s4:#222;--s5:#2a2a2a;
-  --b1:#1a1a1a;--b2:#242424;--b3:#303030;
-  --t1:#f0f0f0;--t2:#aaa;--t3:#666;--t4:#3a3a3a;
-  --white:#fff;--red:#ef4444;--green:#22c55e;--blue:#5865f2;
-  --rail:72px;--sidebar:240px;--topbar:48px;
+  /* Surfaces */
+  --bg:#0c0c0e;
+  --surface:#111114;
+  --surface2:#17171b;
+  --surface3:#1e1e23;
+  --surface4:#26262d;
+  --surface5:#2e2e37;
+  /* Borders */
+  --border:#1f1f26;
+  --border2:#2a2a33;
+  --border3:#38383f;
+  /* Text */
+  --text:#f2f2f4;
+  --text2:#9898a6;
+  --text3:#5a5a6a;
+  --text4:#3a3a46;
+  /* Accents */
+  --accent:#6366f1;
+  --accent-hover:#5254cc;
+  --accent-subtle:rgba(99,102,241,.12);
+  --accent-text:#a5b4fc;
+  --green:#22c55e;
+  --green-subtle:rgba(34,197,94,.1);
+  --red:#ef4444;
+  --red-subtle:rgba(239,68,68,.1);
+  --amber:#f59e0b;
+  --amber-subtle:rgba(245,158,11,.1);
+  --white:#ffffff;
+  /* Layout */
+  --sidebar-w:232px;
+  --topbar-h:52px;
+  --bottom-nav-h:60px;
+  --radius-sm:6px;
+  --radius:10px;
+  --radius-lg:14px;
+  --radius-xl:20px;
+  /* Shadows */
+  --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+  --shadow:0 4px 16px rgba(0,0,0,.5);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.6);
 }
 html,body{height:100%;overflow:hidden;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;cursor:pointer;}
 input,textarea,select{font-family:inherit;}
+img{display:block;}
+*{min-width:0;}
+</style>
 
-/*  3-column Discord shell  */
+<style>
+/* ─── App Shell ──────────────────────────────────────────────────────────── */
 .shell{display:flex;height:100vh;overflow:hidden;}
 
-/* Col 1: server/app icon rail */
-.rail{display:none!important;}
-.rail-icon{width:48px;height:48px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:800;color:var(--t2);transition:all .2s;cursor:pointer;position:relative;flex-shrink:0;}
-.rail-icon:hover,.rail-icon.active{border-radius:16px;background:var(--white);color:#000;}
-.rail-icon.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:4px;height:40px;background:var(--white);border-radius:0 4px 4px 0;}
-.rail-icon svg{width:22px;height:22px;}
-.rail-sep{width:32px;height:1px;background:var(--b2);margin:.25rem 0;flex-shrink:0;}
-.rail-icon.nexa{background:var(--white);color:#000;border-radius:16px;font-size:.75rem;letter-spacing:-.02em;}
-
-/* Col 2: channel/DM sidebar */
-.sidebar{width:var(--sidebar);background:var(--s2);display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid var(--b1);}
-.sidebar-head{height:var(--topbar);display:flex;align-items:center;padding:0 1rem;border-bottom:1px solid var(--b1);font-size:.9375rem;font-weight:700;flex-shrink:0;gap:.5rem;}
-.sidebar-head svg{width:16px;height:16px;color:var(--t3);}
-.sidebar-search{padding:.625rem .75rem;border-bottom:1px solid var(--b1);}
-.sidebar-search input{width:100%;background:var(--s3);border:none;border-radius:4px;padding:.375rem .625rem;color:var(--t1);font-size:.8125rem;outline:none;}
-.sidebar-search input::placeholder{color:var(--t3);}
-.sidebar-scroll{flex:1;overflow-y:auto;padding:.5rem 0;}
-.sidebar-section{padding:.75rem .75rem .25rem;}
-.sidebar-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);display:flex;align-items:center;justify-content:space-between;}
-.sidebar-label button{background:none;border:none;color:var(--t3);width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:color .15s;}
-.sidebar-label button:hover{color:var(--t1);}
-.sidebar-label button svg{width:14px;height:14px;}
-.ch-item{display:flex;align-items:center;gap:.5rem;padding:.35rem .75rem;border-radius:4px;color:var(--t3);font-size:.875rem;font-weight:500;transition:all .12s;margin:1px .5rem;cursor:pointer;}
-.ch-item:hover{background:var(--s3);color:var(--t2);}
-.ch-item.active{background:var(--s4);color:var(--t1);}
-.ch-item svg{width:16px;height:16px;flex-shrink:0;}
-.ch-item .ch-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:8px;min-width:16px;text-align:center;}
-.dm-item{display:flex;align-items:center;gap:.625rem;padding:.35rem .75rem;border-radius:4px;color:var(--t3);font-size:.875rem;transition:all .12s;margin:1px .5rem;cursor:pointer;}
-.dm-item:hover{background:var(--s3);color:var(--t2);}
-.dm-item.active{background:var(--s4);color:var(--t1);}
-.dm-av{width:32px;height:32px;background:var(--s4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;position:relative;}
-.dm-av .status{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--s2);}
-.dm-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.sidebar-user{height:52px;background:var(--s3);border-top:1px solid var(--b1);display:flex;align-items:center;padding:0 .75rem;gap:.5rem;flex-shrink:0;}
-.user-av{width:32px;height:32px;background:var(--s5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;position:relative;}
-.user-av .status{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--s3);}
-.user-info{flex:1;min-width:0;}
-.user-name{font-size:.8125rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.user-tag{font-size:.6875rem;color:var(--t3);}
-.user-actions{display:flex;gap:.125rem;}
-.user-action-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:none;border:none;color:var(--t3);transition:all .15s;}
-.user-action-btn:hover{background:var(--s4);color:var(--t1);}
-.user-action-btn svg{width:16px;height:16px;}
-
-/* Col 3: main content + optional right panel */
-.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-.topbar{height:var(--topbar);background:var(--s2);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 1rem;gap:.75rem;flex-shrink:0;}
-.topbar-icon{color:var(--t3);}
-.topbar-icon svg{width:20px;height:20px;}
-.topbar-title{font-size:.9375rem;font-weight:700;}
-.topbar-sep{width:1px;height:20px;background:var(--b2);}
-.topbar-desc{font-size:.8125rem;color:var(--t3);}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.25rem;}
-.tb-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:none;border:none;color:var(--t3);transition:all .15s;}
-.tb-btn:hover{color:var(--t1);}
-.tb-btn svg{width:18px;height:18px;}
-.content-scroll{flex:1;overflow-y:auto;overflow-x:hidden;}
-.page{padding:1.5rem 2rem;max-width:860px;width:100%;margin:0 auto;box-sizing:border-box;}
-
-/*  Shared components  */
-.btn{display:inline-flex;align-items:center;gap:.375rem;padding:.4rem .875rem;border-radius:3px;font-size:.875rem;font-weight:500;border:none;transition:all .15s;cursor:pointer;white-space:nowrap;}
-.btn-primary{background:var(--white);color:#000;}
-.btn-primary:hover{background:#e8e8e8;}
-.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--b3);}
-.btn-ghost:hover{background:var(--s3);}
-.btn-danger{background:var(--red);color:#fff;}
-.btn-sm{padding:.3rem .625rem;font-size:.8125rem;}
-.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:3px;font-size:.6875rem;font-weight:600;}
-.badge-green{background:rgba(34,197,94,.12);color:var(--green);}
-.badge-blue{background:rgba(88,101,242,.15);color:var(--blue);}
-.badge-gray{background:var(--s4);color:var(--t2);}
-.card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;}
-.empty-state{text-align:center;padding:4rem 1rem;color:var(--t3);}
-.empty-state svg{width:48px;height:48px;margin:0 auto 1rem;opacity:.15;display:block;}
-.empty-state p{font-size:.875rem;margin-bottom:1.25rem;}
-
-/*  Mobile  */
-.mobile-bar{
-  display:none;height:54px;background:rgba(10,10,10,.98);border-bottom:1px solid var(--b1);
-  align-items:center;justify-content:space-between;padding:0 .75rem;
-  position:sticky;top:0;z-index:200;gap:.5rem;
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+/* ─── Sidebar ────────────────────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
 }
-.mob-logo{
-  width:36px;height:36px;border-radius:12px;background:var(--white);color:#000;
+.sidebar-header{
+  height:var(--topbar-h);display:flex;align-items:center;
+  padding:0 1rem;gap:.625rem;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.sidebar-logo{
+  width:28px;height:28px;border-radius:8px;
+  background:var(--accent);color:#fff;
   display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:900;letter-spacing:-.03em;flex-shrink:0;
+  font-size:.6875rem;font-weight:800;letter-spacing:-.03em;flex-shrink:0;
 }
-.mob-title{flex:1;font-size:.9375rem;font-weight:700;padding-left:.375rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mob-actions{display:flex;align-items:center;gap:.125rem;}
-.mob-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--t2);cursor:pointer;border-radius:10px;transition:background .12s;position:relative;}
-.mob-btn:active{background:var(--s3);}
-.mob-btn svg{width:22px;height:22px;}
-/* notification badge on topbar bell */
-.mob-btn .mob-notif-dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid rgba(10,10,10,.98);}
-/* profile avatar button */
-.mob-avatar-btn{width:34px;height:34px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--t1);border:none;cursor:pointer;overflow:hidden;flex-shrink:0;transition:opacity .15s;}
-.mob-avatar-btn:active{opacity:.7;}
-.mob-avatar-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:399;}
-.mob-overlay.open{display:block;}
+.sidebar-app-name{font-size:.9375rem;font-weight:700;color:var(--text);flex:1;}
+.sidebar-search-wrap{padding:.625rem .875rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sidebar-search{
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--surface3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.375rem .625rem;
+  transition:border-color .15s;
+}
+.sidebar-search:focus-within{border-color:var(--border3);}
+.sidebar-search svg{width:14px;height:14px;color:var(--text3);flex-shrink:0;}
+.sidebar-search input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-size:.8125rem;
+}
+.sidebar-search input::placeholder{color:var(--text3);}
+.sidebar-scroll{flex:1;overflow-y:auto;padding:.5rem 0;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.sidebar-scroll::-webkit-scrollbar{width:4px;}
+.sidebar-scroll::-webkit-scrollbar-track{background:transparent;}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.sidebar-section-label{
+  font-size:.6875rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--text3);
+  padding:.75rem 1rem .375rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sidebar-section-label a,.sidebar-section-label button{
+  background:none;border:none;color:var(--text3);
+  width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+  border-radius:4px;transition:all .12s;cursor:pointer;
+}
+.sidebar-section-label a:hover,.sidebar-section-label button:hover{background:var(--surface3);color:var(--text2);}
+.sidebar-section-label svg{width:13px;height:13px;}
+.nav-item{
+  display:flex;align-items:center;gap:.625rem;
+  padding:.4rem .875rem;margin:1px .5rem;
+  border-radius:var(--radius-sm);
+  color:var(--text3);font-size:.875rem;font-weight:500;
+  transition:all .12s;cursor:pointer;position:relative;
+}
+.nav-item:hover{background:var(--surface3);color:var(--text2);}
+.nav-item.active{background:var(--surface4);color:var(--text);}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-item .nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  font-size:.6rem;font-weight:700;padding:.1rem .35rem;
+  border-radius:10px;min-width:16px;text-align:center;line-height:1.4;
+}
+.nav-item .nav-live-dot{
+  width:6px;height:6px;border-radius:50%;background:#f97316;
+  margin-left:auto;flex-shrink:0;
+  animation:navLivePulse 2s ease-in-out infinite;
+}
+@keyframes navLivePulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.nav-divider{height:1px;background:var(--border);margin:.5rem .875rem;}
+.sidebar-footer{
+  border-top:1px solid var(--border);padding:.75rem .875rem;
+  display:flex;align-items:center;gap:.625rem;flex-shrink:0;
+}
+.sidebar-footer-av{
+  width:32px;height:32px;border-radius:50%;background:var(--surface4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;flex-shrink:0;overflow:hidden;position:relative;
+}
+.sidebar-footer-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.sidebar-footer-av .online-dot{
+  position:absolute;bottom:0;right:0;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--green);border:2px solid var(--surface);
+}
+.sidebar-footer-info{flex:1;min-width:0;}
+.sidebar-footer-name{font-size:.8125rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sidebar-footer-status{font-size:.6875rem;color:var(--text3);}
+.sidebar-footer-actions{display:flex;gap:.125rem;}
+.sidebar-footer-btn{
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);background:none;border:none;
+  color:var(--text3);transition:all .15s;
+}
+.sidebar-footer-btn:hover{background:var(--surface3);color:var(--text2);}
+.sidebar-footer-btn svg{width:15px;height:15px;}
+.sidebar-close-btn{display:none;}
+</style>
 
-/* ── Premium Bottom Nav (5 items max) ── */
+<style>
+/* ─── Main Area ──────────────────────────────────────────────────────────── */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{
+  height:var(--topbar-h);background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;flex-shrink:0;
+}
+.topbar-icon{color:var(--text3);}
+.topbar-icon svg{width:18px;height:18px;}
+.topbar-title{font-size:.9375rem;font-weight:700;color:var(--text);}
+.topbar-sep{width:1px;height:16px;background:var(--border2);}
+.topbar-desc{font-size:.8125rem;color:var(--text3);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.25rem;}
+.tb-btn{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);background:none;border:none;
+  color:var(--text3);transition:all .15s;position:relative;
+}
+.tb-btn:hover{background:var(--surface3);color:var(--text2);}
+.tb-btn svg{width:18px;height:18px;}
+.tb-btn .tb-badge{
+  position:absolute;top:3px;right:3px;
+  background:var(--red);color:#fff;font-size:.5rem;font-weight:700;
+  min-width:13px;height:13px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;padding:0 2px;line-height:1;
+}
+.content-scroll{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.content-scroll::-webkit-scrollbar{width:5px;}
+.content-scroll::-webkit-scrollbar-track{background:transparent;}
+.content-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.page{padding:1.5rem 1.75rem;max-width:900px;width:100%;margin:0 auto;box-sizing:border-box;}
+
+/* ─── Shared Components ──────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:.375rem;
+  padding:.45rem .9rem;border-radius:var(--radius-sm);
+  font-size:.875rem;font-weight:600;border:none;
+  transition:all .15s;cursor:pointer;white-space:nowrap;
+  line-height:1.4;
+}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-hover);}
+.btn-secondary{background:var(--surface3);color:var(--text2);border:1px solid var(--border2);}
+.btn-secondary:hover{background:var(--surface4);color:var(--text);}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{background:var(--surface3);color:var(--text);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#dc2626;}
+.btn-sm{padding:.3rem .65rem;font-size:.8125rem;}
+.btn-xs{padding:.2rem .5rem;font-size:.75rem;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:4px;font-size:.6875rem;font-weight:600;}
+.badge-green{background:var(--green-subtle);color:var(--green);}
+.badge-blue{background:var(--accent-subtle);color:var(--accent-text);}
+.badge-red{background:var(--red-subtle);color:var(--red);}
+.badge-amber{background:var(--amber-subtle);color:var(--amber);}
+.badge-gray{background:var(--surface4);color:var(--text2);}
+
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);}
+.card-hover{transition:border-color .15s;}
+.card-hover:hover{border-color:var(--border3);}
+
+.divider{height:1px;background:var(--border);margin:.75rem 0;}
+
+.empty-state{text-align:center;padding:3.5rem 1rem;color:var(--text3);}
+.empty-state svg{width:40px;height:40px;margin:0 auto .875rem;opacity:.12;display:block;}
+.empty-state h3{font-size:.9375rem;font-weight:600;color:var(--text2);margin-bottom:.375rem;}
+.empty-state p{font-size:.8125rem;margin-bottom:1.25rem;line-height:1.6;}
+
+.form-group{margin-bottom:.875rem;}
+.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--text2);margin-bottom:.375rem;}
+.form-input{
+  width:100%;background:var(--surface3);border:1px solid var(--border2);
+  border-radius:var(--radius-sm);padding:.5rem .75rem;
+  color:var(--text);font-size:.875rem;outline:none;
+  transition:border-color .15s;box-sizing:border-box;
+}
+.form-input:focus{border-color:var(--accent);}
+.form-input::placeholder{color:var(--text3);}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.55;}
+.form-select{
+  width:100%;background:var(--surface3);border:1px solid var(--border2);
+  border-radius:var(--radius-sm);padding:.5rem .75rem;
+  color:var(--text);font-size:.875rem;outline:none;box-sizing:border-box;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5a6a' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .75rem center;padding-right:2rem;
+}
+.form-select:focus{border-color:var(--accent);}
+</style>
+
+<style>
+/* ─── Mobile Top Bar ─────────────────────────────────────────────────────── */
+.mobile-bar{
+  display:none;height:52px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  align-items:center;padding:0 .75rem;gap:.5rem;
+  position:sticky;top:0;z-index:200;
+}
+.mob-menu-btn{
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  background:none;border:none;color:var(--text2);cursor:pointer;border-radius:var(--radius-sm);
+  flex-shrink:0;
+}
+.mob-menu-btn svg{width:20px;height:20px;}
+.mob-title{flex:1;font-size:.9375rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 .25rem;}
+.mob-actions{display:flex;align-items:center;gap:.125rem;}
+.mob-btn{
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  background:none;border:none;color:var(--text2);cursor:pointer;
+  border-radius:var(--radius-sm);transition:background .12s;position:relative;
+}
+.mob-btn:active{background:var(--surface3);}
+.mob-btn svg{width:20px;height:20px;}
+.mob-notif-dot{
+  position:absolute;top:8px;right:8px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);border:2px solid var(--surface);
+}
+.mob-avatar-btn{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--surface4);display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;color:var(--text);
+  border:none;cursor:pointer;overflow:hidden;flex-shrink:0;
+}
+.mob-avatar-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+
+/* ─── Bottom Navigation ──────────────────────────────────────────────────── */
 .bottom-nav{
   display:none;position:fixed;bottom:0;left:0;right:0;
-  background:rgba(10,10,10,.98);border-top:1px solid var(--b1);
-  padding:0 .25rem;padding-bottom:env(safe-area-inset-bottom,0);
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:0 .5rem;padding-bottom:env(safe-area-inset-bottom,0);
   z-index:100;justify-content:space-around;align-items:center;
-  height:60px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  height:var(--bottom-nav-h);
 }
 .bn-item{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;padding:.375rem .25rem;color:var(--t3);
-  border-radius:12px;text-decoration:none;flex:1;position:relative;
-  transition:color .2s;min-width:0;background:none;border:none;cursor:pointer;
+  gap:3px;padding:.375rem .5rem;color:var(--text3);
+  border-radius:var(--radius);text-decoration:none;flex:1;
+  transition:color .15s;min-width:0;background:none;border:none;cursor:pointer;
+  position:relative;
 }
-.bn-item svg{width:24px;height:24px;transition:transform .2s;}
-.bn-label{font-size:.5625rem;font-weight:600;letter-spacing:.01em;white-space:nowrap;transition:color .2s;}
-.bn-item.active{color:var(--white);}
-.bn-item.active svg{transform:scale(1.08);}
-/* active pill indicator */
-.bn-item.active::before{
-  content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);
-  width:20px;height:3px;background:var(--white);border-radius:2px;
-  opacity:.9;
-}
-/* filled/outline icon swap */
+.bn-item svg{width:22px;height:22px;transition:transform .15s;}
+.bn-label{font-size:.5625rem;font-weight:600;letter-spacing:.01em;white-space:nowrap;}
+.bn-item.active{color:var(--text);}
+.bn-item.active svg{transform:scale(1.05);}
 .bn-item.active .icon-outline{display:none;}
 .bn-item.active .icon-filled{display:block;}
 .bn-item .icon-filled{display:none;}
 .bn-item .icon-outline{display:block;}
-/* notification badge on bottom nav */
 .bn-item .bn-badge{
   position:absolute;top:4px;right:calc(50% - 18px);
   background:var(--red);color:#fff;font-size:.5rem;font-weight:700;
   min-width:14px;height:14px;border-radius:7px;
   display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;
-  border:2px solid rgba(10,10,10,.98);
+  border:2px solid var(--surface);
 }
-/* center post FAB */
-.bn-item.bn-post{
-  width:50px;height:50px;min-width:50px;
-  background:var(--white);color:#000;
-  border-radius:16px;padding:0;flex:0 0 50px;
-  box-shadow:0 4px 20px rgba(255,255,255,.12),0 2px 8px rgba(0,0,0,.6);
+/* Center FAB */
+.bn-fab{
+  width:46px;height:46px;min-width:46px;flex:0 0 46px;
+  background:var(--accent);color:#fff;
+  border-radius:var(--radius-lg);padding:0;
+  box-shadow:0 4px 16px rgba(99,102,241,.4);
   gap:0;transition:transform .15s,box-shadow .15s;
 }
-.bn-item.bn-post:active{transform:scale(.92);box-shadow:0 2px 8px rgba(0,0,0,.5);}
-.bn-item.bn-post svg{width:22px;height:22px;color:#000;}
-.bn-item.bn-post .icon-filled,.bn-item.bn-post .icon-outline{display:block;}
-.bn-item.bn-post .bn-label{display:none;}
-.bn-item.bn-post::before{display:none;}
+.bn-fab:active{transform:scale(.92);}
+.bn-fab svg{width:20px;height:20px;color:#fff;}
+.bn-fab .icon-filled,.bn-fab .icon-outline{display:block;}
+.bn-fab .bn-label{display:none;}
+.bn-fab::before{display:none;}
 
-/* ── More bottom sheet ── */
-.more-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3500;backdrop-filter:blur(4px);}
-.more-sheet-overlay.open{display:block;}
+/* ─── More Bottom Sheet ──────────────────────────────────────────────────── */
+.sheet-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.5);z-index:3500;
+}
+.sheet-overlay.open{display:block;}
 .more-sheet{
-  position:fixed;bottom:0;left:0;right:0;z-index:3501;
-  background:var(--s2);border-top:1px solid var(--b2);border-radius:20px 20px 0 0;
-  padding:0 0 env(safe-area-inset-bottom,0);
-  transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+  position:fixed;inset:0;z-index:3501;
+  background:var(--surface);
+  display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  overflow-y:auto;
 }
 .more-sheet.open{transform:translateY(0);}
-.more-sheet-handle{width:36px;height:4px;background:var(--b3);border-radius:2px;margin:.75rem auto .5rem;}
-.more-sheet-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);padding:.25rem 1.25rem .75rem;}
-.more-sheet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.25rem;padding:0 .75rem 1.25rem;}
-.more-item{
+.sheet-handle{display:none;}
+.sheet-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.875rem 1.25rem;border-bottom:1px solid var(--border);
+  flex-shrink:0;position:sticky;top:0;background:var(--surface);z-index:1;
+}
+.sheet-topbar-title{font-size:1rem;font-weight:700;color:var(--text);}
+.sheet-close-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surface3);border:none;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text2);cursor:pointer;transition:background .15s;
+}
+.sheet-close-btn:hover{background:var(--surface4);}
+.sheet-close-btn svg{width:16px;height:16px;}
+.sheet-user{display:flex;align-items:center;gap:.875rem;padding:1.25rem 1.25rem .875rem;}
+.sheet-user-av{
+  width:52px;height:52px;border-radius:50%;background:var(--surface4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;font-weight:700;flex-shrink:0;overflow:hidden;
+}
+.sheet-user-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.sheet-user-info{flex:1;min-width:0;}
+.sheet-user-name{font-size:1rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sheet-user-tag{font-size:.8125rem;color:var(--text3);}
+.sheet-user-actions{display:flex;gap:.5rem;}
+.sheet-user-btn{
+  padding:.4rem 1rem;border-radius:var(--radius-sm);
+  font-size:.8125rem;font-weight:600;
+  border:1px solid var(--border2);background:var(--surface3);
+  color:var(--text2);cursor:pointer;transition:all .15s;
+}
+.sheet-user-btn:active{background:var(--surface4);}
+.sheet-divider{height:1px;background:var(--border);margin:0 1.25rem .875rem;}
+.sheet-section-label{
+  font-size:.6875rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--text3);padding:.25rem 1.25rem .75rem;
+}
+.sheet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;padding:0 1rem 1.5rem;}
+.sheet-item{
   display:flex;flex-direction:column;align-items:center;gap:.5rem;
-  padding:.875rem .5rem;border-radius:14px;background:var(--s3);
-  color:var(--t2);text-decoration:none;transition:all .15s;border:1px solid transparent;
+  padding:1rem .5rem;border-radius:var(--radius-lg);
+  background:var(--surface2);color:var(--text2);
+  text-decoration:none;transition:all .15s;
+  border:1px solid var(--border);cursor:pointer;
 }
-.more-item:active{background:var(--s4);border-color:var(--b3);}
-.more-item.active{color:var(--white);background:var(--s4);border-color:var(--b3);}
-.more-item svg{width:22px;height:22px;}
-.more-item-label{font-size:.6875rem;font-weight:600;text-align:center;white-space:nowrap;}
-.more-sheet-divider{height:1px;background:var(--b1);margin:.25rem .75rem .75rem;}
-.more-sheet-user{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem 1rem;}
-.more-sheet-user-av{width:40px;height:40px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;}
-.more-sheet-user-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.more-sheet-user-info{flex:1;min-width:0;}
-.more-sheet-user-name{font-size:.9375rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.more-sheet-user-tag{font-size:.75rem;color:var(--t3);}
-.more-sheet-user-actions{display:flex;gap:.5rem;}
-.more-sheet-action-btn{padding:.375rem .875rem;border-radius:8px;font-size:.8125rem;font-weight:600;border:1px solid var(--b3);background:var(--s3);color:var(--t2);cursor:pointer;transition:all .15s;}
-.more-sheet-action-btn:active{background:var(--s4);}
+.sheet-item:active{background:var(--surface3);border-color:var(--border2);}
+.sheet-item.active{color:var(--text);background:var(--surface3);border-color:var(--border2);}
+.sheet-item svg{width:22px;height:22px;}
+.sheet-item-label{font-size:.6875rem;font-weight:600;text-align:center;white-space:nowrap;}
+</style>
 
-/* ── Location breadcrumb strip ── */
-.mob-breadcrumb{
-  display:none;align-items:center;gap:.375rem;
-  padding:.3rem .875rem;background:var(--s1);border-bottom:1px solid var(--b1);
-  font-size:.6875rem;color:var(--t3);overflow-x:auto;white-space:nowrap;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+<style>
+/* ─── Overlay / Drawer ───────────────────────────────────────────────────── */
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:399;}
+.mob-overlay.open{display:block;}
+
+/* ─── Toast ──────────────────────────────────────────────────────────────── */
+.toast-container{
+  position:fixed;bottom:72px;left:50%;transform:translateX(-50%);
+  z-index:9000;display:flex;flex-direction:column;align-items:center;gap:.375rem;
+  pointer-events:none;
 }
-.mob-breadcrumb::-webkit-scrollbar{display:none;}
-.mob-breadcrumb a{color:var(--t3);transition:color .12s;}
-.mob-breadcrumb a:hover{color:var(--t2);}
-.mob-breadcrumb .bc-sep{color:var(--t4);}
-.mob-breadcrumb .bc-current{color:var(--t2);font-weight:600;}
+.toast{
+  background:var(--surface5);color:var(--text);
+  padding:.5rem 1.125rem;border-radius:20px;
+  font-size:.8125rem;font-weight:600;white-space:nowrap;
+  opacity:0;transform:translateY(6px);transition:all .2s;
+  border:1px solid var(--border3);box-shadow:var(--shadow);
+}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.25);color:#4ade80;}
+.toast.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.2);color:#f87171;}
 
-/* ── Tap feedback ── */
-.tap-feedback{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;background:rgba(255,255,255,.12);transform:scale(0);animation:tapRipple .4s ease-out forwards;}
+/* ─── Mobile Search Overlay ──────────────────────────────────────────────── */
+#mob-search-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(12,12,14,.96);z-index:5000;
+  flex-direction:column;padding:1rem;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.mob-search-bar{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
+.mob-search-input-wrap{
+  flex:1;display:flex;align-items:center;gap:.5rem;
+  background:var(--surface3);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:.625rem .875rem;
+}
+.mob-search-input-wrap svg{width:16px;height:16px;color:var(--text3);flex-shrink:0;}
+.mob-search-input-wrap input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-size:.9375rem;
+}
+.mob-search-cancel{
+  background:none;border:none;color:var(--text2);
+  font-size:.875rem;font-weight:600;cursor:pointer;padding:.5rem;white-space:nowrap;
+}
+#mob-search-results{flex:1;overflow-y:auto;}
+
+/* ─── Friend Drawer ──────────────────────────────────────────────────────── */
+#friend-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;}
+#friend-drawer{
+  position:fixed;bottom:0;left:0;right:0;z-index:3001;
+  background:var(--surface2);border-top:1px solid var(--border2);
+  border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+  padding:1.25rem;max-height:80vh;
+  display:none;flex-direction:column;gap:.75rem;
+  transform:translateY(100%);transition:transform .25s ease;
+}
+.friend-drawer-header{display:flex;align-items:center;justify-content:space-between;}
+.friend-drawer-title{font-size:.9375rem;font-weight:700;}
+.friend-drawer-close{
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface3);border:none;border-radius:50%;
+  color:var(--text3);cursor:pointer;font-size:1rem;
+}
+.friend-search-wrap{
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--surface3);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:.625rem .875rem;
+}
+.friend-search-wrap svg{width:15px;height:15px;color:var(--text3);flex-shrink:0;}
+.friend-search-wrap input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-size:.9375rem;
+}
+#drawer-search-results{overflow-y:auto;flex:1;}
+
+/* ─── Tap Ripple ─────────────────────────────────────────────────────────── */
+.tap-ripple{
+  position:fixed;pointer-events:none;z-index:9999;
+  border-radius:50%;background:rgba(255,255,255,.08);
+  transform:scale(0);animation:tapRipple .4s ease-out forwards;
+}
 @keyframes tapRipple{0%{transform:scale(0);opacity:1;}100%{transform:scale(3);opacity:0;}}
+@keyframes livePulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-/* ── Toast system ── */
-.ux-toast-container{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;align-items:center;gap:.375rem;pointer-events:none;}
-.ux-toast{background:var(--s5);color:var(--t1);padding:.5rem 1.125rem;border-radius:20px;font-size:.8125rem;font-weight:600;white-space:nowrap;opacity:0;transform:translateY(8px);transition:all .2s;border:1px solid var(--b3);}
-.ux-toast.show{opacity:1;transform:translateY(0);}
-.ux-toast.success{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:#4ade80;}
-.ux-toast.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25);color:#f87171;}
-
-/* ── Floating action button (mobile) ── */
-.mob-fab{
-  display:none;position:fixed;bottom:72px;right:1rem;
-  width:52px;height:52px;border-radius:16px;
-  background:var(--white);color:#000;border:none;
-  box-shadow:0 4px 20px rgba(0,0,0,.5);
-  align-items:center;justify-content:center;
-  z-index:90;cursor:pointer;transition:transform .15s,box-shadow .15s;
-}
-.mob-fab:active{transform:scale(.94);box-shadow:0 2px 10px rgba(0,0,0,.4);}
-.mob-fab svg{width:22px;height:22px;}
-
-/* ── Pull-to-refresh indicator ── */
-.ptr-indicator{
-  display:none;position:fixed;top:54px;left:50%;transform:translateX(-50%);
-  background:var(--s3);border:1px solid var(--b2);border-radius:20px;
-  padding:.375rem .875rem;font-size:.75rem;color:var(--t3);
-  z-index:300;align-items:center;gap:.375rem;
-  transition:opacity .2s;
-}
-.ptr-indicator.visible{display:flex;}
-.ptr-spin{width:14px;height:14px;border:2px solid var(--b3);border-top-color:var(--t2);border-radius:50%;animation:ptrSpin .6s linear infinite;}
-@keyframes ptrSpin{to{transform:rotate(360deg);}}
-
-/* ── Sidebar mobile close button ── */
-.sidebar-close-btn{display:none;}
-
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media(max-width:900px){
   html,body{height:auto;overflow-x:hidden;overflow-y:auto;}
   .shell{flex-direction:column;height:auto;overflow:visible;}
-  .rail{display:none;}
   .sidebar{
     position:fixed;top:0;left:0;bottom:0;z-index:400;
     transform:translateX(-100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
-    width:min(300px,88vw);overflow-y:auto;
+    width:min(280px,88vw);overflow-y:auto;
   }
   .sidebar.open{transform:translateX(0);}
-  /* close button inside sidebar on mobile */
   .sidebar-close-btn{
     display:flex;align-items:center;justify-content:center;
-    width:32px;height:32px;border-radius:8px;background:var(--s3);
-    border:none;color:var(--t2);cursor:pointer;flex-shrink:0;
-    transition:background .12s;margin-left:auto;
+    width:30px;height:30px;border-radius:var(--radius-sm);
+    background:var(--surface3);border:none;color:var(--text2);
+    cursor:pointer;flex-shrink:0;
   }
-  .sidebar-close-btn:active{background:var(--s4);}
-  .sidebar-close-btn svg{width:16px;height:16px;}
-  .main-area{height:auto;overflow:visible;display:flex;flex-direction:column;min-width:0;max-width:100vw;}
-  .content-scroll{flex:1;overflow-x:hidden;overflow-y:auto;height:auto;max-width:100vw;}
+  .sidebar-close-btn svg{width:15px;height:15px;}
+  .main-area{height:auto;overflow:visible;display:flex;flex-direction:column;}
+  .content-scroll{flex:1;overflow-x:hidden;overflow-y:auto;height:auto;}
   .topbar{display:none;}
   .mobile-bar{display:flex;}
   .bottom-nav{display:flex;}
-  .mob-breadcrumb{display:flex;}
-  .page{padding:.875rem .875rem;padding-bottom:5.5rem;max-width:100%;overflow-x:hidden;box-sizing:border-box;}
+  .page{padding:.875rem .875rem 5.5rem;max-width:100%;}
 }
 @media(max-width:480px){
-  .page{padding:.625rem .625rem;padding-bottom:5.5rem;max-width:100%;overflow-x:hidden;box-sizing:border-box;}
-  .btn{font-size:.8125rem;padding:.35rem .75rem;}
+  .page{padding:.625rem .625rem 5.5rem;}
+  .btn{font-size:.8125rem;padding:.4rem .75rem;}
   .btn-sm{font-size:.75rem;padding:.25rem .5rem;}
 }
-/* Global overflow guard */
-*{min-width:0;}
 </style>
 {% block extra_css %}{% endblock %}
 </head>
 <body>
+
 <div class="shell">
 
-  <!-- Rail: app icons -->
-  <div class="rail">
-    <a href="{% url 'dashboard' %}" class="rail-icon nexa" title="NEXA Dashboard">N</a>
-    <div class="rail-sep"></div>
-    <a href="{% url 'community:community_home' %}" class="rail-icon {% block rail_home %}{% endblock %}" title="Home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    </a>
-    <a href="{% url 'community:feed' %}" class="rail-icon {% block rail_feed %}{% endblock %}" title="Feed">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-    </a>
-    <a href="{% url 'community:schools' %}" class="rail-icon {% block rail_schools %}{% endblock %}" title="Schools">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    </a>
-    <a href="{% url 'community:custom_list' %}" class="rail-icon {% block rail_communities %}{% endblock %}" title="Communities">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    </a>
-    <a href="{% url 'community:workspace_list' %}" class="rail-icon {% block rail_workspaces %}{% endblock %}" title="Workspaces">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-    </a>
-    <a href="{% url 'ai_community:hub' %}" class="rail-icon {% block rail_ai %}{% endblock %}" title="AI Hub">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/><circle cx="9" cy="17" r=".5" fill="currentColor"/><circle cx="12" cy="17" r=".5" fill="currentColor"/><circle cx="15" cy="17" r=".5" fill="currentColor"/></svg>
-    </a>
-    <div class="rail-sep"></div>
-    <a href="{% url 'community:messages' %}" class="rail-icon {% block rail_msgs %}{% endblock %}" title="Messages">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    </a>
-    <a href="{% url 'community:notifications' %}" class="rail-icon {% block rail_notifs %}{% endblock %}" title="Notifications" style="position:relative;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      {% if unread_notif_count %}<span style="position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:.55rem;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;">{{ unread_notif_count }}</span>{% endif %}
-    </a>
-  </div>
-
-  <!-- Sidebar: channels/DMs -->
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
   <nav class="sidebar" id="sidebar">
-    <div class="sidebar-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Community
+    <div class="sidebar-header">
+      <div class="sidebar-logo">NX</div>
+      <span class="sidebar-app-name">NEXA</span>
       <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="sidebar-search">
-      <input type="text" placeholder="Find or start a conversation" id="sidebar-search-input">
+
+    <div class="sidebar-search-wrap">
+      <div class="sidebar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search…" id="sidebar-search-input">
+      </div>
     </div>
+
     <div class="sidebar-scroll">
-      <div class="sidebar-section">
-        <div class="sidebar-label">
-          Channels
-          <a href="{% url 'community:post_create' %}"><button title="New Post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></a>
-        </div>
+      <div class="sidebar-section-label">
+        Main
+        <a href="{% url 'community:post_create' %}" title="New Post">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </a>
       </div>
-      <a href="{% url 'community:community_home' %}" class="ch-item {% block nav_home %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg># home</a>
-      <a href="{% url 'community:feed' %}" class="ch-item {% block nav_feed %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg># feed</a>
-      <a href="{% url 'community:schools' %}" class="ch-item {% block nav_schools %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg># schools</a>
-      <a href="{% url 'community:custom_list' %}" class="ch-item {% block nav_communities %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg># communities</a>
-      <a href="{% url 'community:post_create' %}" class="ch-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg># new-post</a>
-      <a href="{% url 'community:workspace_list' %}" class="ch-item {% block nav_workspaces %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg># workspaces</a>
-      <a href="{% url 'ai_community:hub' %}" class="ch-item {% block nav_ai %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg># ai-hub</a>
-      <div class="sidebar-section" style="margin-top:.5rem;">
-        <div class="sidebar-label">
-          Direct Messages
-          <a href="{% url 'community:conversation_create' %}"><button title="New DM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></a>
-        </div>
-      </div>
-      <a href="{% url 'community:messages' %}" class="dm-item {% block nav_msgs %}{% endblock %}">
-        <div class="dm-av">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <span class="dm-name">All Messages</span>
+
+      <a href="{% url 'community:community_home' %}" class="nav-item {% block nav_home %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
       </a>
-      <a href="{% url 'community:notifications' %}" class="dm-item {% block nav_notifs %}{% endblock %}">
-        <div class="dm-av">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        </div>
-        <span class="dm-name">Notifications</span>
-        {% if unread_notif_count %}<span class="ch-badge">{{ unread_notif_count }}</span>{% endif %}
+      <a href="{% url 'community:feed' %}" class="nav-item {% block nav_feed %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Feed
+      </a>
+      <a href="{% url 'community:messages' %}" class="nav-item {% block nav_msgs %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Messages
+        {% if unread_msgs %}<span class="nav-badge">{{ unread_msgs }}</span>{% endif %}
+      </a>
+      <a href="{% url 'community:notifications' %}" class="nav-item {% block nav_notifs %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+        {% if unread_notif_count %}<span class="nav-badge">{{ unread_notif_count }}</span>{% endif %}
+      </a>
+
+      <div class="nav-divider"></div>
+      <div class="sidebar-section-label">Spaces</div>
+
+      <a href="{% url 'community:schools' %}" class="nav-item {% block nav_schools %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Schools
+      </a>
+      <a href="{% url 'community:custom_list' %}" class="nav-item {% block nav_communities %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Communities
+      </a>
+      <a href="{% url 'community:workspace_list' %}" class="nav-item {% block nav_workspaces %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Workspaces
+      </a>
+      <a href="{% url 'community:live_campus' %}" class="nav-item {% block nav_live %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Live Campus
+        <span class="nav-live-dot"></span>
+      </a>
+
+      <div class="nav-divider"></div>
+      <div class="sidebar-section-label">Tools</div>
+
+      <a href="{% url 'ai_community:hub' %}" class="nav-item {% block nav_ai %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
+        AI Hub
+      </a>
+      <a href="{% url 'dashboard' %}" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
       </a>
     </div>
-    <div class="sidebar-user">
-      <div class="user-av">
+
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-av">
         {% if user.community_profile.avatar %}
-          <img src="{{ user.community_profile.avatar.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
-        {% else %}
-          {{ user.username|slice:":1"|upper }}
-        {% endif %}
-        <div class="status"></div>
+          <img src="{{ user.community_profile.avatar.url }}" alt="">
+        {% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+        <div class="online-dot"></div>
       </div>
-      <div class="user-info">
+      <div class="sidebar-footer-info">
         <a href="{% url 'community:profile' username=user.username %}" style="text-decoration:none;">
-          <div class="user-name">{{ user.username }}</div>
+          <div class="sidebar-footer-name">{{ user.username }}</div>
         </a>
-        <div class="user-tag">Online</div>
+        <div class="sidebar-footer-status">Online</div>
       </div>
-      <div class="user-actions">
-        <a href="{% url 'community:messages' %}" class="user-action-btn" title="Messages">
+      <div class="sidebar-footer-actions">
+        <a href="{% url 'community:messages' %}" class="sidebar-footer-btn" title="Messages">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </a>
-        <a href="{% url 'logout' %}" class="user-action-btn" title="Log out">
+        <a href="{% url 'logout' %}" class="sidebar-footer-btn" title="Log out">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </a>
       </div>
     </div>
   </nav>
 
-  <!-- Main area -->
+  <!-- ── Main Area ────────────────────────────────────────────────────────── -->
   <div class="main-area">
+
     <!-- Desktop topbar -->
     <div class="topbar">
       <span class="topbar-icon">{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>{% endblock %}</span>
-      <span class="topbar-title">{% block topbar_title %}feed{% endblock %}</span>
+      <span class="topbar-title">{% block topbar_title %}Community{% endblock %}</span>
       <div class="topbar-sep"></div>
       <span class="topbar-desc">{% block topbar_desc %}{% endblock %}</span>
       <div class="topbar-right">
         <button class="tb-btn" onclick="openFriendDrawer()" title="Find Friends">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
         </button>
-        <a href="{% url 'community:notifications' %}" class="tb-btn" title="Notifications" style="position:relative;">
+        <a href="{% url 'community:notifications' %}" class="tb-btn" title="Notifications">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          {% if unread_notif_count %}<span style="position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-size:.5rem;font-weight:700;min-width:13px;height:13px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;line-height:1;">{{ unread_notif_count }}</span>{% endif %}
+          {% if unread_notif_count %}<span class="tb-badge">{{ unread_notif_count }}</span>{% endif %}
         </a>
         <a href="{% url 'dashboard' %}" class="tb-btn" title="Dashboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -433,423 +650,325 @@ input,textarea,select{font-family:inherit;}
       </div>
     </div>
 
-    <!-- Mobile topbar -->
+    <!-- Mobile top bar -->
     <div class="mobile-bar">
-      <button class="mob-btn" onclick="toggleSidebar()" style="padding:0;width:auto;height:auto;background:none;border:none;cursor:pointer;" aria-label="Open menu">
-        <div class="mob-logo">NX</div>
+      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="mob-title">{% block mobile_title %}Community{% endblock %}</span>
       <div class="mob-actions">
-        <button class="mob-btn" onclick="openMobSearch()" title="Search" aria-label="Search">
+        <button class="mob-btn" onclick="openMobSearch()" aria-label="Search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
-        <a href="{% url 'community:notifications' %}" class="mob-btn" title="Notifications" aria-label="Notifications" style="position:relative;">
+        <a href="{% url 'community:notifications' %}" class="mob-btn" aria-label="Notifications" style="position:relative;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           {% if unread_notif_count %}<span class="mob-notif-dot"></span>{% endif %}
         </a>
-        <a href="{% url 'community:profile' username=user.username %}" class="mob-avatar-btn" title="Profile" aria-label="Profile">
+        <a href="{% url 'community:profile' username=user.username %}" class="mob-avatar-btn" aria-label="Profile">
           {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
         </a>
       </div>
     </div>
 
-    <!-- Location breadcrumb strip (mobile) -->
-    <div class="mob-breadcrumb" id="mob-breadcrumb">
-      <a href="{% url 'community:community_home' %}">Home</a>
-      <span class="bc-sep">›</span>
-      <span class="bc-current">{% block breadcrumb_label %}{% block mobile_title_bc %}Community{% endblock %}{% endblock %}</span>
-    </div>
-
     <div class="content-scroll">
       {% block pre_content %}{% endblock %}
-      <div class="page">
-        {% block content %}{% endblock %}
-      </div>
+      <div class="page">{% block content %}{% endblock %}</div>
     </div>
   </div>
 </div>
 
 <div class="mob-overlay" id="mob-overlay" onclick="toggleSidebar()"></div>
 
-<nav class="bottom-nav">
-  <a href="{% url 'community:community_home' %}" class="bn-item {% block bn_home %}{% endblock %}" title="Home">
-    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+<!-- ── Bottom Navigation ────────────────────────────────────────────────── -->
+<nav class="bottom-nav" id="bottom-nav">
+  <a href="{% url 'community:community_home' %}" class="bn-item {% block bn_home %}{% endblock %}" aria-label="Home">
     <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
     <span class="bn-label">Home</span>
   </a>
-  <a href="{% url 'community:feed' %}" class="bn-item {% block bn_feed %}{% endblock %}" title="Feed">
-    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+  <a href="{% url 'community:feed' %}" class="bn-item {% block bn_feed %}{% endblock %}" aria-label="Feed">
     <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="2" y="5" width="20" height="2" rx="1"/><rect x="2" y="11" width="20" height="2" rx="1"/><rect x="2" y="17" width="20" height="2" rx="1"/></svg>
     <span class="bn-label">Feed</span>
   </a>
-  <a href="{% url 'community:post_create' %}" class="bn-item bn-post" title="New Post" aria-label="Create post">
+  <a href="{% url 'community:post_create' %}" class="bn-item bn-fab" aria-label="New Post">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </a>
-  <a href="{% url 'community:messages' %}" class="bn-item {% block bn_msgs %}{% endblock %}" title="Messages">
-    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  <a href="{% url 'community:messages' %}" class="bn-item {% block bn_msgs %}{% endblock %}" aria-label="Messages" style="position:relative;">
     <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    {% if unread_msgs %}<span class="bn-badge">{{ unread_msgs }}</span>{% endif %}
     <span class="bn-label">Messages</span>
   </a>
-  <button class="bn-item {% block bn_more %}{% endblock %}" onclick="openMoreSheet()" title="More" aria-label="More options">
-    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+  <button class="bn-item {% block bn_more %}{% endblock %}" onclick="openMoreSheet()" aria-label="More">
+    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="12" r="2"/></svg>
     <span class="bn-label">More</span>
   </button>
 </nav>
 
-<!-- More Bottom Sheet -->
-<div class="more-sheet-overlay" id="more-sheet-overlay" onclick="closeMoreSheet()"></div>
-<div class="more-sheet" id="more-sheet">
-  <div class="more-sheet-handle"></div>
-  <div class="more-sheet-user">
-    <div class="more-sheet-user-av">
-      {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-    </div>
-    <div class="more-sheet-user-info">
-      <div class="more-sheet-user-name">{{ user.username }}</div>
-      <div class="more-sheet-user-tag">Online</div>
-    </div>
-    <div class="more-sheet-user-actions">
-      <a href="{% url 'community:profile' username=user.username %}" class="more-sheet-action-btn" onclick="closeMoreSheet()">Profile</a>
-      <a href="{% url 'logout' %}" class="more-sheet-action-btn">Log out</a>
-    </div>
-  </div>
-  <div class="more-sheet-divider"></div>
-  <div class="more-sheet-title">Navigate</div>
-  <div class="more-sheet-grid">
-    <a href="{% url 'community:schools' %}" class="more-item {% block bn_schools %}{% endblock %}" onclick="closeMoreSheet()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span class="more-item-label">Schools</span>
-    </a>
-    <a href="{% url 'community:custom_list' %}" class="more-item {% block bn_communities %}{% endblock %}" onclick="closeMoreSheet()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-      <span class="more-item-label">Communities</span>
-    </a>
-    <a href="{% url 'community:workspace_list' %}" class="more-item {% block bn_workspaces %}{% endblock %}" onclick="closeMoreSheet()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      <span class="more-item-label">Workspaces</span>
-    </a>
-    <a href="{% url 'ai_community:hub' %}" class="more-item {% block bn_ai %}{% endblock %}" onclick="closeMoreSheet()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
-      <span class="more-item-label">AI Hub</span>
-    </a>
-    <a href="{% url 'community:notifications' %}" class="more-item {% block bn_notifs %}{% endblock %}" onclick="closeMoreSheet()" style="position:relative;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      {% if unread_notif_count %}<span style="position:absolute;top:8px;right:calc(50% - 16px);background:var(--red);color:#fff;font-size:.5rem;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;border:2px solid var(--s3);">{{ unread_notif_count }}</span>{% endif %}
-      <span class="more-item-label">Alerts</span>
-    </a>
-    <button class="more-item" onclick="closeMoreSheet();openFriendDrawer();">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
-      <span class="more-item-label">Friends</span>
+<!-- ── More Bottom Sheet ─────────────────────────────────────────────────── -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeMoreSheet()"></div>
+<div class="more-sheet" id="more-sheet" role="dialog" aria-modal="true" aria-label="More options">
+  <div class="sheet-topbar">
+    <span class="sheet-topbar-title">Menu</span>
+    <button class="sheet-close-btn" onclick="closeMoreSheet()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <a href="{% url 'dashboard' %}" class="more-item" onclick="closeMoreSheet()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      <span class="more-item-label">Dashboard</span>
-    </a>
-    <a href="{% url 'community:profile_edit' %}" class="more-item" onclick="closeMoreSheet()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span class="more-item-label">Edit Profile</span>
-    </a>
   </div>
-</div>
-
-<!-- Mobile Search Overlay -->
-<div id="mob-search-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:5000;flex-direction:column;padding:1rem;">
-  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
-    <div style="position:relative;flex:1;">
-      <svg style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#666;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="mob-search-input" type="text" placeholder="Search people, posts, communities…" autocomplete="off"
-        style="width:100%;background:#1c1c1c;border:1px solid #303030;border-radius:12px;padding:.75rem .875rem .75rem 2.5rem;color:#f0f0f0;font-size:1rem;outline:none;box-sizing:border-box;"
-        oninput="mobSearchQuery(this.value)">
+  <div class="sheet-user">
+    <div class="sheet-user-av">
+      {% if user.community_profile.avatar %}
+        <img src="{{ user.community_profile.avatar.url }}" alt="">
+      {% else %}{{ user.username|slice:":1"|upper }}{% endif %}
     </div>
-    <button onclick="closeMobSearch()" style="background:none;border:none;color:#aaa;font-size:.9375rem;font-weight:600;cursor:pointer;padding:.5rem;white-space:nowrap;">Cancel</button>
+    <div class="sheet-user-info">
+      <div class="sheet-user-name">{{ user.username }}</div>
+      <div class="sheet-user-tag">@{{ user.username }}</div>
+    </div>
+    <div class="sheet-user-actions">
+      <a href="{% url 'community:profile' username=user.username %}" class="sheet-user-btn">Profile</a>
+      <a href="{% url 'logout' %}" class="sheet-user-btn">Log out</a>
+    </div>
   </div>
-  <div id="mob-search-results" style="flex:1;overflow-y:auto;"></div>
+  <div class="sheet-divider"></div>
+  <div class="sheet-section-label">Navigate</div>
+  <div class="sheet-grid">
+    <a href="{% url 'community:schools' %}" class="sheet-item {% block sheet_schools %}{% endblock %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="sheet-item-label">Schools</span>
+    </a>
+    <a href="{% url 'community:custom_list' %}" class="sheet-item {% block sheet_communities %}{% endblock %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span class="sheet-item-label">Communities</span>
+    </a>
+    <a href="{% url 'community:workspace_list' %}" class="sheet-item {% block sheet_workspaces %}{% endblock %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <span class="sheet-item-label">Workspaces</span>
+    </a>
+    <a href="{% url 'community:live_campus' %}" class="sheet-item {% block sheet_live %}{% endblock %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span class="sheet-item-label">Live Campus</span>
+    </a>
+    <a href="{% url 'ai_community:hub' %}" class="sheet-item {% block sheet_ai %}{% endblock %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
+      <span class="sheet-item-label">AI Hub</span>
+    </a>
+    <a href="{% url 'dashboard' %}" class="sheet-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="sheet-item-label">Dashboard</span>
+    </a>
+    <a href="{% url 'community:notifications' %}" class="sheet-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="sheet-item-label">Notifications</span>
+    </a>
+    <a href="{% url 'assignment_list' %}" class="sheet-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="sheet-item-label">Assignments</span>
+    </a>
+    <a href="{% url 'community:nexa_workspace' %}" class="sheet-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span class="sheet-item-label">Open Nexa</span>
+    </a>
+    <a href="{% url 'library_home' %}" class="sheet-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span class="sheet-item-label">Library</span>
+    </a>
+  </div>
 </div>
 
-<!-- Toast container -->
-<div class="ux-toast-container" id="ux-toast-container"></div>
-
-<!-- Friend Search Drawer (global, works on all pages) -->
-<div id="friend-drawer-overlay" onclick="closeFriendDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;"></div>
-<div id="friend-drawer" style="
-  position:fixed;bottom:0;left:0;right:0;z-index:3001;
-  background:#161616;border-top:1px solid #242424;border-radius:16px 16px 0 0;
-  padding:1rem;max-height:80vh;display:none;flex-direction:column;gap:.75rem;
-  transform:translateY(100%);transition:transform .25s ease;
-">
-  <div style="display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-size:.9375rem;font-weight:700;">Find Friends</span>
-    <button onclick="closeFriendDrawer()" style="background:none;border:none;color:#666;font-size:1.25rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#1c1c1c;">✕</button>
+<!-- ── Mobile Search Overlay ─────────────────────────────────────────────── -->
+<div id="mob-search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="mob-search-bar">
+    <div class="mob-search-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="mob-search-input" placeholder="Search people, posts, communities…" autocomplete="off" oninput="mobSearchQuery(this.value)">
+    </div>
+    <button class="mob-search-cancel" onclick="closeMobSearch()">Cancel</button>
   </div>
-  <div style="position:relative;">
-    <svg style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#666;pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input id="drawer-search-input" type="text" placeholder="Search by username…" autocomplete="off"
-      style="width:100%;background:#1c1c1c;border:1px solid #242424;border-radius:10px;padding:.625rem .875rem .625rem 2.5rem;color:#f0f0f0;font-size:.9375rem;outline:none;transition:border-color .15s;"
-      oninput="drawerSearch(this.value)">
+  <div id="mob-search-results">
+    <div style="padding:2rem 1rem;text-align:center;color:var(--text3);font-size:.875rem;">Start typing to search…</div>
   </div>
-  <div id="drawer-search-results" style="overflow-y:auto;flex:1;"></div>
 </div>
+
+<!-- ── Friend Drawer ──────────────────────────────────────────────────────── -->
+<div id="friend-drawer-overlay" onclick="closeFriendDrawer()"></div>
+<div id="friend-drawer" role="dialog" aria-modal="true" aria-label="Find friends">
+  <div class="friend-drawer-header">
+    <span class="friend-drawer-title">Find People</span>
+    <button class="friend-drawer-close" onclick="closeFriendDrawer()" aria-label="Close">✕</button>
+  </div>
+  <div class="friend-search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="drawer-search-input" placeholder="Search by name or username…" autocomplete="off" oninput="drawerSearch(this.value)">
+  </div>
+  <div id="drawer-search-results">
+    <div style="padding:1.5rem 0;text-align:center;color:var(--text3);font-size:.875rem;">Search for people to connect with</div>
+  </div>
+</div>
+
+<!-- ── Toast Container ────────────────────────────────────────────────────── -->
+<div class="toast-container" id="toast-container"></div>
+
+{% block extra_js %}{% endblock %}
 
 <script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('mob-overlay').classList.toggle('open');
+// ── Sidebar toggle ────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('mob-overlay');
+  const open = sb.classList.toggle('open');
+  ov.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
 }
 
-/* ── More Sheet ── */
+// ── More sheet ────────────────────────────────────────────────────────────
 function openMoreSheet() {
-  document.getElementById('more-sheet-overlay').classList.add('open');
   document.getElementById('more-sheet').classList.add('open');
+  document.getElementById('sheet-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 function closeMoreSheet() {
-  document.getElementById('more-sheet-overlay').classList.remove('open');
   document.getElementById('more-sheet').classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
-/* swipe down to close more sheet */
-(function() {
-  var sheet = document.getElementById('more-sheet');
-  if (!sheet) return;
-  var startY = 0;
-  sheet.addEventListener('touchstart', function(e){ startY = e.touches[0].clientY; }, {passive:true});
-  sheet.addEventListener('touchend', function(e){
-    if (e.changedTouches[0].clientY - startY > 60) closeMoreSheet();
-  }, {passive:true});
-})();
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMoreSheet(); });
 
-/* ── Mobile Search Overlay ── */
+// ── Mobile search overlay ─────────────────────────────────────────────────
 function openMobSearch() {
   const el = document.getElementById('mob-search-overlay');
   el.style.display = 'flex';
-  setTimeout(function(){ document.getElementById('mob-search-input').focus(); }, 100);
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('mob-search-input').focus(), 80);
 }
 function closeMobSearch() {
   document.getElementById('mob-search-overlay').style.display = 'none';
+  document.body.style.overflow = '';
   document.getElementById('mob-search-input').value = '';
-  document.getElementById('mob-search-results').innerHTML = '';
+  document.getElementById('mob-search-results').innerHTML = '<div style="padding:2rem 1rem;text-align:center;color:var(--text3);font-size:.875rem;">Start typing to search…</div>';
 }
+
 let _mobSearchTimer = null;
-function mobSearchQuery(val) {
+function mobSearchQuery(q) {
   clearTimeout(_mobSearchTimer);
   const res = document.getElementById('mob-search-results');
-  if (!val || val.length < 2) { res.innerHTML = ''; return; }
-  res.innerHTML = '<div style="padding:.75rem;font-size:.875rem;color:#666;">Searching…</div>';
-  _mobSearchTimer = setTimeout(function() {
-    fetch('/community/api/users/search/?q=' + encodeURIComponent(val))
-      .then(function(r){ return r.json(); })
-      .then(function(d) {
-        if (!d.users || !d.users.length) {
-          res.innerHTML = '<div style="padding:2rem;text-align:center;font-size:.875rem;color:#666;">No results for "' + val + '"</div>';
-          return;
-        }
-        const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
-          || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
-        res.innerHTML = '<div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#555;padding:.5rem .25rem .375rem;">People</div>' +
-          d.users.map(function(u) {
-            const av = u.avatar
-              ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
-              : u.username.slice(0,1).toUpperCase();
-            return '<a href="/community/profile/' + u.username + '/" style="display:flex;align-items:center;gap:.75rem;padding:.75rem .25rem;border-bottom:1px solid #1a1a1a;text-decoration:none;color:inherit;">' +
-              '<div style="width:42px;height:42px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;">' + av + '</div>' +
-              '<div style="flex:1;min-width:0;">' +
-                '<div style="font-size:.9375rem;font-weight:600;">' + u.display_name + '</div>' +
-                '<div style="font-size:.75rem;color:#666;">@' + u.username + '</div>' +
-              '</div></a>';
-          }).join('');
-      })
-      .catch(function(){ res.innerHTML = '<div style="padding:1rem;text-align:center;font-size:.875rem;color:#666;">Search failed.</div>'; });
-  }, 300);
-}
-
-/* ── Toast helper ── */
-function showUXToast(msg, type) {
-  const container = document.getElementById('ux-toast-container');
-  if (!container) return;
-  const t = document.createElement('div');
-  t.className = 'ux-toast' + (type ? ' ' + type : '');
-  t.textContent = msg;
-  container.appendChild(t);
-  requestAnimationFrame(function(){ t.classList.add('show'); });
-  setTimeout(function(){
-    t.classList.remove('show');
-    setTimeout(function(){ t.remove(); }, 220);
-  }, 2200);
-}
-
-/* ── Tap ripple feedback ── */
-document.addEventListener('touchstart', function(e) {
-  const t = e.touches[0];
-  const el = document.createElement('div');
-  el.className = 'tap-feedback';
-  el.style.cssText = 'width:40px;height:40px;left:' + (t.clientX - 20) + 'px;top:' + (t.clientY - 20) + 'px;';
-  document.body.appendChild(el);
-  setTimeout(function(){ el.remove(); }, 420);
-}, {passive: true});
-
-/* ── Swipe right to open sidebar ── */
-(function() {
-  var startX = 0, startY = 0, tracking = false;
-  document.addEventListener('touchstart', function(e) {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    tracking = startX < 28;
-  }, {passive: true});
-  document.addEventListener('touchend', function(e) {
-    if (!tracking) return;
-    var dx = e.changedTouches[0].clientX - startX;
-    var dy = Math.abs(e.changedTouches[0].clientY - startY);
-    if (dx > 60 && dy < 60) {
-      document.getElementById('sidebar').classList.add('open');
-      document.getElementById('mob-overlay').classList.add('open');
-    }
-    tracking = false;
-  }, {passive: true});
-  /* Swipe left to close sidebar */
-  document.addEventListener('touchstart', function(e) {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-  }, {passive: true});
-  document.addEventListener('touchend', function(e) {
-    var sidebar = document.getElementById('sidebar');
-    if (!sidebar.classList.contains('open')) return;
-    var dx = e.changedTouches[0].clientX - startX;
-    var dy = Math.abs(e.changedTouches[0].clientY - startY);
-    if (dx < -60 && dy < 60) {
-      sidebar.classList.remove('open');
-      document.getElementById('mob-overlay').classList.remove('open');
-    }
-  }, {passive: true});
-})();
-
-/* ── Show breadcrumb on mobile ── */
-(function() {
-  function checkMob() {
-    var bc = document.getElementById('mob-breadcrumb');
-    if (!bc) return;
-    bc.style.display = window.innerWidth <= 900 ? 'flex' : 'none';
+  if (!q.trim()) {
+    res.innerHTML = '<div style="padding:2rem 1rem;text-align:center;color:var(--text3);font-size:.875rem;">Start typing to search…</div>';
+    return;
   }
-  checkMob();
-  window.addEventListener('resize', checkMob);
-})();
+  res.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--text3);font-size:.8125rem;">Searching…</div>';
+  _mobSearchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`{% url 'community:workspace_search_users' %}?q=${encodeURIComponent(q)}`);
+      const d = await r.json();
+      const users = d.users || [];
+      if (!users.length) { res.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:.875rem;">No results found</div>'; return; }
+      res.innerHTML = users.map(u => `
+        <a href="/community/profile/${u.username}/" style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;text-decoration:none;color:var(--text);border-bottom:1px solid var(--border);" onclick="closeMobSearch()">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;">${u.username.charAt(0).toUpperCase()}</div>
+          <div>
+            <div style="font-size:.875rem;font-weight:600;">${u.display_name || u.username}</div>
+            <div style="font-size:.75rem;color:var(--text3);">@${u.username}</div>
+          </div>
+        </a>`).join('');
+    } catch(e) { res.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--text3);font-size:.8125rem;">Search unavailable</div>'; }
+  }, 320);
+}
 
-/* ── Friend Search Drawer ── */
+// ── Friend drawer ─────────────────────────────────────────────────────────
 function openFriendDrawer() {
-  const overlay = document.getElementById('friend-drawer-overlay');
-  const drawer = document.getElementById('friend-drawer');
-  overlay.style.display = 'block';
-  drawer.style.display = 'flex';
-  requestAnimationFrame(function() {
-    drawer.style.transform = 'translateY(0)';
-  });
-  setTimeout(function() {
-    document.getElementById('drawer-search-input').focus();
-  }, 280);
+  const d = document.getElementById('friend-drawer');
+  const o = document.getElementById('friend-drawer-overlay');
+  d.style.display = 'flex';
+  o.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => { d.style.transform = 'translateY(0)'; });
+  setTimeout(() => document.getElementById('drawer-search-input').focus(), 120);
 }
 function closeFriendDrawer() {
-  const drawer = document.getElementById('friend-drawer');
-  drawer.style.transform = 'translateY(100%)';
-  setTimeout(function() {
-    drawer.style.display = 'none';
-    document.getElementById('friend-drawer-overlay').style.display = 'none';
-    document.getElementById('drawer-search-input').value = '';
-    document.getElementById('drawer-search-results').innerHTML = '';
-  }, 250);
+  const d = document.getElementById('friend-drawer');
+  const o = document.getElementById('friend-drawer-overlay');
+  d.style.transform = 'translateY(100%)';
+  setTimeout(() => { d.style.display = 'none'; o.style.display = 'none'; }, 260);
+  document.body.style.overflow = '';
 }
 
 let _drawerTimer = null;
-function drawerSearch(val) {
+function drawerSearch(q) {
   clearTimeout(_drawerTimer);
   const res = document.getElementById('drawer-search-results');
-  if (!val || val.length < 2) { res.innerHTML = ''; return; }
-  res.innerHTML = '<div style="padding:.5rem .75rem;font-size:.8125rem;color:#666;">Searching…</div>';
-  _drawerTimer = setTimeout(function() {
-    fetch('/community/api/users/search/?q=' + encodeURIComponent(val))
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        if (!d.users || !d.users.length) {
-          res.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.875rem;color:#666;">No users found.</div>';
-          return;
-        }
-        const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
-          || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
-        res.innerHTML = d.users.map(function(u) {
-          const av = u.avatar
-            ? '<img src="' + u.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
-            : u.username.slice(0,1).toUpperCase();
-          let friendBtn = '';
-          if (u.friendship_status === 'friends') {
-            friendBtn = '<button style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:1px solid rgba(74,222,128,.2);background:rgba(74,222,128,.1);color:#4ade80;cursor:default;">Friends</button>';
-          } else if (u.friendship_status === 'pending_sent') {
-            friendBtn = '<button style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:1px solid #303030;background:#222;color:#666;cursor:default;">Pending</button>';
-          } else if (u.friendship_status === 'pending_received') {
-            friendBtn = '<button data-uname="' + u.username + '" data-fid="' + u.friendship_id + '" onclick="drawerAccept(this.dataset.uname,this.dataset.fid,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#818cf8;color:#fff;cursor:pointer;">Accept</button>';
-          } else {
-            friendBtn = '<button data-uname="' + u.username + '" onclick="drawerAddFriend(this.dataset.uname,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:700;border:none;background:#fff;color:#000;cursor:pointer;">+ Add</button>';
-          }
-          const followBtn = u.is_following
-            ? '<button data-uname="' + u.username + '" onclick="drawerFollow(this.dataset.uname,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.15);background:rgba(74,222,128,.08);color:#4ade80;cursor:pointer;">Following</button>'
-            : '<button data-uname="' + u.username + '" onclick="drawerFollow(this.dataset.uname,this)" style="padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid #303030;background:#1c1c1c;color:#aaa;cursor:pointer;">Follow</button>';
-          return '<div style="display:flex;align-items:center;gap:.75rem;padding:.625rem .25rem;border-bottom:1px solid #1a1a1a;">' +
-            '<div style="width:40px;height:40px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;overflow:hidden;">' + av + '</div>' +
-            '<div style="flex:1;min-width:0;">' +
-              '<div style="font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + u.display_name + '</div>' +
-              '<div style="font-size:.75rem;color:#666;">@' + u.username + '</div>' +
-            '</div>' +
-            '<div style="display:flex;gap:.375rem;flex-shrink:0;">' + friendBtn + followBtn + '</div>' +
-          '</div>';
-        }).join('');
-      })
-      .catch(function() { res.innerHTML = '<div style="padding:1rem;text-align:center;font-size:.875rem;color:#666;">Search failed.</div>'; });
-  }, 300);
+  if (!q.trim()) { res.innerHTML = '<div style="padding:1.5rem 0;text-align:center;color:var(--text3);font-size:.875rem;">Search for people to connect with</div>'; return; }
+  res.innerHTML = '<div style="padding:1rem 0;text-align:center;color:var(--text3);font-size:.8125rem;">Searching…</div>';
+  _drawerTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`{% url 'community:workspace_search_users' %}?q=${encodeURIComponent(q)}`);
+      const d = await r.json();
+      const users = d.users || [];
+      if (!users.length) { res.innerHTML = '<div style="padding:1.5rem 0;text-align:center;color:var(--text3);font-size:.875rem;">No users found</div>'; return; }
+      res.innerHTML = users.map(u => `
+        <div style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;border-bottom:1px solid var(--border);">
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;">${u.username.charAt(0).toUpperCase()}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.875rem;font-weight:600;">${u.display_name || u.username}</div>
+            <div style="font-size:.75rem;color:var(--text3);">@${u.username}</div>
+          </div>
+          <a href="/community/profile/${u.username}/" style="padding:.3rem .75rem;border-radius:6px;background:var(--surface3);border:1px solid var(--border2);font-size:.8125rem;font-weight:600;color:var(--text2);text-decoration:none;">View</a>
+        </div>`).join('');
+    } catch(e) { res.innerHTML = '<div style="padding:1rem 0;text-align:center;color:var(--text3);font-size:.8125rem;">Search unavailable</div>'; }
+  }, 320);
 }
 
-function drawerAddFriend(username, btn) {
-  btn.disabled = true; btn.textContent = '…';
-  const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
-    || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
-  fetch('/community/api/friends/request/' + username + '/', {
-    method: 'POST', headers: {'X-CSRFToken': csrf}
-  }).then(function(r){return r.json();}).then(function(d) {
-    if (d.status === 'sent' || d.status === 'already_friends') {
-      btn.style.background = '#222'; btn.style.color = '#666';
-      btn.style.border = '1px solid #303030'; btn.textContent = 'Pending';
-    } else { btn.disabled = false; btn.textContent = '+ Add'; }
-  }).catch(function(){ btn.disabled = false; btn.textContent = '+ Add'; });
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showUXToast(msg, type) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 220); }, 2600);
 }
 
-function drawerAccept(username, friendId, btn) {
-  btn.disabled = true; btn.textContent = '…';
-  const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
-    || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
-  fetch('/community/api/friends/respond/' + friendId + '/', {
-    method: 'POST', headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/json'},
-    body: JSON.stringify({action: 'accept'})
-  }).then(function(r){return r.json();}).then(function(d) {
-    if (d.status === 'accepted') {
-      btn.style.background = 'rgba(74,222,128,.1)'; btn.style.color = '#4ade80';
-      btn.style.border = '1px solid rgba(74,222,128,.2)'; btn.textContent = 'Friends';
-    } else { btn.disabled = false; btn.textContent = 'Accept'; }
-  }).catch(function(){ btn.disabled = false; btn.textContent = 'Accept'; });
-}
+// ── Tap ripple ────────────────────────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  const el = e.target.closest('a,button,.nav-item,.bn-item,.sheet-item');
+  if (!el) return;
+  const r = document.createElement('div');
+  r.className = 'tap-ripple';
+  const s = Math.max(el.offsetWidth, el.offsetHeight) * 1.5;
+  r.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - s/2}px;top:${e.clientY - s/2}px;`;
+  document.body.appendChild(r);
+  setTimeout(() => r.remove(), 420);
+}, { passive: true });
 
-function drawerFollow(username, btn) {
-  btn.disabled = true;
-  const csrf = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
-    || document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
-  fetch('/community/api/follow-toggle/', {
-    method: 'POST', headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/json'},
-    body: JSON.stringify({username: username})
-  }).then(function(r){return r.json();}).then(function(d) {
-    btn.disabled = false;
-    if (d.following) {
-      btn.style.background = 'rgba(74,222,128,.08)'; btn.style.color = '#4ade80';
-      btn.style.border = '1px solid rgba(74,222,128,.15)'; btn.textContent = 'Following';
-    } else {
-      btn.style.background = '#1c1c1c'; btn.style.color = '#aaa';
-      btn.style.border = '1px solid #303030'; btn.textContent = 'Follow';
-    }
-  }).catch(function(){ btn.disabled = false; });
-}
+// ── Swipe to open sidebar ─────────────────────────────────────────────────
+(function() {
+  let sx = 0, sy = 0;
+  document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = Math.abs(e.changedTouches[0].clientY - sy);
+    if (sx < 24 && dx > 60 && dy < 60) toggleSidebar();
+    if (document.getElementById('sidebar').classList.contains('open') && dx < -60 && dy < 60) toggleSidebar();
+  }, { passive: true });
+})();
+
+// ── Sidebar search filter ─────────────────────────────────────────────────
+document.getElementById('sidebar-search-input').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.sidebar-scroll .nav-item').forEach(item => {
+    item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+// ── Active nav highlight ──────────────────────────────────────────────────
+(function() {
+  const path = window.location.pathname;
+  document.querySelectorAll('.nav-item[href]').forEach(a => {
+    if (a.getAttribute('href') === path) a.classList.add('active');
+  });
+})();
 </script>
-{% block extra_js %}{% endblock %}
 </body>
 </html>

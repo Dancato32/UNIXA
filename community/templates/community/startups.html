@@ -1,0 +1,98 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Startups{% endblock %}
+{% block mobile_title %}ðŸš€ Startups{% endblock %}
+{% block breadcrumb_label %}Startups{% endblock %}
+
+{% block extra_css %}
+<style>
+.startup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+@media(max-width:480px){.startup-grid{grid-template-columns:1fr;}}
+.startup-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.25rem;transition:border-color .15s;text-decoration:none;color:inherit;display:block;}
+.startup-card:hover{border-color:rgba(88,101,242,.3);}
+.sc-header{display:flex;align-items:flex-start;gap:.875rem;margin-bottom:.875rem;}
+.sc-logo{width:44px;height:44px;border-radius:12px;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:1.375rem;flex-shrink:0;}
+.sc-info{flex:1;min-width:0;}
+.sc-name{font-size:1rem;font-weight:700;margin-bottom:.125rem;}
+.sc-stage{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue);}
+.sc-tagline{font-size:.8125rem;color:var(--text2);margin-bottom:.875rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.sc-footer{display:flex;align-items:center;justify-content:space-between;}
+.sc-stats{display:flex;gap:.875rem;}
+.sc-stat{font-size:.75rem;color:var(--text3);}
+.sc-stat span{color:var(--text);font-weight:700;}
+.sc-follow-btn{padding:.3rem .75rem;border-radius:6px;font-size:.75rem;font-weight:700;border:1px solid var(--border3);background:var(--surface3);color:var(--text2);cursor:pointer;transition:all .15s;}
+.sc-follow-btn:hover{background:var(--surface4);color:var(--text);}
+.sc-follow-btn.following{background:rgba(88,101,242,.12);color:var(--blue);border-color:rgba(88,101,242,.2);}
+
+.stage-filter{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.stage-chip{padding:.35rem .75rem;border-radius:20px;font-size:.8125rem;font-weight:600;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .15s;text-decoration:none;}
+.stage-chip:hover,.stage-chip.active{background:var(--surface3);color:var(--text);border-color:var(--border3);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+  <div>
+    <h1 style="font-size:1.25rem;font-weight:800;">ðŸš€ Startups</h1>
+    <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Student-built. Campus-born.</div>
+  </div>
+  <a href="{% url 'community:startup_create' %}" class="btn btn-primary btn-sm">+ Launch</a>
+</div>
+
+<div class="stage-filter">
+  <a href="{% url 'community:startup_list' %}" class="stage-chip {% if not active_stage %}active{% endif %}">All</a>
+  {% for val,label in stages %}
+  <a href="?stage={{ val }}" class="stage-chip {% if active_stage == val %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if startups %}
+<div class="startup-grid">
+  {% for s in startups %}
+  <div class="startup-card" style="position:relative;">
+    <a href="{% url 'community:startup_detail' slug=s.slug %}" style="text-decoration:none;color:inherit;display:block;">
+      <div class="sc-header">
+        <div class="sc-logo">{% if s.logo %}<img src="{{ s.logo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">{% else %}ðŸš€{% endif %}</div>
+        <div class="sc-info">
+          <div class="sc-name">{{ s.name }}</div>
+          <div class="sc-stage">{{ s.get_stage_display }}</div>
+        </div>
+      </div>
+      <div class="sc-tagline">{{ s.tagline }}</div>
+    </a>
+    <div class="sc-footer">
+      <div class="sc-stats">
+        <div class="sc-stat"><span>{{ s.follower_count }}</span> followers</div>
+        <div class="sc-stat"><span>{{ s.members.count }}</span> team</div>
+      </div>
+      <button class="sc-follow-btn {% if s.id in followed_ids %}following{% endif %}"
+        onclick="toggleFollow('{{ s.slug }}',this)">
+        {% if s.id in followed_ids %}Following{% else %}Follow{% endif %}
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+  <p>No startups yet{% if active_stage %} at this stage{% endif %}.</p>
+  <a href="{% url 'community:startup_create' %}" class="btn btn-primary">Launch the first one</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrf=()=>document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+function toggleFollow(slug,btn){
+  btn.disabled=true;
+  fetch('/community/startups/'+slug+'/follow/',{method:'POST',headers:{'X-CSRFToken':csrf()}})
+    .then(r=>r.json()).then(d=>{
+      btn.disabled=false;
+      if(d.following){btn.textContent='Following';btn.classList.add('following');}
+      else{btn.textContent='Follow';btn.classList.remove('following');}
+    }).catch(()=>{btn.disabled=false;});
+}
+</script>
+{% endblock %}
+

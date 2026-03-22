@@ -1,0 +1,659 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Live{% endblock %}
+{% block mobile_title %}Live{% endblock %}
+{% block nav_live %}active{% endblock %}
+{% block bn_more %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page background ── */
+.lv-page { background: #f0f0ee; min-height: 100vh; margin: -1.5rem -2rem; padding: 0; }
+@media(max-width:900px){ .lv-page { margin: -.875rem -.875rem; } }
+@media(max-width:480px){ .lv-page { margin: -.625rem -.625rem; } }
+
+.lv-inner { max-width: 640px; margin: 0 auto; padding: 1rem 1rem 5rem; }
+
+/* ── Stats bar ── */
+.lv-stats {
+  background: #fff; border-radius: 14px; padding: .875rem 1rem;
+  margin-bottom: .875rem; display: flex; flex-wrap: wrap; gap: .375rem .875rem;
+}
+.lv-stat { display: flex; align-items: center; gap: .375rem; font-size: .8125rem; color: #555; }
+.lv-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lv-dot-orange { background: #f97316; }
+.lv-dot-red    { background: #ef4444; }
+.lv-dot-purple { background: #a855f7; }
+.lv-dot-blue   { background: #6366f1; }
+.lv-dot-green  { background: #22c55e; }
+
+/* ── Action pills ── */
+.lv-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; }
+.lv-act {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .5rem .875rem; border-radius: 20px;
+  border: 1.5px solid #d8d8d4; background: #fff;
+  font-size: .8125rem; font-weight: 600; color: #1a1a1a;
+  cursor: pointer; text-decoration: none; transition: background .12s;
+  white-space: nowrap;
+}
+.lv-act:hover { background: #f5f5f3; }
+.lv-act svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── Section ── */
+.lv-section { margin-bottom: 1.25rem; }
+.lv-sec-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .625rem;
+}
+.lv-sec-title {
+  font-size: .9375rem; font-weight: 700; color: #1a1a1a;
+  display: flex; align-items: center; gap: .375rem;
+}
+.lv-sec-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.lv-see-all { font-size: .8125rem; color: #999; text-decoration: none; }
+.lv-see-all:hover { color: #555; }
+
+/* ── Cards ── */
+.lv-card {
+  background: #fff; border-radius: 14px; padding: .875rem 1rem;
+  margin-bottom: .625rem; cursor: pointer; text-decoration: none; color: inherit;
+  display: block; transition: box-shadow .12s;
+}
+.lv-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+
+.lv-card-badge {
+  display: inline-flex; align-items: center;
+  font-size: .6875rem; font-weight: 700; padding: .2rem .55rem;
+  border-radius: 6px; margin-bottom: .375rem;
+}
+.badge-orange { background: rgba(249,115,22,.12); color: #f97316; }
+.badge-red    { background: rgba(239,68,68,.12);  color: #ef4444; }
+.badge-purple { background: rgba(168,85,247,.12); color: #a855f7; }
+.badge-blue   { background: rgba(99,102,241,.12); color: #6366f1; }
+.badge-green  { background: rgba(34,197,94,.12);  color: #22c55e; }
+
+.lv-card-title { font-size: .9375rem; font-weight: 700; color: #1a1a1a; margin-bottom: .2rem; }
+.lv-card-sub   { font-size: .8125rem; color: #888; }
+.lv-card-row   { display: flex; align-items: center; justify-content: space-between; }
+.lv-card-count { font-size: .8125rem; color: #aaa; }
+
+/* empty */
+.lv-empty {
+  background: #fff; border-radius: 14px; padding: 1.25rem 1rem;
+  text-align: center; font-size: .875rem; color: #aaa;
+}
+.lv-empty a { color: #22c55e; text-decoration: none; font-weight: 600; }
+@keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:.25} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lv-page">
+<div class="lv-inner">
+
+  <!-- Tab pills (same as feed) -->
+  <div style="display:flex;gap:.5rem;margin-bottom:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+    <a href="{% url 'community:feed' %}?tab=all" style="display:inline-flex;align-items:center;padding:.45rem 1.125rem;border-radius:24px;border:1.5px solid #e8e8e4;background:#fff;font-size:.875rem;font-weight:600;color:#1a1a1a;text-decoration:none;white-space:nowrap;">For You</a>
+    <a href="{% url 'community:feed' %}?tab=following" style="display:inline-flex;align-items:center;padding:.45rem 1.125rem;border-radius:24px;border:1.5px solid #e8e8e4;background:#fff;font-size:.875rem;font-weight:600;color:#1a1a1a;text-decoration:none;white-space:nowrap;">Following</a>
+    <a href="{% url 'community:feed' %}?tab=liked" style="display:inline-flex;align-items:center;padding:.45rem 1.125rem;border-radius:24px;border:1.5px solid #e8e8e4;background:#fff;font-size:.875rem;font-weight:600;color:#1a1a1a;text-decoration:none;white-space:nowrap;">Liked</a>
+    <a href="{% url 'community:live_campus' %}" style="display:inline-flex;align-items:center;gap:.35rem;padding:.45rem 1.125rem;border-radius:24px;border:1.5px solid #22c55e;background:#22c55e;font-size:.875rem;font-weight:600;color:#fff;text-decoration:none;white-space:nowrap;"><span style="width:7px;height:7px;border-radius:50%;background:#fff;flex-shrink:0;"></span>Live</a>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="lv-stats">
+    <div class="lv-stat"><span class="lv-dot lv-dot-orange"></span>{{ pulse_count }} event{{ pulse_count|pluralize }}</div>
+    <div class="lv-stat"><span class="lv-dot lv-dot-red"></span>{{ beacon_count }} help request{{ beacon_count|pluralize }}</div>
+    <div class="lv-stat"><span class="lv-dot lv-dot-purple"></span>{{ room_count }} voice room{{ room_count|pluralize }}</div>
+    <div class="lv-stat"><span class="lv-dot lv-dot-blue"></span>{{ startup_count }} startup{{ startup_count|pluralize }}</div>
+    <div class="lv-stat"><span class="lv-dot lv-dot-green"></span>{{ skill_count }} skill offer{{ skill_count|pluralize }}</div>
+  </div>
+
+  <!-- Action pills -->
+  <div class="lv-actions">
+    <button class="lv-act" onclick="lvOpenModal('beacon-modal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Need Help
+    </button>
+    <button class="lv-act" onclick="lvOpenModal('room-modal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      Start Room
+    </button>
+    <button class="lv-act" onclick="lvOpenCameraEvent()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Post Event
+    </button>
+    <a href="{% url 'community:skill_offer_create' %}" class="lv-act">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Offer Skill
+    </a>
+    <a href="{% url 'community:startup_create' %}" class="lv-act">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      Launch Startup
+    </a>
+  </div>
+
+  <!-- Happening Now -->
+  <div class="lv-section">
+    <div class="lv-sec-head">
+      <div class="lv-sec-title"><span class="lv-sec-dot lv-dot-orange"></span>Happening Now</div>
+      <a href="{% url 'community:pulse_map' %}" class="lv-see-all">See all</a>
+    </div>
+    {% if pulse_events %}
+      {% for ev in pulse_events %}
+      <a href="{% url 'community:pulse_map' %}" class="lv-card" style="text-decoration:none;padding:0;overflow:hidden;">
+        {% if ev.photo %}
+        <div style="position:relative;width:100%;aspect-ratio:16/9;background:#111;overflow:hidden;">
+          <img src="{{ ev.photo.url }}" alt="{{ ev.title }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 55%);"></div>
+          <div style="position:absolute;bottom:.75rem;left:.875rem;right:.875rem;">
+            <div class="lv-card-badge badge-orange" style="margin-bottom:.3rem;">{{ ev.get_event_type_display }}</div>
+            <div style="font-size:.9375rem;font-weight:700;color:#fff;margin-bottom:.15rem;">{{ ev.title }}</div>
+            <div style="font-size:.8125rem;color:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:space-between;">
+              <span>by {{ ev.host.username }}</span>
+              <span>{{ ev.participant_count }} joined</span>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div style="padding:.875rem 1rem;">
+          <div class="lv-card-badge badge-orange">{{ ev.get_event_type_display }}</div>
+          <div class="lv-card-row">
+            <div class="lv-card-title">{{ ev.title }}</div>
+            <div class="lv-card-count">{{ ev.participant_count }} joined</div>
+          </div>
+          <div class="lv-card-sub">by {{ ev.host.username }}</div>
+        </div>
+        {% endif %}
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="lv-empty">No active events. <a href="#" onclick="lvOpenCameraEvent();return false;">Post one</a></div>
+    {% endif %}
+  </div>
+
+  <!-- Need Help -->
+  <div class="lv-section">
+    <div class="lv-sec-head">
+      <div class="lv-sec-title"><span class="lv-sec-dot lv-dot-red"></span>Need Help</div>
+      <a href="{% url 'community:help_beacon_list' %}" class="lv-see-all">See all</a>
+    </div>
+    {% if beacons %}
+      {% for b in beacons %}
+      <a href="{% url 'community:help_beacon_list' %}" class="lv-card" style="text-decoration:none;">
+        <div class="lv-card-badge badge-red">{{ b.get_urgency_display }}</div>
+        <div class="lv-card-row">
+          <div>
+            <div class="lv-card-title">{{ b.title }}</div>
+            <div class="lv-card-sub">{{ b.get_category_display }} &middot; by {{ b.requester.username }}</div>
+          </div>
+          <div class="lv-card-count">{{ b.created_at|timesince }} ago</div>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="lv-empty">No open help requests. <a href="#" onclick="lvOpenModal('beacon-modal');return false;">Post one</a></div>
+    {% endif %}
+  </div>
+
+  <!-- Voice Rooms -->
+  <div class="lv-section">
+    <div class="lv-sec-head">
+      <div class="lv-sec-title"><span class="lv-sec-dot lv-dot-purple"></span>Voice Rooms</div>
+      <a href="{% url 'community:micro_rooms_list' %}" class="lv-see-all">See all</a>
+    </div>
+    {% if rooms %}
+      {% for room in rooms %}
+      <div class="lv-card" style="cursor:default;">
+        <div class="lv-card-row">
+          <div style="flex:1;min-width:0;">
+            <div class="lv-card-badge badge-purple">
+              <span style="width:6px;height:6px;border-radius:50%;background:#a855f7;display:inline-block;margin-right:.3rem;animation:blink-dot 1.2s infinite;"></span>Live
+            </div>
+            <div class="lv-card-title">{{ room.topic }}</div>
+            <div class="lv-card-sub">by {{ room.host.username }} &middot; {{ room.participant_count }}/{{ room.max_participants }} watching</div>
+          </div>
+          <a href="/community/rooms/{{ room.id }}/"
+             style="display:inline-flex;align-items:center;gap:.3rem;padding:.45rem .875rem;background:#a855f7;color:#fff;border-radius:20px;font-size:.8125rem;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;margin-left:.75rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Watch
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="lv-empty">No open rooms. <a href="#" onclick="lvOpenModal('room-modal');return false;">Start one</a></div>
+    {% endif %}
+  </div>
+
+  <!-- Startups -->
+  <div class="lv-section">
+    <div class="lv-sec-head">
+      <div class="lv-sec-title"><span class="lv-sec-dot lv-dot-blue"></span>Startups</div>
+      <a href="{% url 'community:startup_list' %}" class="lv-see-all">See all</a>
+    </div>
+    {% if startups %}
+      {% for s in startups %}
+      <a href="{% url 'community:startup_detail' slug=s.slug %}" class="lv-card" style="text-decoration:none;">
+        <div class="lv-card-row">
+          <div>
+            <div class="lv-card-title">{{ s.name }}</div>
+            <div class="lv-card-sub">{{ s.tagline|truncatechars:60 }}</div>
+          </div>
+          <div class="lv-card-count">{{ s.follower_count }} followers</div>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="lv-empty">No startups yet. <a href="{% url 'community:startup_create' %}">Launch yours</a></div>
+    {% endif %}
+  </div>
+
+  <!-- Skill Offers -->
+  <div class="lv-section">
+    <div class="lv-sec-head">
+      <div class="lv-sec-title"><span class="lv-sec-dot lv-dot-green"></span>Skill Offers</div>
+      <a href="{% url 'community:skill_marketplace' %}" class="lv-see-all">See all</a>
+    </div>
+    {% if skill_offers %}
+      {% for offer in skill_offers %}
+      <a href="{% url 'community:skill_marketplace' %}" class="lv-card" style="text-decoration:none;">
+        <div class="lv-card-badge badge-green">{{ offer.skill_tag }}</div>
+        <div class="lv-card-title">{{ offer.title }}</div>
+        <div class="lv-card-sub">by {{ offer.user.username }}</div>
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="lv-empty">No skill offers yet. <a href="{% url 'community:skill_offer_create' %}">Post yours</a></div>
+    {% endif %}
+  </div>
+
+</div><!-- /lv-inner -->
+</div><!-- /lv-page -->
+
+<!-- Help Beacon Modal -->
+<div id="beacon-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:4000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)lvCloseModal('beacon-modal')">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <span style="font-size:1rem;font-weight:700;color:#1a1a1a;">Need Help Now</span>
+      <button onclick="lvCloseModal('beacon-modal')" style="background:none;border:none;font-size:1.25rem;cursor:pointer;color:#aaa;">&times;</button>
+    </div>
+    <form id="beacon-form">
+      {% csrf_token %}
+      <input name="title" placeholder="What do you need help with?" required style="width:100%;border:1.5px solid #e8e8e4;border-radius:10px;padding:.75rem;font-size:.9375rem;outline:none;margin-bottom:.75rem;box-sizing:border-box;">
+      <textarea name="description" placeholder="More details (optional)" rows="2" style="width:100%;border:1.5px solid #e8e8e4;border-radius:10px;padding:.75rem;font-size:.875rem;outline:none;resize:none;margin-bottom:.75rem;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:.75rem;margin-bottom:1rem;">
+        <select name="category" style="flex:1;border:1.5px solid #e8e8e4;border-radius:10px;padding:.625rem;font-size:.875rem;outline:none;background:#fff;">
+          {% for val,label in categories %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+        </select>
+        <select name="urgency" style="flex:1;border:1.5px solid #e8e8e4;border-radius:10px;padding:.625rem;font-size:.875rem;outline:none;background:#fff;">
+          <option value="low">Low urgency</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High — urgent!</option>
+        </select>
+      </div>
+      <button type="submit" style="width:100%;padding:.875rem;background:#1a1a1a;color:#fff;border:none;border-radius:12px;font-size:.9375rem;font-weight:700;cursor:pointer;">Post Help Request</button>
+    </form>
+  </div>
+</div>
+
+<!-- Room Create Modal -->
+<div id="room-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:4000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)lvCloseModal('room-modal')">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <span style="font-size:1rem;font-weight:700;color:#1a1a1a;">Start a Voice Room</span>
+      <button onclick="lvCloseModal('room-modal')" style="background:none;border:none;font-size:1.25rem;cursor:pointer;color:#aaa;">&times;</button>
+    </div>
+    <form id="room-form">
+      {% csrf_token %}
+      <input name="topic" placeholder="Room topic (e.g. Study group, Chill chat…)" style="width:100%;border:1.5px solid #e8e8e4;border-radius:10px;padding:.75rem;font-size:.9375rem;outline:none;margin-bottom:1rem;box-sizing:border-box;">
+      <button type="submit" style="width:100%;padding:.875rem;background:#a855f7;color:#fff;border:none;border-radius:12px;font-size:.9375rem;font-weight:700;cursor:pointer;">Create Room</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── Camera Event Modal ─────────────────────────────────────────────────── -->
+<div id="cam-event-modal" style="display:none;position:fixed;inset:0;background:#000;z-index:5000;flex-direction:column;">
+
+  <!-- Step 1: Camera viewfinder -->
+  <div id="cam-step-1" style="display:flex;flex-direction:column;height:100%;">
+    <!-- Top bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;position:absolute;top:0;left:0;right:0;z-index:10;">
+      <button onclick="lvCloseCameraEvent()" style="background:rgba(0,0,0,.5);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;backdrop-filter:blur(4px);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <span style="color:#fff;font-size:.875rem;font-weight:600;background:rgba(0,0,0,.4);padding:.3rem .75rem;border-radius:20px;backdrop-filter:blur(4px);">Happening Now</span>
+      <button id="cam-flip-btn" onclick="lvFlipCamera()" style="background:rgba(0,0,0,.5);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;backdrop-filter:blur(4px);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      </button>
+    </div>
+
+    <!-- Video feed -->
+    <video id="cam-preview" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+
+    <!-- Mode toggle: Photo / Video -->
+    <div style="position:absolute;bottom:7rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;z-index:10;">
+      <button id="cam-mode-photo" onclick="lvSetCamMode('photo')" style="padding:.35rem .875rem;border-radius:20px;border:none;background:#fff;color:#1a1a1a;font-size:.8125rem;font-weight:700;cursor:pointer;">Photo</button>
+      <button id="cam-mode-video" onclick="lvSetCamMode('video')" style="padding:.35rem .875rem;border-radius:20px;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:.8125rem;font-weight:600;cursor:pointer;">Video</button>
+    </div>
+
+    <!-- Shutter / Record button -->
+    <div style="position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:10;">
+      <button id="cam-shutter" onclick="lvCamCapture()" style="width:72px;height:72px;border-radius:50%;background:#fff;border:4px solid rgba(255,255,255,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s;box-shadow:0 0 0 3px rgba(255,255,255,.2);">
+        <div id="cam-shutter-inner" style="width:56px;height:56px;border-radius:50%;background:#fff;transition:all .15s;"></div>
+      </button>
+    </div>
+
+    <!-- Recording indicator -->
+    <div id="cam-rec-indicator" style="display:none;position:absolute;top:4.5rem;left:50%;transform:translateX(-50%);background:rgba(239,68,68,.9);color:#fff;font-size:.75rem;font-weight:700;padding:.25rem .75rem;border-radius:20px;z-index:10;display:none;align-items:center;gap:.4rem;">
+      <span style="width:7px;height:7px;border-radius:50%;background:#fff;animation:blink-dot 1s infinite;"></span>
+      <span id="cam-rec-time">0:00</span>
+    </div>
+  </div>
+
+  <!-- Step 2: Preview + details form -->
+  <div id="cam-step-2" style="display:none;flex-direction:column;height:100%;background:#000;">
+    <!-- Media preview -->
+    <div style="position:relative;width:100%;flex:1;background:#111;overflow:hidden;max-height:55vh;">
+      <img id="cam-photo-preview" style="width:100%;height:100%;object-fit:cover;display:none;" alt="">
+      <video id="cam-video-preview" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:none;"></video>
+      <!-- Retake -->
+      <button onclick="lvCamRetake()" style="position:absolute;top:.875rem;left:.875rem;background:rgba(0,0,0,.55);border:none;border-radius:20px;color:#fff;font-size:.8125rem;font-weight:600;padding:.35rem .875rem;cursor:pointer;backdrop-filter:blur(4px);">
+        ← Retake
+      </button>
+    </div>
+
+    <!-- Details form -->
+    <div style="background:#fff;border-radius:20px 20px 0 0;padding:1.25rem 1rem 2rem;overflow-y:auto;flex-shrink:0;">
+      <input id="cam-title" placeholder="What's happening? (required)" maxlength="120"
+        style="width:100%;border:none;border-bottom:1.5px solid #e8e8e4;padding:.625rem 0;font-size:1rem;font-weight:600;outline:none;margin-bottom:.875rem;box-sizing:border-box;color:#1a1a1a;">
+      <input id="cam-desc" placeholder="Add a description…" maxlength="300"
+        style="width:100%;border:none;border-bottom:1.5px solid #e8e8e4;padding:.5rem 0;font-size:.875rem;outline:none;margin-bottom:.875rem;box-sizing:border-box;color:#555;">
+      <div style="display:flex;gap:.625rem;margin-bottom:1rem;">
+        <select id="cam-type" style="flex:1;border:1.5px solid #e8e8e4;border-radius:10px;padding:.5rem .625rem;font-size:.875rem;outline:none;background:#fff;color:#1a1a1a;">
+          <option value="study">Study Group</option>
+          <option value="event">Event</option>
+          <option value="social" selected>Social</option>
+          <option value="recruitment">Recruitment</option>
+          <option value="academic">Academic</option>
+          <option value="online">Online Only</option>
+        </select>
+        <input id="cam-location" placeholder="Location (optional)" maxlength="120"
+          style="flex:1;border:1.5px solid #e8e8e4;border-radius:10px;padding:.5rem .625rem;font-size:.875rem;outline:none;box-sizing:border-box;color:#1a1a1a;">
+      </div>
+      <button onclick="lvCamPost()" id="cam-post-btn"
+        style="width:100%;padding:.875rem;background:#f97316;color:#fff;border:none;border-radius:12px;font-size:.9375rem;font-weight:700;cursor:pointer;">
+        Post to Happening Now
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const LV_CSRF = '{{ csrf_token }}';
+
+function lvOpenModal(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+}
+function lvCloseModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function lvLike(id, btn) {
+  fetch(`/community/api/posts/${id}/like/`, {
+    method: 'POST', headers: {'X-CSRFToken': LV_CSRF, 'Content-Type': 'application/json'}
+  }).then(r => r.json()).then(d => {
+    btn.classList.toggle('liked', d.liked);
+    const svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', d.liked ? 'currentColor' : 'none');
+    const el = document.getElementById('lvlc-' + id);
+    if (el) el.textContent = d.like_count;
+  }).catch(() => {});
+}
+
+function lvJoinRoom(id, topic) {
+  window.location.href = '/community/rooms/' + id + '/';
+}
+
+document.getElementById('beacon-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const fd = new FormData(this);
+  fetch('{% url "community:help_beacon_create" %}', {
+    method: 'POST',
+    headers: {'X-CSRFToken': LV_CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      title: fd.get('title'), description: fd.get('description'),
+      category: fd.get('category'), urgency: fd.get('urgency')
+    })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) { lvCloseModal('beacon-modal'); showToast('Help request posted!'); this.reset(); setTimeout(() => location.reload(), 800); }
+    else showToast(d.error || 'Error posting request.');
+  }).catch(() => showToast('Network error.'));
+});
+
+document.getElementById('room-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const fd = new FormData(this);
+  fetch('{% url "community:micro_room_create" %}', {
+    method: 'POST',
+    headers: {'X-CSRFToken': LV_CSRF, 'Content-Type': 'application/json'},
+    body: JSON.stringify({topic: fd.get('topic') || 'Open Chat'})
+  }).then(r => r.json()).then(d => {
+    if (d.ok) { window.location.href = d.redirect; }
+    else showToast('Error creating room.');
+  }).catch(() => showToast('Network error.'));
+});
+
+// showToast fallback if base doesn't expose it
+function showToast(msg) {
+  if (typeof window.showToast === 'function' && window.showToast !== showToast) { window.showToast(msg); return; }
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:.625rem 1.25rem;border-radius:20px;font-size:.875rem;z-index:9999;pointer-events:none;';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ── Camera Event ────────────────────────────────────────────────────────────
+let camStream = null;
+let camMode = 'photo';          // 'photo' | 'video'
+let camFacing = 'environment';  // rear camera by default
+let mediaRecorder = null;
+let recordedChunks = [];
+let recTimer = null;
+let recSeconds = 0;
+let capturedBlob = null;        // final photo blob or video blob
+
+async function lvOpenCameraEvent() {
+  document.getElementById('cam-event-modal').style.display = 'flex';
+  document.getElementById('cam-step-1').style.display = 'flex';
+  document.getElementById('cam-step-2').style.display = 'none';
+  capturedBlob = null;
+  await lvStartCamera();
+}
+
+async function lvStartCamera() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: camFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: camMode === 'video',
+    });
+    document.getElementById('cam-preview').srcObject = camStream;
+  } catch(e) {
+    showToast('Camera access denied. Please allow camera in your browser settings.');
+    lvCloseCameraEvent();
+  }
+}
+
+function lvCloseCameraEvent() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  if (recTimer) { clearInterval(recTimer); recTimer = null; }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  document.getElementById('cam-event-modal').style.display = 'none';
+}
+
+async function lvFlipCamera() {
+  camFacing = camFacing === 'environment' ? 'user' : 'environment';
+  await lvStartCamera();
+}
+
+function lvSetCamMode(mode) {
+  camMode = mode;
+  const photoBtn = document.getElementById('cam-mode-photo');
+  const videoBtn = document.getElementById('cam-mode-video');
+  const inner = document.getElementById('cam-shutter-inner');
+  if (mode === 'photo') {
+    photoBtn.style.cssText = 'padding:.35rem .875rem;border-radius:20px;border:none;background:#fff;color:#1a1a1a;font-size:.8125rem;font-weight:700;cursor:pointer;';
+    videoBtn.style.cssText = 'padding:.35rem .875rem;border-radius:20px;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:.8125rem;font-weight:600;cursor:pointer;';
+    inner.style.background = '#fff';
+    inner.style.borderRadius = '50%';
+  } else {
+    videoBtn.style.cssText = 'padding:.35rem .875rem;border-radius:20px;border:none;background:#fff;color:#1a1a1a;font-size:.8125rem;font-weight:700;cursor:pointer;';
+    photoBtn.style.cssText = 'padding:.35rem .875rem;border-radius:20px;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:.8125rem;font-weight:600;cursor:pointer;';
+    inner.style.background = '#ef4444';
+    inner.style.borderRadius = '6px';
+  }
+  // Restart stream to add/remove audio track
+  lvStartCamera();
+}
+
+function lvCamCapture() {
+  if (camMode === 'photo') {
+    lvSnapPhoto();
+  } else {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      lvStopRecording();
+    } else {
+      lvStartRecording();
+    }
+  }
+}
+
+function lvSnapPhoto() {
+  const video = document.getElementById('cam-preview');
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 1280;
+  canvas.height = video.videoHeight || 720;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    capturedBlob = blob;
+    lvShowPreview('photo', blob);
+  }, 'image/jpeg', 0.92);
+}
+
+function lvStartRecording() {
+  if (!camStream) return;
+  recordedChunks = [];
+  recSeconds = 0;
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+  mediaRecorder = new MediaRecorder(camStream, { mimeType });
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    capturedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+    lvShowPreview('video', capturedBlob);
+  };
+  mediaRecorder.start(200);
+
+  // Update shutter to red stop button
+  const inner = document.getElementById('cam-shutter-inner');
+  inner.style.background = '#ef4444';
+  inner.style.borderRadius = '4px';
+  inner.style.width = '28px';
+  inner.style.height = '28px';
+
+  // Show recording indicator
+  const rec = document.getElementById('cam-rec-indicator');
+  rec.style.display = 'flex';
+  recTimer = setInterval(() => {
+    recSeconds++;
+    const m = Math.floor(recSeconds / 60);
+    const s = recSeconds % 60;
+    document.getElementById('cam-rec-time').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    // Auto-stop at 60s
+    if (recSeconds >= 60) lvStopRecording();
+  }, 1000);
+}
+
+function lvStopRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  if (recTimer) { clearInterval(recTimer); recTimer = null; }
+  document.getElementById('cam-rec-indicator').style.display = 'none';
+}
+
+function lvShowPreview(type, blob) {
+  // Stop camera stream
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+
+  document.getElementById('cam-step-1').style.display = 'none';
+  document.getElementById('cam-step-2').style.display = 'flex';
+
+  const url = URL.createObjectURL(blob);
+  if (type === 'photo') {
+    const img = document.getElementById('cam-photo-preview');
+    img.src = url; img.style.display = 'block';
+    document.getElementById('cam-video-preview').style.display = 'none';
+  } else {
+    const vid = document.getElementById('cam-video-preview');
+    vid.src = url; vid.style.display = 'block';
+    document.getElementById('cam-photo-preview').style.display = 'none';
+  }
+}
+
+async function lvCamRetake() {
+  capturedBlob = null;
+  document.getElementById('cam-step-2').style.display = 'none';
+  document.getElementById('cam-step-1').style.display = 'flex';
+  // Reset shutter inner
+  const inner = document.getElementById('cam-shutter-inner');
+  inner.style.width = '56px'; inner.style.height = '56px';
+  inner.style.background = '#fff'; inner.style.borderRadius = '50%';
+  await lvStartCamera();
+}
+
+async function lvCamPost() {
+  const title = document.getElementById('cam-title').value.trim();
+  if (!title) { showToast('Add a title first'); document.getElementById('cam-title').focus(); return; }
+
+  const btn = document.getElementById('cam-post-btn');
+  btn.textContent = 'Posting…'; btn.disabled = true;
+
+  const now = new Date();
+  const expires = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+  const fd = new FormData();
+  fd.append('title', title);
+  fd.append('description', document.getElementById('cam-desc').value.trim());
+  fd.append('event_type', document.getElementById('cam-type').value);
+  fd.append('location_name', document.getElementById('cam-location').value.trim());
+  fd.append('starts_at', now.toISOString());
+  fd.append('expires_at', expires.toISOString());
+  if (capturedBlob) {
+    const ext = capturedBlob.type.includes('video') ? 'webm' : 'jpg';
+    fd.append('photo', capturedBlob, `event_media.${ext}`);
+  }
+
+  try {
+    const resp = await fetch('{% url "community:pulse_event_create" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': LV_CSRF },
+      body: fd,
+    });
+    const d = await resp.json();
+    if (d.ok) {
+      lvCloseCameraEvent();
+      showToast('Posted to Happening Now!');
+      setTimeout(() => location.reload(), 900);
+    } else {
+      showToast(d.error || 'Error posting event.');
+      btn.textContent = 'Post to Happening Now'; btn.disabled = false;
+    }
+  } catch(e) {
+    showToast('Network error.');
+    btn.textContent = 'Post to Happening Now'; btn.disabled = false;
+  }
+}
+</script>
+{% endblock %}

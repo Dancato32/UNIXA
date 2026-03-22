@@ -1,4 +1,4 @@
-{% extends "community/base.html" %}
+﻿{% extends "community/base.html" %}
 {% block title %}Notifications{% endblock %}
 {% block mobile_title %}Notifications{% endblock %}
 {% block nav_notifs %}active{% endblock %}
@@ -12,8 +12,8 @@
 <style>
 .notifs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
 .notifs-title{font-size:1rem;font-weight:700;}
-.notif-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;align-items:flex-start;gap:.875rem;transition:border-color .15s;}
-.notif-card.unread{border-color:var(--b3);background:var(--s3);}
+.notif-card{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.5rem;display:flex;align-items:flex-start;gap:.875rem;transition:border-color .15s;}
+.notif-card.unread{border-color:var(--border3);background:var(--surface3);}
 .notif-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.125rem;}
 .notif-icon.like,.notif-icon.comment_like{background:rgba(239,68,68,.12);}
 .notif-icon.comment,.notif-icon.reply{background:rgba(88,101,242,.12);}
@@ -23,19 +23,20 @@
 .notif-icon.message{background:rgba(99,102,241,.12);}
 .notif-icon.join{background:rgba(168,85,247,.12);}
 .notif-icon.mention{background:rgba(251,146,60,.12);}
+.notif-icon.live{background:rgba(239,68,68,.12);}
 .notif-body{flex:1;min-width:0;}
-.notif-text{font-size:.875rem;line-height:1.5;color:var(--t2);}
-.notif-text strong{color:var(--t1);}
+.notif-text{font-size:.875rem;line-height:1.5;color:var(--text2);}
+.notif-text strong{color:var(--text);}
 .notif-text a{color:#818cf8;text-decoration:none;}
 .notif-text a:hover{text-decoration:underline;}
-.notif-time{font-size:.75rem;color:var(--t3);margin-top:.2rem;}
+.notif-time{font-size:.75rem;color:var(--text3);margin-top:.2rem;}
 .fr-actions{display:flex;gap:.5rem;margin-top:.625rem;}
 .fr-btn{padding:.35rem .875rem;border-radius:6px;font-size:.8125rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;}
-.fr-btn.accept{background:var(--white);color:#000;}
+.fr-btn.accept{background:#fff;color:#000;}
 .fr-btn.accept:hover{background:#e8e8e8;}
-.fr-btn.reject{background:var(--s4);color:var(--t2);border:1px solid var(--b2);}
-.fr-btn.reject:hover{background:var(--s3);color:var(--t1);}
-.fr-result{font-size:.8125rem;color:var(--t3);margin-top:.5rem;font-style:italic;}
+.fr-btn.reject{background:var(--surface4);color:var(--text2);border:1px solid var(--border2);}
+.fr-btn.reject:hover{background:var(--surface3);color:var(--text);}
+.fr-result{font-size:.8125rem;color:var(--text3);margin-top:.5rem;font-style:italic;}
 .unread-dot{width:8px;height:8px;background:#818cf8;border-radius:50%;flex-shrink:0;margin-top:.375rem;}
 @media(max-width:600px){
   .notif-card{padding:.625rem .75rem;gap:.625rem;}
@@ -60,16 +61,16 @@
 {% for notif in notifications %}
 <div class="notif-card {% if not notif.is_read %}unread{% endif %}" id="notif-{{ notif.id }}">
   <div class="notif-icon {{ notif.type }}">
-    {% if notif.type == 'like' or notif.type == 'comment_like' %}❤️
-    {% elif notif.type == 'comment' %}💬
-    {% elif notif.type == 'reply' %}↩️
-    {% elif notif.type == 'follow' %}👤
-    {% elif notif.type == 'friend_request' %}🤝
-    {% elif notif.type == 'friend_accepted' %}✅
-    {% elif notif.type == 'message' %}✉️
-    {% elif notif.type == 'join' %}🏘️
+    {% if notif.type == 'like' or notif.type == 'comment_like' %}â¤ï¸
+    {% elif notif.type == 'comment' %}ðŸ’¬
+    {% elif notif.type == 'reply' %}â†©ï¸
+    {% elif notif.type == 'follow' %}ðŸ‘¤
+    {% elif notif.type == 'friend_request' %}ðŸ¤
+    {% elif notif.type == 'friend_accepted' %}âœ…
+    {% elif notif.type == 'message' %}âœ‰ï¸
+    {% elif notif.type == 'join' %}ðŸ˜ï¸
     {% elif notif.type == 'mention' %}@
-    {% else %}🔔{% endif %}
+    {% else %}ðŸ””{% endif %}
   </div>
   <div class="notif-body">
     <div class="notif-text">
@@ -87,13 +88,15 @@
       {% elif notif.type == 'friend_request' %}
         sent you a friend request
       {% elif notif.type == 'friend_accepted' %}
-        accepted your friend request &mdash; <a href="{% url 'community:dm_start' notif.actor.username %}">say hi 👋</a>
+        accepted your friend request &mdash; <a href="{% url 'community:dm_start' notif.actor.username %}">say hi ðŸ‘‹</a>
       {% elif notif.type == 'message' %}
         sent you a <a href="{% if notif.conversation %}{% url 'community:conversation_detail' notif.conversation.id %}{% else %}{% url 'community:messages' %}{% endif %}">message</a>
       {% elif notif.type == 'join' %}
         joined your community
       {% elif notif.type == 'mention' %}
         mentioned you{% if notif.post %} in a <a href="{% url 'community:post_detail' notif.post.id %}">post</a>{% endif %}
+      {% elif notif.type == 'live' %}
+        is live now 🔴 &mdash; <a href="/community/rooms/{{ notif.extra_data }}/" style="color:#ef4444;font-weight:700;">Watch now</a>
       {% else %}
         sent you a notification
       {% endif %}
@@ -135,8 +138,9 @@ async function respondFriend(notifId, username, action) {
     document.getElementById('fr-actions-' + notifId).style.display = 'none';
     const res = document.getElementById('fr-result-' + notifId);
     res.style.display = 'block';
-    res.textContent = action === 'accept' ? '✅ Friend request accepted' : 'Request declined';
+    res.textContent = action === 'accept' ? 'âœ… Friend request accepted' : 'Request declined';
   } catch(e) {}
 }
 </script>
 {% endblock %}
+

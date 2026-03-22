@@ -1,4 +1,4 @@
-{% extends "community/base.html" %}
+﻿{% extends "community/base.html" %}
 {% block title %}Universities{% endblock %}
 {% block mobile_title %}Universities{% endblock %}
 {% block nav_schools %}active{% endblock %}
@@ -9,67 +9,67 @@
 
 {% block extra_css %}
 <style>
-/* ── Hero ── */
-.uni-hero{background:linear-gradient(135deg,#0a0a0a 0%,#111 100%);border:1px solid var(--b2);border-radius:16px;padding:2.25rem 1.5rem 2rem;margin-bottom:1.5rem;text-align:center;position:relative;overflow:hidden;}
+/* â”€â”€ Hero â”€â”€ */
+.uni-hero{background:linear-gradient(135deg,#0a0a0a 0%,#111 100%);border:1px solid var(--border2);border-radius:16px;padding:2.25rem 1.5rem 2rem;margin-bottom:1.5rem;text-align:center;position:relative;overflow:hidden;}
 .uni-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(255,255,255,.06) 0%,transparent 60%);pointer-events:none;}
 .uni-hero-icon{font-size:3rem;display:block;margin-bottom:.75rem;line-height:1;}
 .uni-hero-title{font-size:1.625rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.375rem;}
-.uni-hero-sub{font-size:.875rem;color:var(--t3);margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;line-height:1.6;}
+.uni-hero-sub{font-size:.875rem;color:var(--text3);margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;line-height:1.6;}
 .uni-stats{display:flex;align-items:center;justify-content:center;gap:3rem;}
 .uni-stat{text-align:center;}
 .uni-stat-num{font-size:1.5rem;font-weight:800;display:block;}
-.uni-stat-label{font-size:.6875rem;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-top:.125rem;display:block;}
+.uni-stat-label{font-size:.6875rem;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:.125rem;display:block;}
 
-/* ── Search ── */
+/* â”€â”€ Search â”€â”€ */
 .uni-search-wrap{position:relative;margin-bottom:1.25rem;}
-.uni-search-wrap svg{position:absolute;left:.875rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--t3);pointer-events:none;}
-.uni-search{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:.625rem .875rem .625rem 2.5rem;color:var(--t1);font-size:.9375rem;outline:none;transition:border-color .15s;}
-.uni-search:focus{border-color:var(--b3);}
-.uni-search::placeholder{color:var(--t3);}
+.uni-search-wrap svg{position:absolute;left:.875rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text3);pointer-events:none;}
+.uni-search{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:.625rem .875rem .625rem 2.5rem;color:var(--text);font-size:.9375rem;outline:none;transition:border-color .15s;}
+.uni-search:focus{border-color:var(--border3);}
+.uni-search::placeholder{color:var(--text3);}
 
-/* ── Filter tabs ── */
+/* â”€â”€ Filter tabs â”€â”€ */
 .uni-filters{display:flex;gap:.5rem;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:.25rem;-webkit-overflow-scrolling:touch;}
 .uni-filters::-webkit-scrollbar{display:none;}
-.uni-filter{padding:.375rem .875rem;border-radius:20px;font-size:.8125rem;font-weight:600;color:var(--t3);background:var(--s2);border:1px solid var(--b2);cursor:pointer;white-space:nowrap;transition:all .15s;}
-.uni-filter:hover{color:var(--t1);border-color:var(--b3);}
-.uni-filter.active{background:var(--white);color:#000;border-color:var(--white);}
+.uni-filter{padding:.375rem .875rem;border-radius:20px;font-size:.8125rem;font-weight:600;color:var(--text3);background:var(--surface2);border:1px solid var(--border2);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.uni-filter:hover{color:var(--text);border-color:var(--border3);}
+.uni-filter.active{background:#fff;color:#000;border-color:#fff;}
 
-/* ── Grid ── */
+/* â”€â”€ Grid â”€â”€ */
 .uni-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:1rem;}
 
-/* ── Card ── */
-.uni-card{background:var(--s2);border:1px solid var(--b2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .18s,transform .18s,box-shadow .18s;cursor:pointer;text-decoration:none;color:inherit;}
-.uni-card:hover{border-color:var(--b3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.35);}
+/* â”€â”€ Card â”€â”€ */
+.uni-card{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .18s,transform .18s,box-shadow .18s;cursor:pointer;text-decoration:none;color:inherit;}
+.uni-card:hover{border-color:var(--border3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.35);}
 .uni-card-banner{height:80px;position:relative;overflow:hidden;flex-shrink:0;}
 .uni-card-banner-bg{width:100%;height:100%;object-fit:cover;display:block;}
 .uni-card-banner-grad{position:absolute;inset:0;}
-.uni-card-logo-wrap{position:absolute;bottom:-22px;left:1rem;width:48px;height:48px;border-radius:12px;border:3px solid var(--s2);background:var(--s3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.125rem;font-weight:800;color:var(--t1);}
+.uni-card-logo-wrap{position:absolute;bottom:-22px;left:1rem;width:48px;height:48px;border-radius:12px;border:3px solid var(--surface2);background:var(--surface3);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.125rem;font-weight:800;color:var(--text);}
 .uni-card-logo-wrap img{width:100%;height:100%;object-fit:cover;border-radius:9px;}
 .uni-card-body{padding:1.75rem .875rem .875rem;}
 .uni-card-name{font-size:.9375rem;font-weight:700;line-height:1.3;margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.uni-card-desc{font-size:.75rem;color:var(--t3);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.75rem;}
+.uni-card-desc{font-size:.75rem;color:var(--text3);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.75rem;}
 .uni-card-meta{display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;}
-.uni-card-stat{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--t3);}
+.uni-card-stat{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--text3);}
 .uni-card-stat svg{width:13px;height:13px;}
-.uni-card-stat strong{color:var(--t2);font-weight:600;}
+.uni-card-stat strong{color:var(--text2);font-weight:600;}
 .uni-card-badge{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:600;padding:.15rem .5rem;border-radius:20px;background:rgba(74,222,128,.1);color:#4ade80;margin-left:auto;}
 .uni-card-badge svg{width:10px;height:10px;}
-.uni-card-footer{display:flex;align-items:center;gap:.5rem;padding:.75rem .875rem;border-top:1px solid var(--b1);}
+.uni-card-footer{display:flex;align-items:center;gap:.5rem;padding:.75rem .875rem;border-top:1px solid var(--border);}
 .uni-join-btn{flex:1;padding:.45rem .75rem;border-radius:8px;font-size:.8125rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;text-align:center;}
-.uni-join-btn.join{background:var(--white);color:#000;}
+.uni-join-btn.join{background:#fff;color:#000;}
 .uni-join-btn.join:hover{background:#e8e8e8;}
-.uni-join-btn.joined{background:var(--s4);color:var(--t2);border:1px solid var(--b2);}
+.uni-join-btn.joined{background:var(--surface4);color:var(--text2);border:1px solid var(--border2);}
 .uni-join-btn.joined:hover{background:#e53e3e22;color:#fc8181;border-color:#e53e3e44;}
-.uni-view-btn{padding:.45rem .75rem;border-radius:8px;font-size:.8125rem;font-weight:600;background:var(--s3);color:var(--t2);border:1px solid var(--b2);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;}
-.uni-view-btn:hover{background:var(--s4);color:var(--t1);}
+.uni-view-btn{padding:.45rem .75rem;border-radius:8px;font-size:.8125rem;font-weight:600;background:var(--surface3);color:var(--text2);border:1px solid var(--border2);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;}
+.uni-view-btn:hover{background:var(--surface4);color:var(--text);}
 .uni-view-btn svg{width:13px;height:13px;}
 
-/* ── Empty ── */
-.uni-empty{text-align:center;padding:3rem 1rem;color:var(--t3);}
+/* â”€â”€ Empty â”€â”€ */
+.uni-empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
 .uni-empty svg{width:48px;height:48px;opacity:.15;margin-bottom:.75rem;}
 .uni-empty p{font-size:.875rem;}
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 @media(max-width:600px){
   .uni-hero{padding:1.25rem 1rem 1.25rem;}
   .uni-hero-title{font-size:1.125rem;}
@@ -101,7 +101,7 @@
 
 <!-- Hero -->
 <div class="uni-hero">
-  <span class="uni-hero-icon">🎓</span>
+  <span class="uni-hero-icon">ðŸŽ“</span>
   <div class="uni-hero-title">Ghana Universities</div>
   <div class="uni-hero-sub">Connect with students and alumni from every university in Ghana.</div>
   <div class="uni-stats">
@@ -120,7 +120,7 @@
 <form method="get" action="" style="margin:0;">
   <div class="uni-search-wrap">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" name="q" value="{{ query }}" class="uni-search" placeholder="Search universities…" id="uni-search-input" autocomplete="off">
+    <input type="text" name="q" value="{{ query }}" class="uni-search" placeholder="Search universitiesâ€¦" id="uni-search-input" autocomplete="off">
   </div>
 </form>
 
@@ -194,7 +194,7 @@
       <form method="post" action="{% if school.id in joined_ids %}{% url 'community:school_leave' school.slug %}{% else %}{% url 'community:school_join' school.slug %}{% endif %}" style="flex:1;margin:0;" onsubmit="handleJoin(event,this)">
         {% csrf_token %}
         <button type="submit" class="uni-join-btn {% if school.id in joined_ids %}joined{% else %}join{% endif %}" id="jbtn-{{ school.id }}">
-          {% if school.id in joined_ids %}✓ Joined{% else %}Join{% endif %}
+          {% if school.id in joined_ids %}âœ“ Joined{% else %}Join{% endif %}
         </button>
       </form>
     </div>
@@ -283,7 +283,7 @@ function handleJoin(e, form) {
       const wrap = form.closest('.uni-card-wrap');
       if (wrap) wrap.dataset.joined = '0';
     } else {
-      btn.textContent = '✓ Joined';
+      btn.textContent = 'âœ“ Joined';
       btn.classList.remove('join');
       btn.classList.add('joined');
       form.action = form.action.replace('/join/', '/leave/');
@@ -294,3 +294,4 @@ function handleJoin(e, form) {
 }
 </script>
 {% endblock %}
+

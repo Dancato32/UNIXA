@@ -23,12 +23,17 @@ from community.models import (
     CustomCommunityMembership,
     Friendship,
     GroupWorkspace,
+    HelpBeacon,
     Message,
+    MicroRoom,
     NexaWorkspaceLink,
     Notification,
     Post,
     PostLike,
+    PulseEvent,
     SchoolCommunity,
+    SkillOffer,
+    Startup,
     WorkspaceFile,
     WorkspaceMember,
     WorkspaceMessage,
@@ -304,17 +309,23 @@ def feed(request):
     )
 
     if tab == 'following':
+        # "Following" tab — only posts from people you follow + communities you're in
         from django.db.models import Q
-        # Posts from people the current user follows OR communities they've joined
         following_ids = Follow.objects.filter(follower=request.user).values_list('following_id', flat=True)
         joined_school_ids = CommunityMembership.objects.filter(user=request.user).values_list('community_id', flat=True)
         joined_custom_ids = CustomCommunityMembership.objects.filter(user=request.user).values_list('community_id', flat=True)
         qs = qs.filter(
             Q(author_id__in=following_ids) |
+            Q(author=request.user) |
             Q(school_community_id__in=joined_school_ids) |
             Q(custom_community_id__in=joined_custom_ids)
-        )
-    
+        ).distinct()
+    elif tab == 'liked':
+        # "Liked" tab — only posts this user has liked
+        liked_post_ids = PostLike.objects.filter(user=request.user).values_list('post_id', flat=True)
+        qs = qs.filter(id__in=liked_post_ids)
+    # "For You" (tab == 'all') — all posts, no filter
+
     qs = qs.order_by('-created_at')
 
     if cursor:
@@ -3032,3 +3043,767 @@ def citation_ajax(request):
             return JsonResponse({'error': f'Fix failed: {e}'}, status=500)
 
     return JsonResponse({'error': 'Unknown action'}, status=400)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LIVE CAMPUS VIEWS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+from community.models import (
+    SkillOffer, SkillDeal, Confession, ConfessionUpvote, ConfessionReply,
+    Startup, StartupMember, StartupUpdate, StartupFollow,
+    PulseEvent, PulseJoin, MicroRoom, MicroRoomParticipant, HelpBeacon,
+)
+
+
+# ── Live Campus Hub ───────────────────────────────────────────────────────────
+
+@login_required
+def live_campus(request):
+    """The unified Live Campus tab — Pulse + Help + Voice Rooms + Startups + Skills + Feed."""
+    from django.utils.dateparse import parse_datetime
+    from community.models import Follow
+    now = timezone.now()
+
+    pulse_events = list(PulseEvent.objects.filter(
+        expires_at__gt=now, is_private=False
+    ).select_related('host', 'host__community_profile').order_by('expires_at')[:12])
+
+    micro_rooms = list(MicroRoom.objects.filter(
+        status=MicroRoom.STATUS_OPEN
+    ).select_related('host', 'host__community_profile').order_by('-created_at')[:8])
+
+    help_beacons = list(HelpBeacon.objects.filter(
+        status=HelpBeacon.STATUS_OPEN
+    ).select_related('requester', 'requester__community_profile').order_by('-created_at')[:8])
+
+    skill_offers = list(SkillOffer.objects.filter(
+        status=SkillOffer.STATUS_OPEN
+    ).select_related('user', 'user__community_profile').order_by('-created_at')[:8])
+
+    startups = list(Startup.objects.filter(
+        is_active=True
+    ).select_related('founder', 'founder__community_profile').order_by('-updated_at')[:6])
+
+    # Feed posts (all, paginated)
+    cursor = request.GET.get('cursor')
+    limit = 15
+    feed_qs = Post.objects.filter(is_deleted=False).select_related(
+        'author', 'author__community_profile', 'school_community', 'custom_community'
+    ).order_by('-created_at')
+    if cursor:
+        cursor_dt = parse_datetime(cursor)
+        if cursor_dt:
+            feed_qs = feed_qs.filter(created_at__lt=cursor_dt)
+    feed_posts = list(feed_qs[:limit + 1])
+    has_more = len(feed_posts) > limit
+    if has_more:
+        feed_posts = feed_posts[:limit]
+    next_cursor = feed_posts[-1].created_at.isoformat() if has_more and feed_posts else None
+    post_ids = [p.id for p in feed_posts]
+    liked_ids = set(PostLike.objects.filter(user=request.user, post_id__in=post_ids).values_list('post_id', flat=True))
+    following_user_ids = set(Follow.objects.filter(follower=request.user).values_list('following_id', flat=True))
+
+    return render(request, 'community/live_campus.html', {
+        'pulse_events': pulse_events,
+        'rooms': micro_rooms,
+        'beacons': help_beacons,
+        'skill_offers': skill_offers,
+        'startups': startups,
+        'pulse_count': len(pulse_events),
+        'beacon_count': HelpBeacon.objects.filter(status=HelpBeacon.STATUS_OPEN).count(),
+        'room_count': MicroRoom.objects.filter(status=MicroRoom.STATUS_OPEN).count(),
+        'startup_count': Startup.objects.filter(is_active=True).count(),
+        'skill_count': SkillOffer.objects.filter(status=SkillOffer.STATUS_OPEN).count(),
+        'categories': HelpBeacon.CAT_CHOICES,
+        'now': now,
+        # feed
+        'feed_posts': feed_posts,
+        'has_more': has_more,
+        'next_cursor': next_cursor,
+        'liked_ids': liked_ids,
+        'following_user_ids': following_user_ids,
+    })
+
+
+# ── Skill Marketplace ─────────────────────────────────────────────────────────
+
+@login_required
+def skill_marketplace(request):
+    """Browse all skill offers and requests."""
+    tag = request.GET.get('tag', '')
+    listing_type = request.GET.get('type', '')
+    qs = SkillOffer.objects.filter(status=SkillOffer.STATUS_OPEN).select_related(
+        'user', 'user__community_profile', 'school_community'
+    )
+    if tag:
+        qs = qs.filter(skill_tag__iexact=tag)
+    if listing_type in ('offer', 'request'):
+        qs = qs.filter(listing_type=listing_type)
+    offers = qs.order_by('-created_at')[:40]
+    from community.models import SKILL_TAGS
+    return render(request, 'community/skill_marketplace.html', {
+        'offers': offers,
+        'skill_tags': SKILL_TAGS,
+        'active_tag': tag,
+        'active_type': listing_type,
+    })
+
+
+@login_required
+def skill_offer_create(request):
+    """Create a skill offer or request."""
+    if request.method == 'GET':
+        return render(request, 'community/skill_offer_create.html')
+    import json as _json
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = request.POST
+    title = data.get('title', '').strip()
+    skill_tag = data.get('skill_tag', '').strip()
+    if not title or not skill_tag:
+        return JsonResponse({'error': 'Title and skill tag required'}, status=400)
+    offer = SkillOffer.objects.create(
+        user=request.user,
+        listing_type=data.get('listing_type', 'offer'),
+        title=title,
+        description=data.get('description', '').strip(),
+        skill_tag=skill_tag,
+        wants_tag=data.get('wants_tag', '').strip(),
+        urgency=data.get('urgency', 'low'),
+    )
+    if request.content_type and 'json' in request.content_type:
+        return JsonResponse({'ok': True, 'id': str(offer.id)})
+    from django.shortcuts import redirect
+    return redirect('community:skill_marketplace')
+
+
+@login_required
+@require_POST
+def skill_deal_initiate(request, offer_id):
+    """Initiate a barter deal on a skill offer."""
+    import json as _json
+    offer = get_object_or_404(SkillOffer, id=offer_id, status=SkillOffer.STATUS_OPEN)
+    if offer.user == request.user:
+        return JsonResponse({'error': 'Cannot deal with yourself'}, status=400)
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = {}
+    # Create or find DM conversation
+    existing = (
+        Conversation.objects.filter(participants=request.user, is_group=False)
+        .filter(participants=offer.user)
+        .first()
+    )
+    if existing:
+        convo = existing
+    else:
+        convo = Conversation.objects.create(is_group=False)
+        convo.participants.set([request.user, offer.user])
+
+    deal, created = SkillDeal.objects.get_or_create(
+        offer=offer,
+        initiator=request.user,
+        responder=offer.user,
+        defaults={
+            'message': data.get('message', '').strip(),
+            'conversation': convo,
+        }
+    )
+    if created:
+        offer.status = SkillOffer.STATUS_MATCHED
+        offer.save(update_fields=['status'])
+        Message.objects.create(
+            conversation=convo,
+            sender=request.user,
+            content=f"👋 Hey! I'd like to trade skills with you.\n\nYour offer: *{offer.title}*\n\n{deal.message or 'Let me know if you are interested!'}",
+        )
+    return JsonResponse({'ok': True, 'convo_id': str(convo.id), 'deal_id': str(deal.id)})
+
+
+# ── Confession Feed ───────────────────────────────────────────────────────────
+
+@login_required
+def confession_feed(request):
+    """Browse anonymous confessions."""
+    cat = request.GET.get('cat', '')
+    qs = Confession.objects.filter(status=Confession.STATUS_ACTIVE)
+    if cat:
+        qs = qs.filter(category=cat)
+    confessions = qs.order_by('-created_at')[:30]
+    upvoted_ids = set(
+        ConfessionUpvote.objects.filter(user=request.user).values_list('confession_id', flat=True)
+    )
+    return render(request, 'community/confessions.html', {
+        'confessions': confessions,
+        'upvoted_ids': upvoted_ids,
+        'categories': Confession.CAT_CHOICES,
+        'active_cat': cat,
+    })
+
+
+@login_required
+@require_POST
+def confession_create(request):
+    """Post an anonymous confession."""
+    import json as _json
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = request.POST
+    content = data.get('content', '').strip()
+    if not content or len(content) < 10:
+        return JsonResponse({'error': 'Too short'}, status=400)
+    if len(content) > 1000:
+        return JsonResponse({'error': 'Too long (max 1000 chars)'}, status=400)
+
+    # Basic crisis keyword detection
+    crisis_words = ['suicide', 'kill myself', 'end my life', 'self harm', 'want to die']
+    is_crisis = any(w in content.lower() for w in crisis_words)
+
+    confession = Confession.objects.create(
+        author=request.user,
+        content=content,
+        category=data.get('category', 'general'),
+        is_crisis=is_crisis,
+    )
+    return JsonResponse({'ok': True, 'id': str(confession.id), 'is_crisis': is_crisis})
+
+
+@login_required
+@require_POST
+def confession_upvote(request, confession_id):
+    """Toggle upvote on a confession."""
+    confession = get_object_or_404(Confession, id=confession_id, status=Confession.STATUS_ACTIVE)
+    upvote, created = ConfessionUpvote.objects.get_or_create(user=request.user, confession=confession)
+    if created:
+        Confession.objects.filter(pk=confession.pk).update(upvote_count=models.F('upvote_count') + 1)
+        return JsonResponse({'ok': True, 'upvoted': True, 'count': confession.upvote_count + 1})
+    else:
+        upvote.delete()
+        Confession.objects.filter(pk=confession.pk).update(upvote_count=models.F('upvote_count') - 1)
+        return JsonResponse({'ok': True, 'upvoted': False, 'count': max(0, confession.upvote_count - 1)})
+
+
+@login_required
+@require_POST
+def confession_reply(request, confession_id):
+    """Reply to a confession."""
+    import json as _json
+    confession = get_object_or_404(Confession, id=confession_id, status=Confession.STATUS_ACTIVE)
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = request.POST
+    content = data.get('content', '').strip()
+    if not content:
+        return JsonResponse({'error': 'Reply cannot be empty'}, status=400)
+    is_anon = bool(data.get('is_anonymous', False))
+    reply = ConfessionReply.objects.create(
+        confession=confession,
+        author=request.user,
+        content=content,
+        is_anonymous=is_anon,
+    )
+    Confession.objects.filter(pk=confession.pk).update(reply_count=models.F('reply_count') + 1)
+    author_display = 'Anonymous' if is_anon else request.user.username
+    return JsonResponse({'ok': True, 'id': str(reply.id), 'author': author_display})
+
+
+# ── Startup Command Center ────────────────────────────────────────────────────
+
+@login_required
+def startup_list(request):
+    """Browse all public startups."""
+    stage = request.GET.get('stage', '')
+    qs = Startup.objects.filter(is_active=True).select_related(
+        'founder', 'founder__community_profile'
+    ).prefetch_related('members')
+    if stage:
+        qs = qs.filter(stage=stage)
+    startups = qs.order_by('-updated_at')[:30]
+    followed_ids = set(
+        StartupFollow.objects.filter(user=request.user).values_list('startup_id', flat=True)
+    )
+    return render(request, 'community/startups.html', {
+        'startups': startups,
+        'stages': Startup.STAGE_CHOICES,
+        'active_stage': stage,
+        'followed_ids': followed_ids,
+    })
+
+
+@login_required
+def startup_detail(request, slug):
+    """Startup public profile page."""
+    startup = get_object_or_404(Startup, slug=slug, is_active=True)
+    members = startup.members.select_related('user', 'user__community_profile').all()
+    updates = startup.updates.select_related('author', 'author__community_profile').order_by('-created_at')[:10]
+    is_member = startup.members.filter(user=request.user).exists()
+    is_following = StartupFollow.objects.filter(user=request.user, startup=startup).exists()
+    is_founder = startup.founder == request.user
+    return render(request, 'community/startup_detail.html', {
+        'startup': startup,
+        'members': members,
+        'updates': updates,
+        'is_member': is_member,
+        'is_following': is_following,
+        'is_founder': is_founder,
+    })
+@login_required
+def startup_create(request):
+    """Create a new startup."""
+    if request.method == 'GET':
+        return render(request, 'community/startup_create.html', {'stages': Startup.STAGE_CHOICES})
+    import json as _json
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = request.POST
+    name = data.get('name', '').strip()
+    if not name:
+        return JsonResponse({'error': 'Name required'}, status=400)
+    startup = Startup.objects.create(
+        founder=request.user,
+        name=name,
+        tagline=data.get('tagline', '').strip(),
+        description=data.get('description', '').strip(),
+        stage=data.get('stage', 'idea'),
+        skills_needed=data.get('skills_needed', '').strip(),
+        is_recruiting=bool(data.get('is_recruiting', False)),
+    )
+    StartupMember.objects.create(startup=startup, user=request.user, role=StartupMember.ROLE_FOUNDER)
+    if request.content_type and 'json' in request.content_type:
+        return JsonResponse({'ok': True, 'slug': startup.slug})
+    from django.shortcuts import redirect
+    return redirect('community:startup_detail', slug=startup.slug)
+
+
+@login_required
+@require_POST
+def startup_follow_toggle(request, slug):
+    """Follow/unfollow a startup."""
+    startup = get_object_or_404(Startup, slug=slug)
+    follow, created = StartupFollow.objects.get_or_create(user=request.user, startup=startup)
+    if created:
+        Startup.objects.filter(pk=startup.pk).update(follower_count=models.F('follower_count') + 1)
+        return JsonResponse({'ok': True, 'following': True})
+    else:
+        follow.delete()
+        Startup.objects.filter(pk=startup.pk).update(follower_count=models.F('follower_count') - 1)
+        return JsonResponse({'ok': True, 'following': False})
+
+
+@login_required
+@require_POST
+def startup_post_update(request, slug):
+    """Post a dev log update to a startup."""
+    import json as _json
+    startup = get_object_or_404(Startup, slug=slug)
+    if not startup.members.filter(user=request.user).exists():
+        return JsonResponse({'error': 'Not a team member'}, status=403)
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = request.POST
+    content = data.get('content', '').strip()
+    if not content:
+        return JsonResponse({'error': 'Content required'}, status=400)
+    update = StartupUpdate.objects.create(
+        startup=startup,
+        author=request.user,
+        content=content,
+        milestone=data.get('milestone', '').strip(),
+    )
+    startup.save(update_fields=['updated_at'])
+    return JsonResponse({'ok': True, 'id': str(update.id)})
+
+
+# ── Campus Pulse ─────────────────────────────────────────────────────────────
+
+@login_required
+def pulse_map(request):
+    """Campus pulse map / list view."""
+    now = timezone.now()
+    event_type = request.GET.get('type', '')
+    qs = PulseEvent.objects.filter(
+        expires_at__gt=now, is_private=False
+    ).select_related('host', 'host__community_profile')
+    if event_type:
+        qs = qs.filter(event_type=event_type)
+    events = qs.order_by('expires_at')[:30]
+    joined_ids = set(
+        PulseJoin.objects.filter(user=request.user).values_list('event_id', flat=True)
+    )
+    return render(request, 'community/pulse_map.html', {
+        'events': events,
+        'joined_ids': joined_ids,
+        'event_types': PulseEvent.TYPE_CHOICES,
+        'active_type': event_type,
+        'now': now,
+    })
+
+
+@login_required
+def pulse_event_create(request):
+    """Create a pulse event — supports multipart (photo/video) or JSON."""
+    if request.method == 'GET':
+        return render(request, 'community/pulse_event_create.html', {'event_types': PulseEvent.TYPE_CHOICES})
+
+    from django.utils.dateparse import parse_datetime
+
+    # Support both multipart form (with media) and JSON
+    is_multipart = request.content_type and 'multipart' in request.content_type
+    if is_multipart:
+        data = request.POST
+    else:
+        import json as _json
+        try:
+            data = _json.loads(request.body)
+        except Exception:
+            data = request.POST
+
+    title = data.get('title', '').strip()
+    if not title:
+        return JsonResponse({'error': 'Title required'}, status=400)
+
+    starts_at = parse_datetime(data.get('starts_at', '')) or timezone.now()
+    expires_at = parse_datetime(data.get('expires_at', '')) or (timezone.now() + timezone.timedelta(hours=2))
+
+    event = PulseEvent.objects.create(
+        host=request.user,
+        title=title,
+        description=data.get('description', '').strip(),
+        event_type=data.get('event_type', 'study'),
+        location_name=data.get('location', data.get('location_name', '')).strip(),
+        is_online=bool(data.get('is_online', False)),
+        starts_at=starts_at,
+        expires_at=expires_at,
+    )
+
+    # Attach photo if provided
+    if is_multipart and 'photo' in request.FILES:
+        event.photo = request.FILES['photo']
+        event.save(update_fields=['photo'])
+
+    if request.content_type and ('json' in request.content_type or is_multipart):
+        return JsonResponse({'ok': True, 'id': str(event.id),
+                             'photo_url': event.photo.url if event.photo else None})
+    from django.shortcuts import redirect
+    return redirect('community:pulse_map')
+
+
+@login_required
+@require_POST
+def pulse_join(request, event_id):
+    """Join a pulse event."""
+    event = get_object_or_404(PulseEvent, id=event_id)
+    join, created = PulseJoin.objects.get_or_create(user=request.user, event=event)
+    if created:
+        PulseEvent.objects.filter(pk=event.pk).update(participant_count=models.F('participant_count') + 1)
+    return JsonResponse({'ok': True, 'joined': True, 'count': event.participant_count + (1 if created else 0)})
+
+
+@login_required
+def pulse_events_api(request):
+    """JSON feed of active pulse events for live updates."""
+    now = timezone.now()
+    events = PulseEvent.objects.filter(
+        expires_at__gt=now, is_private=False
+    ).select_related('host').values(
+        'id', 'title', 'event_type', 'location_name', 'is_online',
+        'participant_count', 'starts_at', 'expires_at', 'host__username',
+    ).order_by('expires_at')[:30]
+    return JsonResponse({'events': list(events), 'now': now.isoformat()})
+
+
+# ── Micro Rooms ───────────────────────────────────────────────────────────────
+
+@login_required
+def micro_rooms_list(request):
+    """List open micro rooms."""
+    rooms = MicroRoom.objects.filter(
+        status=MicroRoom.STATUS_OPEN
+    ).select_related('host', 'host__community_profile').order_by('-created_at')[:20]
+    return render(request, 'community/micro_rooms.html', {'rooms': rooms})
+
+
+@login_required
+def micro_room_create(request):
+    """Create a micro room instantly — returns JSON with redirect URL."""
+    import json as _json, secrets
+    if request.method == 'GET':
+        return render(request, 'community/micro_rooms.html', {
+            'rooms': MicroRoom.objects.filter(status=MicroRoom.STATUS_OPEN)
+                .select_related('host', 'host__community_profile').order_by('-created_at')[:20]
+        })
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = request.POST
+    topic = data.get('topic', '').strip() or 'Open Chat'
+    room = MicroRoom.objects.create(
+        host=request.user,
+        topic=topic,
+        peer_room_id=secrets.token_urlsafe(16),
+    )
+    MicroRoomParticipant.objects.create(room=room, user=request.user)
+
+    # ── Notify followers + accepted friends ──────────────────────────────────
+    from community.models import Follow, Friendship, Notification as Notif
+    # People who follow the host
+    follower_ids = set(
+        Follow.objects.filter(following=request.user)
+        .values_list('follower_id', flat=True)
+    )
+    # Accepted friends (both directions)
+    raw_friends = Friendship.objects.filter(
+        status=Friendship.STATUS_ACCEPTED
+    ).filter(
+        models.Q(requester=request.user) | models.Q(recipient=request.user)
+    ).values_list('requester_id', 'recipient_id')
+    for req_id, rec_id in raw_friends:
+        other = rec_id if req_id == request.user.pk else req_id
+        follower_ids.add(other)
+
+    follower_ids.discard(request.user.pk)  # don't notify yourself
+
+    if follower_ids:
+        Notif.objects.bulk_create([
+            Notif(
+                recipient_id=uid,
+                actor=request.user,
+                type=Notif.TYPE_LIVE,
+                extra_data=str(room.id),
+            )
+            for uid in follower_ids
+        ], ignore_conflicts=True)
+
+    return JsonResponse({'ok': True, 'id': str(room.id), 'redirect': f'/community/rooms/{room.id}/'})
+
+
+@login_required
+def micro_room_detail(request, room_id):
+    """The live room page — host streams, viewers watch."""
+    room = get_object_or_404(MicroRoom, id=room_id)
+    is_host = room.host == request.user
+    # Auto-join as participant if not already
+    if room.status == MicroRoom.STATUS_OPEN:
+        participant, created = MicroRoomParticipant.objects.get_or_create(
+            room=room, user=request.user, defaults={'left_at': None}
+        )
+        if created:
+            MicroRoom.objects.filter(pk=room.pk).update(participant_count=models.F('participant_count') + 1)
+    participants = MicroRoomParticipant.objects.filter(
+        room=room, left_at__isnull=True
+    ).select_related('user', 'user__community_profile').order_by('joined_at')
+    return render(request, 'community/micro_room_live.html', {
+        'room': room,
+        'is_host': is_host,
+        'participants': participants,
+    })
+
+
+@login_required
+@require_POST
+def micro_room_signal(request, room_id):
+    """Store a WebRTC signal (offer/answer/ICE candidate) for polling."""
+    import json as _json
+    room = get_object_or_404(MicroRoom, id=room_id)
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'bad json'}, status=400)
+    signal_type = data.get('type')  # 'offer', 'answer', 'ice'
+    payload = data.get('payload')
+    target = data.get('target')  # username of recipient, or 'all'
+    if not signal_type or payload is None:
+        return JsonResponse({'error': 'missing fields'}, status=400)
+    # Store in cache keyed by room+target
+    from django.core.cache import cache
+    key = f'room_signal_{room_id}_{target or "all"}'
+    signals = cache.get(key, [])
+    signals.append({'type': signal_type, 'payload': payload, 'from': request.user.username})
+    # Keep last 50 signals, expire in 60s
+    cache.set(key, signals[-50:], 60)
+    return JsonResponse({'ok': True})
+
+
+@login_required
+def micro_room_poll(request, room_id):
+    """Poll for pending WebRTC signals addressed to this user."""
+    from django.core.cache import cache
+    username = request.user.username
+    # Signals addressed to this user specifically
+    key_me = f'room_signal_{room_id}_{username}'
+    # Signals addressed to 'all'
+    key_all = f'room_signal_{room_id}_all'
+    signals_me = cache.get(key_me, [])
+    signals_all = cache.get(key_all, [])
+    # Clear signals addressed to this user after reading
+    if signals_me:
+        cache.delete(key_me)
+    # Return combined, filter out own messages from 'all'
+    combined = [s for s in signals_all if s.get('from') != username] + signals_me
+    # Also return current participant list
+    participants = list(
+        MicroRoomParticipant.objects.filter(room_id=room_id, left_at__isnull=True)
+        .values_list('user__username', flat=True)
+    )
+    room = MicroRoom.objects.filter(id=room_id).values('status', 'participant_count').first()
+    # Return live comments (all users see the same comment feed)
+    comments_key = f'room_comments_{room_id}'
+    comments = cache.get(comments_key, [])
+    # Count active viewers from DB (authoritative)
+    viewer_count = MicroRoomParticipant.objects.filter(room_id=room_id, left_at__isnull=True).count()
+    if room:
+        room['viewer_count'] = viewer_count
+    return JsonResponse({'signals': combined, 'participants': participants, 'room': room, 'comments': comments})
+
+
+@login_required
+@require_POST
+def micro_room_comment(request, room_id):
+    """Post a live comment to a room — stored in cache, returned via poll."""
+    import json as _json
+    from django.core.cache import cache
+    room = get_object_or_404(MicroRoom, id=room_id)
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'bad json'}, status=400)
+    text = (data.get('text') or '').strip()[:280]
+    if not text:
+        return JsonResponse({'error': 'empty'}, status=400)
+    comment = {
+        'id': str(timezone.now().timestamp()),
+        'username': request.user.username,
+        'text': text,
+        'ts': timezone.now().strftime('%H:%M'),
+    }
+    key = f'room_comments_{room_id}'
+    comments = cache.get(key, [])
+    comments.append(comment)
+    # Keep last 100 comments, expire in 2 hours
+    cache.set(key, comments[-100:], 7200)
+    return JsonResponse({'ok': True, 'comment': comment})
+
+
+@login_required
+@require_POST
+def micro_room_join(request, room_id):
+    """Join a micro room."""
+    room = get_object_or_404(MicroRoom, id=room_id, status=MicroRoom.STATUS_OPEN)
+    participant, created = MicroRoomParticipant.objects.get_or_create(
+        room=room, user=request.user,
+        defaults={'left_at': None}
+    )
+    if created:
+        MicroRoom.objects.filter(pk=room.pk).update(participant_count=models.F('participant_count') + 1)
+    return JsonResponse({'ok': True, 'peer_room_id': room.peer_room_id, 'topic': room.topic})
+
+
+@login_required
+@require_POST
+def micro_room_leave(request, room_id):
+    """Leave a micro room. Auto-close if empty."""
+    room = get_object_or_404(MicroRoom, id=room_id)
+    MicroRoomParticipant.objects.filter(room=room, user=request.user).update(left_at=timezone.now())
+    active = MicroRoomParticipant.objects.filter(room=room, left_at__isnull=True).count()
+    MicroRoom.objects.filter(pk=room.pk).update(participant_count=max(0, active))
+    if active == 0:
+        MicroRoom.objects.filter(pk=room.pk).update(status=MicroRoom.STATUS_CLOSED, closed_at=timezone.now())
+    return JsonResponse({'ok': True})
+
+
+# ── Help Beacon ───────────────────────────────────────────────────────────────
+
+@login_required
+def help_beacon_list(request):
+    """Browse open help beacons."""
+    cat = request.GET.get('cat', '')
+    qs = HelpBeacon.objects.filter(status=HelpBeacon.STATUS_OPEN).select_related(
+        'requester', 'requester__community_profile'
+    )
+    if cat:
+        qs = qs.filter(category=cat)
+    beacons = qs.order_by('-created_at')[:30]
+    return render(request, 'community/help_beacons.html', {
+        'beacons': beacons,
+        'categories': HelpBeacon.CAT_CHOICES,
+        'active_cat': cat,
+    })
+
+
+@login_required
+@require_POST
+def help_beacon_create(request):
+    """Post a help beacon."""
+    import json as _json
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = request.POST
+    title = data.get('title', '').strip()
+    if not title:
+        return JsonResponse({'error': 'Title required'}, status=400)
+    beacon = HelpBeacon.objects.create(
+        requester=request.user,
+        title=title,
+        description=data.get('description', '').strip(),
+        category=data.get('category', 'other'),
+        urgency=data.get('urgency', 'medium'),
+        prefer_voice=bool(data.get('prefer_voice', False)),
+    )
+    return JsonResponse({'ok': True, 'id': str(beacon.id)})
+
+
+@login_required
+@require_POST
+def help_beacon_claim(request, beacon_id):
+    """Claim a help beacon as a helper."""
+    beacon = get_object_or_404(HelpBeacon, id=beacon_id, status=HelpBeacon.STATUS_OPEN)
+    if beacon.requester == request.user:
+        return JsonResponse({'error': 'Cannot claim your own beacon'}, status=400)
+    # Create DM conversation
+    existing = (
+        Conversation.objects.filter(participants=request.user, is_group=False)
+        .filter(participants=beacon.requester)
+        .first()
+    )
+    if existing:
+        convo = existing
+    else:
+        convo = Conversation.objects.create(is_group=False)
+        convo.participants.set([request.user, beacon.requester])
+    beacon.helper = request.user
+    beacon.status = HelpBeacon.STATUS_CLAIMED
+    beacon.conversation = convo
+    beacon.save(update_fields=['helper', 'status', 'conversation'])
+    Message.objects.create(
+        conversation=convo,
+        sender=request.user,
+        content=f"👋 Hey! I saw your help request: *{beacon.title}*\n\nI can help you with this. Let's talk!",
+    )
+    return JsonResponse({'ok': True, 'convo_id': str(convo.id)})
+
+
+@login_required
+@require_POST
+def help_beacon_resolve(request, beacon_id):
+    """Mark a beacon as resolved and optionally rate the helper."""
+    import json as _json
+    beacon = get_object_or_404(HelpBeacon, id=beacon_id, requester=request.user)
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        data = {}
+    beacon.status = HelpBeacon.STATUS_RESOLVED
+    beacon.resolved_at = timezone.now()
+    rating = data.get('rating')
+    if rating and str(rating).isdigit():
+        beacon.helper_rating = min(5, max(1, int(rating)))
+    beacon.save(update_fields=['status', 'resolved_at', 'helper_rating'])
+    return JsonResponse({'ok': True})

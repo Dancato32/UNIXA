@@ -1,428 +1,427 @@
-{% extends "community/base.html" %}
-{% block title %}Create Post{% endblock %}
-{% block mobile_title %}Create Post{% endblock %}
-{% block topbar_title %}create-post{% endblock %}
-{% block topbar_desc %}Share something{% endblock %}
+﻿{% extends "community/base.html" %}
+{% block title %}Add New Post{% endblock %}
+{% block mobile_title %}Add New Post{% endblock %}
 
 {% block extra_css %}
 <style>
-/* ── Full-page composer shell ── */
-.composer{
-  display:flex;flex-direction:column;
-  max-width:680px;min-height:calc(100vh - 52px);
-  background:var(--bg);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { background: #fff; }
+
+.np-shell {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
-/* ── Top action bar ── */
-.composer-topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.625rem 1rem;border-bottom:1px solid var(--b1);
-  position:sticky;top:52px;z-index:10;background:var(--bg);
+/* ── Top bar ── */
+.np-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.125rem;
+  border-bottom: 1px solid #f0f0ee;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
 }
-.composer-close{
-  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-  background:none;border:none;color:var(--t2);cursor:pointer;border-radius:50%;
-  transition:background .15s;text-decoration:none;
+.np-back {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 1.5px solid #d8d8d4; border-radius: 50%;
+  color: #1a1a1a; text-decoration: none; cursor: pointer;
+  transition: background .12s;
+  flex-shrink: 0;
 }
-.composer-close:hover{background:var(--s3);}
-.composer-close svg{width:18px;height:18px;}
-.post-btn{
-  padding:.4rem 1.125rem;background:var(--white);color:#000;
-  border:none;border-radius:20px;font-size:.875rem;font-weight:700;
-  cursor:pointer;transition:all .15s;
+.np-back:hover { background: #f5f5f3; }
+.np-back svg { width: 18px; height: 18px; }
+.np-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -.01em;
 }
-.post-btn:hover{background:#e8e8e8;}
-.post-btn:disabled{opacity:.4;cursor:not-allowed;}
+.np-media-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  color: #555; border-radius: 50%;
+  transition: background .12s;
+  flex-shrink: 0;
+}
+.np-media-icon:hover { background: #f5f5f3; }
+.np-media-icon svg { width: 22px; height: 22px; }
 
-/* ── Community selector ── */
-.community-pill{
-  display:inline-flex;align-items:center;gap:.5rem;
-  background:var(--s3);border:1px solid var(--b2);border-radius:20px;
-  padding:.35rem .875rem .35rem .5rem;cursor:pointer;
-  font-size:.8125rem;font-weight:600;color:var(--t1);
-  position:relative;
-}
-.community-pill-av{
-  width:22px;height:22px;border-radius:50%;background:var(--s4);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.625rem;font-weight:700;flex-shrink:0;overflow:hidden;
-}
-.community-pill svg.chevron{width:14px;height:14px;color:var(--t3);}
-.community-pill select{
-  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;
+/* ── Composer area ── */
+.np-composer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.125rem 0;
 }
 
-/* ── Tab bar ── */
-.tab-bar{
-  display:flex;border-bottom:1px solid var(--b1);
-  padding:0 1rem;gap:0;
+.np-author-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  margin-bottom: 1rem;
 }
-.tab{
-  flex:1;max-width:120px;padding:.625rem .5rem;
-  font-size:.8125rem;font-weight:600;color:var(--t3);
-  background:none;border:none;border-bottom:2px solid transparent;
-  cursor:pointer;transition:all .15s;
-  display:flex;align-items:center;justify-content:center;gap:.35rem;
+.np-av {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: #e8e8e4;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.125rem; font-weight: 700; color: #555;
+  flex-shrink: 0;
+  overflow: hidden;
 }
-.tab:hover{color:var(--t2);}
-.tab.active{color:var(--t1);border-bottom-color:var(--white);}
-.tab svg{width:14px;height:14px;}
+.np-av img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ── Composer body ── */
-.composer-body{flex:1;display:flex;flex-direction:column;padding:1rem;}
-
-.title-input{
-  width:100%;background:transparent;border:none;
-  color:var(--t1);font-size:1.25rem;font-weight:700;
-  outline:none;line-height:1.4;margin-bottom:.875rem;
-  font-family:inherit;
+/* Community selector */
+.np-dest {
+  display: flex; align-items: center; gap: .375rem;
+  background: #f2f2f0; border: none; border-radius: 20px;
+  padding: .25rem .625rem .25rem .5rem;
+  font-size: .75rem; font-weight: 600; color: #555;
+  cursor: pointer; position: relative; margin-bottom: .375rem;
 }
-.title-input::placeholder{color:var(--t4);}
-
-.body-input{
-  flex:1;width:100%;background:transparent;border:none;
-  color:var(--t2);font-size:.9375rem;line-height:1.7;
-  outline:none;resize:none;min-height:160px;font-family:inherit;
+.np-dest svg { width: 12px; height: 12px; }
+.np-dest select {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
 }
-.body-input::placeholder{color:var(--t4);}
 
-/* ── Tag row ── */
-.tag-row{
-  display:flex;align-items:center;gap:.5rem;
-  padding:.625rem 0;border-top:1px solid var(--b1);margin-top:.5rem;
+.np-textarea {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: #1a1a1a;
+  font-family: inherit;
+  min-height: 120px;
+  padding: 0;
 }
-.tag-row svg{width:14px;height:14px;color:var(--t3);flex-shrink:0;}
-.tag-input{
-  flex:1;background:none;border:none;color:var(--t1);
-  font-size:.8125rem;outline:none;font-family:inherit;
-}
-.tag-input::placeholder{color:var(--t4);}
+.np-textarea::placeholder { color: #b0b0aa; }
 
-/* ── Char counter ── */
-.char-row{
-  display:flex;align-items:center;justify-content:flex-end;
-  padding:.375rem 0;
+/* Media preview */
+.np-media-preview {
+  display: none;
+  margin: .75rem 0;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
 }
-.char-count{font-size:.75rem;color:var(--t4);}
-
-/* ── Bottom toolbar ── */
-.composer-toolbar{
-  display:flex;align-items:center;gap:.25rem;
-  padding:.625rem 1rem;border-top:1px solid var(--b1);
-  position:sticky;bottom:0;background:var(--bg);
-  flex-wrap:wrap;
+.np-media-preview img,
+.np-media-preview video {
+  width: 100%; max-height: 320px; object-fit: cover; display: block;
 }
-.tb-btn{
-  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-  border-radius:6px;background:none;border:none;color:var(--t3);
-  cursor:pointer;transition:all .15s;font-size:.8125rem;font-weight:700;
+.np-media-remove {
+  position: absolute; top: .5rem; right: .5rem;
+  background: rgba(0,0,0,.55); border: none; color: #fff;
+  width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; line-height: 1;
 }
-.tb-btn:hover{background:var(--s3);color:var(--t2);}
-.tb-btn svg{width:16px;height:16px;}
-.tb-sep{width:1px;height:20px;background:var(--b2);margin:0 .125rem;}
 
-/* ── Media tab ── */
-.media-drop{
-  border:2px dashed var(--b3);border-radius:8px;
-  padding:3rem 1rem;text-align:center;cursor:pointer;
-  transition:all .15s;margin:.25rem 0;
+/* ── Bottom area ── */
+.np-bottom {
+  padding: 1rem 1.125rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-top: 1px solid #f0f0ee;
+  margin-top: auto;
 }
-.media-drop:hover,.media-drop.drag{border-color:var(--white);background:var(--s3);}
-.media-drop svg{width:36px;height:36px;margin:0 auto .75rem;display:block;opacity:.25;}
-.media-drop p{font-size:.875rem;color:var(--t3);}
-.media-drop span{font-size:.75rem;color:var(--t4);}
-.media-preview{display:none;padding:.5rem 0;text-align:center;}
-.media-preview img,.media-preview video{max-width:100%;max-height:320px;border-radius:6px;}
 
-/* ── Link tab ── */
-.link-input{
-  width:100%;background:var(--s3);border:1px solid var(--b2);
-  border-radius:6px;padding:.625rem .875rem;color:var(--t1);
-  font-size:.875rem;outline:none;font-family:inherit;margin-top:.5rem;
+/* Icon action row */
+.np-actions {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
 }
-.link-input:focus{border-color:var(--b3);}
-.link-input::placeholder{color:var(--t4);}
+.np-act-btn {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: #f2f2f0; border: none; border-radius: 50%;
+  color: #555; cursor: pointer;
+  transition: background .12s;
+  flex-shrink: 0;
+}
+.np-act-btn:hover { background: #e8e8e4; }
+.np-act-btn svg { width: 20px; height: 20px; }
 
-/* ── Upload progress ── */
-.upload-progress{display:none;padding:.5rem 1rem;border-top:1px solid var(--b1);}
-.upload-progress.show{display:block;}
-.progress-label{font-size:.75rem;color:var(--t2);margin-bottom:.3rem;display:flex;justify-content:space-between;}
-.progress-bar-wrap{height:4px;background:var(--s4);border-radius:2px;overflow:hidden;}
-.progress-bar-fill{height:100%;background:var(--white);border-radius:2px;width:0%;transition:width .15s;}
+/* Post button */
+.np-post-btn {
+  width: 100%;
+  padding: .9rem 1rem;
+  background: #f2f2f0;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #aaa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  transition: background .15s, color .15s;
+}
+.np-post-btn.ready {
+  background: #1a1a1a;
+  color: #fff;
+}
+.np-post-btn svg { width: 18px; height: 18px; }
 
-@media(max-width:600px){
-  .composer-body{padding:.75rem;}
-  .title-input{font-size:1.125rem;}
-  .composer-topbar{padding:.5rem .75rem;}
-  .tab{font-size:.75rem;padding:.5rem .375rem;}
+/* Upload progress */
+.np-progress { display: none; }
+.np-progress.show { display: block; }
+.np-progress-bar { height: 3px; background: #f0f0ee; border-radius: 2px; overflow: hidden; margin-top: .5rem; }
+.np-progress-fill { height: 100%; background: #1a1a1a; width: 0%; transition: width .15s; }
+
+@media (max-width: 600px) {
+  .np-topbar { padding: .875rem 1rem; }
+  .np-composer { padding: 1rem 1rem 0; }
+  .np-bottom { padding: .875rem 1rem 1.25rem; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="composer">
+<div class="np-shell">
 
-  <!-- Top bar: X  |  community pill  |  Post btn -->
-  <div class="composer-topbar">
-    <a href="{% url 'community:feed' %}" class="composer-close" title="Cancel">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  <!-- Top bar -->
+  <div class="np-topbar">
+    <a href="{% url 'community:feed' %}" class="np-back" title="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
-
-    <!-- Community selector pill -->
-    <div class="community-pill">
-      <div class="community-pill-av" id="pill-av">{{ user.username|slice:":1"|upper }}</div>
-      <span id="pill-label">My Feed (everyone can see)</span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      <select id="dest-select" onchange="syncDest(this.value)" aria-label="Select community">
-        <option value="feed">My Feed (everyone can see)</option>
-        {% for sc in school_communities %}
-        <option value="school:{{ sc.id }}">{{ sc.name }}</option>
-        {% endfor %}
-        {% for cc in custom_communities %}
-        <option value="custom:{{ cc.id }}">{{ cc.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <button class="post-btn" id="post-btn" form="post-form" type="submit">Post</button>
-  </div>
-
-  <!-- Tab bar -->
-  <div class="tab-bar">
-    <button class="tab active" type="button" onclick="switchTab('text',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
-      Text
-    </button>
-    <button class="tab" type="button" onclick="switchTab('media',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      Images &amp; Video
-    </button>
-    <button class="tab" type="button" onclick="switchTab('link',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      Link
+    <span class="np-title">Add New Post</span>
+    <button class="np-media-icon" type="button" onclick="document.getElementById('np-file').click()" title="Add photo/video">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+        <line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
     </button>
   </div>
 
   <!-- Form -->
-  <form method="post" enctype="multipart/form-data" id="post-form" style="display:contents;">
+  <form method="post" enctype="multipart/form-data" id="np-form" style="display:contents;">
     {% csrf_token %}
     <input type="hidden" name="community_type" id="community_type" value="feed">
     <input type="hidden" name="school_community_id" id="school_community_id" value="">
     <input type="hidden" name="custom_community_id" id="custom_community_id" value="">
+    <input type="hidden" name="title" id="np-title-hidden" value="Post">
+    <input type="file" name="media" id="np-file" accept="image/*,video/*,.gif" style="display:none;" onchange="npPreviewMedia(this)">
 
-    <!-- TEXT tab -->
-    <div id="tab-text" class="composer-body">
-      <input type="text" name="title" id="title-input" class="title-input"
-             placeholder="Title*" maxlength="300" autocomplete="off"
-             oninput="document.getElementById('title-count').textContent=this.value.length">
-      <textarea name="content" id="body-input" class="body-input"
-                placeholder="body text (optional)" maxlength="40000"
-                oninput="document.getElementById('body-count').textContent=this.value.length"></textarea>
-      <div class="tag-row">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-        <input type="text" name="category" id="tag-input" class="tag-input"
-               placeholder="Add tag (optional)" maxlength="50">
+    <!-- Composer -->
+    <div class="np-composer">
+      <div class="np-author-row">
+        <div class="np-av">
+          {% if user.community_profile.avatar %}
+            <img src="{{ user.community_profile.avatar.url }}" alt="">
+          {% else %}
+            {{ user.username|slice:":1"|upper }}
+          {% endif %}
+        </div>
+        <div style="flex:1;padding-top:.25rem;">
+          <!-- Community selector -->
+          <div class="np-dest" id="np-dest-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <span id="np-dest-label">Everyone</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            <select id="dest-select" onchange="npSyncDest(this.value)" aria-label="Post audience">
+              <option value="feed">Everyone</option>
+              {% for sc in school_communities %}
+              <option value="school:{{ sc.id }}">{{ sc.name }}</option>
+              {% endfor %}
+              {% for cc in custom_communities %}
+              <option value="custom:{{ cc.id }}">{{ cc.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <textarea
+            name="content"
+            id="np-textarea"
+            class="np-textarea"
+            placeholder="What's on your mind?"
+            maxlength="40000"
+            oninput="npOnInput()"
+            autofocus
+          ></textarea>
+        </div>
       </div>
-      <div class="char-row">
-        <span class="char-count"><span id="body-count">0</span> / 40000</span>
-      </div>
+
+      <!-- Media preview -->
+      <div class="np-media-preview" id="np-media-preview"></div>
     </div>
 
-    <!-- MEDIA tab -->
-    <div id="tab-media" class="composer-body" style="display:none;">
-      <input type="text" name="title" id="title-input-media" class="title-input"
-             placeholder="Title*" maxlength="300" autocomplete="off">
-      <div class="media-drop" id="media-drop"
-           onclick="document.getElementById('media-file').click()"
-           ondragover="event.preventDefault();this.classList.add('drag')"
-           ondragleave="this.classList.remove('drag')"
-           ondrop="handleDrop(event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <p>Drag and drop or click to upload</p>
-        <span>Images, GIFs, Videos (max 200MB)</span>
+    <!-- Bottom -->
+    <div class="np-bottom">
+      <!-- Action icons: photo, GIF/emoji, formatting -->
+      <div class="np-actions">
+        <button class="np-act-btn" type="button" title="Photo / Video" onclick="document.getElementById('np-file').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        <button class="np-act-btn" type="button" title="Emoji / GIF" onclick="npToggleEmoji()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </button>
+        <button class="np-act-btn" type="button" title="Formatting" onclick="npToggleFmt()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+        </button>
       </div>
-      <div class="media-preview" id="media-preview"></div>
-      <input type="file" name="media" id="media-file" accept="image/*,video/*,.gif"
-             style="display:none;" onchange="previewMedia(this)">
-    </div>
 
-    <!-- LINK tab -->
-    <div id="tab-link" class="composer-body" style="display:none;">
-      <input type="text" name="title" id="title-input-link" class="title-input"
-             placeholder="Title*" maxlength="300" autocomplete="off">
-      <input type="url" name="link_url" class="link-input" placeholder="Paste or type a URL…">
-    </div>
+      <!-- Formatting toolbar (hidden by default) -->
+      <div id="np-fmt-bar" style="display:none;display:none;gap:.25rem;flex-wrap:wrap;">
+        <button type="button" onclick="npWrap('**','**')" style="padding:.3rem .6rem;background:#f2f2f0;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:.8125rem;">B</button>
+        <button type="button" onclick="npWrap('*','*')" style="padding:.3rem .6rem;background:#f2f2f0;border:none;border-radius:6px;font-style:italic;cursor:pointer;font-size:.8125rem;">I</button>
+        <button type="button" onclick="npWrap('~~','~~')" style="padding:.3rem .6rem;background:#f2f2f0;border:none;border-radius:6px;text-decoration:line-through;cursor:pointer;font-size:.8125rem;">S</button>
+        <button type="button" onclick="npInsertLink()" style="padding:.3rem .6rem;background:#f2f2f0;border:none;border-radius:6px;cursor:pointer;font-size:.8125rem;">Link</button>
+        <button type="button" onclick="npInsertList()" style="padding:.3rem .6rem;background:#f2f2f0;border:none;border-radius:6px;cursor:pointer;font-size:.8125rem;">• List</button>
+      </div>
 
-    <!-- Upload progress -->
-    <div class="upload-progress" id="upload-progress">
-      <div class="progress-label">
-        <span id="progress-text">Uploading…</span>
-        <span id="progress-pct">0%</span>
+      <!-- Upload progress -->
+      <div class="np-progress" id="np-progress">
+        <div style="font-size:.75rem;color:#999;display:flex;justify-content:space-between;">
+          <span id="np-prog-label">Uploading...</span>
+          <span id="np-prog-pct">0%</span>
+        </div>
+        <div class="np-progress-bar"><div class="np-progress-fill" id="np-prog-fill"></div></div>
       </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="progress-fill"></div>
-      </div>
+
+      <!-- Post button -->
+      <button class="np-post-btn" id="np-post-btn" type="submit">
+        Post
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
     </div>
   </form>
-
-  <!-- Bottom formatting toolbar (only shown on text tab) -->
-  <div class="composer-toolbar" id="fmt-toolbar">
-    <button class="tb-btn" type="button" title="Bold" onclick="wrapText('**','**')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg>
-    </button>
-    <button class="tb-btn" type="button" title="Italic" onclick="wrapText('*','*')" style="font-style:italic;font-size:.9375rem;">I</button>
-    <button class="tb-btn" type="button" title="Strikethrough" onclick="wrapText('~~','~~')" style="text-decoration:line-through;font-size:.9375rem;">S</button>
-    <div class="tb-sep"></div>
-    <button class="tb-btn" type="button" title="Link" onclick="insertLink()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-    </button>
-    <button class="tb-btn" type="button" title="Image" onclick="switchTab('media', document.querySelectorAll('.tab')[1])">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    </button>
-    <button class="tb-btn" type="button" title="Bullet list" onclick="insertList()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
-    </button>
-    <div class="tb-sep"></div>
-    <span style="font-size:.75rem;color:var(--t4);margin-left:auto;"><span id="title-count">0</span>/300</span>
-  </div>
 
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-let activeTab = 'text';
-
-function switchTab(tab, btn) {
-  activeTab = tab;
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  ['text','media','link'].forEach(t => {
-    document.getElementById('tab-' + t).style.display = t === tab ? 'flex' : 'none';
-  });
-  // Show/hide formatting toolbar
-  document.getElementById('fmt-toolbar').style.display = tab === 'text' ? '' : 'none';
-  // Sync title
-  const val = document.getElementById('title-input').value;
-  ['title-input-media','title-input-link'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = val;
-  });
+function npOnInput() {
+  const ta = document.getElementById('np-textarea');
+  const btn = document.getElementById('np-post-btn');
+  const hasContent = ta.value.trim().length > 0 || document.getElementById('np-file').files.length > 0;
+  btn.classList.toggle('ready', hasContent);
+  // auto-grow
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
 }
 
-// Community selector
-function syncDest(val) {
+function npSyncDest(val) {
+  const label = document.getElementById('np-dest-label');
+  const sel = document.getElementById('dest-select');
+  label.textContent = sel.options[sel.selectedIndex].text;
   const ct = document.getElementById('community_type');
   const sc = document.getElementById('school_community_id');
   const cc = document.getElementById('custom_community_id');
-  const label = document.getElementById('pill-label');
-  const sel = document.getElementById('dest-select');
-  const opt = sel.options[sel.selectedIndex];
-  label.textContent = opt.text;
-  if (val === 'feed') {
-    ct.value = 'feed'; sc.value = ''; cc.value = '';
-  } else if (val.startsWith('school:')) {
-    ct.value = 'school'; sc.value = val.split(':')[1]; cc.value = '';
-  } else if (val.startsWith('custom:')) {
-    ct.value = 'custom'; cc.value = val.split(':')[1]; sc.value = '';
-  }
+  if (val === 'feed') { ct.value = 'feed'; sc.value = ''; cc.value = ''; }
+  else if (val.startsWith('school:')) { ct.value = 'school'; sc.value = val.split(':')[1]; cc.value = ''; }
+  else if (val.startsWith('custom:')) { ct.value = 'custom'; cc.value = val.split(':')[1]; sc.value = ''; }
 }
 
-// Formatting helpers
-function wrapText(before, after) {
-  const ta = document.getElementById('body-input');
+function npPreviewMedia(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const wrap = document.getElementById('np-media-preview');
+  const url = URL.createObjectURL(file);
+  wrap.style.display = 'block';
+  if (file.type.startsWith('image')) {
+    wrap.innerHTML = `<img src="${url}" alt="preview"><button class="np-media-remove" type="button" onclick="npClearMedia()">&times;</button>`;
+  } else {
+    wrap.innerHTML = `<video src="${url}" controls></video><button class="np-media-remove" type="button" onclick="npClearMedia()">&times;</button>`;
+  }
+  npOnInput();
+}
+function npClearMedia() {
+  document.getElementById('np-file').value = '';
+  const wrap = document.getElementById('np-media-preview');
+  wrap.style.display = 'none'; wrap.innerHTML = '';
+  npOnInput();
+}
+
+function npToggleFmt() {
+  const bar = document.getElementById('np-fmt-bar');
+  bar.style.display = bar.style.display === 'flex' ? 'none' : 'flex';
+}
+function npToggleEmoji() {
+  // Basic emoji picker fallback — just focus textarea
+  document.getElementById('np-textarea').focus();
+}
+function npWrap(before, after) {
+  const ta = document.getElementById('np-textarea');
   const s = ta.selectionStart, e = ta.selectionEnd;
   const sel = ta.value.substring(s, e) || 'text';
   ta.value = ta.value.substring(0, s) + before + sel + after + ta.value.substring(e);
   ta.focus();
 }
-function insertLink() {
-  const url = prompt('Enter URL:');
-  if (!url) return;
-  const ta = document.getElementById('body-input');
+function npInsertLink() {
+  const url = prompt('Enter URL:'); if (!url) return;
+  const ta = document.getElementById('np-textarea');
   const s = ta.selectionStart, e = ta.selectionEnd;
   const sel = ta.value.substring(s, e) || 'link text';
   ta.value = ta.value.substring(0, s) + '[' + sel + '](' + url + ')' + ta.value.substring(e);
   ta.focus();
 }
-function insertList() {
-  const ta = document.getElementById('body-input');
-  ta.value += '\n- ';
-  ta.focus();
-}
-
-// Media
-function previewMedia(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const preview = document.getElementById('media-preview');
-  const drop = document.getElementById('media-drop');
-  const url = URL.createObjectURL(file);
-  drop.style.display = 'none';
-  preview.style.display = 'block';
-  if (file.type.startsWith('image')) {
-    preview.innerHTML = `<img src="${url}" alt="preview"><br><button type="button" class="btn btn-ghost" style="margin-top:.5rem;font-size:.75rem;" onclick="clearMedia()">Remove</button>`;
-  } else {
-    const sizeMB = (file.size/1024/1024).toFixed(1);
-    preview.innerHTML = `<video src="${url}" controls style="max-width:100%;max-height:300px;border-radius:6px;"></video>
-      <div style="font-size:.75rem;color:var(--t3);margin-top:.375rem;">${file.name} · ${sizeMB} MB</div>
-      <button type="button" class="btn btn-ghost" style="margin-top:.5rem;font-size:.75rem;" onclick="clearMedia()">Remove</button>`;
-  }
-}
-function clearMedia() {
-  document.getElementById('media-file').value = '';
-  document.getElementById('media-preview').style.display = 'none';
-  document.getElementById('media-drop').style.display = '';
-}
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('media-drop').classList.remove('drag');
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  const dt = new DataTransfer(); dt.items.add(file);
-  const input = document.getElementById('media-file');
-  input.files = dt.files;
-  previewMedia(input);
+function npInsertList() {
+  const ta = document.getElementById('np-textarea');
+  ta.value += (ta.value && !ta.value.endsWith('\n') ? '\n' : '') + '- ';
+  ta.focus(); npOnInput();
 }
 
 // XHR submit with progress
-document.getElementById('post-form').addEventListener('submit', function(e) {
+document.getElementById('np-form').addEventListener('submit', function(e) {
   e.preventDefault();
-  // Sync title from active tab
-  const activeTitle = document.querySelector('#tab-' + activeTab + ' input[name="title"]');
-  if (activeTitle) document.getElementById('title-input').value = activeTitle.value;
+  const content = document.getElementById('np-textarea').value.trim();
+  if (!content && !document.getElementById('np-file').files.length) return;
 
-  const btn = document.getElementById('post-btn');
-  const progressWrap = document.getElementById('upload-progress');
-  const progressFill = document.getElementById('progress-fill');
-  const progressPct = document.getElementById('progress-pct');
-  const progressText = document.getElementById('progress-text');
-  const mediaFile = document.getElementById('media-file');
-  const hasVideo = mediaFile && mediaFile.files.length > 0 && mediaFile.files[0].type.startsWith('video');
+  // Use first line as title, or generic fallback
+  const firstLine = content.split('\n')[0].slice(0, 300) || 'Post';
+  document.getElementById('np-title-hidden').value = firstLine;
+
+  const btn = document.getElementById('np-post-btn');
+  const prog = document.getElementById('np-progress');
+  const fill = document.getElementById('np-prog-fill');
+  const pct = document.getElementById('np-prog-pct');
+  const lbl = document.getElementById('np-prog-label');
+  const hasVideo = document.getElementById('np-file').files[0]?.type.startsWith('video');
 
   btn.disabled = true;
-  btn.textContent = 'Posting…';
-  if (hasVideo) { progressWrap.classList.add('show'); progressText.textContent = 'Uploading video…'; }
+  btn.innerHTML = 'Posting... <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+  if (hasVideo) { prog.classList.add('show'); lbl.textContent = 'Uploading video...'; }
 
   const xhr = new XMLHttpRequest();
   xhr.upload.addEventListener('progress', ev => {
     if (!ev.lengthComputable) return;
-    const pct = Math.round(ev.loaded / ev.total * 100);
-    progressFill.style.width = pct + '%';
-    progressPct.textContent = pct + '%';
-    if (pct === 100) progressText.textContent = 'Processing…';
+    const p = Math.round(ev.loaded / ev.total * 100);
+    fill.style.width = p + '%'; pct.textContent = p + '%';
+    if (p === 100) lbl.textContent = 'Processing...';
   });
   xhr.addEventListener('load', () => {
     if (xhr.status >= 200 && xhr.status < 400) {
       window.location.href = xhr.responseURL || '/community/';
     } else {
-      btn.disabled = false; btn.textContent = 'Post';
-      progressWrap.classList.remove('show');
-      alert('Upload failed (status ' + xhr.status + '). Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = 'Post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+      prog.classList.remove('show');
+      alert('Failed to post (status ' + xhr.status + '). Please try again.');
     }
   });
   xhr.addEventListener('error', () => {
-    btn.disabled = false; btn.textContent = 'Post';
-    progressWrap.classList.remove('show');
+    btn.disabled = false;
+    btn.innerHTML = 'Post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+    prog.classList.remove('show');
     alert('Network error. Please try again.');
   });
   xhr.open('POST', this.action || window.location.href);
@@ -432,7 +431,7 @@ document.getElementById('post-form').addEventListener('submit', function(e) {
 
 // Preselect from URL params
 const params = new URLSearchParams(location.search);
-if (params.get('sc')) { const s = document.getElementById('dest-select'); s.value = 'school:' + params.get('sc'); syncDest(s.value); }
-if (params.get('cc')) { const s = document.getElementById('dest-select'); s.value = 'custom:' + params.get('cc'); syncDest(s.value); }
+if (params.get('sc')) { const s = document.getElementById('dest-select'); s.value = 'school:' + params.get('sc'); npSyncDest(s.value); }
+if (params.get('cc')) { const s = document.getElementById('dest-select'); s.value = 'custom:' + params.get('cc'); npSyncDest(s.value); }
 </script>
 {% endblock %}

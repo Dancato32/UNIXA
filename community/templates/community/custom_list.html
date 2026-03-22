@@ -1,4 +1,4 @@
-{% extends "community/base.html" %}
+﻿{% extends "community/base.html" %}
 {% block title %}Communities{% endblock %}
 {% block mobile_title %}Communities{% endblock %}
 {% block nav_communities %}active{% endblock %}
@@ -11,17 +11,17 @@
 <style>
 .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
 .page-title{font-size:1rem;font-weight:700;}
-.search-bar{display:flex;align-items:center;gap:.5rem;background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:.45rem .75rem;margin-bottom:1.25rem;}
-.search-bar svg{width:15px;height:15px;color:var(--t3);flex-shrink:0;}
-.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:.875rem;}
-.search-bar input::placeholder{color:var(--t3);}
+.search-bar{display:flex;align-items:center;gap:.5rem;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:.45rem .75rem;margin-bottom:1.25rem;}
+.search-bar svg{width:15px;height:15px;color:var(--text3);flex-shrink:0;}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:.875rem;}
+.search-bar input::placeholder{color:var(--text3);}
 .communities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem;}
-.community-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;overflow:hidden;transition:border-color .15s;}
-.community-card:hover{border-color:var(--b3);}
-.community-banner{height:64px;background:linear-gradient(135deg,var(--s3),var(--s4));display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:var(--t4);}
+.community-card{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;transition:border-color .15s;}
+.community-card:hover{border-color:var(--border3);}
+.community-banner{height:64px;background:linear-gradient(135deg,var(--surface3),var(--surface4));display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:var(--text4);}
 .community-body{padding:.875rem;}
 .community-name{font-size:.9375rem;font-weight:700;margin-bottom:.375rem;}
-.community-desc{font-size:.8125rem;color:var(--t2);line-height:1.5;margin-bottom:.875rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.community-desc{font-size:.8125rem;color:var(--text2);line-height:1.5;margin-bottom:.875rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .community-footer{display:flex;align-items:center;justify-content:space-between;}
 .privacy-badge{font-size:.6875rem;font-weight:600;padding:.15rem .45rem;border-radius:3px;}
 .privacy-public{background:rgba(34,197,94,.1);color:var(--green);}
@@ -48,7 +48,7 @@
 
 <form method="get" class="search-bar">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-  <input type="text" name="q" value="{{ query }}" placeholder="Search communities…">
+  <input type="text" name="q" value="{{ query }}" placeholder="Search communitiesâ€¦">
 </form>
 
 <div class="communities-grid">
@@ -69,8 +69,9 @@
   </div>
   {% empty %}
   <div class="empty-state" style="grid-column:1/-1;">
-    <p>No communities found. <a href="{% url 'community:custom_create' %}" style="color:var(--t1);">Create one!</a></p>
+    <p>No communities found. <a href="{% url 'community:custom_create' %}" style="color:var(--text);">Create one!</a></p>
   </div>
   {% endfor %}
 </div>
 {% endblock %}
+

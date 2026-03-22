@@ -1,0 +1,51 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Offer a Skill{% endblock %}
+{% block mobile_title %}Offer a Skill{% endblock %}
+{% block breadcrumb_label %}New Skill Offer{% endblock %}
+
+{% block content %}
+<div style="max-width:520px;margin:0 auto;">
+  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;">
+    <button onclick="history.back()" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:.25rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h1 style="font-size:1.25rem;font-weight:800;">ðŸ¤ Offer a Skill</h1>
+  </div>
+
+  <form method="post" style="display:flex;flex-direction:column;gap:1rem;">
+    {% csrf_token %}
+    <div>
+      <label style="font-size:.8125rem;font-weight:600;color:var(--text2);display:block;margin-bottom:.375rem;">Title</label>
+      <input name="title" placeholder="e.g. I'll help you with Python assignments" required
+        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.9375rem;outline:none;box-sizing:border-box;">
+    </div>
+    <div>
+      <label style="font-size:.8125rem;font-weight:600;color:var(--text2);display:block;margin-bottom:.375rem;">Description</label>
+      <textarea name="description" placeholder="Describe what you're offering and what you'd like in returnâ€¦" rows="4" required
+        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;resize:none;box-sizing:border-box;"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+      <div>
+        <label style="font-size:.8125rem;font-weight:600;color:var(--text2);display:block;margin-bottom:.375rem;">Skill Tag</label>
+        <input name="skill_tag" placeholder="e.g. Python, Design, Writing" required
+          style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:.8125rem;font-weight:600;color:var(--text2);display:block;margin-bottom:.375rem;">Type</label>
+        <select name="listing_type"
+          style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;box-sizing:border-box;">
+          <option value="offer">I'm offering</option>
+          <option value="request">I'm requesting</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label style="font-size:.8125rem;font-weight:600;color:var(--text2);display:block;margin-bottom:.375rem;">What I want in return (optional)</label>
+      <input name="wants_in_return" placeholder="e.g. Design help, tutoring, notesâ€¦"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;box-sizing:border-box;">
+    </div>
+    <button type="submit" class="btn btn-primary" style="padding:.875rem;justify-content:center;font-size:.9375rem;font-weight:700;border-radius:10px;">Post Skill Offer</button>
+  </form>
+</div>
+{% endblock %}
+

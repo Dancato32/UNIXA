@@ -1,0 +1,131 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Campus Pulse{% endblock %}
+{% block mobile_title %}ðŸ”¥ Campus Pulse{% endblock %}
+{% block breadcrumb_label %}Pulse{% endblock %}
+
+{% block extra_css %}
+<style>
+.pulse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+@media(max-width:480px){.pulse-grid{grid-template-columns:1fr;}}
+
+.pulse-event-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.125rem;transition:border-color .15s;}
+.pec-type-bar{height:3px;border-radius:2px;margin-bottom:.875rem;}
+.pec-type-study{background:#f59e0b;}
+.pec-type-social{background:#f97316;}
+.pec-type-recruitment{background:var(--blue);}
+.pec-type-academic{background:#a855f7;}
+.pec-type-online{background:var(--green);}
+.pec-type-other{background:var(--text3);}
+.pec-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.5rem;}
+.pec-title{font-size:.9375rem;font-weight:700;flex:1;margin-right:.5rem;}
+.pec-type-badge{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.15rem .45rem;border-radius:4px;flex-shrink:0;}
+.pec-desc{font-size:.8125rem;color:var(--text2);margin-bottom:.875rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.pec-meta{display:flex;align-items:center;gap:.875rem;font-size:.75rem;color:var(--text3);margin-bottom:.875rem;flex-wrap:wrap;}
+.pec-meta svg{width:12px;height:12px;flex-shrink:0;}
+.pec-meta span{display:flex;align-items:center;gap:.25rem;}
+.pec-footer{display:flex;align-items:center;justify-content:space-between;}
+.pec-host{display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:var(--text3);}
+.pec-av{width:20px;height:20px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;overflow:hidden;flex-shrink:0;}
+.pec-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.join-btn{padding:.3rem .75rem;border-radius:6px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;}
+.join-btn.joined{background:rgba(34,197,94,.12);color:var(--green);}
+.join-btn.not-joined{background:var(--surface4);color:var(--text2);}
+.join-btn.not-joined:hover{background:var(--surface5);color:var(--text);}
+
+.type-filter{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:.25rem;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.type-filter::-webkit-scrollbar{display:none;}
+.type-chip{padding:.35rem .75rem;border-radius:20px;font-size:.8125rem;font-weight:600;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;}
+.type-chip:hover,.type-chip.active{background:var(--surface3);color:var(--text);border-color:var(--border3);}
+
+.live-indicator{display:inline-flex;align-items:center;gap:.375rem;font-size:.75rem;color:#f97316;font-weight:700;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#f97316;animation:livePulse 1.5s ease-in-out infinite;}
+@keyframes livePulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+  <div>
+    <h1 style="font-size:1.25rem;font-weight:800;">ðŸ”¥ Campus Pulse</h1>
+    <div class="live-indicator" style="margin-top:.25rem;"><span class="live-dot"></span>Live activity</div>
+  </div>
+  <a href="{% url 'community:pulse_event_create' %}" class="btn btn-primary btn-sm">+ Post Event</a>
+</div>
+
+<div class="type-filter">
+  <a href="{% url 'community:pulse_map' %}" class="type-chip {% if not active_type %}active{% endif %}">All</a>
+  {% for val,label in event_types %}
+  <a href="?type={{ val }}" class="type-chip {% if active_type == val %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if events %}
+<div class="pulse-grid">
+  {% for ev in events %}
+  <div class="pulse-event-card">
+    <div class="pec-type-bar pec-type-{{ ev.event_type }}"></div>
+    <div class="pec-header">
+      <div class="pec-title">{{ ev.title }}</div>
+      <div class="pec-type-badge" style="background:
+        {% if ev.event_type == 'study' %}rgba(245,158,11,.12);color:#f59e0b
+        {% elif ev.event_type == 'social' %}rgba(249,115,22,.12);color:#f97316
+        {% elif ev.event_type == 'recruitment' %}rgba(88,101,242,.12);color:var(--blue)
+        {% elif ev.event_type == 'academic' %}rgba(168,85,247,.12);color:#a855f7
+        {% elif ev.event_type == 'online' %}rgba(34,197,94,.1);color:var(--green)
+        {% else %}var(--surface4);color:var(--text3){% endif %};">
+        {{ ev.get_event_type_display }}
+      </div>
+    </div>
+    {% if ev.description %}
+    <div class="pec-desc">{{ ev.description }}</div>
+    {% endif %}
+    <div class="pec-meta">
+      {% if ev.location_name %}
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{{ ev.location_name }}</span>
+      {% endif %}
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>{{ ev.participant_count }} joined</span>
+      {% if ev.expires_at %}
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Ends {{ ev.expires_at|timesince }}</span>
+      {% endif %}
+    </div>
+    <div class="pec-footer">
+      <div class="pec-host">
+        <div class="pec-av">
+          {% if ev.host.community_profile.avatar %}<img src="{{ ev.host.community_profile.avatar.url }}" alt="">{% else %}{{ ev.host.username|slice:":1"|upper }}{% endif %}
+        </div>
+        @{{ ev.host.username }}
+      </div>
+      <button class="join-btn {% if ev.id in joined_ids %}joined{% else %}not-joined{% endif %}"
+        onclick="joinEvent('{{ ev.id }}',this)">
+        {% if ev.id in joined_ids %}Joined âœ“{% else %}Join{% endif %}
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+  <p>No active events{% if active_type %} of this type{% endif %}.</p>
+  <a href="{% url 'community:pulse_event_create' %}" class="btn btn-primary">Post the first event</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrf=()=>document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+function joinEvent(id,btn){
+  btn.disabled=true;
+  fetch('/community/pulse/'+id+'/join/',{method:'POST',headers:{'X-CSRFToken':csrf()}})
+    .then(r=>r.json()).then(d=>{
+      btn.disabled=false;
+      if(d.ok){btn.textContent='Joined âœ“';btn.className='join-btn joined';showUXToast('Joined!','success');}
+      else showUXToast(d.error||'Error','error');
+    }).catch(()=>{btn.disabled=false;});
+}
+// Auto-refresh every 30s
+setTimeout(()=>location.reload(),30000);
+</script>
+{% endblock %}
+

@@ -158,7 +158,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'id', 'post', 'author', 'parent', 'content',
             'created_at', 'updated_at', 'like_count', 'replies',
         ]
-        read_only_fields = ['id', 'author', 'created_at', 'updated_at', 'like_count']
+        read_only_fields = ['id', 'post', 'author', 'created_at', 'updated_at', 'like_count']
 
     def get_replies(self, obj):
         # Only one level deep to avoid deep recursion

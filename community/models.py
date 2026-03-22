@@ -418,6 +418,7 @@ class Notification(models.Model):
     TYPE_FRIEND_REQUEST = 'friend_request'
     TYPE_FRIEND_ACCEPTED = 'friend_accepted'
     TYPE_MESSAGE = 'message'
+    TYPE_LIVE = 'live'
     TYPE_CHOICES = [
         (TYPE_LIKE, 'Like'),
         (TYPE_COMMENT, 'Comment'),
@@ -429,6 +430,7 @@ class Notification(models.Model):
         (TYPE_FRIEND_REQUEST, 'Friend Request'),
         (TYPE_FRIEND_ACCEPTED, 'Friend Accepted'),
         (TYPE_MESSAGE, 'Message'),
+        (TYPE_LIVE, 'Live'),
     ]
 
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
@@ -461,6 +463,7 @@ class Notification(models.Model):
         related_name='notifications',
     )
     is_read = models.BooleanField(default=False, db_index=True)
+    extra_data = models.CharField(max_length=200, blank=True)  # room_id for live, etc.
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
@@ -871,3 +874,499 @@ class CustomCommunityMembership(models.Model):
     def __str__(self):
         return f'{self.user} → {self.community}'
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LIVE CAMPUS FEATURES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── 1. Skill Trading Marketplace ──────────────────────────────────────────────
+
+SKILL_TAGS = [
+    'Coding', 'Design', 'Writing', 'Tutoring', 'Math', 'Science',
+    'Music', 'Photography', 'Video Editing', 'Marketing', 'Finance',
+    'Language', 'Research', 'Public Speaking', 'Data Analysis', 'Other',
+]
+
+
+class SkillOffer(models.Model):
+    """A skill a user is offering to trade."""
+
+    TYPE_OFFER = 'offer'
+    TYPE_REQUEST = 'request'
+    TYPE_CHOICES = [
+        (TYPE_OFFER, 'Offering'),
+        (TYPE_REQUEST, 'Requesting'),
+    ]
+
+    STATUS_OPEN = 'open'
+    STATUS_MATCHED = 'matched'
+    STATUS_CLOSED = 'closed'
+    STATUS_CHOICES = [
+        (STATUS_OPEN, 'Open'),
+        (STATUS_MATCHED, 'Matched'),
+        (STATUS_CLOSED, 'Closed'),
+    ]
+
+    URGENCY_LOW = 'low'
+    URGENCY_MEDIUM = 'medium'
+    URGENCY_HIGH = 'high'
+    URGENCY_CHOICES = [
+        (URGENCY_LOW, 'Flexible'),
+        (URGENCY_MEDIUM, 'This week'),
+        (URGENCY_HIGH, 'Urgent'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='skill_offers'
+    )
+    listing_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default=TYPE_OFFER)
+    title = models.CharField(max_length=120)
+    description = models.TextField(max_length=500, blank=True)
+    skill_tag = models.CharField(max_length=50)
+    # What they want in return (for offers)
+    wants_tag = models.CharField(max_length=50, blank=True)
+    urgency = models.CharField(max_length=10, choices=URGENCY_CHOICES, default=URGENCY_LOW)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    school_community = models.ForeignKey(
+        SchoolCommunity, on_delete=models.SET_NULL, null=True, blank=True, related_name='skill_offers'
+    )
+    upvote_count = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.listing_type}: {self.title} by {self.user}'
+
+
+class SkillDeal(models.Model):
+    """A barter deal between two users."""
+
+    STATUS_PENDING = 'pending'
+    STATUS_ACTIVE = 'active'
+    STATUS_COMPLETE = 'complete'
+    STATUS_CANCELLED = 'cancelled'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_ACTIVE, 'In Progress'),
+        (STATUS_COMPLETE, 'Complete'),
+        (STATUS_CANCELLED, 'Cancelled'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    offer = models.ForeignKey(SkillOffer, on_delete=models.CASCADE, related_name='deals')
+    initiator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='initiated_deals'
+    )
+    responder = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_deals'
+    )
+    message = models.TextField(max_length=300, blank=True)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    initiator_rating = models.PositiveSmallIntegerField(null=True, blank=True)  # 1-5
+    responder_rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.SET_NULL, null=True, blank=True, related_name='skill_deals'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Deal: {self.initiator} ↔ {self.responder}'
+
+
+# ── 2. Anonymous Confession + Wisdom Feed ─────────────────────────────────────
+
+class Confession(models.Model):
+    """Anonymous post in the confession/wisdom feed."""
+
+    CAT_ACADEMIC = 'academic'
+    CAT_MENTAL = 'mental_health'
+    CAT_RELATIONSHIPS = 'relationships'
+    CAT_FINANCE = 'finance'
+    CAT_CAREER = 'career'
+    CAT_SOCIAL = 'social'
+    CAT_GENERAL = 'general'
+    CAT_CHOICES = [
+        (CAT_ACADEMIC, 'Academic'),
+        (CAT_MENTAL, 'Mental Health'),
+        (CAT_RELATIONSHIPS, 'Relationships'),
+        (CAT_FINANCE, 'Finance'),
+        (CAT_CAREER, 'Career'),
+        (CAT_SOCIAL, 'Social'),
+        (CAT_GENERAL, 'General'),
+    ]
+
+    STATUS_ACTIVE = 'active'
+    STATUS_FLAGGED = 'flagged'
+    STATUS_REMOVED = 'removed'
+    STATUS_CHOICES = [
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_FLAGGED, 'Flagged'),
+        (STATUS_REMOVED, 'Removed'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    # author stored but NEVER exposed in API/templates
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='confessions'
+    )
+    content = models.TextField(max_length=1000)
+    category = models.CharField(max_length=20, choices=CAT_CHOICES, default=CAT_GENERAL)
+    school_community = models.ForeignKey(
+        SchoolCommunity, on_delete=models.SET_NULL, null=True, blank=True, related_name='confessions'
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
+    upvote_count = models.PositiveIntegerField(default=0)
+    reply_count = models.PositiveIntegerField(default=0)
+    is_crisis = models.BooleanField(default=False)  # flagged by AI/mod as crisis
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Confession #{self.id} [{self.category}]'
+
+
+class ConfessionUpvote(models.Model):
+    """One upvote per user per confession."""
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='confession_upvotes')
+    confession = models.ForeignKey(Confession, on_delete=models.CASCADE, related_name='upvotes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'confession')
+
+
+class ConfessionReply(models.Model):
+    """Reply to a confession. Can be anonymous or identified."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    confession = models.ForeignKey(Confession, on_delete=models.CASCADE, related_name='replies')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='confession_replies'
+    )
+    content = models.TextField(max_length=500)
+    is_anonymous = models.BooleanField(default=False)
+    is_helpful = models.BooleanField(default=False)  # marked by confession author
+    is_solved = models.BooleanField(default=False)   # marked by confession author
+    upvote_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Reply to confession #{self.confession_id}'
+
+
+# ── 3. Startup Command Center ─────────────────────────────────────────────────
+
+class Startup(models.Model):
+    """A student startup project."""
+
+    STAGE_IDEA = 'idea'
+    STAGE_TEAM = 'team'
+    STAGE_BUILD = 'build'
+    STAGE_DEMO = 'demo'
+    STAGE_LAUNCH = 'launch'
+    STAGE_CHOICES = [
+        (STAGE_IDEA, 'Idea'),
+        (STAGE_TEAM, 'Team Formation'),
+        (STAGE_BUILD, 'Building'),
+        (STAGE_DEMO, 'Demo Ready'),
+        (STAGE_LAUNCH, 'Launched'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    founder = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='community_founded_startups'
+    )
+    name = models.CharField(max_length=120)
+    slug = models.SlugField(max_length=140, unique=True, blank=True)
+    tagline = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='community/startups/logos/', null=True, blank=True)
+    stage = models.CharField(max_length=10, choices=STAGE_CHOICES, default=STAGE_IDEA)
+    skills_needed = models.CharField(max_length=300, blank=True)  # comma-separated
+    school_community = models.ForeignKey(
+        SchoolCommunity, on_delete=models.SET_NULL, null=True, blank=True, related_name='startups'
+    )
+    follower_count = models.PositiveIntegerField(default=0)
+    is_recruiting = models.BooleanField(default=False)
+    demo_url = models.URLField(blank=True)
+    support_interest_count = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.name)
+            slug = base
+            n = 1
+            while Startup.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base}-{n}'
+                n += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class StartupMember(models.Model):
+    """Team member of a startup."""
+
+    ROLE_FOUNDER = 'founder'
+    ROLE_COFOUNDER = 'cofounder'
+    ROLE_MEMBER = 'member'
+    ROLE_CHOICES = [
+        (ROLE_FOUNDER, 'Founder'),
+        (ROLE_COFOUNDER, 'Co-Founder'),
+        (ROLE_MEMBER, 'Team Member'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    startup = models.ForeignKey(Startup, on_delete=models.CASCADE, related_name='members')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='community_startup_memberships'
+    )
+    role = models.CharField(max_length=12, choices=ROLE_CHOICES, default=ROLE_MEMBER)
+    skill_contribution = models.CharField(max_length=100, blank=True)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('startup', 'user')
+
+    def __str__(self):
+        return f'{self.user} @ {self.startup} ({self.role})'
+
+
+class StartupUpdate(models.Model):
+    """Dev log / progress update for a startup."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    startup = models.ForeignKey(Startup, on_delete=models.CASCADE, related_name='updates')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='startup_updates'
+    )
+    content = models.TextField(max_length=1000)
+    milestone = models.CharField(max_length=120, blank=True)
+    media = models.FileField(upload_to='community/startups/updates/', null=True, blank=True)
+    like_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Update for {self.startup} @ {self.created_at:%Y-%m-%d}'
+
+
+class StartupFollow(models.Model):
+    """User following a startup."""
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='startup_follows')
+    startup = models.ForeignKey(Startup, on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'startup')
+
+
+# ── 4. Campus Pulse Map ───────────────────────────────────────────────────────
+
+class PulseEvent(models.Model):
+    """A live activity on the campus pulse map."""
+
+    TYPE_STUDY = 'study'
+    TYPE_EVENT = 'event'
+    TYPE_SOCIAL = 'social'
+    TYPE_RECRUITMENT = 'recruitment'
+    TYPE_ACADEMIC = 'academic'
+    TYPE_ONLINE = 'online'
+    TYPE_VOICE_ROOM = 'voice_room'
+    TYPE_HELP = 'help'
+    TYPE_CHOICES = [
+        (TYPE_STUDY, 'Study Group'),
+        (TYPE_EVENT, 'Event'),
+        (TYPE_SOCIAL, 'Social'),
+        (TYPE_RECRUITMENT, 'Recruitment'),
+        (TYPE_ACADEMIC, 'Academic'),
+        (TYPE_ONLINE, 'Online Only'),
+        (TYPE_VOICE_ROOM, 'Voice Room'),
+        (TYPE_HELP, 'Help Needed'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    host = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pulse_events'
+    )
+    title = models.CharField(max_length=120)
+    description = models.TextField(max_length=300, blank=True)
+    event_type = models.CharField(max_length=15, choices=TYPE_CHOICES, default=TYPE_STUDY)
+    location_name = models.CharField(max_length=120, blank=True)
+    lat = models.FloatField(null=True, blank=True)
+    lng = models.FloatField(null=True, blank=True)
+    is_online = models.BooleanField(default=False)
+    school_community = models.ForeignKey(
+        SchoolCommunity, on_delete=models.SET_NULL, null=True, blank=True, related_name='pulse_events'
+    )
+    max_participants = models.PositiveSmallIntegerField(default=0)  # 0 = unlimited
+    participant_count = models.PositiveIntegerField(default=1)
+    is_private = models.BooleanField(default=False)
+    starts_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
+    photo = models.ImageField(upload_to='pulse/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['expires_at']
+        indexes = [models.Index(fields=['expires_at', 'is_private'])]
+
+    def __str__(self):
+        return f'Pulse: {self.title} [{self.event_type}]'
+
+
+class PulseJoin(models.Model):
+    """User joining a pulse event."""
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    event = models.ForeignKey(PulseEvent, on_delete=models.CASCADE, related_name='joins')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pulse_joins')
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('event', 'user')
+
+
+# ── 5. Voice-Only Micro Rooms ─────────────────────────────────────────────────
+
+class MicroRoom(models.Model):
+    """Lightweight voice-only room for spontaneous conversation."""
+
+    STATUS_OPEN = 'open'
+    STATUS_LOCKED = 'locked'
+    STATUS_CLOSED = 'closed'
+    STATUS_CHOICES = [
+        (STATUS_OPEN, 'Open'),
+        (STATUS_LOCKED, 'Locked'),
+        (STATUS_CLOSED, 'Closed'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    host = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='hosted_micro_rooms'
+    )
+    topic = models.CharField(max_length=120)
+    status = models.CharField(max_length=8, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    school_community = models.ForeignKey(
+        SchoolCommunity, on_delete=models.SET_NULL, null=True, blank=True, related_name='micro_rooms'
+    )
+    participant_count = models.PositiveSmallIntegerField(default=1)
+    max_participants = models.PositiveSmallIntegerField(default=20)
+    peer_room_id = models.CharField(max_length=64, blank=True)  # WebRTC room ID
+    created_at = models.DateTimeField(auto_now_add=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'MicroRoom: {self.topic}'
+
+
+class MicroRoomParticipant(models.Model):
+    """Active participant in a micro room."""
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    room = models.ForeignKey(MicroRoom, on_delete=models.CASCADE, related_name='participants')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='micro_room_participations')
+    is_muted = models.BooleanField(default=False)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    left_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('room', 'user')
+
+
+# ── 6. Help Beacon ────────────────────────────────────────────────────────────
+
+class HelpBeacon(models.Model):
+    """Urgent help request broadcast to relevant users."""
+
+    CAT_ACADEMIC = 'academic'
+    CAT_TECH = 'tech'
+    CAT_DESIGN = 'design'
+    CAT_WRITING = 'writing'
+    CAT_MATH = 'math'
+    CAT_OTHER = 'other'
+    CAT_CHOICES = [
+        (CAT_ACADEMIC, 'Academic'),
+        (CAT_TECH, 'Tech / Coding'),
+        (CAT_DESIGN, 'Design'),
+        (CAT_WRITING, 'Writing'),
+        (CAT_MATH, 'Math'),
+        (CAT_OTHER, 'Other'),
+    ]
+
+    URGENCY_LOW = 'low'
+    URGENCY_MED = 'medium'
+    URGENCY_HIGH = 'high'
+    URGENCY_CHOICES = [
+        (URGENCY_LOW, 'Flexible'),
+        (URGENCY_MED, 'Today'),
+        (URGENCY_HIGH, 'Right Now'),
+    ]
+
+    STATUS_OPEN = 'open'
+    STATUS_CLAIMED = 'claimed'
+    STATUS_RESOLVED = 'resolved'
+    STATUS_EXPIRED = 'expired'
+    STATUS_CHOICES = [
+        (STATUS_OPEN, 'Open'),
+        (STATUS_CLAIMED, 'Claimed'),
+        (STATUS_RESOLVED, 'Resolved'),
+        (STATUS_EXPIRED, 'Expired'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    requester = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='help_beacons'
+    )
+    title = models.CharField(max_length=120)
+    description = models.TextField(max_length=500, blank=True)
+    category = models.CharField(max_length=12, choices=CAT_CHOICES, default=CAT_OTHER)
+    urgency = models.CharField(max_length=8, choices=URGENCY_CHOICES, default=URGENCY_MED)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    school_community = models.ForeignKey(
+        SchoolCommunity, on_delete=models.SET_NULL, null=True, blank=True, related_name='help_beacons'
+    )
+    helper = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='claimed_beacons'
+    )
+    helper_rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    prefer_voice = models.BooleanField(default=False)
+    deadline = models.DateTimeField(null=True, blank=True)
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.SET_NULL, null=True, blank=True, related_name='help_beacons'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Beacon: {self.title} [{self.urgency}]'

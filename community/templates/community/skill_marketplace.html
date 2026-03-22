@@ -1,0 +1,125 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Skill Marketplace{% endblock %}
+{% block mobile_title %}ðŸ¤ Skills{% endblock %}
+{% block breadcrumb_label %}Skills{% endblock %}
+
+{% block extra_css %}
+<style>
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
+@media(max-width:480px){.skill-grid{grid-template-columns:1fr;}}
+.skill-offer-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.125rem;transition:border-color .15s;}
+.skill-offer-card:hover{border-color:rgba(34,197,94,.3);}
+.soc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem;}
+.soc-tag{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:700;padding:.2rem .5rem;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);}
+.soc-type{font-size:.6875rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.soc-title{font-size:.9375rem;font-weight:700;margin-bottom:.375rem;}
+.soc-desc{font-size:.8125rem;color:var(--text2);margin-bottom:.875rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.soc-footer{display:flex;align-items:center;justify-content:space-between;}
+.soc-user{display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--text3);}
+.soc-av{width:24px;height:24px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;overflow:hidden;flex-shrink:0;}
+.soc-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.deal-btn{padding:.3rem .75rem;border-radius:6px;font-size:.75rem;font-weight:700;border:none;background:rgba(34,197,94,.15);color:var(--green);cursor:pointer;transition:background .15s;}
+.deal-btn:hover{background:rgba(34,197,94,.25);}
+
+.filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.filter-chip{padding:.35rem .75rem;border-radius:20px;font-size:.8125rem;font-weight:600;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .15s;text-decoration:none;}
+.filter-chip:hover,.filter-chip.active{background:var(--surface3);color:var(--text);border-color:var(--border3);}
+
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.page-header h1{font-size:1.25rem;font-weight:800;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>ðŸ¤ Skill Marketplace</h1>
+    <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Trade skills, not money</div>
+  </div>
+  <a href="{% url 'community:skill_offer_create' %}" class="btn btn-primary btn-sm">+ Offer Skill</a>
+</div>
+
+<div class="filter-bar">
+  <a href="{% url 'community:skill_marketplace' %}" class="filter-chip {% if not active_tag %}active{% endif %}">All</a>
+  {% for tag in skill_tags %}
+  <a href="?tag={{ tag }}" class="filter-chip {% if active_tag == tag %}active{% endif %}">{{ tag }}</a>
+  {% endfor %}
+</div>
+
+{% if offers %}
+<div class="skill-grid">
+  {% for offer in offers %}
+  <div class="skill-offer-card">
+    <div class="soc-header">
+      <div>
+        <div class="soc-tag">{{ offer.skill_tag }}</div>
+      </div>
+      <div class="soc-type">{{ offer.get_listing_type_display }}</div>
+    </div>
+    <div class="soc-title">{{ offer.title }}</div>
+    <div class="soc-desc">{{ offer.description }}</div>
+    <div class="soc-footer">
+      <div class="soc-user">
+        <div class="soc-av">
+          {% if offer.user.community_profile.avatar %}
+            <img src="{{ offer.user.community_profile.avatar.url }}" alt="">
+          {% else %}{{ offer.user.username|slice:":1"|upper }}{% endif %}
+        </div>
+        @{{ offer.user.username }}
+      </div>
+      {% if offer.user != request.user %}
+      <button class="deal-btn" onclick="initDeal('{{ offer.id }}','{{ offer.title|escapejs }}')">Deal â†’</button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+  <p>No skill offers yet{% if active_tag %} for "{{ active_tag }}"{% endif %}.</p>
+  <a href="{% url 'community:skill_offer_create' %}" class="btn btn-primary">Be the first to offer</a>
+</div>
+{% endif %}
+
+<!-- Deal Modal -->
+<div id="deal-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:4000;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--surface2);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;border:1px solid var(--border2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <span style="font-size:1rem;font-weight:700;">Propose a Deal</span>
+      <button onclick="document.getElementById('deal-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:1.25rem;cursor:pointer;">âœ•</button>
+    </div>
+    <div id="deal-offer-title" style="font-size:.875rem;color:var(--text2);margin-bottom:1rem;padding:.625rem;background:var(--surface3);border-radius:8px;"></div>
+    <form id="deal-form">
+      {% csrf_token %}
+      <input type="hidden" id="deal-offer-id" name="offer_id">
+      <textarea name="message" placeholder="What will you offer in return? Describe your skill or serviceâ€¦" rows="3" required
+        style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;resize:none;margin-bottom:1rem;box-sizing:border-box;"></textarea>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Send Proposal</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function initDeal(offerId, title){
+  document.getElementById('deal-offer-id').value=offerId;
+  document.getElementById('deal-offer-title').textContent='Re: '+title;
+  document.getElementById('deal-modal').style.display='flex';
+}
+const csrf=()=>document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+document.getElementById('deal-form').addEventListener('submit',function(e){
+  e.preventDefault();
+  const fd=new FormData(this);
+  fetch('/community/skills/'+fd.get('offer_id')+'/deal/',{
+    method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'},
+    body:JSON.stringify({message:fd.get('message')})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){document.getElementById('deal-modal').style.display='none';showUXToast('Proposal sent!','success');this.reset();}
+    else showUXToast(d.error||'Error','error');
+  });
+});
+</script>
+{% endblock %}
+

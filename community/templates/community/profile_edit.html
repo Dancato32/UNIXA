@@ -1,4 +1,4 @@
-{% extends "community/base.html" %}
+﻿{% extends "community/base.html" %}
 {% block title %}Edit Profile{% endblock %}
 {% block mobile_title %}Edit Profile{% endblock %}
 {% block topbar_title %}edit-profile{% endblock %}
@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <style>
-.edit-card{background:var(--s2);border:1px solid var(--b2);border-radius:12px;overflow:hidden;max-width:560px;}
+.edit-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;max-width:560px;}
 
 /* Banner preview */
 .banner-preview-wrap{position:relative;height:140px;background:linear-gradient(135deg,#a78bfa,#818cf8,#f0abfc);cursor:pointer;overflow:hidden;}
@@ -17,19 +17,19 @@
 
 /* Avatar preview */
 .av-row{display:flex;align-items:flex-end;gap:1rem;padding:0 1.25rem 1rem;margin-top:-40px;}
-.av-preview{width:80px;height:80px;border-radius:16px;border:3px solid var(--s2);background:var(--s4);overflow:hidden;cursor:pointer;position:relative;flex-shrink:0;}
+.av-preview{width:80px;height:80px;border-radius:16px;border:3px solid var(--surface2);background:var(--surface4);overflow:hidden;cursor:pointer;position:relative;flex-shrink:0;}
 .av-preview img{width:100%;height:100%;object-fit:cover;}
-.av-preview-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:700;color:var(--t1);}
-.av-edit-hint{font-size:.75rem;color:var(--t3);padding-bottom:.25rem;}
+.av-preview-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:700;color:var(--text);}
+.av-edit-hint{font-size:.75rem;color:var(--text3);padding-bottom:.25rem;}
 
 /* Form body */
 .edit-body{padding:0 1.25rem 1.25rem;}
 .form-group{margin-bottom:1rem;}
-.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.35rem;}
-.form-control{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.55rem .875rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;box-sizing:border-box;}
-.form-control:focus{border-color:var(--b3);}
+.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--text2);margin-bottom:.35rem;}
+.form-control{width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;padding:.55rem .875rem;color:var(--text);font-size:.875rem;outline:none;transition:border-color .15s;box-sizing:border-box;}
+.form-control:focus{border-color:var(--border3);}
 textarea.form-control{resize:vertical;min-height:90px;line-height:1.6;}
-.char-count{font-size:.75rem;color:var(--t4);text-align:right;margin-top:.2rem;}
+.char-count{font-size:.75rem;color:var(--text4);text-align:right;margin-top:.2rem;}
 .form-actions{display:flex;gap:.75rem;padding-top:.5rem;}
 input[type="file"]{display:none;}
 
@@ -89,7 +89,7 @@ input[type="file"]{display:none;}
       <div class="form-group">
         <label class="form-label" for="id_bio">Bio</label>
         <textarea id="id_bio" name="bio" class="form-control" maxlength="500"
-                  placeholder="Tell the community about yourself…"
+                  placeholder="Tell the community about yourselfâ€¦"
                   oninput="document.getElementById('bio-count').textContent=this.value.length">{{ profile.bio }}</textarea>
         <div class="char-count"><span id="bio-count">{{ profile.bio|length }}</span>/500</div>
       </div>
@@ -137,3 +137,4 @@ document.getElementById('avatar-input').addEventListener('change', function() {
 });
 </script>
 {% endblock %}
+

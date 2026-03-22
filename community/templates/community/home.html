@@ -1,401 +1,496 @@
-{% extends "community/base.html" %}
+﻿{% extends "community/base.html" %}
 {% block title %}Home{% endblock %}
-{% block mobile_title %}🏠 home{% endblock %}
-{% block breadcrumb_label %}Home{% endblock %}
+{% block mobile_title %}Home{% endblock %}
 {% block nav_home %}active{% endblock %}
-{% block rail_home %}active{% endblock %}
 {% block bn_home %}active{% endblock %}
-{% block topbar_title %}home{% endblock %}
+{% block topbar_title %}Home{% endblock %}
 {% block topbar_desc %}Your community hub{% endblock %}
 {% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>{% endblock %}
 
 {% block extra_css %}
 <style>
-.home-grid{display:grid;grid-template-columns:1fr 280px;gap:1.25rem;align-items:start;}
-@media(max-width:860px){.home-grid{grid-template-columns:1fr;}}
+/* neutralise base .page padding so home controls its own spacing */
+.page { padding: 0 !important; max-width: 100% !important; }
 
-/* Quick Actions */
-.qa-wrap{overflow:hidden;margin-bottom:1.25rem;}
-.qa-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.625rem;}
-@media(max-width:600px){
-  .qa-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-left:-.875rem;margin-right:-.875rem;padding:0 .875rem .25rem;}
-  .qa-wrap::-webkit-scrollbar{display:none;}
-  .qa-grid{display:flex;flex-direction:row;gap:.5rem;width:max-content;}
-  .qa-btn{min-width:130px;flex-shrink:0;}
+/* ── Page shell ── */
+.home-page { max-width: 600px; margin: 0 auto; padding: 0; }
+
+/* ── Header ── */
+.home-header {
+  display: flex; align-items: center; gap: .875rem;
+  padding: 1.25rem 1rem .875rem;
 }
-@media(max-width:380px){
-  .qa-btn{min-width:115px;font-size:.8125rem;padding:.625rem .75rem;}
+.home-av {
+  position: relative; flex-shrink: 0; cursor: pointer;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--surface4); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.125rem; font-weight: 700;
+  border: 2px solid var(--border2);
 }
-.qa-btn{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;}
-.qa-btn:hover{background:var(--s3);border-color:var(--b3);}
-.qa-btn svg{width:18px;height:18px;flex-shrink:0;color:var(--t3);}
-.qa-btn.primary{background:var(--white);color:#000;border-color:transparent;}
-.qa-btn.primary svg{color:#000;}
-.qa-btn.primary:hover{background:#e8e8e8;}
+.home-av img { width: 100%; height: 100%; object-fit: cover; }
+.home-av-cam {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: rgba(0,0,0,.5); display: flex; align-items: center;
+  justify-content: center; opacity: 0; transition: opacity .15s;
+}
+.home-av:hover .home-av-cam { opacity: 1; }
+.home-header-text { flex: 1; min-width: 0; }
+.home-header-text h2 {
+  font-size: 1.125rem; font-weight: 800;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.home-header-text p { font-size: .8125rem; color: var(--text3); margin-top: .1rem; }
+.home-header-actions { display: flex; gap: .25rem; flex-shrink: 0; }
+.home-hbtn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--surface3); border: none; color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; transition: background .15s;
+}
+.home-hbtn:hover { background: var(--surface4); }
+.home-hbtn svg { width: 18px; height: 18px; }
+.home-hbtn .hbtn-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red); border: 2px solid var(--bg);
+}
 
-/* Section headers */
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
-.sec-title{font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);}
-.sec-link{font-size:.75rem;color:var(--t3);transition:color .15s;}
-.sec-link:hover{color:var(--t1);}
+/* ── Search bar ── */
+.home-search {
+  display: flex; align-items: center; gap: .625rem;
+  margin: 0 1rem .875rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: .625rem 1rem;
+  transition: border-color .15s;
+}
+.home-search:focus-within { border-color: var(--border3); }
+.home-search svg { width: 16px; height: 16px; color: var(--text3); flex-shrink: 0; }
+.home-search input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-size: .9375rem;
+}
+.home-search input::placeholder { color: var(--text3); }
+.home-search-mic {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface3); border: none; color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+}
+.home-search-mic svg { width: 14px; height: 14px; }
 
-/* Workspace cards */
-.ws-card{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;margin-bottom:.5rem;transition:all .15s;text-decoration:none;color:var(--t1);}
-.ws-card:hover{background:var(--s3);border-color:var(--b3);}
-.ws-icon{width:36px;height:36px;border-radius:8px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:800;flex-shrink:0;}
-.ws-info{flex:1;min-width:0;}
-.ws-name{font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ws-meta{font-size:.75rem;color:var(--t3);}
-.ws-badge{font-size:.65rem;font-weight:700;padding:.1rem .4rem;border-radius:4px;background:var(--s4);color:var(--t3);}
+/* ── Quick action grid ── */
+.home-actions {
+  display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: .5rem; padding: 0 1rem .875rem;
+}
+.ha-btn {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: .375rem;
+  padding: .875rem .5rem; border-radius: var(--radius);
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); font-size: .75rem; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all .15s;
+  min-height: 72px; text-align: center; line-height: 1.3;
+}
+.ha-btn:hover { background: var(--surface3); border-color: var(--border2); color: var(--text); }
+.ha-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.ha-btn.ha-primary {
+  background: var(--accent); border-color: transparent; color: #fff;
+  font-size: .8125rem; font-weight: 700;
+}
+.ha-btn.ha-primary:hover { background: var(--accent-hover); }
+.ha-btn.ha-primary svg { color: rgba(255,255,255,.9); }
 
-/* Community chips */
-.comm-chip{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:var(--s2);border:1px solid var(--b2);border-radius:8px;margin-bottom:.375rem;transition:all .15s;text-decoration:none;color:var(--t1);}
-.comm-chip:hover{background:var(--s3);}
-.comm-av{width:28px;height:28px;border-radius:6px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:800;flex-shrink:0;overflow:hidden;}
-.comm-av img{width:100%;height:100%;object-fit:cover;}
-.comm-name{font-size:.8125rem;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.comm-join-btn{font-size:.7rem;font-weight:700;padding:.2rem .5rem;border-radius:4px;background:var(--white);color:#000;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.comm-join-btn:hover{background:#e8e8e8;}
+/* ── Section ── */
+.home-section { padding: 0 1rem; margin-bottom: 1.25rem; }
+.home-sec-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .625rem;
+}
+.home-sec-title {
+  font-size: .75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--text3);
+  display: flex; align-items: center; gap: .375rem;
+}
+.home-sec-title svg { width: 14px; height: 14px; }
+.home-sec-link {
+  display: flex; align-items: center; gap: .2rem;
+  font-size: .8125rem; color: var(--text3); transition: color .15s;
+}
+.home-sec-link:hover { color: var(--text2); }
+.home-sec-link svg { width: 14px; height: 14px; }
 
-/* Activity pulse dot */
-.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulseDot 2s ease-in-out infinite;}
-@keyframes pulseDot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4);}50%{opacity:.8;box-shadow:0 0 0 4px rgba(34,197,94,0);}}
+/* ── Workspace rows ── */
+.ws-list { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.ws-row {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .75rem 1rem; border-bottom: 1px solid var(--border);
+  text-decoration: none; color: var(--text); transition: background .12s;
+}
+.ws-row:last-child { border-bottom: none; }
+.ws-row:hover { background: var(--surface3); }
+.ws-row-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  background: var(--surface4); display: flex; align-items: center;
+  justify-content: center; font-size: .875rem; font-weight: 800;
+  flex-shrink: 0; color: var(--text2);
+}
+.ws-row-info { flex: 1; min-width: 0; }
+.ws-row-name { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ws-row-meta { font-size: .75rem; color: var(--text3); margin-top: .1rem; }
+.ws-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.ws-create-btn {
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  width: 100%; padding: .75rem; background: none; border: none;
+  border-top: 1px solid var(--border); color: var(--text3);
+  font-size: .875rem; font-weight: 600; cursor: pointer;
+  transition: all .15s; text-decoration: none;
+}
+.ws-create-btn:hover { background: var(--surface3); color: var(--text2); }
+.ws-create-btn svg { width: 15px; height: 15px; }
 
-/* Collapsible sidebar panel (mobile) */
-.collapsible-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
-.collapsible-head .caret{transition:transform .2s;font-size:.75rem;color:var(--t3);}
-.collapsible-head.collapsed .caret{transform:rotate(-90deg);}
-.collapsible-body{overflow:hidden;transition:max-height .25s ease;}
-.collapsible-body.collapsed{max-height:0!important;}
+/* ── Discover rows ── */
+.discover-list { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.disc-row {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .75rem 1rem; border-bottom: 1px solid var(--border);
+  transition: background .12s;
+}
+.disc-row:last-child { border-bottom: none; }
+.disc-row:hover { background: var(--surface3); }
+.disc-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  background: var(--surface4); display: flex; align-items: center;
+  justify-content: center; font-size: .875rem; font-weight: 800;
+  flex-shrink: 0; color: var(--text2); overflow: hidden;
+}
+.disc-icon img { width: 100%; height: 100%; object-fit: cover; }
+.disc-info { flex: 1; min-width: 0; }
+.disc-name { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.disc-meta { font-size: .75rem; color: var(--text3); margin-top: .1rem; }
+.disc-join-btn {
+  padding: .35rem .875rem; border-radius: var(--radius-sm);
+  background: var(--surface3); border: 1px solid var(--border2);
+  color: var(--text2); font-size: .8125rem; font-weight: 700;
+  cursor: pointer; transition: all .15s; white-space: nowrap; flex-shrink: 0;
+}
+.disc-join-btn:hover { background: var(--surface4); color: var(--text); }
+.disc-join-btn.joined { color: var(--green); border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.08); }
+.disc-show-more {
+  display: flex; align-items: center; justify-content: center;
+  padding: .625rem; color: var(--text3); font-size: .8125rem;
+  font-weight: 600; cursor: pointer; background: none; border: none;
+  width: 100%; transition: color .15s; text-decoration: none;
+}
+.disc-show-more:hover { color: var(--text2); }
 
-/* Feed preview */
-.fp-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.75rem .875rem;margin-bottom:.5rem;transition:border-color .15s;text-decoration:none;display:block;color:var(--t1);overflow:hidden;width:100%;box-sizing:border-box;}
-.fp-card:hover{border-color:var(--b3);}
-.fp-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.375rem;min-width:0;}
-.fp-av{width:24px;height:24px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0;overflow:hidden;}
-.fp-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.fp-author{font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
-.fp-when{font-size:.7rem;color:var(--t3);margin-left:auto;white-space:nowrap;flex-shrink:0;}
-.fp-content{font-size:.8125rem;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;}
-.fp-stats{display:flex;gap:.75rem;margin-top:.5rem;}
-.fp-stat{font-size:.7rem;color:var(--t3);display:flex;align-items:center;gap:.25rem;}
-.fp-stat svg{width:12px;height:12px;}
+/* ── Recent activity ── */
+.fp-card {
+  display: block; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .875rem 1rem; margin-bottom: .5rem;
+  text-decoration: none; color: var(--text); transition: border-color .15s;
+}
+.fp-card:hover { border-color: var(--border2); }
+.fp-meta { display: flex; align-items: center; gap: .375rem; margin-bottom: .5rem; flex-wrap: wrap; }
+.fp-av {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--surface4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .5625rem; font-weight: 700; flex-shrink: 0; overflow: hidden;
+}
+.fp-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.fp-author { font-size: .75rem; font-weight: 600; color: var(--text2); }
+.fp-community { font-size: .75rem; color: var(--text3); }
+.fp-time { font-size: .75rem; color: var(--text3); margin-left: auto; }
+.fp-title { font-size: .875rem; font-weight: 600; margin-bottom: .25rem; line-height: 1.4; }
+.fp-body { font-size: .8125rem; color: var(--text2); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fp-stats { display: flex; gap: .875rem; margin-top: .625rem; }
+.fp-stat { display: flex; align-items: center; gap: .25rem; font-size: .75rem; color: var(--text3); }
+.fp-stat svg { width: 12px; height: 12px; }
 
-/* Create workspace modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:4000;display:none;align-items:center;justify-content:center;padding:1rem;}
-.modal-overlay.open{display:flex;}
-.modal-box{background:var(--s2);border:1px solid var(--b2);border-radius:12px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
-.modal-head{padding:1rem 1.25rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;}
-.modal-title{font-size:.9375rem;font-weight:700;}
-.modal-close{background:none;border:none;color:var(--t3);font-size:1.25rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;}
-.modal-close:hover{background:var(--s3);color:var(--t1);}
-.modal-body{padding:1.25rem;}
-.form-group{margin-bottom:1rem;}
-.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--t2);margin-bottom:.375rem;}
-.form-input{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;box-sizing:border-box;}
-.form-input:focus{border-color:var(--b3);}
-.form-select{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;box-sizing:border-box;}
-.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;}
-.type-opt{padding:.625rem .75rem;background:var(--s3);border:1px solid var(--b2);border-radius:6px;cursor:pointer;transition:all .15s;text-align:center;}
-.type-opt:hover{border-color:var(--b3);}
-.type-opt.selected{border-color:var(--white);background:var(--s4);}
-.type-opt-icon{font-size:1.25rem;margin-bottom:.25rem;}
-.type-opt-name{font-size:.75rem;font-weight:600;color:var(--t1);}
-.type-opt-desc{font-size:.65rem;color:var(--t3);margin-top:.1rem;}
+/* ── Empty state ── */
+.home-empty {
+  text-align: center; padding: 2.5rem 1rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.home-empty h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+.home-empty p { font-size: .875rem; color: var(--text3); margin-bottom: 1.25rem; line-height: 1.6; }
+
+/* ── Workspace modal ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 4000; display: none; align-items: flex-end; justify-content: center; }
+@media(min-width:600px){ .modal-overlay { align-items: center; } }
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto;
+}
+@media(min-width:600px){ .modal-box { border-radius: var(--radius-lg); } }
+.modal-handle { width: 36px; height: 4px; background: var(--border3); border-radius: 2px; margin: .75rem auto .25rem; }
+@media(min-width:600px){ .modal-handle { display: none; } }
+.modal-head { padding: .875rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: .9375rem; font-weight: 700; }
+.modal-close { background: none; border: none; color: var(--text3); cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all .15s; }
+.modal-close:hover { background: var(--surface3); color: var(--text); }
+.modal-body { padding: 1.25rem; }
+.type-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; margin-top: .375rem; }
+.type-opt { padding: .625rem .75rem; background: var(--surface3); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all .15s; text-align: left; }
+.type-opt:hover { border-color: var(--border2); }
+.type-opt.selected { border-color: var(--accent); background: var(--accent-subtle); }
+.type-opt-name { font-size: .8125rem; font-weight: 600; color: var(--text); }
+.type-opt-desc { font-size: .6875rem; color: var(--text3); margin-top: .1rem; }
+
+/* ── Desktop override: show 2-col layout ── */
+@media(min-width:860px){
+  .home-page { max-width: 900px; display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; padding: 0; }
+  .home-main { min-width: 0; }
+  .home-sidebar { padding-top: 0; }
+  .home-header { padding: 0 0 1rem; }
+  .home-search { margin: 0 0 .875rem; }
+  .home-actions { padding: 0 0 .875rem; }
+  .home-section { padding: 0 0 0; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="home-grid">
-  <!-- Left: main content -->
-  <div>
-    <!-- Welcome bar -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;gap:.75rem;min-width:0;overflow:hidden;">
-      <div style="display:flex;align-items:center;gap:.875rem;min-width:0;">
-        <!-- Avatar widget -->
-        <div style="position:relative;flex-shrink:0;">
-          <div id="home-avatar-ring" style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f97316,#818cf8);padding:2px;cursor:pointer;" onclick="document.getElementById('home-avatar-input').click()" title="Change profile picture">
-            <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#0d0d1a;display:flex;align-items:center;justify-content:center;">
-              {% if user.community_profile.avatar %}
-                <img id="home-avatar-img" src="{{ user.community_profile.avatar.url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
-              {% else %}
-                <div id="home-avatar-img" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d0d1a,#12122a);">
-                  <svg viewBox="0 0 40 40" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="20" cy="24" rx="9" ry="10" fill="#818cf8"/>
-                    <ellipse cx="11" cy="23" rx="5" ry="3" fill="#6366f1" transform="rotate(-20 11 23)"/>
-                    <ellipse cx="29" cy="23" rx="5" ry="3" fill="#6366f1" transform="rotate(20 29 23)"/>
-                    <circle cx="20" cy="13" r="7" fill="#a5b4fc"/>
-                    <circle cx="17.5" cy="12" r="1.5" fill="#1e1b4b"/>
-                    <circle cx="17.8" cy="11.7" r=".5" fill="#fff"/>
-                    <circle cx="22.5" cy="12" r="1.5" fill="#1e1b4b"/>
-                    <circle cx="22.8" cy="11.7" r=".5" fill="#fff"/>
-                    <polygon points="20,15 18.5,17.5 21.5,17.5" fill="#f97316"/>
-                    <ellipse cx="20" cy="26" rx="5" ry="6" fill="#c7d2fe"/>
-                    <line x1="17" y1="33" x2="15" y2="36" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
-                    <line x1="17" y1="33" x2="17" y2="36" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
-                    <line x1="17" y1="33" x2="19" y2="36" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
-                    <line x1="23" y1="33" x2="21" y2="36" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
-                    <line x1="23" y1="33" x2="23" y2="36" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
-                    <line x1="23" y1="33" x2="25" y2="36" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </div>
-              {% endif %}
-            </div>
-          </div>
-          <!-- Camera overlay on hover -->
-          <div onclick="document.getElementById('home-avatar-input').click()" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;cursor:pointer;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          </div>
-          <input type="file" id="home-avatar-input" accept="image/*" style="display:none;" onchange="homeUploadAvatar(this)">
+<div class="home-page">
+
+  <!-- ── Main column ── -->
+  <div class="home-main">
+
+    <!-- Header -->
+    <div class="home-header">
+      <div class="home-av" onclick="document.getElementById('home-avatar-input').click()" title="Change photo">
+        {% if user.community_profile.avatar %}
+          <img src="{{ user.community_profile.avatar.url }}" alt="avatar">
+        {% else %}
+          {{ user.username|slice:":1"|upper }}
+        {% endif %}
+        <div class="home-av-cam">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="14" height="14"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </div>
-        <div style="min-width:0;">
-          <div style="font-size:1.125rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Welcome back, {{ user.username }} 👋</div>
-          <div style="font-size:.8125rem;color:var(--t3);margin-top:.2rem;">Here's what's happening in your community</div>
-        </div>
+        <input type="file" id="home-avatar-input" accept="image/*" style="display:none;" onchange="homeUploadAvatar(this)">
+      </div>
+      <div class="home-header-text">
+        <h2>Welcome back, {{ user.username }}</h2>
+        <p>Here's what's happening in your community</p>
+      </div>
+      <div class="home-header-actions">
+        <button class="home-hbtn" onclick="openMobSearch()" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a href="{% url 'community:notifications' %}" class="home-hbtn" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          {% if unread_notif_count %}<span class="hbtn-dot"></span>{% endif %}
+        </a>
       </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="qa-wrap">
-    <div class="qa-grid">
-      <button class="qa-btn primary" onclick="openCreateWs()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Create Workspace
+    <!-- Search bar -->
+    <div class="home-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search" id="home-search-input" autocomplete="off" oninput="homeSearch(this.value)">
+      <button class="home-search-mic" aria-label="Voice search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </button>
-      <a href="{% url 'community:nexa_workspace' %}" class="qa-btn" style="background:linear-gradient(135deg,#0d0d1a,#12122a);border-color:rgba(99,102,241,.4);color:#c4b5fd;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Open Nexa
-      </a>
-      <a href="{% url 'community:workspace_list' %}" class="qa-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        My Workspaces
-      </a>
-      {% if last_workspace %}
-      <a href="{% url 'community:workspace_detail' ws_id=last_workspace.id %}" class="qa-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-        Resume: {{ last_workspace.name|truncatechars:18 }}
-      </a>
-      {% else %}
-      {% endif %}
-      <a href="{% url 'assignment_list' %}" class="qa-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Upload Assignment
-      </a>
-      <a href="{% url 'community:workspace_create' %}" class="qa-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        Create Study Group
-      </a>
-      <a href="{% url 'community:post_create' %}" class="qa-btn">
+    </div>
+
+    <!-- Quick actions -->
+    <div class="home-actions">
+      <button class="ha-btn ha-primary" onclick="openCreateWs()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        New<br>Workspace<br>+
+      </button>
+      <a href="{% url 'community:post_create' %}" class="ha-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         New Post
       </a>
-      <a href="{% url 'community:messages' %}" class="qa-btn" style="position:relative;">
+      <a href="{% url 'community:messages' %}" class="ha-btn" style="position:relative;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Messages{% if unread_msgs %} <span style="background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:8px;">{{ unread_msgs }}</span>{% endif %}
+        Messages
+        {% if unread_msgs %}<span style="position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--bg);"></span>{% endif %}
       </a>
-      <a href="{% url 'community:notifications' %}" class="qa-btn" style="position:relative;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        Notifications{% if unread_notif_count %} <span style="background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:8px;">{{ unread_notif_count }}</span>{% endif %}
-      </a>
-    </div>
-    </div><!-- /qa-wrap -->
-
-    <!-- Feed Preview -->
-    <div class="sec-head">
-      <span class="sec-title">Recent Activity</span>
-      <a href="{% url 'community:feed' %}" class="sec-link">See all →</a>
-    </div>
-    {% if feed_posts %}
-      {% for post in feed_posts %}
-      <a href="{% url 'community:post_detail' pk=post.id %}" class="fp-card">
-        <div class="fp-top">
-          <div class="fp-av">
-            {% with profile=post.author.community_profile %}
-            {% if profile and profile.avatar %}
-              <img src="{{ profile.avatar.url }}" alt="">
-            {% else %}
-              {{ post.author.username|slice:":1"|upper }}
-            {% endif %}
-            {% endwith %}
-          </div>
-          <span class="fp-author">{{ post.author.username }}</span>
-          {% if post.school_community %}<span style="font-size:.7rem;color:var(--t3);">in {{ post.school_community.name|truncatechars:20 }}</span>{% endif %}
-          {% if post.custom_community %}<span style="font-size:.7rem;color:var(--t3);">in {{ post.custom_community.name|truncatechars:20 }}</span>{% endif %}
-          <span class="fp-when">{{ post.created_at|timesince }} ago</span>
-        </div>
-        {% if post.title %}<div style="font-size:.875rem;font-weight:600;margin-bottom:.25rem;">{{ post.title|truncatechars:80 }}</div>{% endif %}
-        <div class="fp-content">{{ post.content|truncatechars:140 }}</div>
-        <div class="fp-stats">
-          <span class="fp-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg>{{ post.like_count }}</span>
-          <span class="fp-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>{{ post.comment_count }}</span>
-        </div>
-      </a>
-      {% endfor %}
-    {% else %}
-      <div style="text-align:center;padding:2rem 0;color:var(--t3);font-size:.875rem;">No posts yet. <a href="{% url 'community:post_create' %}" style="color:var(--t2);">Create the first one →</a></div>
-    {% endif %}
-  </div>
-
-  <!-- Right: sidebar panels -->
-  <div>
-    <!-- Personal Workspace -->
-    {% if personal_ws %}
-    <div style="margin-bottom:1.25rem;">
-      <div class="sec-head"><span class="sec-title">Personal Workspace</span></div>
-      <a href="{% url 'community:workspace_detail' ws_id=personal_ws.id %}" class="ws-card">
-        <div class="ws-icon" style="background:#1a1a2e;color:#818cf8;">🔒</div>
-        <div class="ws-info">
-          <div class="ws-name">{{ personal_ws.name }}</div>
-          <div class="ws-meta">Private · Only you</div>
-        </div>
+      <a href="{% url 'community:nexa_workspace' %}" class="ha-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Open Nexa
       </a>
     </div>
-    {% endif %}
 
     <!-- My Workspaces -->
-    {% if workspace_memberships %}
-    <div style="margin-bottom:1.25rem;" id="panel-workspaces">
-      <div class="sec-head collapsible-head" onclick="togglePanel('workspaces')">
-        <span class="sec-title">My Workspaces</span>
-        <div style="display:flex;align-items:center;gap:.5rem;">
-          <a href="{% url 'community:workspace_list' %}" class="sec-link" onclick="event.stopPropagation()">All →</a>
-          <span class="caret">▾</span>
-        </div>
-      </div>
-      <div class="collapsible-body" id="body-workspaces">
-        {% for m in workspace_memberships %}
-        {% with ws=m.workspace %}
-        <a href="{% url 'community:workspace_detail' ws_id=ws.id %}" class="ws-card">
-          <div class="ws-icon">{{ ws.name|slice:":1"|upper }}</div>
-          <div class="ws-info">
-            <div class="ws-name">{{ ws.name|truncatechars:22 }}</div>
-            <div class="ws-meta">{{ ws.get_workspace_type_display }} · {{ m.role }}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:.375rem;">
-            <span class="ws-badge">{{ ws.members.count }}</span>
-            <span class="pulse-dot" title="Active"></span>
-          </div>
+    <div class="home-section">
+      <div class="home-sec-head">
+        <span class="home-sec-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          My Workspaces
+        </span>
+        <a href="{% url 'community:workspace_list' %}" class="home-sec-link">
+          See All
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
-        {% endwith %}
-        {% endfor %}
+      </div>
+
+      <div class="ws-list">
+        {% if personal_ws %}
+        <a href="{% url 'community:workspace_detail' ws_id=personal_ws.id %}" class="ws-row">
+          <div class="ws-row-icon" style="background:var(--accent-subtle);color:var(--accent-text);">N</div>
+          <div class="ws-row-info">
+            <div class="ws-row-name">{{ personal_ws.name }}</div>
+            <div class="ws-row-meta">Private</div>
+          </div>
+          <div class="ws-pulse"></div>
+        </a>
+        {% endif %}
+        {% for m in workspace_memberships %}{% with ws=m.workspace %}
+        <a href="{% url 'community:workspace_detail' ws_id=ws.id %}" class="ws-row">
+          <div class="ws-row-icon">{{ ws.name|slice:":1"|upper }}</div>
+          <div class="ws-row-info">
+            <div class="ws-row-name">{{ ws.name|truncatechars:28 }}</div>
+            <div class="ws-row-meta">{{ ws.get_workspace_type_display }}</div>
+          </div>
+          <div class="ws-pulse"></div>
+        </a>
+        {% endwith %}{% endfor %}
+        {% if not personal_ws and not workspace_memberships %}
+        <div style="padding:1.25rem 1rem;text-align:center;color:var(--text3);font-size:.875rem;">No workspaces yet</div>
+        {% endif %}
+        <button class="ws-create-btn" onclick="openCreateWs()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create Workspace
+        </button>
       </div>
     </div>
-    {% endif %}
 
-    <!-- My Communities -->
+    <!-- Discover -->
+    <div class="home-section">
+      <div class="home-sec-head">
+        <span class="home-sec-title">Discover</span>
+        <a href="{% url 'community:custom_list' %}" class="home-sec-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+      <div class="discover-list">
+        {% if suggested_communities %}
+          {% for c in suggested_communities %}
+          <div class="disc-row">
+            <div class="disc-icon">{{ c.name|slice:":1"|upper }}</div>
+            <div class="disc-info">
+              <div class="disc-name">{{ c.name|truncatechars:24 }}</div>
+              <div class="disc-meta">Community</div>
+            </div>
+            <button class="disc-join-btn" onclick="quickJoin('{{ c.slug }}', this)">Join</button>
+          </div>
+          {% endfor %}
+        {% endif %}
+        <!-- AI Hub always shown -->
+        <a href="{% url 'ai_community:hub' %}" class="disc-row" style="text-decoration:none;color:var(--text);">
+          <div class="disc-icon" style="background:var(--accent-subtle);color:var(--accent-text);">N</div>
+          <div class="disc-info">
+            <div class="disc-name" style="color:var(--accent-text);">Nexa AI Hub</div>
+            <div class="disc-meta">AI tools, study groups, matching</div>
+          </div>
+          <span style="font-size:.8125rem;color:var(--text3);white-space:nowrap;">Show More</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="home-section">
+      <div class="home-sec-head">
+        <span class="home-sec-title">Recent Activity</span>
+        <a href="{% url 'community:feed' %}" class="home-sec-link">See all</a>
+      </div>
+
+      {% if feed_posts %}
+        {% for post in feed_posts %}
+        <a href="{% url 'community:post_detail' pk=post.id %}" class="fp-card">
+          <div class="fp-meta">
+            <div class="fp-av">
+              {% with profile=post.author.community_profile %}
+              {% if profile and profile.avatar %}<img src="{{ profile.avatar.url }}" alt="">
+              {% else %}{{ post.author.username|slice:":1"|upper }}{% endif %}
+              {% endwith %}
+            </div>
+            <span class="fp-author">{{ post.author.username }}</span>
+            {% if post.school_community %}<span class="fp-community">in {{ post.school_community.name|truncatechars:18 }}</span>{% endif %}
+            {% if post.custom_community %}<span class="fp-community">in {{ post.custom_community.name|truncatechars:18 }}</span>{% endif %}
+            <span class="fp-time">{{ post.created_at|timesince }} ago</span>
+          </div>
+          {% if post.title %}<div class="fp-title">{{ post.title|truncatechars:80 }}</div>{% endif %}
+          <div class="fp-body">{{ post.content|truncatechars:140 }}</div>
+          <div class="fp-stats">
+            <span class="fp-stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg>
+              {{ post.like_count }}
+            </span>
+            <span class="fp-stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              {{ post.comment_count }}
+            </span>
+          </div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="home-empty">
+          <h3>No posts yet</h3>
+          <p>Be the first to share something with your community.</p>
+          <a href="{% url 'community:post_create' %}" class="btn btn-primary" style="padding:.75rem 2rem;font-size:.9375rem;">Create a post</a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div><!-- /home-main -->
+
+  <!-- ── Desktop sidebar (hidden on mobile) ── -->
+  <div class="home-sidebar" style="display:none;" id="home-desktop-sidebar">
     {% if school_memberships or custom_memberships %}
-    <div style="margin-bottom:1.25rem;" id="panel-communities">
-      <div class="sec-head collapsible-head" onclick="togglePanel('communities')">
-        <span class="sec-title">My Communities</span>
-        <div style="display:flex;align-items:center;gap:.5rem;">
-          <a href="{% url 'community:custom_list' %}" class="sec-link" onclick="event.stopPropagation()">All →</a>
-          <span class="caret">▾</span>
-        </div>
-      </div>
-      <div class="collapsible-body" id="body-communities">
-        {% for m in school_memberships %}
-        <a href="{% url 'community:school_detail' slug=m.community.slug %}" class="comm-chip">
-          <div class="comm-av">
-            {% if m.community.logo_url %}<img src="{{ m.community.logo_url }}" alt="">{% else %}{{ m.community.name|slice:":1"|upper }}{% endif %}
-          </div>
-          <span class="comm-name">{{ m.community.name|truncatechars:24 }}</span>
-          <span class="pulse-dot"></span>
-        </a>
-        {% endfor %}
-        {% for m in custom_memberships %}
-        <a href="{% url 'community:custom_detail' slug=m.community.slug %}" class="comm-chip">
-          <div class="comm-av">{{ m.community.name|slice:":1"|upper }}</div>
-          <span class="comm-name">{{ m.community.name|truncatechars:24 }}</span>
-        </a>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- Suggested Communities -->
-    {% if suggested_communities %}
-    <div style="margin-bottom:1.25rem;">
-      <div class="sec-head"><span class="sec-title">Discover</span></div>
-      {% for c in suggested_communities %}
-      <div class="comm-chip" style="justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:.5rem;min-width:0;">
-          <div class="comm-av">{{ c.name|slice:":1"|upper }}</div>
-          <span class="comm-name">{{ c.name|truncatechars:20 }}</span>
-        </div>
-        <button class="comm-join-btn" onclick="quickJoin('{{ c.slug }}', this)">Join</button>
-      </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:.875rem;">
+      <div style="padding:.625rem 1rem;border-bottom:1px solid var(--border);font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);">My Communities</div>
+      {% for m in school_memberships %}
+      <a href="{% url 'community:school_detail' slug=m.community.slug %}" class="ws-row">
+        <div class="ws-row-icon">{% if m.community.logo_url %}<img src="{{ m.community.logo_url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);">{% else %}{{ m.community.name|slice:":1"|upper }}{% endif %}</div>
+        <div class="ws-row-info"><div class="ws-row-name">{{ m.community.name|truncatechars:22 }}</div><div class="ws-row-meta">School</div></div>
+      </a>
+      {% endfor %}
+      {% for m in custom_memberships %}
+      <a href="{% url 'community:custom_detail' slug=m.community.slug %}" class="ws-row">
+        <div class="ws-row-icon">{{ m.community.name|slice:":1"|upper }}</div>
+        <div class="ws-row-info"><div class="ws-row-name">{{ m.community.name|truncatechars:22 }}</div><div class="ws-row-meta">Community</div></div>
+      </a>
       {% endfor %}
     </div>
     {% endif %}
-
-    <!-- AI Hub shortcut -->
-    <a href="{% url 'ai_community:hub' %}" class="ws-card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-color:#2a2a4a;">
-      <div class="ws-icon" style="background:#2a2a4a;color:#818cf8;font-size:1.25rem;">🤖</div>
-      <div class="ws-info">
-        <div class="ws-name" style="color:#c4b5fd;">Nexa AI Hub</div>
-        <div class="ws-meta" style="color:#6b7280;">Find people · Study groups · AI tools</div>
-      </div>
-    </a>
   </div>
-</div>
+
+</div><!-- /home-page -->
 
 <!-- Create Workspace Modal -->
 <div class="modal-overlay" id="create-ws-modal">
   <div class="modal-box">
+    <div class="modal-handle"></div>
     <div class="modal-head">
-      <span class="modal-title">Create Workspace</span>
-      <button class="modal-close" onclick="closeCreateWs()">✕</button>
+      <span class="modal-title">New Workspace</span>
+      <button class="modal-close" onclick="closeCreateWs()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
     <div class="modal-body">
       <form method="POST" action="{% url 'community:workspace_create' %}">
         {% csrf_token %}
         <div class="form-group">
-          <label class="form-label">Workspace Name</label>
+          <label class="form-label">Name</label>
           <input class="form-input" name="name" placeholder="e.g. CS301 Study Group" required maxlength="255">
         </div>
         <div class="form-group">
           <label class="form-label">Type</label>
-          <div class="type-grid" id="type-grid">
-            <div class="type-opt selected" data-val="general" onclick="selectType(this)">
-              <div class="type-opt-icon">🤝</div>
-              <div class="type-opt-name">General</div>
-              <div class="type-opt-desc">Collaboration</div>
-            </div>
-            <div class="type-opt" data-val="study_group" onclick="selectType(this)">
-              <div class="type-opt-icon">📚</div>
-              <div class="type-opt-name">Study Group</div>
-              <div class="type-opt-desc">Exam prep</div>
-            </div>
-            <div class="type-opt" data-val="group_project" onclick="selectType(this)">
-              <div class="type-opt-icon">🗂️</div>
-              <div class="type-opt-name">Team Project</div>
-              <div class="type-opt-desc">Academic project</div>
-            </div>
-            <div class="type-opt" data-val="startup" onclick="selectType(this)">
-              <div class="type-opt-icon">🚀</div>
-              <div class="type-opt-name">Startup</div>
-              <div class="type-opt-desc">Build a product</div>
-            </div>
-            <div class="type-opt" data-val="ai_tutor" onclick="selectType(this)">
-              <div class="type-opt-icon">🤖</div>
-              <div class="type-opt-name">AI Tutor</div>
-              <div class="type-opt-desc">AI-guided learning</div>
-            </div>
-            <div class="type-opt" data-val="assignment" onclick="selectType(this)">
-              <div class="type-opt-icon">✏️</div>
-              <div class="type-opt-name">Assignment</div>
-              <div class="type-opt-desc">Solve together</div>
-            </div>
-            <div class="type-opt" data-val="exam_prep" onclick="selectType(this)">
-              <div class="type-opt-icon">🎯</div>
-              <div class="type-opt-name">Exam Prep</div>
-              <div class="type-opt-desc">Practice & review</div>
-            </div>
-            <div class="type-opt" data-val="research" onclick="selectType(this)">
-              <div class="type-opt-icon">🔬</div>
-              <div class="type-opt-name">Research</div>
-              <div class="type-opt-desc">Deep investigation</div>
-            </div>
+          <div class="type-grid">
+            <div class="type-opt selected" data-val="general" onclick="selectType(this)"><div class="type-opt-name">General</div><div class="type-opt-desc">Collaboration</div></div>
+            <div class="type-opt" data-val="study_group" onclick="selectType(this)"><div class="type-opt-name">Study Group</div><div class="type-opt-desc">Exam prep</div></div>
+            <div class="type-opt" data-val="group_project" onclick="selectType(this)"><div class="type-opt-name">Team Project</div><div class="type-opt-desc">Academic project</div></div>
+            <div class="type-opt" data-val="startup" onclick="selectType(this)"><div class="type-opt-name">Startup</div><div class="type-opt-desc">Build a product</div></div>
+            <div class="type-opt" data-val="ai_tutor" onclick="selectType(this)"><div class="type-opt-name">AI Tutor</div><div class="type-opt-desc">AI-guided learning</div></div>
+            <div class="type-opt" data-val="research" onclick="selectType(this)"><div class="type-opt-name">Research</div><div class="type-opt-desc">Deep investigation</div></div>
           </div>
           <input type="hidden" name="workspace_type" id="ws-type-input" value="general">
         </div>
@@ -409,24 +504,18 @@
         </div>
         <div class="form-group">
           <label class="form-label">Description (optional)</label>
-          <textarea class="form-input" name="description" rows="2" placeholder="What is this workspace for?" style="resize:vertical;"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Subject / Topic (optional)</label>
-          <input class="form-input" name="subject" placeholder="e.g. Machine Learning, Business Strategy">
+          <textarea class="form-input form-textarea" name="description" rows="2" placeholder="What is this workspace for?"></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">Add Members (optional)</label>
           <div style="position:relative;">
-            <input class="form-input" id="ws-member-search" autocomplete="off" placeholder="Search by username or name…" oninput="wsMemberSearch(this.value)">
-            <div id="ws-member-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e2e;border:1px solid rgba(255,255,255,.1);border-radius:8px;z-index:100;max-height:180px;overflow-y:auto;margin-top:3px;"></div>
+            <input class="form-input" id="ws-member-search" autocomplete="off" placeholder="Search by username..." oninput="wsMemberSearch(this.value)">
+            <div id="ws-member-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-sm);z-index:100;max-height:180px;overflow-y:auto;margin-top:3px;"></div>
           </div>
           <div id="ws-member-chips" style="display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.5rem;"></div>
           <div id="ws-member-inputs"></div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.625rem;">
-          Create Workspace
-        </button>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;font-size:.9375rem;">Create Workspace</button>
       </form>
     </div>
   </div>
@@ -435,411 +524,116 @@
 
 {% block extra_js %}
 <script>
+// Show desktop sidebar on wide screens
+(function(){
+  function checkWidth(){
+    const sb = document.getElementById('home-desktop-sidebar');
+    if(sb) sb.style.display = window.innerWidth >= 860 ? '' : 'none';
+  }
+  checkWidth();
+  window.addEventListener('resize', checkWidth);
+})();
+
 async function homeUploadAvatar(input) {
   const file = input.files[0];
   if (!file) return;
-  const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const av = document.querySelector('.home-av');
+    av.innerHTML = '<img src="' + e.target.result + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+  };
+  reader.readAsDataURL(file);
+  const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
   const fd = new FormData();
   fd.append('avatar', file);
   fd.append('csrfmiddlewaretoken', csrf);
-  // Optimistic preview
-  const reader = new FileReader();
-  reader.onload = e => {
-    const ring = document.getElementById('home-avatar-ring');
-    const inner = ring.querySelector('div');
-    inner.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  };
-  reader.readAsDataURL(file);
   try {
-    const resp = await fetch('{% url "community:upload_avatar" %}', { method: 'POST', body: fd });
-    const data = await resp.json();
-    if (!data.ok && typeof showUXToast === 'function') showUXToast('Upload failed');
-  } catch(e) { if (typeof showUXToast === 'function') showUXToast('Upload error'); }
+    const r = await fetch('{% url "community:upload_avatar" %}', {method:'POST',body:fd});
+    const d = await r.json();
+    if (!d.ok) showUXToast('Upload failed', 'error');
+    else showUXToast('Photo updated', 'success');
+  } catch(e) { showUXToast('Upload error', 'error'); }
+}
+
+function homeSearch(q) {
+  // Delegate to mobile search overlay for now
+  if (q.length > 1) openMobSearch();
 }
 
 function openCreateWs() {
   document.getElementById('create-ws-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 function closeCreateWs() {
   document.getElementById('create-ws-modal').classList.remove('open');
-  // Reset member state
-  Object.keys(wsMemberMap).forEach(u => delete wsMemberMap[u]);
+  document.body.style.overflow = '';
+  Object.keys(wsMemberMap).forEach(k => delete wsMemberMap[k]);
   document.getElementById('ws-member-chips').innerHTML = '';
   document.getElementById('ws-member-inputs').innerHTML = '';
   document.getElementById('ws-member-search').value = '';
   document.getElementById('ws-member-dropdown').style.display = 'none';
 }
-document.getElementById('create-ws-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeCreateWs();
-});
+document.getElementById('create-ws-modal').addEventListener('click', function(e){ if(e.target===this) closeCreateWs(); });
 
 function selectType(el) {
-  document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.type-opt').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('ws-type-input').value = el.dataset.val;
 }
 
-// ── Add Members search ────────────────────────────────────────
-const wsMemberMap = {}; // username → display name
+const wsMemberMap = {};
 let wsMemberTimer = null;
-
 function wsMemberSearch(q) {
   clearTimeout(wsMemberTimer);
   const dd = document.getElementById('ws-member-dropdown');
-  if (!q.trim()) { dd.style.display = 'none'; return; }
+  if (!q.trim()) { dd.style.display='none'; return; }
   wsMemberTimer = setTimeout(async () => {
     try {
-      const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
-      const resp = await fetch(`{% url 'community:workspace_search_users' %}?q=${encodeURIComponent(q)}`, {
-        headers: {'X-CSRFToken': csrf}
-      });
-      const data = await resp.json();
-      const users = data.users || [];
-      if (!users.length) { dd.innerHTML = '<div style="padding:.6rem .875rem;font-size:.775rem;color:#888;">No users found</div>'; dd.style.display = 'block'; return; }
-      dd.innerHTML = users.map(u => `
-        <div onclick="wsAddMember('${u.username}','${u.display||u.username}')"
-          style="display:flex;align-items:center;gap:.625rem;padding:.5rem .875rem;cursor:pointer;transition:background .12s;"
-          onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-          <div style="width:28px;height:28px;border-radius:7px;background:#2a2a3e;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#aaa;flex-shrink:0;">${(u.display||u.username).slice(0,1).toUpperCase()}</div>
-          <div><div style="font-size:.8rem;font-weight:600;color:#e5e5e5;">${u.display||u.username}</div><div style="font-size:.7rem;color:#888;">@${u.username}</div></div>
-        </div>`).join('');
-      dd.style.display = 'block';
-    } catch(e) { dd.style.display = 'none'; }
-  }, 280);
+      const r = await fetch('{% url "community:workspace_search_users" %}?q=' + encodeURIComponent(q));
+      const d = await r.json();
+      const users = d.users||[];
+      if (!users.length) { dd.innerHTML='<div style="padding:.6rem .875rem;font-size:.775rem;color:var(--text3);">No users found</div>'; dd.style.display='block'; return; }
+      dd.innerHTML = users.map(u=>'<div onclick="addWsMember(\''+u.username+'\',\''+(u.display_name||u.username)+'\')" style="padding:.5rem .875rem;font-size:.8125rem;cursor:pointer;" onmouseover="this.style.background=\'var(--surface4)\'" onmouseout="this.style.background=\'\'">'+(u.display_name||u.username)+' <span style="color:var(--text3);">@'+u.username+'</span></div>').join('');
+      dd.style.display='block';
+    } catch(e) { dd.style.display='none'; }
+  }, 300);
 }
-
-function wsAddMember(username, displayName) {
-  if (wsMemberMap[username]) return; // already added
-  wsMemberMap[username] = displayName;
-  // Chip
+function addWsMember(username, name) {
+  if (wsMemberMap[username]) return;
+  wsMemberMap[username] = name;
+  const chips = document.getElementById('ws-member-chips');
+  const inputs = document.getElementById('ws-member-inputs');
   const chip = document.createElement('div');
-  chip.id = 'ws-chip-' + username;
-  chip.style.cssText = 'display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .6rem;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);border-radius:20px;font-size:.75rem;color:#c4b5fd;';
-  chip.innerHTML = `${displayName} <span onclick="wsRemoveMember('${username}')" style="cursor:pointer;opacity:.7;font-size:.85rem;line-height:1;">✕</span>`;
-  document.getElementById('ws-member-chips').appendChild(chip);
-  // Hidden input
+  chip.style.cssText = 'display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .5rem;background:var(--surface4);border:1px solid var(--border2);border-radius:4px;font-size:.75rem;';
+  chip.innerHTML = name + ' <button type="button" onclick="removeWsMember(\''+username+'\',this.parentElement)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.875rem;line-height:1;">x</button>';
+  chip.dataset.username = username;
+  chips.appendChild(chip);
   const inp = document.createElement('input');
-  inp.type = 'hidden';
-  inp.name = 'members';
-  inp.value = username;
-  inp.id = 'ws-inp-' + username;
-  document.getElementById('ws-member-inputs').appendChild(inp);
-  // Reset search
-  document.getElementById('ws-member-search').value = '';
-  document.getElementById('ws-member-dropdown').style.display = 'none';
+  inp.type='hidden'; inp.name='members'; inp.value=username; inp.id='wm-'+username;
+  inputs.appendChild(inp);
+  document.getElementById('ws-member-search').value='';
+  document.getElementById('ws-member-dropdown').style.display='none';
 }
-
-function wsRemoveMember(username) {
+function removeWsMember(username, chip) {
   delete wsMemberMap[username];
-  document.getElementById('ws-chip-' + username)?.remove();
-  document.getElementById('ws-inp-' + username)?.remove();
+  chip.remove();
+  const inp = document.getElementById('wm-'+username);
+  if (inp) inp.remove();
 }
 
-// Close dropdown on outside click
-document.addEventListener('click', e => {
-  if (!e.target.closest('#ws-member-search') && !e.target.closest('#ws-member-dropdown')) {
-    const dd = document.getElementById('ws-member-dropdown');
-    if (dd) dd.style.display = 'none';
-  }
-});
-
-function quickJoin(slug, btn) {
+async function quickJoin(slug, btn) {
   btn.disabled = true;
-  btn.textContent = '…';
-  const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1] || '';
-  fetch('/community/api/communities/' + slug + '/quick-join/', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': csrf },
-  })
-    .then(r => r.json())
-    .then(d => {
-      btn.textContent = d.joined ? 'Joined ✓' : 'Requested ✓';
-      btn.style.background = '#22c55e';
-      btn.style.color = '#fff';
-    })
-    .catch(() => { btn.disabled = false; btn.textContent = 'Join'; });
-}
-
-/* Collapsible panels */
-function togglePanel(id) {
-  const head = document.querySelector('#panel-' + id + ' .collapsible-head');
-  const body = document.getElementById('body-' + id);
-  if (!body) return;
-  const isCollapsed = body.classList.contains('collapsed');
-  if (isCollapsed) {
-    body.style.maxHeight = body.scrollHeight + 'px';
-    body.classList.remove('collapsed');
-    if (head) head.classList.remove('collapsed');
-    setTimeout(function(){ body.style.maxHeight = 'none'; }, 260);
-  } else {
-    body.style.maxHeight = body.scrollHeight + 'px';
-    requestAnimationFrame(function(){
-      body.style.maxHeight = '0';
-      body.classList.add('collapsed');
-      if (head) head.classList.add('collapsed');
-    });
-  }
-}
-
-/* Init collapsible heights */
-document.querySelectorAll('.collapsible-body').forEach(function(b){
-  b.style.maxHeight = 'none';
-});
-</script>
-
-{% if show_onboarding %}
-<!-- ── ONBOARDING WIZARD ─────────────────────────────────────────────────── -->
-<div id="onboarding-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;">
-  <div id="onboarding-card" style="background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.25);">
-
-    <!-- Progress bar -->
-    <div style="height:4px;background:#f0f0f0;">
-      <div id="ob-progress" style="height:100%;background:linear-gradient(90deg,#f97316,#818cf8);width:33%;transition:width .4s;"></div>
-    </div>
-
-    <!-- Step 1: Choose school -->
-    <div id="ob-step1" style="padding:2rem;display:flex;flex-direction:column;flex:1;overflow:hidden;">
-      <div style="text-align:center;margin-bottom:1.5rem;">
-        <div style="font-size:2rem;margin-bottom:.5rem;">🎓</div>
-        <div style="font-size:1.25rem;font-weight:800;color:#1a1a1a;">Which university are you at?</div>
-        <div style="font-size:.875rem;color:#666;margin-top:.375rem;">We'll add you to your school's community automatically.</div>
-      </div>
-      <!-- Search -->
-      <input id="ob-school-search" type="text" placeholder="Search your university…" oninput="obFilterSchools(this.value)"
-        style="width:100%;padding:.75rem 1rem;border:1.5px solid #e5e5e7;border-radius:10px;font-size:.9rem;outline:none;margin-bottom:.75rem;box-sizing:border-box;">
-      <!-- List -->
-      <div id="ob-school-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.375rem;max-height:320px;">
-        {% for school in all_schools %}
-        <button class="ob-school-btn" data-id="{{ school.id }}" data-name="{{ school.name }}"
-          onclick="obSelectSchool(this)"
-          style="display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border:1.5px solid #e5e5e7;border-radius:10px;background:#fff;cursor:pointer;text-align:left;transition:all .15s;font-size:.875rem;font-weight:500;color:#1a1a1a;">
-          {% if school.logo_url %}
-          <img src="{{ school.logo_url }}" style="width:32px;height:32px;border-radius:6px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">
-          {% else %}
-          <div style="width:32px;height:32px;border-radius:6px;background:#f0f0f4;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;">{{ school.name|slice:":2"|upper }}</div>
-          {% endif %}
-          {{ school.name }}
-        </button>
-        {% endfor %}
-      </div>
-      <div style="display:flex;gap:.75rem;margin-top:1.25rem;">
-        <button onclick="obSkipSchool()" style="flex:1;padding:.75rem;border:1.5px solid #e5e5e7;border-radius:10px;background:#fff;color:#666;font-size:.875rem;font-weight:600;cursor:pointer;">Skip</button>
-        <button id="ob-school-next" onclick="obSubmitSchool()" disabled
-          style="flex:2;padding:.75rem;border:none;border-radius:10px;background:#1a1a1a;color:#fff;font-size:.875rem;font-weight:700;cursor:pointer;opacity:.4;transition:opacity .2s;">Join & Continue →</button>
-      </div>
-    </div>
-
-    <!-- Step 2: Profile setup -->
-    <div id="ob-step2" style="padding:2rem;display:none;flex-direction:column;flex:1;overflow-y:auto;">
-      <div style="text-align:center;margin-bottom:1.5rem;">
-        <div style="font-size:2rem;margin-bottom:.5rem;">✨</div>
-        <div style="font-size:1.25rem;font-weight:800;color:#1a1a1a;">Set up your profile</div>
-        <div style="font-size:.875rem;color:#666;margin-top:.375rem;">Help others find you — takes 30 seconds.</div>
-      </div>
-      <!-- Avatar upload -->
-      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
-        <div id="ob-avatar-preview" onclick="document.getElementById('ob-avatar-input').click()"
-          style="width:72px;height:72px;border-radius:50%;background:#f0f0f4;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;border:2px dashed #e5e5e7;transition:border-color .15s;">
-          <span style="font-size:1.5rem;">📷</span>
-        </div>
-        <input id="ob-avatar-input" type="file" accept="image/*" style="display:none;" onchange="obPreviewAvatar(this)">
-        <div>
-          <div style="font-size:.875rem;font-weight:600;color:#1a1a1a;">Profile photo</div>
-          <div style="font-size:.75rem;color:#888;margin-top:.2rem;">Click to upload (optional)</div>
-        </div>
-      </div>
-      <!-- Display name -->
-      <input id="ob-display-name" type="text" placeholder="Display name (e.g. Alex Mensah)"
-        style="width:100%;padding:.75rem 1rem;border:1.5px solid #e5e5e7;border-radius:10px;font-size:.9rem;outline:none;margin-bottom:.75rem;box-sizing:border-box;">
-      <!-- Bio -->
-      <textarea id="ob-bio" placeholder="Short bio — what are you studying or working on?" rows="2"
-        style="width:100%;padding:.75rem 1rem;border:1.5px solid #e5e5e7;border-radius:10px;font-size:.9rem;outline:none;resize:none;margin-bottom:.875rem;box-sizing:border-box;font-family:inherit;"></textarea>
-      <!-- Interests -->
-      <div style="font-size:.8rem;font-weight:600;color:#555;margin-bottom:.5rem;">Your interests (pick a few)</div>
-      <div id="ob-interests-chips" style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1.25rem;">
-        {% for tag in ob_interest_tags %}
-        <button class="ob-chip" data-tag="{{ tag }}" onclick="obToggleChip(this)"
-          style="padding:.375rem .75rem;border:1.5px solid #e5e5e7;border-radius:20px;background:#fff;color:#555;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s;">{{ tag }}</button>
-        {% endfor %}
-      </div>
-      <div style="display:flex;gap:.75rem;margin-top:auto;">
-        <button onclick="obGoStep3()" style="flex:1;padding:.75rem;border:1.5px solid #e5e5e7;border-radius:10px;background:#fff;color:#666;font-size:.875rem;font-weight:600;cursor:pointer;">Skip</button>
-        <button id="ob-profile-next" onclick="obSubmitProfile()"
-          style="flex:2;padding:.75rem;border:none;border-radius:10px;background:#1a1a1a;color:#fff;font-size:.875rem;font-weight:700;cursor:pointer;">Save & Continue →</button>
-      </div>
-    </div>
-
-    <!-- Step 3: Follow friends -->
-    <div id="ob-step3" style="padding:2rem;display:none;flex-direction:column;flex:1;overflow:hidden;">
-      <div style="text-align:center;margin-bottom:1.25rem;">
-        <div style="font-size:2rem;margin-bottom:.5rem;">👥</div>
-        <div style="font-size:1.25rem;font-weight:800;color:#1a1a1a;">Follow people you might know</div>
-        <div style="font-size:.875rem;color:#666;margin-top:.375rem;">Students from your university with similar interests.</div>
-      </div>
-      <div id="ob-users-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;max-height:340px;">
-        <div style="text-align:center;padding:2rem;color:#aaa;font-size:.875rem;">Loading suggestions…</div>
-      </div>
-      <div style="display:flex;gap:.75rem;margin-top:1.25rem;">
-        <button onclick="obFinish()" style="flex:1;padding:.75rem;border:1.5px solid #e5e5e7;border-radius:10px;background:#fff;color:#666;font-size:.875rem;font-weight:600;cursor:pointer;">Skip</button>
-        <button id="ob-follow-btn" onclick="obSubmitFollows()"
-          style="flex:2;padding:.75rem;border:none;border-radius:10px;background:linear-gradient(135deg,#f97316,#818cf8);color:#fff;font-size:.875rem;font-weight:700;cursor:pointer;">Follow Selected & Go →</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-var obSelectedSchoolId = null;
-var obSelectedUsers = new Set();
-var obSelectedInterests = new Set();
-
-// ── School step ──
-function obFilterSchools(q) {
-  q = q.toLowerCase();
-  document.querySelectorAll('.ob-school-btn').forEach(function(btn) {
-    btn.style.display = btn.dataset.name.toLowerCase().includes(q) ? '' : 'none';
-  });
-}
-function obSelectSchool(btn) {
-  document.querySelectorAll('.ob-school-btn').forEach(function(b) {
-    b.style.borderColor = '#e5e5e7'; b.style.background = '#fff'; b.style.color = '#1a1a1a';
-  });
-  btn.style.borderColor = '#f97316'; btn.style.background = '#fff7ed'; btn.style.color = '#f97316';
-  obSelectedSchoolId = btn.dataset.id;
-  var nextBtn = document.getElementById('ob-school-next');
-  nextBtn.disabled = false; nextBtn.style.opacity = '1';
-}
-function obSkipSchool() { obSelectedSchoolId = null; obGoStep2(); }
-function obSubmitSchool() {
-  var btn = document.getElementById('ob-school-next');
-  btn.textContent = 'Joining…'; btn.disabled = true;
-  fetch('{% url "community:onboarding_join_school" %}', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-    body: JSON.stringify({ school_id: obSelectedSchoolId })
-  }).then(function() { obGoStep2(); }).catch(function() { obGoStep2(); });
-}
-function obGoStep2() {
-  document.getElementById('ob-step1').style.display = 'none';
-  document.getElementById('ob-step2').style.display = 'flex';
-  document.getElementById('ob-progress').style.width = '66%';
-}
-
-// ── Profile step ──
-function obPreviewAvatar(input) {
-  if (!input.files || !input.files[0]) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var preview = document.getElementById('ob-avatar-preview');
-    preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;">';
-    preview.style.border = '2px solid #f97316';
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-function obToggleChip(btn) {
-  var tag = btn.dataset.tag;
-  if (obSelectedInterests.has(tag)) {
-    obSelectedInterests.delete(tag);
-    btn.style.borderColor = '#e5e5e7'; btn.style.background = '#fff'; btn.style.color = '#555';
-  } else {
-    obSelectedInterests.add(tag);
-    btn.style.borderColor = '#818cf8'; btn.style.background = '#f5f3ff'; btn.style.color = '#818cf8';
-  }
-}
-function obSubmitProfile() {
-  var btn = document.getElementById('ob-profile-next');
-  btn.textContent = 'Saving…'; btn.disabled = true;
-  var fd = new FormData();
-  fd.append('display_name', document.getElementById('ob-display-name').value.trim());
-  fd.append('bio', document.getElementById('ob-bio').value.trim());
-  fd.append('interests', Array.from(obSelectedInterests).join(','));
-  var avatarFile = document.getElementById('ob-avatar-input').files[0];
-  if (avatarFile) fd.append('avatar', avatarFile);
-  fetch('{% url "community:onboarding_save_profile" %}', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-    body: fd
-  }).then(function() { obGoStep3(); }).catch(function() { obGoStep3(); });
-}
-function obGoStep3() {
-  document.getElementById('ob-step2').style.display = 'none';
-  document.getElementById('ob-step3').style.display = 'flex';
-  document.getElementById('ob-progress').style.width = '100%';
-  obLoadSuggestedUsers();
-}
-
-// ── Follow step ──
-function obLoadSuggestedUsers() {
-  fetch('{% url "community:onboarding_suggested_users" %}')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var list = document.getElementById('ob-users-list');
-      if (!data.users || !data.users.length) {
-        list.innerHTML = '<div style="text-align:center;padding:2rem;color:#aaa;font-size:.875rem;">No suggestions yet — you can find people later.</div>';
-        return;
-      }
-      list.innerHTML = '';
-      data.users.forEach(function(u) {
-        var avatarHtml = u.avatar
-          ? '<img src="' + u.avatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">'
-          : '<div style="width:40px;height:40px;border-radius:50%;background:#f0f0f4;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;">' + u.username.slice(0,1).toUpperCase() + '</div>';
-        var tagsHtml = '';
-        if (u.interests && u.interests.length) {
-          tagsHtml = '<div style="display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.2rem;">' +
-            u.interests.map(function(t) { return '<span style="font-size:.65rem;padding:.1rem .4rem;background:#f5f3ff;color:#818cf8;border-radius:8px;">' + t + '</span>'; }).join('') + '</div>';
-        }
-        var row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border:1.5px solid #e5e5e7;border-radius:10px;cursor:pointer;transition:all .15s;';
-        row.dataset.username = u.username;
-        row.innerHTML = avatarHtml +
-          '<div style="flex:1;min-width:0;"><div style="font-size:.875rem;font-weight:600;color:#1a1a1a;">' + u.display_name + '</div><div style="font-size:.75rem;color:#888;">@' + u.username + '</div>' + tagsHtml + '</div>' +
-          '<div class="ob-follow-check" style="width:24px;height:24px;border-radius:50%;border:2px solid #e5e5e7;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;"></div>';
-        row.onclick = function() { obToggleUser(this); };
-        list.appendChild(row);
-      });
-    }).catch(function() {
-      document.getElementById('ob-users-list').innerHTML = '<div style="text-align:center;padding:2rem;color:#aaa;font-size:.875rem;">Could not load suggestions.</div>';
-    });
-}
-function obToggleUser(row) {
-  var uname = row.dataset.username;
-  var check = row.querySelector('.ob-follow-check');
-  if (obSelectedUsers.has(uname)) {
-    obSelectedUsers.delete(uname);
-    row.style.borderColor = '#e5e5e7'; row.style.background = '#fff';
-    check.style.borderColor = '#e5e5e7'; check.style.background = ''; check.innerHTML = '';
-  } else {
-    obSelectedUsers.add(uname);
-    row.style.borderColor = '#818cf8'; row.style.background = '#f5f3ff';
-    check.style.borderColor = '#818cf8'; check.style.background = '#818cf8';
-    check.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
-  }
-  document.getElementById('ob-follow-btn').textContent = obSelectedUsers.size > 0
-    ? 'Follow ' + obSelectedUsers.size + ' & Go →' : 'Follow Selected & Go →';
-}
-function obSubmitFollows() {
-  var btn = document.getElementById('ob-follow-btn');
-  btn.textContent = 'Saving…'; btn.disabled = true;
-  fetch('{% url "community:onboarding_follow_users" %}', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-    body: JSON.stringify({ usernames: Array.from(obSelectedUsers) })
-  }).then(function() { obDone(); }).catch(function() { obDone(); });
-}
-function obFinish() {
-  fetch('{% url "community:onboarding_follow_users" %}', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-    body: JSON.stringify({ usernames: [] })
-  }).then(function() { obDone(); }).catch(function() { obDone(); });
-}
-function obDone() {
-  var overlay = document.getElementById('onboarding-overlay');
-  overlay.style.opacity = '0'; overlay.style.transition = 'opacity .3s';
-  setTimeout(function() { overlay.remove(); }, 300);
+  const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+  try {
+    const r = await fetch('/community/c/'+slug+'/join/', {method:'POST',headers:{'X-CSRFToken':csrf}});
+    const d = await r.json();
+    if (d.joined) {
+      btn.textContent = 'Joined';
+      btn.classList.add('joined');
+      btn.disabled = true;
+      showUXToast('Joined community', 'success');
+    } else { btn.disabled = false; }
+  } catch(e) { btn.disabled = false; }
 }
 </script>
-{% endif %}
-
 {% endblock %}

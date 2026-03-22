@@ -1,0 +1,152 @@
+﻿{% extends "community/base.html" %}
+{% block title %}Help Beacons{% endblock %}
+{% block mobile_title %}ðŸ§  Need Help{% endblock %}
+{% block breadcrumb_label %}Help Beacons{% endblock %}
+
+{% block extra_css %}
+<style>
+.beacon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+@media(max-width:480px){.beacon-grid{grid-template-columns:1fr;}}
+
+.beacon-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.125rem;transition:border-color .15s;}
+.beacon-card:hover{border-color:rgba(239,68,68,.25);}
+.bc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.625rem;}
+.bc-urgency{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:700;padding:.2rem .5rem;border-radius:4px;}
+.urgency-high{background:rgba(239,68,68,.12);color:var(--red);}
+.urgency-medium{background:rgba(249,115,22,.12);color:#f97316;}
+.urgency-low{background:rgba(34,197,94,.1);color:var(--green);}
+.bc-cat{font-size:.6875rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.bc-title{font-size:.9375rem;font-weight:700;margin-bottom:.375rem;}
+.bc-desc{font-size:.8125rem;color:var(--text2);margin-bottom:.875rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.bc-footer{display:flex;align-items:center;justify-content:space-between;}
+.bc-user{display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:var(--text3);}
+.bc-av{width:22px;height:22px;border-radius:50%;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:.5625rem;font-weight:700;overflow:hidden;flex-shrink:0;}
+.bc-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.bc-time{font-size:.6875rem;color:var(--text3);}
+.claim-btn{padding:.35rem .75rem;border-radius:6px;font-size:.75rem;font-weight:700;border:none;background:rgba(239,68,68,.12);color:var(--red);cursor:pointer;transition:background .15s;}
+.claim-btn:hover{background:rgba(239,68,68,.22);}
+
+.filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.filter-chip{padding:.35rem .75rem;border-radius:20px;font-size:.8125rem;font-weight:600;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .15s;text-decoration:none;}
+.filter-chip:hover,.filter-chip.active{background:var(--surface3);color:var(--text);border-color:var(--border3);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+  <div>
+    <h1 style="font-size:1.25rem;font-weight:800;">ðŸ§  Help Beacons</h1>
+    <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Fast peer rescue. Be a hero.</div>
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="document.getElementById('beacon-modal').style.display='flex'">+ Need Help</button>
+</div>
+
+<div class="filter-bar">
+  <a href="{% url 'community:help_beacon_list' %}" class="filter-chip {% if not active_cat %}active{% endif %}">All</a>
+  {% for val,label in categories %}
+  <a href="?cat={{ val }}" class="filter-chip {% if active_cat == val %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if beacons %}
+<div class="beacon-grid">
+  {% for b in beacons %}
+  <div class="beacon-card">
+    <div class="bc-top">
+      <div class="bc-urgency urgency-{{ b.urgency }}">
+        {% if b.urgency == 'high' %}ðŸ”´{% elif b.urgency == 'medium' %}ðŸŸ {% else %}ðŸŸ¢{% endif %}
+        {{ b.get_urgency_display }}
+      </div>
+      <div class="bc-cat">{{ b.get_category_display }}</div>
+    </div>
+    <div class="bc-title">{{ b.title }}</div>
+    {% if b.description %}
+    <div class="bc-desc">{{ b.description }}</div>
+    {% endif %}
+    <div class="bc-footer">
+      <div>
+        <div class="bc-user">
+          <div class="bc-av">
+            {% if b.requester.community_profile.avatar %}<img src="{{ b.requester.community_profile.avatar.url }}" alt="">{% else %}{{ b.requester.username|slice:":1"|upper }}{% endif %}
+          </div>
+          @{{ b.requester.username }}
+        </div>
+        <div class="bc-time" style="margin-top:.25rem;">{{ b.created_at|timesince }} ago</div>
+      </div>
+      {% if b.requester != request.user %}
+      <button class="claim-btn" onclick="claimBeacon('{{ b.id }}',this)">Help â†’</button>
+      {% else %}
+      <span style="font-size:.75rem;color:var(--text3);">Your request</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <p>No open help requests{% if active_cat %} in this category{% endif %}.</p>
+  <button class="btn btn-primary" onclick="document.getElementById('beacon-modal').style.display='flex'">Post a request</button>
+</div>
+{% endif %}
+
+<!-- Beacon Modal -->
+<div id="beacon-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--surface2);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;border:1px solid var(--border2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <span style="font-size:1rem;font-weight:700;">ðŸ§  Need Help Now</span>
+      <button onclick="document.getElementById('beacon-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:1.25rem;cursor:pointer;">âœ•</button>
+    </div>
+    <form id="beacon-form">
+      {% csrf_token %}
+      <input name="title" placeholder="What do you need help with?" required
+        style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.9375rem;outline:none;margin-bottom:.75rem;box-sizing:border-box;">
+      <textarea name="description" placeholder="More details (optional)" rows="2"
+        style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;resize:none;margin-bottom:.75rem;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:.75rem;margin-bottom:1rem;">
+        <select name="category" style="flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.625rem;color:var(--text);font-size:.875rem;outline:none;">
+          {% for val,label in categories %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+        </select>
+        <select name="urgency" style="flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.625rem;color:var(--text);font-size:.875rem;outline:none;">
+          <option value="low">Low urgency</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High â€” urgent!</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Post Help Request</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrf=()=>document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+
+document.getElementById('beacon-form').addEventListener('submit',function(e){
+  e.preventDefault();
+  const fd=new FormData(this);
+  const data={title:fd.get('title'),description:fd.get('description'),category:fd.get('category'),urgency:fd.get('urgency')};
+  fetch('{% url "community:help_beacon_create" %}',{method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){document.getElementById('beacon-modal').style.display='none';showUXToast('Help request posted!','success');this.reset();setTimeout(()=>location.reload(),800);}
+      else showUXToast(d.error||'Error','error');
+    });
+});
+
+function claimBeacon(id,btn){
+  btn.disabled=true;btn.textContent='â€¦';
+  fetch('/community/help/'+id+'/claim/',{method:'POST',headers:{'X-CSRFToken':csrf()}})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){
+        showUXToast('Claimed! Opening chatâ€¦','success');
+        setTimeout(()=>window.location.href='/community/messages/'+d.convo_id+'/',800);
+      } else {
+        btn.disabled=false;btn.textContent='Help â†’';
+        showUXToast(d.error||'Error','error');
+      }
+    }).catch(()=>{btn.disabled=false;btn.textContent='Help â†’';});
+}
+</script>
+{% endblock %}
+
