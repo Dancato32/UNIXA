@@ -1301,6 +1301,38 @@ class MicroRoomParticipant(models.Model):
         unique_together = ('room', 'user')
 
 
+class RoomSignal(models.Model):
+    """WebRTC signaling message stored in DB so all workers can read it."""
+    room = models.ForeignKey(MicroRoom, on_delete=models.CASCADE, related_name='signals')
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_signals'
+    )
+    target = models.CharField(max_length=150)  # username or 'all'
+    signal_type = models.CharField(max_length=20)  # offer/answer/ice/host_ready/viewer_ready
+    payload = models.TextField()  # JSON string
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    consumed = models.BooleanField(default=False, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['room', 'target', 'consumed', 'created_at']),
+        ]
+
+
+class RoomComment(models.Model):
+    """Live chat comment in a micro room — stored in DB for multi-worker support."""
+    room = models.ForeignKey(MicroRoom, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='room_comments'
+    )
+    text = models.CharField(max_length=280)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+
 # ── 6. Help Beacon ────────────────────────────────────────────────────────────
 
 class HelpBeacon(models.Model):

@@ -38,6 +38,8 @@ from community.models import (
     WorkspaceMember,
     WorkspaceMessage,
     WorkspaceTask,
+    MicroRoomParticipant,
+    RoomSignal,
 )
 from community.services.feed import get_personalized_feed
 
@@ -3609,7 +3611,7 @@ def micro_room_detail(request, room_id):
 @login_required
 @require_POST
 def micro_room_signal(request, room_id):
-    """Store a WebRTC signal for polling. Host offer is stored persistently."""
+    """Store a WebRTC signal in DB so all workers can read it."""
     import json as _json
     room = get_object_or_404(MicroRoom, id=room_id)
     try:
@@ -3619,46 +3621,52 @@ def micro_room_signal(request, room_id):
     signal_type = data.get('type')
     payload = data.get('payload')
     target = data.get('target', 'all')
-
     if not signal_type or payload is None:
         return JsonResponse({'error': 'missing fields'}, status=400)
 
-    from django.core.cache import cache
-
-    # Host offer: store persistently so any viewer can pick it up on their first poll
-    if signal_type == 'offer' and request.user == room.host:
-        cache.set(f'room_host_offer_{room_id}', {
-            'sdp': payload, 'from': request.user.username
-        }, 7200)
-        return JsonResponse({'ok': True})
-
-    # Everything else: queue in target's inbox
-    key = f'room_signal_{room_id}_{target}'
-    signals = cache.get(key, [])
-    signals.append({'type': signal_type, 'payload': payload, 'from': request.user.username})
-    cache.set(key, signals[-50:], 120)
+    RoomSignal.objects.create(
+        room=room,
+        sender=request.user,
+        target=target,
+        signal_type=signal_type,
+        payload=_json.dumps(payload),
+    )
+    # Clean up old consumed signals older than 5 minutes
+    from django.utils import timezone as tz
+    import datetime
+    RoomSignal.objects.filter(
+        room=room, consumed=True,
+        created_at__lt=tz.now() - datetime.timedelta(minutes=5)
+    ).delete()
     return JsonResponse({'ok': True})
 
 
 @login_required
 def micro_room_poll(request, room_id):
-    """Poll for WebRTC signals + host offer + comments + participant list."""
-    from django.core.cache import cache
+    """Poll for WebRTC signals (DB-backed) + comments + participant list."""
+    import json as _json
     username = request.user.username
 
-    # Signals addressed to this user
-    key_me = f'room_signal_{room_id}_{username}'
-    signals_me = cache.get(key_me, [])
-    if signals_me:
-        cache.delete(key_me)
+    # Fetch unconsumed signals addressed to this user or 'all', not sent by self
+    qs = RoomSignal.objects.filter(
+        room_id=room_id, consumed=False
+    ).exclude(sender__username=username).filter(
+        models.Q(target=username) | models.Q(target='all')
+    ).order_by('created_at').select_related('sender')[:30]
 
-    # Signals addressed to 'all' (ICE candidates broadcast by host)
-    key_all = f'room_signal_{room_id}_all'
-    signals_all = cache.get(key_all, [])
-    combined = [s for s in signals_all if s.get('from') != username] + signals_me
+    signals = []
+    ids_to_consume = []
+    for sig in qs:
+        try:
+            payload = _json.loads(sig.payload)
+        except Exception:
+            payload = {}
+        signals.append({'type': sig.signal_type, 'payload': payload, 'from': sig.sender.username})
+        if sig.target == username:
+            ids_to_consume.append(sig.pk)
 
-    # Host offer — always included so viewers can pick it up on any poll tick
-    host_offer = cache.get(f'room_host_offer_{room_id}')
+    if ids_to_consume:
+        RoomSignal.objects.filter(pk__in=ids_to_consume).update(consumed=True)
 
     # Participants
     participants = list(
@@ -3666,18 +3674,19 @@ def micro_room_poll(request, room_id):
         .values_list('user__username', flat=True)
     )
     viewer_count = len(participants)
-    room = MicroRoom.objects.filter(id=room_id).values('status', 'participant_count').first()
-    if room:
-        room['viewer_count'] = viewer_count
+    room_data = MicroRoom.objects.filter(id=room_id).values('status', 'participant_count').first()
+    if room_data:
+        room_data['viewer_count'] = viewer_count
 
-    # Comments
+    # Comments (cache is fine for comments — single-worker read is ok)
+    from django.core.cache import cache
     comments = cache.get(f'room_comments_{room_id}', [])
 
     return JsonResponse({
-        'signals': combined,
-        'host_offer': host_offer,
+        'signals': signals,
+        'host_offer': None,
         'participants': participants,
-        'room': room,
+        'room': room_data,
         'comments': comments,
     })
 
