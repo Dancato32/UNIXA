@@ -227,7 +227,14 @@ body,html{background:#0e0e10;overflow:hidden;}
             <div class="rm-spinner"></div>
             <span>Connecting to stream…</span>
           </div>
-          <video id="rm-video-viewer" autoplay playsinline style="display:none;"></video>
+          <video id="rm-video-viewer" autoplay playsinline webkit-playsinline style="display:none;"></video>
+          <div id="rm-tap-play" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);flex-direction:column;align-items:center;justify-content:center;gap:.75rem;cursor:pointer;z-index:10;"
+            onclick="var v=document.getElementById('rm-video-viewer');v.muted=false;v.play();this.style.display='none';">
+            <div style="width:64px;height:64px;border-radius:50%;background:#9147ff;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="white" width="28" height="28"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <span style="color:#fff;font-size:.9rem;font-weight:600;">Tap to watch</span>
+          </div>
         {% endif %}
       </div>
 
@@ -384,7 +391,6 @@ async function rmHostStart() {
   rmStartPoll();
   hostReBroadcastTimer = setInterval(()=>rmSendSignal('host_ready',{host:RM_USERNAME},'all'), 8000);
 }
-
 async function rmHostMakeOffer(viewerUsername) {
   const ex = peerConns[viewerUsername];
   if (ex && ['connected','connecting'].includes(ex.connectionState)) return;
@@ -442,8 +448,19 @@ async function rmViewerHandleOffer(offerSdp) {
     pc.ontrack = e => {
       const vid = document.getElementById('rm-video-viewer');
       const w = document.getElementById('rm-waiting');
-      if (vid && e.streams && e.streams[0]) { vid.srcObject=e.streams[0]; vid.style.display='block'; }
-      if (w) w.style.display='none';
+      if (!vid) return;
+      const stream = (e.streams && e.streams[0]) ? e.streams[0] : new MediaStream([e.track]);
+      vid.srcObject = stream;
+      vid.style.display = 'block';
+      // Try unmuted first, fall back to muted autoplay + tap-to-unmute
+      vid.muted = false;
+      vid.play().catch(() => {
+        vid.muted = true;
+        vid.play().catch(() => {});
+        const overlay = document.getElementById('rm-tap-play');
+        if (overlay) overlay.style.display = 'flex';
+      });
+      if (w) w.style.display = 'none';
     };
     pc.onicecandidate = e => { if(e.candidate) rmSendSignal('ice',{candidate:e.candidate},RM_HOST_NAME); };
     pc.onconnectionstatechange = () => {
