@@ -151,7 +151,92 @@ def community_home(request):
         'last_workspace': last_workspace,
         'unread_msgs': unread_msgs,
         'workspace_type_choices': GroupWorkspace.TYPE_CHOICES,
+        'show_onboarding': not request.user.onboarding_complete,
+        'all_schools': list(SchoolCommunity.objects.filter(is_active=True).values('id', 'name', 'logo_url').order_by('name')),
     })
+
+
+# ── Onboarding ────────────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def onboarding_join_school(request):
+    """Step 1: join a school community (or skip)."""
+    import json as _json
+    data = _json.loads(request.body)
+    school_id = data.get('school_id')
+    if school_id:
+        try:
+            school = SchoolCommunity.objects.get(id=school_id, is_active=True)
+            CommunityMembership.objects.get_or_create(
+                user=request.user,
+                community=school,
+                defaults={'role': CommunityMembership.ROLE_MEMBER},
+            )
+        except SchoolCommunity.DoesNotExist:
+            pass
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def onboarding_follow_users(request):
+    """Step 2: follow suggested users (or skip). Marks onboarding complete."""
+    import json as _json
+    from community.models import Follow
+    data = _json.loads(request.body)
+    usernames = data.get('usernames', [])
+    for uname in usernames:
+        try:
+            target = User.objects.get(username=uname)
+            if target != request.user:
+                Follow.objects.get_or_create(follower=request.user, following=target)
+        except User.DoesNotExist:
+            pass
+    # Mark onboarding done regardless of whether they followed anyone
+    request.user.onboarding_complete = True
+    request.user.save(update_fields=['onboarding_complete'])
+    return JsonResponse({'ok': True})
+
+
+@login_required
+def onboarding_suggested_users(request):
+    """Return users who share school community with the current user."""
+    # Get schools the user just joined or is in
+    my_school_ids = CommunityMembership.objects.filter(
+        user=request.user
+    ).values_list('community_id', flat=True)
+
+    if my_school_ids:
+        # People in same school, not already followed, not self
+        from community.models import Follow
+        already_following = Follow.objects.filter(
+            follower=request.user
+        ).values_list('following_id', flat=True)
+
+        candidates = User.objects.filter(
+            community_memberships__community_id__in=my_school_ids
+        ).exclude(
+            id=request.user.id
+        ).exclude(
+            id__in=already_following
+        ).distinct()[:20]
+    else:
+        # Fallback: most recent users
+        candidates = User.objects.exclude(id=request.user.id).order_by('-date_joined')[:20]
+
+    users_data = []
+    for u in candidates:
+        try:
+            avatar = u.community_profile.avatar.url if u.community_profile.avatar else None
+        except Exception:
+            avatar = None
+        users_data.append({
+            'username': u.username,
+            'display_name': getattr(getattr(u, 'community_profile', None), 'display_name', '') or u.username,
+            'avatar': avatar,
+        })
+    return JsonResponse({'users': users_data})
 
 
 # ── Feed ──────────────────────────────────────────────────────────────────────

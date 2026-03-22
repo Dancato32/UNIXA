@@ -40,6 +40,11 @@ urlpatterns = [
     # Community Home (new post-login landing)
     path('home/', views.community_home, name='community_home'),
 
+    # Onboarding
+    path('onboarding/school/', views.onboarding_join_school, name='onboarding_join_school'),
+    path('onboarding/follow/', views.onboarding_follow_users, name='onboarding_follow_users'),
+    path('onboarding/suggested-users/', views.onboarding_suggested_users, name='onboarding_suggested_users'),
+
     # Feed
     path('', views.feed, name='feed'),
 
