@@ -1,140 +1,204 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{{ title }} - NEXA</title>
+<title>{{ title }} — NEXA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #0a0a0a;
-  --surface: #111;
-  --surface2: #1a1a1a;
-  --border: #222;
-  --border2: #2e2e2e;
-  --text: #f0f0f0;
-  --text2: #888;
-  --text3: #555;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0d0d;--surface:#161616;--surface2:#1e1e1e;
+  --border:#272727;--border2:#333;
+  --text:#f2f2f2;--text2:#999;--text3:#555;
+  --acc:#f97316;--acc2:#fb923c;
 }
+.palette-0{--cf:linear-gradient(135deg,#6366f1,#8b5cf6);--cb:linear-gradient(135deg,#1e1b4b,#2e1065);--ct:#c4b5fd;}
+.palette-1{--cf:linear-gradient(135deg,#0ea5e9,#06b6d4);--cb:linear-gradient(135deg,#0c2340,#0a2e38);--ct:#7dd3fc;}
+.palette-2{--cf:linear-gradient(135deg,#10b981,#059669);--cb:linear-gradient(135deg,#052e16,#064e3b);--ct:#6ee7b7;}
+.palette-3{--cf:linear-gradient(135deg,#f59e0b,#ef4444);--cb:linear-gradient(135deg,#2d1a00,#3b0a0a);--ct:#fcd34d;}
+.palette-4{--cf:linear-gradient(135deg,#ec4899,#f43f5e);--cb:linear-gradient(135deg,#3b0a1e,#2d0a14);--ct:#f9a8d4;}
+.palette-5{--cf:linear-gradient(135deg,#14b8a6,#0d9488);--cb:linear-gradient(135deg,#042f2e,#0a2e2e);--ct:#5eead4;}
+.palette-6{--cf:linear-gradient(135deg,#a855f7,#7c3aed);--cb:linear-gradient(135deg,#2e1065,#1e0a3c);--ct:#d8b4fe;}
+.palette-7{--cf:linear-gradient(135deg,#f97316,#ea580c);--cb:linear-gradient(135deg,#3b1200,#2d0e00);--ct:#fdba74;}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
 
-/* Card color palettes — front gradient / back gradient */
-.palette-0  { --cf: linear-gradient(135deg,#6366f1,#8b5cf6); --cb: linear-gradient(135deg,#1e1b4b,#2e1065); --ct: #c4b5fd; }
-.palette-1  { --cf: linear-gradient(135deg,#0ea5e9,#06b6d4); --cb: linear-gradient(135deg,#0c2340,#0a2e38); --ct: #7dd3fc; }
-.palette-2  { --cf: linear-gradient(135deg,#10b981,#059669); --cb: linear-gradient(135deg,#052e16,#064e3b); --ct: #6ee7b7; }
-.palette-3  { --cf: linear-gradient(135deg,#f59e0b,#ef4444); --cb: linear-gradient(135deg,#2d1a00,#3b0a0a); --ct: #fcd34d; }
-.palette-4  { --cf: linear-gradient(135deg,#ec4899,#f43f5e); --cb: linear-gradient(135deg,#3b0a1e,#2d0a14); --ct: #f9a8d4; }
-.palette-5  { --cf: linear-gradient(135deg,#14b8a6,#0d9488); --cb: linear-gradient(135deg,#042f2e,#0a2e2e); --ct: #5eead4; }
-.palette-6  { --cf: linear-gradient(135deg,#a855f7,#7c3aed); --cb: linear-gradient(135deg,#2e1065,#1e0a3c); --ct: #d8b4fe; }
-.palette-7  { --cf: linear-gradient(135deg,#f97316,#ea580c); --cb: linear-gradient(135deg,#3b1200,#2d0e00); --ct: #fdba74; }
-
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+/* ── Layout ── */
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 
 /* ── Topbar ── */
-.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; flex-shrink: 0; gap: 1rem; }
-.topbar-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
-.back-btn { display: flex; align-items: center; gap: 0.375rem; color: var(--text2); text-decoration: none; font-size: 0.8125rem; padding: 0.375rem 0.75rem; border: 1px solid var(--border2); border-radius: 6px; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; }
-.back-btn:hover { color: var(--text); border-color: #444; }
-.topbar-title { font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); }
-.topbar-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
-.seen-chip { background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 0.25rem 0.875rem; font-size: 0.8125rem; color: var(--text2); }
+.topbar{height:48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.75rem;flex-shrink:0;}
+.back-btn{display:flex;align-items:center;gap:.375rem;color:var(--text2);font-size:.8125rem;padding:.375rem .625rem;border:1px solid var(--border2);border-radius:6px;white-space:nowrap;flex-shrink:0;transition:all .15s;background:none;}
+.back-btn:hover{color:var(--text);border-color:#555;}
+.back-btn svg{width:13px;height:13px;}
+.topbar-title{font-size:.875rem;font-weight:600;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.topbar-right{display:flex;align-items:center;gap:.625rem;flex-shrink:0;margin-left:auto;}
+.seen-chip{background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:.2rem .75rem;font-size:.8rem;color:var(--text2);display:none;}
+.saved-btn{display:flex;align-items:center;gap:.375rem;padding:.375rem .75rem;border:1px solid var(--border2);border-radius:6px;background:none;color:var(--text2);font-size:.8125rem;transition:all .15s;}
+.saved-btn:hover{color:var(--text);border-color:#555;}
+.saved-btn svg{width:14px;height:14px;}
+.saved-btn .badge{background:var(--acc);color:#fff;border-radius:10px;padding:0 5px;font-size:.7rem;font-weight:700;display:none;}
 
 /* ── Screens ── */
-.screen { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
-.screen.active { display: flex; }
+.screen{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:2rem;overflow-y:auto;}
+.screen.active{display:flex;}
 
 /* ── Idle ── */
-.idle-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; text-align: center; }
-.idle-icon { width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg,#6366f1,#8b5cf6); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
-.idle-icon svg { width: 30px; height: 30px; color: #fff; }
-.idle-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
-.idle-desc { color: var(--text2); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.75rem; }
-.idle-meta { display: flex; gap: 0.625rem; justify-content: center; margin-bottom: 1.75rem; flex-wrap: wrap; }
-.meta-chip { background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 0.375rem 0.75rem; font-size: 0.8rem; color: var(--text2); }
-.gen-btn { width: 100%; padding: 0.875rem; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; border: none; border-radius: 10px; font-size: 0.9375rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: opacity 0.15s; font-family: inherit; }
-.gen-btn:hover { opacity: 0.9; }
+.idle-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:2.5rem 2rem;max-width:440px;width:100%;text-align:center;}
+.idle-icon{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
+.idle-icon svg{width:28px;height:28px;color:#fff;}
+.idle-title{font-size:1.125rem;font-weight:700;margin-bottom:.5rem;}
+.idle-desc{color:var(--text2);font-size:.875rem;line-height:1.65;margin-bottom:1.5rem;}
+.idle-chips{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.75rem;}
+.idle-chip{background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:.3rem .875rem;font-size:.775rem;color:var(--text2);}
+.gen-btn{width:100%;padding:.8125rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:10px;font-size:.9375rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:opacity .15s;}
+.gen-btn:hover{opacity:.9;}
+.gen-btn svg{width:16px;height:16px;}
+.saved-decks-preview{margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1.25rem;}
+.sdp-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.75rem;}
+.sdp-list{display:flex;flex-direction:column;gap:.5rem;}
+.sdp-item{display:flex;align-items:center;justify-content:space-between;padding:.625rem .875rem;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:border-color .15s;}
+.sdp-item:hover{border-color:#555;}
+.sdp-item-left{display:flex;flex-direction:column;gap:.125rem;text-align:left;}
+.sdp-item-name{font-size:.875rem;font-weight:600;color:var(--text);}
+.sdp-item-meta{font-size:.75rem;color:var(--text3);}
+.sdp-item-del{width:28px;height:28px;border:none;background:none;color:var(--text3);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sdp-item-del:hover{color:#f87171;background:rgba(239,68,68,.1);}
+.sdp-item-del svg{width:14px;height:14px;}
+.sdp-empty{font-size:.8125rem;color:var(--text3);text-align:center;padding:.5rem 0;}
 
 /* ── Loading ── */
-.loading-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 2.5rem 2rem; max-width: 340px; width: 100%; text-align: center; }
-.spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--border2); border-top-color: #6366f1; animation: spin 0.75s linear infinite; margin: 0 auto 1.25rem; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.375rem; }
-.loading-sub { font-size: 0.8125rem; color: var(--text2); }
+.loading-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:2.5rem 2rem;max-width:340px;width:100%;text-align:center;}
+.spinner{width:48px;height:48px;border-radius:50%;border:3px solid var(--border2);border-top-color:#6366f1;animation:spin .7s linear infinite;margin:0 auto 1.25rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-title{font-size:1rem;font-weight:600;margin-bottom:.375rem;}
+.loading-sub{font-size:.8125rem;color:var(--text2);}
+.dots span{animation:blink 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
 
 /* ── Error ── */
-.error-card { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 16px; padding: 2rem; max-width: 380px; width: 100%; text-align: center; }
-.error-title { font-size: 1rem; font-weight: 600; color: #f87171; margin-bottom: 0.5rem; }
-.error-body { font-size: 0.875rem; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.5; }
-.retry-btn { padding: 0.625rem 1.5rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.error-card{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:16px;padding:2rem;max-width:380px;width:100%;text-align:center;}
+.error-title{font-size:1rem;font-weight:600;color:#f87171;margin-bottom:.5rem;}
+.error-body{font-size:.875rem;color:var(--text2);margin-bottom:1.25rem;line-height:1.5;}
+.retry-btn{padding:.625rem 1.5rem;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;}
 
 /* ── Flashcard area ── */
-#resultScreen { gap: 1.5rem; padding: 1.5rem; }
+#resultScreen{gap:1.25rem;padding:1.5rem;}
 
-.fc-topbar { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 560px; }
-.fc-counter { font-size: 0.875rem; font-weight: 600; color: var(--text2); }
-.fc-seen { font-size: 0.8125rem; color: var(--text3); }
+.fc-topbar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:560px;}
+.fc-counter{font-size:.875rem;font-weight:600;color:var(--text2);}
+.fc-actions{display:flex;align-items:center;gap:.5rem;}
+.save-deck-btn{display:flex;align-items:center;gap:.375rem;padding:.375rem .875rem;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);border-radius:8px;color:var(--acc);font-size:.8125rem;font-weight:600;transition:all .15s;}
+.save-deck-btn:hover{background:rgba(249,115,22,.18);}
+.save-deck-btn svg{width:14px;height:14px;}
+.save-deck-btn.saved{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#22c55e;}
 
 /* Progress dots */
-.dots-row { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; max-width: 560px; width: 100%; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: all 0.25s; }
-.dot.seen { background: #444; }
-.dot.active { width: 22px; border-radius: 4px; background: #6366f1; }
+.dots-row{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;max-width:560px;width:100%;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all .25s;}
+.dot.seen{background:#444;}
+.dot.active{width:22px;border-radius:4px;background:#6366f1;}
 
-/* The flip card */
-.fc-scene { width: 100%; max-width: 560px; height: 260px; perspective: 1200px; cursor: pointer; }
-.fc-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(.4,0,.2,1); border-radius: 20px; }
-.fc-card.flipped { transform: rotateY(180deg); }
-.fc-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
-.fc-front { background: var(--cf); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-.fc-back  { background: var(--cb); border: 1px solid rgba(255,255,255,0.08); transform: rotateY(180deg); }
-.fc-label { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; margin-bottom: 0.75rem; }
-.fc-front .fc-label { color: rgba(255,255,255,0.7); }
-.fc-back  .fc-label { color: var(--ct); }
-.fc-term { font-size: 1.25rem; font-weight: 800; color: #fff; line-height: 1.35; }
-.fc-def  { font-size: 0.9375rem; font-weight: 500; color: var(--ct); line-height: 1.65; }
-
-.fc-hint { font-size: 0.75rem; color: var(--text3); display: flex; align-items: center; gap: 0.375rem; }
-.fc-hint svg { width: 14px; height: 14px; }
+/* Flip card */
+.fc-scene{width:100%;max-width:560px;height:260px;perspective:1200px;cursor:pointer;}
+.fc-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);border-radius:20px;}
+.fc-card.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;}
+.fc-front{background:var(--cf);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.fc-back{background:var(--cb);border:1px solid rgba(255,255,255,.08);transform:rotateY(180deg);}
+.fc-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.6;margin-bottom:.75rem;}
+.fc-front .fc-label{color:rgba(255,255,255,.7);}
+.fc-back .fc-label{color:var(--ct);}
+.fc-term{font-size:1.25rem;font-weight:800;color:#fff;line-height:1.35;}
+.fc-def{font-size:.9375rem;font-weight:500;color:var(--ct);line-height:1.65;}
+.fc-hint{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:.375rem;}
+.fc-hint svg{width:14px;height:14px;}
 
 /* Controls */
-.fc-controls { display: flex; gap: 0.75rem; align-items: center; }
-.fc-btn { display: flex; align-items: center; gap: 0.375rem; padding: 0.625rem 1.25rem; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; font-family: inherit; }
-.fc-btn:hover:not(:disabled) { color: var(--text); border-color: #444; }
-.fc-btn:disabled { opacity: 0.3; cursor: default; }
-.fc-btn.next { background: linear-gradient(135deg,#6366f1,#8b5cf6); border-color: transparent; color: #fff; font-weight: 600; }
-.fc-btn.next:hover { opacity: 0.9; }
-.regen-link { font-size: 0.8125rem; color: var(--text3); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0.25rem; }
-.regen-link:hover { color: var(--text2); }
+.fc-controls{display:flex;gap:.75rem;align-items:center;}
+.fc-btn{display:flex;align-items:center;gap:.375rem;padding:.625rem 1.25rem;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:.875rem;font-weight:500;transition:all .15s;}
+.fc-btn:hover:not(:disabled){color:var(--text);border-color:#444;}
+.fc-btn:disabled{opacity:.3;cursor:default;}
+.fc-btn.next{background:linear-gradient(135deg,#6366f1,#8b5cf6);border-color:transparent;color:#fff;font-weight:600;}
+.fc-btn.next:hover{opacity:.9;}
+.regen-link{font-size:.8125rem;color:var(--text3);background:none;border:none;padding:.25rem;}
+.regen-link:hover{color:var(--text2);}
 
-/* ── Bottom nav ── */
-.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.5rem; z-index: 100; justify-content: space-around; }
-.bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.5rem; color: var(--text3); text-decoration: none; font-size: 0.625rem; }
-.bottom-nav-item svg { width: 20px; height: 20px; }
-.bottom-nav-item.active { color: #6366f1; }
+/* ── Save modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:1.75rem;width:100%;max-width:380px;}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:1.25rem;}
+.modal-field label{display:block;font-size:.8125rem;font-weight:600;color:var(--text2);margin-bottom:.4rem;}
+.modal-field input{width:100%;padding:.625rem .875rem;background:var(--surface2);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-size:.9375rem;outline:none;font-family:inherit;}
+.modal-field input:focus{border-color:#555;}
+.modal-btns{display:flex;gap:.625rem;margin-top:1.25rem;justify-content:flex-end;}
+.modal-cancel{padding:.5rem 1.25rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:.875rem;}
+.modal-cancel:hover{color:var(--text);}
+.modal-save{padding:.5rem 1.25rem;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:700;}
+.modal-save:hover{background:var(--acc2);}
 
-@media (max-width: 900px) {
-  .screen { padding: 1rem; }
-  .fc-scene { height: 220px; }
-  .fc-term { font-size: 1.05rem; }
-  .fc-def  { font-size: 0.875rem; }
-  .bottom-nav { display: flex; }
-  body { padding-bottom: 64px; }
+/* ── Saved decks drawer ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;}
+.drawer-overlay.open{display:block;}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(360px,92vw);background:var(--surface);border-left:1px solid var(--border2);z-index:401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);}
+.drawer.open{transform:translateX(0);}
+.drawer-head{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.drawer-title{font-size:.9375rem;font-weight:700;}
+.drawer-close{width:32px;height:32px;border:none;background:none;color:var(--text2);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.drawer-close:hover{color:var(--text);}
+.drawer-close svg{width:16px;height:16px;}
+.drawer-body{flex:1;overflow-y:auto;padding:1rem;}
+.deck-item{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;margin-bottom:.625rem;cursor:pointer;transition:border-color .15s;}
+.deck-item:hover{border-color:#555;}
+.deck-item-info{display:flex;flex-direction:column;gap:.2rem;}
+.deck-item-name{font-size:.9rem;font-weight:600;color:var(--text);}
+.deck-item-meta{font-size:.75rem;color:var(--text3);}
+.deck-item-actions{display:flex;gap:.375rem;flex-shrink:0;}
+.deck-load-btn{padding:.375rem .75rem;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:6px;color:var(--acc);font-size:.775rem;font-weight:600;}
+.deck-load-btn:hover{background:rgba(249,115,22,.2);}
+.deck-del-btn{width:30px;height:30px;border:none;background:none;color:var(--text3);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.deck-del-btn:hover{color:#f87171;background:rgba(239,68,68,.1);}
+.deck-del-btn svg{width:14px;height:14px;}
+.drawer-empty{text-align:center;color:var(--text3);font-size:.875rem;padding:2rem 1rem;}
+
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:.625rem 1.25rem;font-size:.875rem;color:var(--text);z-index:600;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:rgba(34,197,94,.4);color:#86efac;}
+.toast.error{border-color:rgba(239,68,68,.4);color:#fca5a5;}
+
+@media(max-width:640px){
+  .screen{padding:1rem;}
+  .fc-scene{height:220px;}
+  .fc-term{font-size:1.05rem;}
+  .fc-def{font-size:.875rem;}
 }
 </style>
+
 </head>
 <body>
+<div class="shell">
 
+<!-- Topbar -->
 <div class="topbar">
-  <div class="topbar-left">
-    <a href="{% url 'select_material_for_action' 'flashcards' %}" class="back-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      Back
-    </a>
-    <span class="topbar-title">{{ material.title }}</span>
-  </div>
+  <a href="{% url 'list_materials' %}" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </a>
+  <span class="topbar-title">{{ material.title }}</span>
   <div class="topbar-right">
-    <span class="seen-chip" id="seenChip" style="display:none"></span>
+    <span class="seen-chip" id="seenChip"></span>
+    <button class="saved-btn" onclick="openDrawer()" title="Saved decks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      Saved
+      <span class="badge" id="deckBadge">0</span>
+    </button>
   </div>
 </div>
 
@@ -144,17 +208,21 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
     <div class="idle-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
     </div>
-    <div class="idle-title">Flashcards</div>
-    <div class="idle-desc">AI generates 15 flashcards from your material. Tap each card to reveal the answer.</div>
-    <div class="idle-meta">
-      <span class="meta-chip">15 Cards</span>
-      <span class="meta-chip">Flip to Reveal</span>
-      <span class="meta-chip">Color-coded</span>
+    <div class="idle-title">Flashcards: {{ material.title }}</div>
+    <div class="idle-desc">AI generates 15 flashcards from your material. Tap each card to reveal the answer, then save the deck to come back later.</div>
+    <div class="idle-chips">
+      <span class="idle-chip">15 Cards</span>
+      <span class="idle-chip">Flip to Reveal</span>
+      <span class="idle-chip">Save Decks</span>
     </div>
     <button class="gen-btn" onclick="generate()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       Generate Flashcards
     </button>
+    <div class="saved-decks-preview" id="idleDecksList">
+      <div class="sdp-label">Saved Decks</div>
+      <div class="sdp-list" id="idleDecksInner"><div class="sdp-empty">No saved decks yet</div></div>
+    </div>
   </div>
 </div>
 
@@ -162,7 +230,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 <div class="screen" id="loadingScreen">
   <div class="loading-card">
     <div class="spinner"></div>
-    <div class="loading-title">Creating flashcards…</div>
+    <div class="loading-title">Creating flashcards<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
     <div class="loading-sub">AI is reading your material</div>
   </div>
 </div>
@@ -180,7 +248,12 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 <div class="screen" id="resultScreen">
   <div class="fc-topbar">
     <span class="fc-counter" id="fcCounter">1 / 15</span>
-    <span class="fc-seen" id="fcSeen">0 seen</span>
+    <div class="fc-actions">
+      <button class="save-deck-btn" id="saveDeckBtn" onclick="openSaveModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        Save Deck
+      </button>
+    </div>
   </div>
   <div class="dots-row" id="dotsRow"></div>
   <div class="fc-scene" id="fcScene" onclick="flipCard()">
@@ -195,48 +268,76 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   </div>
   <div class="fc-controls">
     <button class="fc-btn" id="prevBtn" onclick="prevCard()" disabled>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" 
-stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
       Prev
     </button>
     <button class="fc-btn next" id="nextBtn" onclick="nextCard()">
-      Next
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      Next <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   </div>
   <button class="regen-link" onclick="generate()">↺ Regenerate</button>
 </div>
 
-<!-- Bottom nav -->
-<nav class="bottom-nav">
-  <a href="{% url 'dashboard' %}" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Home
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    AI
-  </a>
-  <a href="{% url 'list_materials' %}" class="bottom-nav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    Materials
-  </a>
-</nav>
+</div><!-- .shell -->
+
+<!-- Save modal -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal">
+    <div class="modal-title">Save Flashcard Deck</div>
+    <div class="modal-field">
+      <label>Deck name</label>
+      <input type="text" id="deckNameInput" placeholder="e.g. Chapter 3 Review" maxlength="100">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeSaveModal()">Cancel</button>
+      <button class="modal-save" onclick="saveDeck()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Saved decks drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="drawer-title">Saved Decks</span>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
-const AJAX_URL = '{% url "flashcards_ajax" material.pk %}';
-const CSRF = '{{ csrf_token }}';
-const PALETTES = 8;
+const AJAX_URL   = '{% url "flashcards_ajax" material.pk %}';
+const SAVE_URL   = '{% url "flashcards_save" material.pk %}';
+const DECKS_URL  = '{% url "flashcards_decks" material.pk %}';
+const LOAD_BASE  = '/materials/flashcards/{{ material.pk }}/decks/';
+const CSRF       = '{{ csrf_token }}';
+const PALETTES   = 8;
 
-let cards = [], idx = 0, seen = new Set();
+let cards = [], idx = 0, seen = new Set(), currentDeckId = null;
 
+// ── screen helpers ─────────────────────────────────────────────
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = 'toast', 2800);
+}
+
+// ── generate ───────────────────────────────────────────────────
 async function generate() {
   showScreen('loadingScreen');
+  currentDeckId = null;
   idx = 0; seen = new Set();
   try {
     const res = await fetch(AJAX_URL, {
@@ -246,6 +347,10 @@ async function generate() {
     const data = await res.json();
     if (data.success && data.cards && data.cards.length > 0) {
       cards = data.cards;
+      // reset save button
+      const btn = document.getElementById('saveDeckBtn');
+      btn.classList.remove('saved');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Save Deck`;
       renderCard();
       showScreen('resultScreen');
     } else {
@@ -258,54 +363,193 @@ async function generate() {
   }
 }
 
+// ── render card ────────────────────────────────────────────────
 function renderCard() {
   const c = cards[idx];
   seen.add(idx);
-
-  // palette cycles through 8 colors
   const p = idx % PALETTES;
   const scene = document.getElementById('fcScene');
-  // remove old palette classes
-  for (let i = 0; i < PALETTES; i++) scene.classList.remove(`palette-${i}`);
-  scene.classList.add(`palette-${p}`);
-
-  // un-flip
+  for (let i = 0; i < PALETTES; i++) scene.classList.remove('palette-' + i);
+  scene.classList.add('palette-' + p);
   document.getElementById('fcCard').classList.remove('flipped');
-
-  // content
   document.getElementById('fcTerm').textContent = c.front;
   document.getElementById('fcDef').textContent  = c.back;
-
-  // counter
   document.getElementById('fcCounter').textContent = `${idx + 1} / ${cards.length}`;
-  document.getElementById('fcSeen').textContent = `${seen.size} seen`;
 
-  // seen chip in topbar
   const chip = document.getElementById('seenChip');
-  chip.style.display = 'inline-flex';
+  chip.style.display = 'inline-block';
   chip.textContent = `${seen.size} / ${cards.length} seen`;
 
-  // dots
   document.getElementById('dotsRow').innerHTML = cards.map((_,i) =>
     `<div class="dot${i===idx?' active':seen.has(i)?' seen':''}"></div>`
   ).join('');
 
-  // buttons
   document.getElementById('prevBtn').disabled = idx === 0;
-  document.getElementById('nextBtn').textContent = idx === cards.length - 1 ? 'Restart' : 'Next';
-  // re-add arrow to next btn
-  document.getElementById('nextBtn').innerHTML =
-    (idx === cards.length - 1 ? 'Restart' : 'Next') +
+  const nextBtn = document.getElementById('nextBtn');
+  const isLast = idx === cards.length - 1;
+  nextBtn.innerHTML = (isLast ? 'Restart' : 'Next') +
     ` <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`;
 }
 
-function flipCard() {
-  document.getElementById('fcCard').classList.toggle('flipped');
-}
+function flipCard() { document.getElementById('fcCard').classList.toggle('flipped'); }
 function nextCard() { idx = idx >= cards.length - 1 ? 0 : idx + 1; renderCard(); }
 function prevCard() { if (idx > 0) { idx--; renderCard(); } }
 
-generate();
+// ── save modal ─────────────────────────────────────────────────
+function openSaveModal() {
+  if (!cards.length) return;
+  document.getElementById('deckNameInput').value = '';
+  document.getElementById('saveModal').classList.add('open');
+  setTimeout(() => document.getElementById('deckNameInput').focus(), 100);
+}
+function closeSaveModal() {
+  document.getElementById('saveModal').classList.remove('open');
+}
+document.getElementById('deckNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveDeck();
+  if (e.key === 'Escape') closeSaveModal();
+});
+
+async function saveDeck() {
+  const name = document.getElementById('deckNameInput').value.trim() || `Deck ${new Date().toLocaleDateString()}`;
+  closeSaveModal();
+  try {
+    const res = await fetch(SAVE_URL, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cards, name })
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentDeckId = data.deck_id;
+      const btn = document.getElementById('saveDeckBtn');
+      btn.classList.add('saved');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Saved`;
+      toast('Deck saved!', 'success');
+      loadDecks();
+    } else {
+      toast(data.error || 'Save failed', 'error');
+    }
+  } catch (e) {
+    toast('Network error', 'error');
+  }
+}
+
+// ── drawer ─────────────────────────────────────────────────────
+function openDrawer() {
+  loadDecks();
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+
+async function loadDecks() {
+  try {
+    const res = await fetch(DECKS_URL);
+    const data = await res.json();
+    const decks = data.decks || [];
+
+    // update badge
+    const badge = document.getElementById('deckBadge');
+    badge.textContent = decks.length;
+    badge.style.display = decks.length ? 'inline' : 'none';
+
+    // drawer
+    const body = document.getElementById('drawerBody');
+    if (!decks.length) {
+      body.innerHTML = '<div class="drawer-empty">No saved decks yet.<br>Generate flashcards and hit Save Deck.</div>';
+    } else {
+      body.innerHTML = decks.map(d => `
+        <div class="deck-item">
+          <div class="deck-item-info" onclick="loadDeck(${d.id},'${escHtml(d.name)}')">
+            <div class="deck-item-name">${escHtml(d.name)}</div>
+            <div class="deck-item-meta">${d.count} cards · ${d.created_at}</div>
+          </div>
+          <div class="deck-item-actions">
+            <button class="deck-load-btn" onclick="loadDeck(${d.id},'${escHtml(d.name)}')">Load</button>
+            <button class="deck-del-btn" onclick="deleteDeck(${d.id},event)" title="Delete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>`).join('');
+    }
+
+    // idle screen list
+    const inner = document.getElementById('idleDecksInner');
+    if (!decks.length) {
+      inner.innerHTML = '<div class="sdp-empty">No saved decks yet</div>';
+    } else {
+      inner.innerHTML = decks.map(d => `
+        <div class="sdp-item" onclick="loadDeck(${d.id},'${escHtml(d.name)}')">
+          <div class="sdp-item-left">
+            <div class="sdp-item-name">${escHtml(d.name)}</div>
+            <div class="sdp-item-meta">${d.count} cards · ${d.created_at}</div>
+          </div>
+          <button class="sdp-item-del" onclick="deleteDeck(${d.id},event)" title="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>`).join('');
+    }
+  } catch(e) { /* silent */ }
+}
+
+async function loadDeck(deckId, name) {
+  closeDrawer();
+  showScreen('loadingScreen');
+  try {
+    const res = await fetch(`${LOAD_BASE}${deckId}/`);
+    const data = await res.json();
+    if (data.success && data.cards.length) {
+      cards = data.cards;
+      idx = 0; seen = new Set();
+      currentDeckId = deckId;
+      const btn = document.getElementById('saveDeckBtn');
+      btn.classList.add('saved');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Saved`;
+      renderCard();
+      showScreen('resultScreen');
+      toast(`Loaded: ${name}`, 'success');
+    } else {
+      toast('Could not load deck', 'error');
+      showScreen('idleScreen');
+    }
+  } catch(e) {
+    toast('Network error', 'error');
+    showScreen('idleScreen');
+  }
+}
+
+async function deleteDeck(deckId, e) {
+  e.stopPropagation();
+  if (!confirm('Delete this deck?')) return;
+  try {
+    const res = await fetch(`${LOAD_BASE}${deckId}/delete/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF }
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast('Deck deleted', '');
+      loadDecks();
+      if (currentDeckId === deckId) {
+        currentDeckId = null;
+        const btn = document.getElementById('saveDeckBtn');
+        btn.classList.remove('saved');
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Save Deck`;
+      }
+    }
+  } catch(e) { toast('Delete failed', 'error'); }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// init
+loadDecks();
 </script>
 </body>
 </html>

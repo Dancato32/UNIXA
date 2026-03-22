@@ -24,6 +24,7 @@ from community.models import (
     Friendship,
     GroupWorkspace,
     Message,
+    NexaWorkspaceLink,
     Notification,
     Post,
     PostLike,
@@ -89,7 +90,6 @@ def community_home(request):
     # User's workspaces — guard against missing is_personal column before migration runs
     workspace_memberships = []
     personal_ws = None
-    nexa_ws = None
     last_workspace = None
     try:
         workspace_memberships = list(
@@ -100,14 +100,9 @@ def community_home(request):
             ).select_related('workspace', 'workspace__owner')
             .order_by('-workspace__updated_at')[:6]
         )
-        # Personal workspace — any is_personal=True workspace that isn't Nexa
+        # Personal workspace — any is_personal=True workspace
         personal_ws = GroupWorkspace.objects.filter(
             owner=request.user, is_personal=True, is_active=True,
-        ).exclude(workspace_type=GroupWorkspace.TYPE_NEXA).first()
-        # Nexa workspace
-        nexa_ws = GroupWorkspace.objects.filter(
-            owner=request.user, is_personal=True, is_active=True,
-            workspace_type=GroupWorkspace.TYPE_NEXA,
         ).first()
         last_ws_member = (
             WorkspaceMember.objects.filter(
@@ -153,7 +148,6 @@ def community_home(request):
         'suggested_communities': suggested_communities,
         'workspace_memberships': workspace_memberships,
         'personal_ws': personal_ws,
-        'nexa_ws': nexa_ws,
         'last_workspace': last_workspace,
         'unread_msgs': unread_msgs,
         'workspace_type_choices': GroupWorkspace.TYPE_CHOICES,
@@ -944,6 +938,18 @@ def community_profile_edit(request):
     return render(request, 'community/profile_edit.html', {'profile': profile})
 
 
+@login_required
+@require_POST
+def upload_avatar(request):
+    """Quick AJAX avatar upload from the home page avatar widget."""
+    if 'avatar' not in request.FILES:
+        return JsonResponse({'ok': False, 'error': 'No file'}, status=400)
+    profile, _ = CommunityProfile.objects.get_or_create(user=request.user)
+    profile.avatar = request.FILES['avatar']
+    profile.save(update_fields=['avatar'])
+    return JsonResponse({'ok': True, 'url': profile.avatar.url})
+
+
 # ── Voice / Video Calls (PeerJS WebRTC) ──────────────────────────────────────
 
 @login_required
@@ -991,9 +997,12 @@ def workspace_list(request):
     })
 
 
+
+
+
 @login_required
 def nexa_workspace(request):
-    """Get or create the user's personal Nexa workspace and redirect to it."""
+    """Personal Nexa AI page — SciSpace-style interface."""
     ws = GroupWorkspace.objects.filter(
         owner=request.user,
         workspace_type=GroupWorkspace.TYPE_NEXA,
@@ -1013,7 +1022,151 @@ def nexa_workspace(request):
             user=request.user,
             role=WorkspaceMember.ROLE_OWNER,
         )
-    return redirect('community:workspace_detail', ws_id=ws.id)
+    return render(request, 'community/nexa_home.html', {'ws': ws})
+
+
+@login_required
+@require_POST
+def nexa_link_workspace(request, ws_id):
+    """Toggle link between user's Nexa workspace and a group workspace."""
+    group_ws = get_object_or_404(GroupWorkspace, id=ws_id, is_active=True)
+    # Must be a member of the group workspace
+    if not WorkspaceMember.objects.filter(workspace=group_ws, user=request.user).exists():
+        return JsonResponse({'error': 'Not a member of that workspace.'}, status=403)
+
+    nexa_ws = GroupWorkspace.objects.filter(
+        owner=request.user,
+        workspace_type=GroupWorkspace.TYPE_NEXA,
+        is_personal=True,
+    ).first()
+    if not nexa_ws:
+        # Auto-create the Nexa workspace so the user doesn't have to navigate away
+        nexa_ws = GroupWorkspace.objects.create(
+            name='My Nexa Workspace',
+            description='Your personal AI-powered learning hub.',
+            workspace_type=GroupWorkspace.TYPE_NEXA,
+            privacy=GroupWorkspace.PRIVACY_PRIVATE,
+            owner=request.user,
+            is_personal=True,
+        )
+        WorkspaceMember.objects.create(
+            workspace=nexa_ws,
+            user=request.user,
+            role=WorkspaceMember.ROLE_OWNER,
+        )
+
+    link, created = NexaWorkspaceLink.objects.get_or_create(
+        nexa_workspace=nexa_ws,
+        linked_workspace=group_ws,
+    )
+    if not created:
+        link.delete()
+        return JsonResponse({'ok': True, 'linked': False})
+    return JsonResponse({'ok': True, 'linked': True})
+
+
+@login_required
+def nexa_my_tasks(request):
+    """Return tasks assigned to the user across all linked workspaces."""
+    nexa_ws = GroupWorkspace.objects.filter(
+        owner=request.user,
+        workspace_type=GroupWorkspace.TYPE_NEXA,
+        is_personal=True,
+    ).first()
+    if not nexa_ws:
+        return JsonResponse({'tasks': []})
+
+    linked_ws_ids = NexaWorkspaceLink.objects.filter(
+        nexa_workspace=nexa_ws,
+    ).values_list('linked_workspace_id', flat=True)
+
+    tasks = WorkspaceTask.objects.filter(
+        workspace_id__in=linked_ws_ids,
+        assigned_to=request.user,
+    ).exclude(status=WorkspaceTask.STATUS_DONE).select_related('workspace').order_by('due_date', 'created_at')
+
+    data = []
+    for t in tasks:
+        data.append({
+            'id': str(t.id),
+            'title': t.title,
+            'description': t.description,
+            'status': t.status,
+            'due_date': t.due_date.isoformat() if t.due_date else None,
+            'workspace_id': str(t.workspace_id),
+            'workspace_name': t.workspace.name,
+            'review_status': t.review_status,
+        })
+    return JsonResponse({'tasks': data})
+
+
+@login_required
+@require_POST
+def nexa_submit_task(request, task_id):
+    """Submit task content from Nexa workspace — pushes to group workspace files."""
+    import json as _json
+    from django.utils import timezone
+
+    task = get_object_or_404(WorkspaceTask, id=task_id, assigned_to=request.user)
+    try:
+        body = _json.loads(request.body)
+    except Exception:
+        body = {}
+
+    content = body.get('content', '').strip()
+    if not content:
+        return JsonResponse({'error': 'No content provided.'}, status=400)
+
+    # Save submission on the task
+    task.submission = content
+    task.review_status = WorkspaceTask.REVIEW_PENDING
+    task.submitted_at = timezone.now()
+    task.status = WorkspaceTask.STATUS_DOING
+    task.save(update_fields=['submission', 'review_status', 'submitted_at', 'status'])
+
+    # Save as a text file in the group workspace
+    import io
+    from django.core.files.base import ContentFile
+    file_content = f"Task: {task.title}\nSubmitted by: {request.user.username}\n\n{content}"
+    file_name = f"{task.title[:40].replace(' ', '_')}_{request.user.username}.txt"
+    wf = WorkspaceFile(
+        workspace=task.workspace,
+        uploaded_by=request.user,
+        original_name=file_name,
+        file_size=len(file_content.encode()),
+    )
+    wf.file.save(file_name, ContentFile(file_content.encode()), save=True)
+
+    return JsonResponse({'ok': True, 'task_id': str(task.id), 'file_name': file_name})
+
+
+def _auto_link_nexa(user, group_ws):
+    """Ensure the user's Nexa workspace is linked to group_ws. Creates Nexa ws if needed."""
+    if group_ws.workspace_type == GroupWorkspace.TYPE_NEXA:
+        return  # don't link a nexa ws to itself
+    nexa_ws = GroupWorkspace.objects.filter(
+        owner=user,
+        workspace_type=GroupWorkspace.TYPE_NEXA,
+        is_personal=True,
+    ).first()
+    if not nexa_ws:
+        nexa_ws = GroupWorkspace.objects.create(
+            name='My Nexa Workspace',
+            description='Your personal AI-powered learning hub.',
+            workspace_type=GroupWorkspace.TYPE_NEXA,
+            privacy=GroupWorkspace.PRIVACY_PRIVATE,
+            owner=user,
+            is_personal=True,
+        )
+        WorkspaceMember.objects.create(
+            workspace=nexa_ws,
+            user=user,
+            role=WorkspaceMember.ROLE_OWNER,
+        )
+    NexaWorkspaceLink.objects.get_or_create(
+        nexa_workspace=nexa_ws,
+        linked_workspace=group_ws,
+    )
 
 
 @login_required
@@ -1045,6 +1198,7 @@ def workspace_create(request):
         )
         # Owner is automatically a member
         WorkspaceMember.objects.create(workspace=ws, user=request.user, role=WorkspaceMember.ROLE_OWNER)
+        _auto_link_nexa(request.user, ws)
 
         # Add selected members
         usernames = request.POST.getlist('members')
@@ -1053,6 +1207,7 @@ def workspace_create(request):
                 u = User.objects.get(username=uname)
                 if u != request.user:
                     WorkspaceMember.objects.get_or_create(workspace=ws, user=u, defaults={'role': WorkspaceMember.ROLE_MEMBER})
+                    _auto_link_nexa(u, ws)
             except User.DoesNotExist:
                 pass
 
@@ -1083,6 +1238,33 @@ def workspace_detail(request, ws_id):
     files = ws.files.select_related('uploaded_by').order_by('-uploaded_at')
     tasks = ws.tasks.select_related('assigned_to', 'created_by').order_by('status', 'due_date')
 
+    # Nexa link context
+    nexa_ws = GroupWorkspace.objects.filter(
+        owner=request.user,
+        workspace_type=GroupWorkspace.TYPE_NEXA,
+        is_personal=True,
+    ).first()
+    is_linked_to_nexa = False
+    if nexa_ws and ws.workspace_type != GroupWorkspace.TYPE_NEXA:
+        is_linked_to_nexa = NexaWorkspaceLink.objects.filter(
+            nexa_workspace=nexa_ws,
+            linked_workspace=ws,
+        ).exists()
+
+    # For nexa workspaces: pass linked group workspaces and assigned tasks
+    linked_workspaces = []
+    my_tasks = []
+    if ws.workspace_type == GroupWorkspace.TYPE_NEXA:
+        links = NexaWorkspaceLink.objects.filter(
+            nexa_workspace=ws,
+        ).select_related('linked_workspace')
+        linked_workspaces = [lnk.linked_workspace for lnk in links]
+        linked_ws_ids = [lw.id for lw in linked_workspaces]
+        my_tasks = WorkspaceTask.objects.filter(
+            workspace_id__in=linked_ws_ids,
+            assigned_to=request.user,
+        ).select_related('workspace').order_by('due_date', 'created_at')
+
     return render(request, 'community/workspace_detail.html', {
         'ws': ws,
         'membership': membership,
@@ -1093,6 +1275,10 @@ def workspace_detail(request, ws_id):
         'is_owner': membership.role == WorkspaceMember.ROLE_OWNER,
         'is_admin': membership.role in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN),
         'PEERJS_API_KEY': __import__('django.conf', fromlist=['settings']).settings.PEERJS_API_KEY,
+        'is_linked_to_nexa': is_linked_to_nexa,
+        'linked_workspaces': linked_workspaces,
+        'my_tasks': my_tasks,
+        'nexa_ws': nexa_ws,
     })
 
 
@@ -1104,6 +1290,7 @@ def workspace_join(request, invite_code):
         workspace=ws, user=request.user,
         defaults={'role': WorkspaceMember.ROLE_MEMBER}
     )
+    _auto_link_nexa(request.user, ws)
     return redirect('community:workspace_detail', ws_id=ws.id)
 
 
@@ -1307,6 +1494,7 @@ def workspace_add_member(request, ws_id):
     _, created = WorkspaceMember.objects.get_or_create(
         workspace=ws, user=u, defaults={'role': WorkspaceMember.ROLE_MEMBER}
     )
+    _auto_link_nexa(u, ws)
     return JsonResponse({'username': u.username, 'added': created})
 
 
@@ -2417,3 +2605,295 @@ def workspace_meeting_summarize(request, ws_id, record_id):
         record.save()
         return JsonResponse({'ok': True, 'summary': record.ai_summary, 'decisions': record.decisions, 'action_items': record.action_items})
     return JsonResponse({'error': 'Could not generate summary'}, status=500)
+
+
+# ── Paraphraser ───────────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def paraphrase_ajax(request):
+    """
+    Advanced AI paraphraser endpoint.
+    Accepts JSON: {text, mode, style_sample, subject}
+    Returns JSON: {paraphrased, changes, explanation}
+    """
+    import json as _json
+    import os, re
+
+    try:
+        body = _json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    text = (body.get('text') or '').strip()
+    mode = (body.get('mode') or 'simple').strip().lower()
+    style_sample = (body.get('style_sample') or '').strip()
+    subject = (body.get('subject') or '').strip()
+
+    if not text:
+        return JsonResponse({'error': 'No text provided'}, status=400)
+    if len(text) > 8000:
+        return JsonResponse({'error': 'Text too long (max 8000 chars)'}, status=400)
+
+    MODE_INSTRUCTIONS = {
+        'simple':   'Rewrite in very simple, easy-to-understand English. Use short sentences. Explain like a teacher to a beginner.',
+        'academic': 'Rewrite in formal academic style. Use scholarly vocabulary, complex sentence structures, and passive voice where appropriate.',
+        'exam':     'Rewrite as a WAEC/SHS exam-ready answer. Be structured, use key terms, include relevant points a student should mention.',
+        'short':    'Rewrite as a concise, compressed version. Remove all redundancy. Keep only the core meaning.',
+        'expanded': 'Rewrite with more explanation and detail. Add context, examples, and elaboration to make the content richer.',
+        'creative': 'Rewrite in a vivid, expressive, and engaging style. Use metaphors, varied sentence rhythm, and interesting word choices.',
+        'bullet':   'Convert the text into clear, well-organised bullet points. Each bullet should be a distinct idea.',
+    }
+
+    mode_instruction = MODE_INSTRUCTIONS.get(mode, MODE_INSTRUCTIONS['simple'])
+
+    style_block = ''
+    if style_sample:
+        style_block = f'\n\nSTYLE CLONING: The user has provided a sample of their writing style. Mirror this tone and voice in your output:\n"""\n{style_sample[:600]}\n"""'
+
+    subject_block = ''
+    if subject:
+        subject_block = f'\n\nSUBJECT CONTEXT: This text is about "{subject}". Align vocabulary and framing to this subject area.'
+
+    system_prompt = (
+        "You are Nexa Smart Paraphraser — an advanced AI writing assistant for students.\n"
+        "Your job is to paraphrase text intelligently while teaching the user what changed and why.\n\n"
+        "RULES:\n"
+        "- Preserve the original meaning 100%\n"
+        "- Never distort facts or arguments\n"
+        "- Output must sound natural and human-like\n"
+        "- Avoid plagiarism by restructuring sentences significantly\n\n"
+        "RESPONSE FORMAT (strict JSON, no markdown):\n"
+        "{\n"
+        '  "paraphrased": "<the rewritten text>",\n'
+        '  "changes": [\n'
+        '    {"original": "...", "replacement": "...", "reason": "..."}\n'
+        "  ],\n"
+        '  "explanation": "<2-3 sentence tutor note explaining the overall approach and what improved>"\n'
+        "}"
+    )
+
+    user_prompt = (
+        f"MODE: {mode.upper()} — {mode_instruction}"
+        f"{style_block}{subject_block}\n\n"
+        f"TEXT TO PARAPHRASE:\n\"\"\"\n{text}\n\"\"\""
+    )
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
+        response = client.chat.completions.create(
+            model='gpt-4o-mini',
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt},
+            ],
+            temperature=0.7,
+            max_tokens=2000,
+            response_format={'type': 'json_object'},
+        )
+        raw = response.choices[0].message.content
+        result = _json.loads(raw)
+        return JsonResponse({
+            'paraphrased': result.get('paraphrased', ''),
+            'changes': result.get('changes', []),
+            'explanation': result.get('explanation', ''),
+        })
+    except Exception as e:
+        return JsonResponse({'error': f'AI error: {str(e)}'}, status=500)
+
+
+# ── Citation Intelligence Engine ──────────────────────────────────────────────
+
+@login_required
+@require_POST
+def citation_ajax(request):
+    """
+    Nexa Citation Intelligence Engine.
+    Actions: detect | generate | fix
+    """
+    import json as _json
+    import os
+
+    try:
+        body = _json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    action = body.get('action', 'generate')
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
+    except Exception as e:
+        return JsonResponse({'error': f'AI unavailable: {e}'}, status=500)
+
+    # ── ACTION: detect metadata from URL/DOI ──────────────────────────────────
+    if action == 'detect':
+        url = (body.get('url') or '').strip()
+        source_type = (body.get('source_type') or 'website').strip()
+        if not url:
+            return JsonResponse({'error': 'No URL provided'}, status=400)
+
+        # Try CrossRef for DOIs
+        metadata = {}
+        if url.startswith('10.') or 'doi.org' in url:
+            try:
+                import urllib.request
+                doi = url.replace('https://doi.org/', '').replace('http://doi.org/', '')
+                api_url = f'https://api.crossref.org/works/{doi}'
+                req = urllib.request.Request(api_url, headers={'User-Agent': 'Nexa/1.0'})
+                with urllib.request.urlopen(req, timeout=6) as resp:
+                    cr = _json.loads(resp.read())
+                msg = cr.get('message', {})
+                authors = msg.get('author', [])
+                author_str = '; '.join(
+                    f"{a.get('family', '')}, {a.get('given', '')}" for a in authors[:3]
+                ).strip('; ')
+                issued = msg.get('issued', {}).get('date-parts', [['']])[0]
+                year = str(issued[0]) if issued else ''
+                metadata = {
+                    'author': author_str,
+                    'title': ' '.join(msg.get('title', [])),
+                    'year': year,
+                    'publisher': msg.get('publisher', ''),
+                    'journal': ' '.join(msg.get('container-title', [])),
+                    'volume': msg.get('volume', ''),
+                    'issue': msg.get('issue', ''),
+                    'pages': msg.get('page', ''),
+                    'doi': doi,
+                }
+            except Exception:
+                pass
+
+        # Fallback: AI-based metadata extraction
+        if not metadata.get('title'):
+            prompt = (
+                f"Extract metadata from this source URL/text: {url}\n"
+                f"Source type: {source_type}\n\n"
+                "Return strict JSON with keys: author, title, year, publisher, accessed\n"
+                "If a field is unknown, use empty string. Today's date for accessed if it's a website."
+            )
+            try:
+                resp = client.chat.completions.create(
+                    model='gpt-4o-mini',
+                    messages=[
+                        {'role': 'system', 'content': 'You are a metadata extraction assistant. Return only valid JSON.'},
+                        {'role': 'user', 'content': prompt},
+                    ],
+                    temperature=0.2,
+                    max_tokens=400,
+                    response_format={'type': 'json_object'},
+                )
+                metadata = _json.loads(resp.choices[0].message.content)
+            except Exception as e:
+                return JsonResponse({'error': f'Detection failed: {e}'}, status=500)
+
+        return JsonResponse({'metadata': metadata})
+
+    # ── ACTION: generate citation ─────────────────────────────────────────────
+    elif action == 'generate':
+        style = (body.get('style') or 'APA').strip()
+        source_type = (body.get('source_type') or 'website').strip()
+
+        fields = {
+            'author': body.get('author', ''),
+            'title': body.get('title', ''),
+            'year': body.get('year', ''),
+            'publisher': body.get('publisher', ''),
+            'volume': body.get('volume', ''),
+            'pages': body.get('pages', ''),
+            'url': body.get('url', ''),
+            'doi': body.get('doi', ''),
+            'accessed': body.get('accessed', ''),
+        }
+
+        STYLE_NOTES = {
+            'APA': 'APA 7th edition. Author, A. A. (Year). Title. Publisher. https://doi.org/xxx',
+            'MLA': 'MLA 9th edition. Author Last, First. "Title." Publisher, Year, URL.',
+            'Harvard': 'Harvard referencing. Author (Year) Title. Publisher.',
+            'Chicago': 'Chicago 17th edition author-date or notes-bibliography.',
+            'IEEE': 'IEEE style. [1] A. Author, "Title," Journal, vol. x, no. x, pp. xx–xx, Year.',
+            'WAEC': 'Simplified WAEC/SHS style. Easy format for secondary school students. Author (Year). Title. Publisher.',
+        }
+
+        system_prompt = (
+            "You are Nexa Citation Intelligence Engine — an expert academic citation assistant.\n"
+            "Generate a perfectly formatted citation AND teach the user what each part means.\n\n"
+            "RESPONSE FORMAT (strict JSON, no markdown):\n"
+            "{\n"
+            '  "citation": "<full formatted citation string>",\n'
+            '  "in_text": "<in-text citation e.g. (Smith, 2020)>",\n'
+            '  "style": "<style name>",\n'
+            '  "parts": [\n'
+            '    {"label": "Author", "value": "...", "why": "Author comes first in APA because..."}\n'
+            "  ],\n"
+            '  "note": "<optional tip for the student>",\n'
+            '  "credibility": {"score": 75, "label": "Reliable Academic Source", "reasons": ["..."]}\n'
+            "}"
+        )
+
+        user_prompt = (
+            f"Generate a {style} citation for this {source_type}.\n"
+            f"Style guide: {STYLE_NOTES.get(style, style)}\n\n"
+            f"Fields provided:\n"
+            + '\n'.join(f"  {k}: {v}" for k, v in fields.items() if v)
+            + "\n\nIf any required fields are missing, infer or note them gracefully."
+        )
+
+        try:
+            resp = client.chat.completions.create(
+                model='gpt-4o-mini',
+                messages=[
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': user_prompt},
+                ],
+                temperature=0.3,
+                max_tokens=1200,
+                response_format={'type': 'json_object'},
+            )
+            result = _json.loads(resp.choices[0].message.content)
+            return JsonResponse(result)
+        except Exception as e:
+            return JsonResponse({'error': f'Generation failed: {e}'}, status=500)
+
+    # ── ACTION: fix/reformat citation ─────────────────────────────────────────
+    elif action == 'fix':
+        raw = (body.get('raw_citation') or '').strip()
+        style = (body.get('style') or 'APA').strip()
+        if not raw:
+            return JsonResponse({'error': 'No citation provided'}, status=400)
+        if len(raw) > 2000:
+            return JsonResponse({'error': 'Citation too long'}, status=400)
+
+        system_prompt = (
+            "You are a citation correction expert. The user has pasted a messy or incorrectly formatted citation.\n"
+            "Fix it, reformat it to the requested style, and explain what was wrong.\n\n"
+            "RESPONSE FORMAT (strict JSON):\n"
+            "{\n"
+            '  "citation": "<corrected citation>",\n'
+            '  "in_text": "<in-text citation>",\n'
+            '  "style": "<style>",\n'
+            '  "parts": [{"label": "...", "value": "...", "why": "..."}],\n'
+            '  "note": "<what was wrong and what was fixed>",\n'
+            '  "credibility": {"score": 0, "label": "", "reasons": []}\n'
+            "}"
+        )
+
+        try:
+            resp = client.chat.completions.create(
+                model='gpt-4o-mini',
+                messages=[
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': f"Fix this citation to {style} style:\n\n{raw}"},
+                ],
+                temperature=0.2,
+                max_tokens=1000,
+                response_format={'type': 'json_object'},
+            )
+            result = _json.loads(resp.choices[0].message.content)
+            return JsonResponse(result)
+        except Exception as e:
+            return JsonResponse({'error': f'Fix failed: {e}'}, status=500)
+
+    return JsonResponse({'error': 'Unknown action'}, status=400)

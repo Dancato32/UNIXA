@@ -1,6 +1,6 @@
 """
 AI engine for community features.
-Uses existing OpenRouter setup — no new API keys needed.
+Uses existing OpenRouter setup â€” no new API keys needed.
 """
 import os
 import re
@@ -282,7 +282,7 @@ Return ONLY valid JSON."""
     }
 
 
-# ── Workspace AI Manager ──────────────────────────────────────────────────────
+# â”€â”€ Workspace AI Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def analyze_project_files(files_data, workspace_name, members):
     """
@@ -335,7 +335,7 @@ Return ONLY valid JSON."""
 
 def workspace_ai_chat(message, context):
     """
-    Nexa — Professional AI teammate embedded in workspace group chats.
+    Nexa â€” Professional AI teammate embedded in workspace group chats.
     Triggered by name mention or proactively when valuable.
     context: {workspace_name, workspace_type, members, tasks, files, recent_chat, current_sender, source}
     Returns {reply, actions: [{type, data}]}
@@ -347,15 +347,15 @@ def workspace_ai_chat(message, context):
     source = context.get('source', 'group')
 
     type_hints = {
-        'startup': 'Startup workspace — think like a YC partner. Validate ideas ruthlessly, identify risks early, sharpen the pitch, challenge assumptions, and push for clarity on market, product, and traction.',
-        'study_group': 'Study group — act as the most prepared member. Break down complex topics, create practice questions, explain concepts at the right level, and keep the group on track.',
-        'group_project': 'Group project — act as both PM and senior contributor. Track progress, flag blockers, review work quality, suggest task breakdowns, and help produce the final deliverable.',
-        'exam_prep': 'Exam prep workspace — focus on WAEC/SHS curriculum. Provide past-question style answers, simplified explanations, mnemonics, and exam technique tips.',
-        'research': 'Research workspace — act as a senior research collaborator. Help with literature review, methodology, citations (APA/MLA/Chicago), data interpretation, and academic writing quality.',
-        'general': 'General collaboration workspace — be the most useful person in the room. Help with planning, decisions, brainstorming, writing, and keeping the team aligned.',
-        'ai_tutor': 'AI Tutor workspace — act as a patient, expert tutor. Explain concepts step by step, adapt to the learner\'s level, and provide examples and practice problems.',
-        'assignment': 'Assignment workspace — help break down the assignment, structure the approach, review drafts, and ensure academic quality.',
-        'nexa': 'Nexa workspace — be a versatile, high-quality AI collaborator across all domains.',
+        'startup': 'Startup workspace â€” think like a YC partner. Validate ideas ruthlessly, identify risks early, sharpen the pitch, challenge assumptions, and push for clarity on market, product, and traction.',
+        'study_group': 'Study group â€” act as the most prepared member. Break down complex topics, create practice questions, explain concepts at the right level, and keep the group on track.',
+        'group_project': 'Group project â€” act as both PM and senior contributor. Track progress, flag blockers, review work quality, suggest task breakdowns, and help produce the final deliverable.',
+        'exam_prep': 'Exam prep workspace â€” focus on WAEC/SHS curriculum. Provide past-question style answers, simplified explanations, mnemonics, and exam technique tips.',
+        'research': 'Research workspace â€” act as a senior research collaborator. Help with literature review, methodology, citations (APA/MLA/Chicago), data interpretation, and academic writing quality.',
+        'general': 'General collaboration workspace â€” be the most useful person in the room. Help with planning, decisions, brainstorming, writing, and keeping the team aligned.',
+        'ai_tutor': 'AI Tutor workspace â€” act as a patient, expert tutor. Explain concepts step by step, adapt to the learner\'s level, and provide examples and practice problems.',
+        'assignment': 'Assignment workspace â€” help break down the assignment, structure the approach, review drafts, and ensure academic quality.',
+        'nexa': 'Nexa workspace â€” be a versatile, high-quality AI collaborator across all domains.',
     }
     type_hint = type_hints.get(ws_type, type_hints['general'])
 
@@ -376,54 +376,89 @@ def workspace_ai_chat(message, context):
     conversation_thread = '\n'.join(chat_lines)
 
     # Only triggered when "nexa" appears as a standalone word/name in the message
-    is_direct = bool(re.search(r'\bnexa\b', message.strip(), re.IGNORECASE)) or source == 'manager'
+    is_direct = bool(re.search(r'\bnexa\b', message.strip(), re.IGNORECASE)) or source in ('manager', 'nexa_assistant')
 
     # Strip "nexa" cleanly from any position in the message
     clean_message = re.sub(r'[,\s]*\bnexa\b[,\s!?.]*', ' ', message.strip(), flags=re.IGNORECASE).strip() or message
 
-    system = f"""You are Nexa. You are one member of the "{ws_name}" group chat — not a moderator, not a host, not an assistant.
+    # â”€â”€ Adaptive tone: analyse the user's own messages to mirror their style â”€â”€
+    user_msgs = [
+        m.get('content', '') for m in context.get('recent_chat', [])
+        if m.get('sender__username') == current_sender and not m.get('content', '').startswith('[AI]')
+    ]
+    # Include the current message
+    user_msgs.append(message)
 
-You have knowledge across software, design, business, research, and academics.
+    style_notes = []
+    all_user_text = ' '.join(user_msgs)
+    avg_len = sum(len(m.split()) for m in user_msgs) / max(len(user_msgs), 1)
 
-Workspace context:
-- Type: {ws_type.replace('_', ' ').title()} — {type_hint}
-- Members: {', '.join(members) if members else 'the team'}
-- Tasks: {json.dumps(context.get('tasks', []))}
-- Files: {', '.join(context.get('files', [])) if context.get('files') else 'none'}
+    if avg_len < 6:
+        style_notes.append('very short, punchy messages â€” match that brevity')
+    elif avg_len < 15:
+        style_notes.append('concise messages â€” keep replies tight')
+    else:
+        style_notes.append('detailed messages â€” can give fuller answers')
 
-STRICT RULES — READ CAREFULLY:
-1. You are NEXA. You are NOT any other member. Never pretend to be Dancatop, Jjk, OSGOOD, or anyone else. Never speak as them or on their behalf.
-2. {"You were directly called — respond." if is_direct else "You were NOT called. Reply with exactly [SKIP] and nothing else. No exceptions."}
-3. Never send multiple messages. One response only.
-4. Match response length to the question:
-   - Greeting or casual check-in (≤5 words, "hey", "how are you", "what's up") → 1 sentence max
-   - Simple factual question → 1-2 sentences
-   - Technical or detailed question → as many sentences as needed, but no padding
-5. Casual human tone. No corporate speak, no "Certainly!", no "Great question!".
-6. MATH FORMATTING — CRITICAL:
-   - NEVER use **...** or *...* around math. NEVER write plain text equations like "f'(x) = 9x^2".
-   - ALL math MUST be wrapped in LaTeX delimiters. No exceptions.
-   - Inline math (inside a sentence): $f(x) = 3x^3 - 5x^2 + 2x - 7$, $x = 4$
-   - Display math (standalone, centred on its own line): $$f'(x) = 9x^2 - 10x + 2$$
-   - ONLY use $ and $$ delimiters. Do NOT use \\( \\) or \\[ \\].
-   - Use proper LaTeX: \\frac{{a}}{{b}}, \\sqrt{{x}}, \\int, \\sum, x^2, x_n, \\alpha, \\pm, \\neq etc.
-   - CORRECT step-by-step example:
-     "Subtract 3 from both sides:
-     $$2x = 8$$
-     Divide both sides by 2:
-     $$x = 4$$
-     The solution is $x = 4$."
-   - WRONG: "\\( f(x) \\)" or "**2x = 8**" or bare "2x = 8" — never do these.
-7. FORMATTING — NO MARKDOWN:
-   - Do NOT use **bold**, *italic*, or any markdown syntax in your replies.
-   - Plain text only, except for LaTeX math.
-8. If you need current facts, live data, prices, recent events → reply with [SEARCH: your refined query] instead of guessing.
-9. Never summarize the conversation. Never repeat what was just said."""
+    # Detect casual/slang markers
+    casual_markers = ['lol', 'lmao', 'bro', 'ngl', 'tbh', 'fr', 'lowkey', 'highkey', 'idk', 'imo', 'omg', 'wdym', 'rn', 'gonna', 'wanna', 'kinda', 'sorta', 'yeah', 'yep', 'nah', 'bruh']
+    casual_count = sum(1 for w in casual_markers if re.search(r'\b' + w + r'\b', all_user_text, re.IGNORECASE))
+    if casual_count >= 2:
+        style_notes.append('casual/informal tone with slang â€” match that energy, be relaxed and conversational')
+    elif casual_count == 1:
+        style_notes.append('slightly casual â€” be friendly and natural')
+
+    # Detect formal/academic markers
+    formal_markers = ['therefore', 'however', 'furthermore', 'consequently', 'regarding', 'pursuant', 'aforementioned']
+    formal_count = sum(1 for w in formal_markers if re.search(r'\b' + w + r'\b', all_user_text, re.IGNORECASE))
+    if formal_count >= 2:
+        style_notes.append('formal/academic writing style â€” match that register')
+
+    # Detect question style
+    if message.endswith('?') or message.lower().startswith(('what', 'how', 'why', 'when', 'where', 'who', 'can you', 'could you')):
+        style_notes.append('asking a direct question â€” give a direct answer first, then elaborate if needed')
+
+    # Detect if they use no punctuation / all lowercase
+    if message == message.lower() and '.' not in message and ',' not in message:
+        style_notes.append('no caps or punctuation â€” keep your reply relaxed, no need to be stiff')
+
+    style_instruction = 'Mirror the user\'s communication style: ' + '; '.join(style_notes) + '.' if style_notes else ''
+
+    # â”€â”€ Is this the personal assistant source? â”€â”€
+    is_personal = source == 'nexa_assistant'
+    personal_context = f"""You are talking directly to {current_sender} in their personal Nexa workspace â€” one-on-one, no group.
+Be their personal AI assistant. Help with anything they ask: writing, coding, research, math, ideas, planning, life stuff â€” whatever.
+{style_instruction}
+""" if is_personal else ''
+
+    system = f"""You are Nexa â€” a sharp, versatile AI assistant.
+{personal_context}
+{"You are in the " + ws_name + " group workspace." if not is_personal else ""}
+{"Workspace type: " + ws_type.replace('_', ' ').title() + " â€” " + type_hint if not is_personal else ""}
+{"Members: " + (', '.join(members) if members else 'the team') if not is_personal else ""}
+
+{style_instruction}
+
+RULES:
+1. {"Respond directly â€” this is a personal 1-on-1 chat." if is_personal else ("You were directly called â€” respond." if is_direct else "You were NOT called. Reply with exactly [SKIP] and nothing else.")}
+2. Never send multiple messages. One response only.
+3. Match response length to the question:
+   - Greeting or casual check-in â†’ 1 sentence max
+   - Simple question â†’ 1-2 sentences
+   - Technical or detailed question â†’ as long as needed, no padding
+4. Casual human tone. No "Certainly!", no "Great question!", no corporate speak.
+5. MATH FORMATTING:
+   - ALL math in LaTeX delimiters. Inline: $x = 4$. Display (own line): $f'(x) = 9x^2$
+   - Use ONLY $ delimiters. Never \\( \\) or \\[ \\].
+   - Proper LaTeX: \\frac{{a}}{{b}}, \\sqrt{{x}}, x^2, \\alpha etc.
+6. NO MARKDOWN: no **bold**, no *italic*. Plain text only (except LaTeX math).
+7. If you need live data or recent events â†’ reply with [SEARCH: your refined query].
+8. Never summarize the conversation or repeat what was just said."""
 
     raw = _chat([
         {'role': 'system', 'content': system},
-        {'role': 'user', 'content': f'Conversation:\n{conversation_thread}\n\nNexa responds to "{clean_message}":'},
-    ], max_tokens=400)
+        {'role': 'user', 'content': f'{"Message" if is_personal else "Conversation"}:\n{conversation_thread if not is_personal else message}\n\nNexa responds:'},
+    ], max_tokens=600 if is_personal else 400)
 
     if not raw or raw.strip() == '[SKIP]' or raw.strip().startswith('[SKIP]'):
         return {'reply': '', 'actions': []}
@@ -438,11 +473,10 @@ STRICT RULES — READ CAREFULLY:
                 return {'reply': '', 'actions': [], 'deep_search': search_result, 'search_query': search_query}
         except Exception as e:
             logger.error('Auto deep search error: %s', e)
-        # fallback if search fails — ask AI again without search instruction
         raw = _chat([
             {'role': 'system', 'content': system},
-            {'role': 'user', 'content': f'Conversation:\n{conversation_thread}\n\nNexa responds (web search unavailable, use your knowledge):'},
-        ], max_tokens=400)
+            {'role': 'user', 'content': f'Message:\n{message}\n\nNexa responds (web search unavailable, use your knowledge):'},
+        ], max_tokens=600 if is_personal else 400)
         if not raw or raw.strip().startswith('[SKIP]'):
             return {'reply': '', 'actions': []}
 
@@ -494,7 +528,7 @@ def generate_project_health(workspace_name, members, tasks, files, deadline_hint
 
 Project: {workspace_name}
 Team: {', '.join(m['username'] for m in members)}
-Tasks: {total} total — {len(done)} done, {len(doing)} in progress, {len(todo)} to do
+Tasks: {total} total â€” {len(done)} done, {len(doing)} in progress, {len(todo)} to do
 Completion: {completion}%
 Deadline hint: {deadline_hint or 'not specified'}
 Files uploaded: {len(files)}
@@ -526,7 +560,7 @@ Return ONLY valid JSON."""
     return {
         'completion_pct': completion,
         'risk_level': 'medium',
-        'risk_reason': 'Unable to fully assess — add more tasks for better tracking.',
+        'risk_reason': 'Unable to fully assess â€” add more tasks for better tracking.',
         'work_distribution': [{'member': m['username'], 'tasks': contrib.get(m['username'], 0), 'pct': 0} for m in members],
         'inactive_members': [],
         'next_actions': ['Add tasks to the board', 'Assign tasks to members', 'Upload project files'],
@@ -742,7 +776,7 @@ def proactive_chat_suggestion(workspace_name, workspace_type, recent_messages, t
     """
     Analyze recent chat and decide if the AI should proactively post a suggestion.
     Returns {should_post: bool, message: str}
-    Only posts when genuinely useful — avoids spam.
+    Only posts when genuinely useful â€” avoids spam.
     """
     if not recent_messages:
         return {'should_post': False, 'message': ''}
@@ -771,7 +805,7 @@ Should you proactively post a helpful suggestion, warning, or insight based on t
 
 Rules:
 - Only post if there's something genuinely useful to add (a risk, a missed point, a helpful resource, a decision that needs clarification)
-- Do NOT post just to be present — silence is better than noise
+- Do NOT post just to be present â€” silence is better than noise
 - Keep it short (1-2 sentences max)
 - Be specific to what was discussed
 
@@ -806,11 +840,11 @@ def parse_meeting_request(message):
 Extract:
 - title: a short meeting title (e.g. "Team Standup", "Project Review", "Quick Sync")
 - delay_seconds: how many seconds from now until the meeting starts (integer)
-  - "now" or "immediately" → 10
-  - "in 5 mins" → 300
-  - "in 20 mins" → 1200
-  - "in 1 hour" → 3600
-  - "in 2 hours" → 7200
+  - "now" or "immediately" â†’ 10
+  - "in 5 mins" â†’ 300
+  - "in 20 mins" â†’ 1200
+  - "in 1 hour" â†’ 3600
+  - "in 2 hours" â†’ 7200
   - cap at 86400 (24 hours)
 - time_label: human-readable time string (e.g. "in 20 minutes", "in 1 hour", "now")
 
@@ -849,7 +883,7 @@ def deep_search(query, workspace_context=None):
     system = """You are Nexa, an AI research assistant doing a deep web search.
 Search the web thoroughly and return a comprehensive, well-structured research report.
 Always cite your sources with URLs. Be specific, factual, and up-to-date.
-Format your response as a proper research brief — not a chat message."""
+Format your response as a proper research brief â€” not a chat message."""
 
     user_prompt = f"""Deep search query: {query}{ws_context}
 
@@ -870,7 +904,7 @@ Return as JSON:
 Return ONLY valid JSON."""
 
     try:
-        # Use Perplexity Sonar Pro — has live internet access
+        # Use Perplexity Sonar Pro â€” has live internet access
         raw = _chat(
             [
                 {'role': 'system', 'content': system},

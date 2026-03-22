@@ -1,0 +1,632 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{{ material.title }} — NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f7f7f5;--sb:#fff;--bdr:#e8e8e4;
+  --t1:#1a1a1a;--t2:#555;--t3:#999;--hov:#f0f0ec;
+  --acc:#f97316;--acc2:#ea6c00;
+  --panel:#fff;--panel-w:340px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ── Shell ── */
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+/* ── Topbar ── */
+.topbar{height:48px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1rem;gap:.75rem;flex-shrink:0;z-index:50;}
+.back-btn{display:flex;align-items:center;gap:.375rem;color:var(--t2);font-size:.8125rem;padding:.375rem .625rem;border:1px solid var(--bdr);border-radius:6px;white-space:nowrap;flex-shrink:0;transition:all .15s;background:none;}
+.back-btn:hover{color:var(--t1);border-color:#ccc;}
+.back-btn svg{width:13px;height:13px;}
+.topbar-title{font-size:.875rem;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.topbar-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0;margin-left:auto;}
+.page-counter{font-size:.8125rem;color:var(--t3);font-weight:500;white-space:nowrap;cursor:pointer;padding:.25rem .375rem;border-radius:5px;transition:background .15s;}
+.page-counter:hover{background:var(--hov);color:var(--t1);}
+.page-jump-wrap{display:flex;align-items:center;gap:.25rem;}
+.page-jump-input{width:44px;padding:.25rem .375rem;border:1.5px solid var(--acc);border-radius:6px;font-size:.8125rem;font-family:inherit;font-weight:600;text-align:center;outline:none;color:var(--t1);background:#fff;}
+.page-jump-input::-webkit-inner-spin-button,.page-jump-input::-webkit-outer-spin-button{-webkit-appearance:none;}
+.page-jump-of{font-size:.8125rem;color:var(--t3);font-weight:500;white-space:nowrap;}
+.nav-btn{width:32px;height:32px;border:1px solid var(--bdr);border-radius:6px;background:var(--sb);display:flex;align-items:center;justify-content:center;color:var(--t2);transition:all .15s;}
+.nav-btn:hover:not(:disabled){background:var(--hov);color:var(--t1);}
+.nav-btn:disabled{opacity:.3;cursor:default;}
+.nav-btn svg{width:14px;height:14px;}
+.panel-toggle{display:flex;align-items:center;gap:.375rem;padding:.375rem .75rem;border:1px solid var(--bdr);border-radius:6px;background:var(--sb);color:var(--t2);font-size:.8125rem;font-weight:600;transition:all .15s;}
+.panel-toggle:hover{background:var(--hov);color:var(--t1);}
+.panel-toggle.active{background:#fff3ed;border-color:#fed7aa;color:var(--acc);}
+.panel-toggle svg{width:14px;height:14px;}
+
+/* ── Body ── */
+.body{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+/* ── Viewer ── */
+.viewer{flex:1;overflow-y:auto;padding:2.5rem 2rem;min-width:0;transition:all .3s;}
+.viewer-inner{max-width:720px;margin:0 auto;}
+.page-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;}
+.page-label-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);}
+.page-text{font-size:1rem;line-height:1.9;color:var(--t1);white-space:pre-wrap;word-break:break-word;}
+
+/* Progress bar */
+.progress-track{height:3px;background:var(--bdr);flex-shrink:0;}
+.progress-fill{height:100%;background:var(--acc);transition:width .3s ease;}
+
+/* ── Side panel ── */
+.side-panel{width:var(--panel-w);flex-shrink:0;background:var(--panel);border-left:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;transition:width .3s,opacity .3s;}
+.side-panel.hidden{width:0;opacity:0;pointer-events:none;border:none;}
+
+.panel-head{padding:.875rem 1rem;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.panel-head-title{font-size:.875rem;font-weight:700;color:var(--t1);margin-bottom:.625rem;}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:.375rem;}
+.tool-btn{display:flex;align-items:center;gap:.375rem;padding:.5rem .625rem;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--t2);font-size:.775rem;font-weight:600;transition:all .15s;white-space:nowrap;}
+.tool-btn:hover{border-color:var(--acc);background:#fff3ed;color:var(--acc);}
+.tool-btn.active{border-color:var(--acc);background:#fff3ed;color:var(--acc);}
+.tool-btn svg{width:13px;height:13px;flex-shrink:0;}
+.tool-btn.full{grid-column:1/-1;}
+
+.panel-body{flex:1;overflow-y:auto;padding:1rem;}
+.panel-idle{text-align:center;padding:2rem 1rem;color:var(--t3);font-size:.8125rem;line-height:1.6;}
+.panel-idle svg{width:32px;height:32px;margin:0 auto .75rem;display:block;opacity:.3;}
+
+/* AI result */
+.ai-result{font-size:.875rem;line-height:1.75;color:var(--t1);}
+.ai-result p{margin-bottom:.75rem;}
+.ai-result ul{padding-left:1.25rem;margin-bottom:.75rem;}
+.ai-result li{margin-bottom:.375rem;}
+
+/* Loading spinner */
+.spin-wrap{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:2rem;color:var(--t3);font-size:.8125rem;}
+.spin{width:28px;height:28px;border:2.5px solid var(--bdr);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Images grid */
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.875rem;margin-bottom:1.5rem;}
+.img-grid img{width:100%;border-radius:10px;border:1px solid var(--bdr);background:#f0f0ec;display:block;cursor:zoom-in;transition:transform .15s;}
+.img-grid img:hover{transform:scale(1.02);}
+.img-grid.single{grid-template-columns:1fr;}
+.img-grid.single img{max-height:480px;object-fit:contain;cursor:zoom-in;}
+
+/* Lightbox */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain;}
+.lightbox-close{position:fixed;top:1rem;right:1rem;width:40px;height:40px;background:rgba(255,255,255,.1);border:none;border-radius:50%;color:#fff;font-size:1.25rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.lightbox-close:hover{background:rgba(255,255,255,.2);}
+
+/* Chat with AI — full page link */
+.chat-link-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.625rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:700;margin-top:.75rem;text-decoration:none;}
+.chat-link-btn:hover{background:#333;}
+.chat-link-btn svg{width:15px;height:15px;}
+
+/* ── Inline Flashcards ── */
+.fc-wrap{display:flex;flex-direction:column;gap:.75rem;}
+.fc-counter{font-size:.75rem;color:var(--t3);font-weight:600;text-align:center;}
+.fc-card{perspective:600px;height:160px;cursor:pointer;}
+.fc-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s ease;border-radius:12px;}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg);}
+.fc-front,.fc-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;font-size:.875rem;line-height:1.5;}
+.fc-front{background:#fff3ed;border:1.5px solid #fed7aa;color:var(--t1);font-weight:600;}
+.fc-back{background:#f0fdf4;border:1.5px solid #bbf7d0;color:#166534;transform:rotateY(180deg);}
+.fc-hint{font-size:.7rem;color:var(--t3);text-align:center;margin-top:.25rem;}
+.fc-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.5rem;}
+.fc-nav-btn{flex:1;padding:.5rem;border:1px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--t2);font-size:.8rem;font-weight:600;transition:all .15s;}
+.fc-nav-btn:hover:not(:disabled){background:var(--hov);color:var(--t1);}
+.fc-nav-btn:disabled{opacity:.3;cursor:default;}
+.fc-save-btn{display:flex;align-items:center;justify-content:center;gap:.375rem;width:100%;padding:.5rem;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;margin-top:.625rem;transition:background .15s;}
+.fc-save-btn:hover{background:var(--acc2);}
+.fc-save-btn:disabled{opacity:.5;cursor:default;}
+
+/* ── Inline Quiz ── */
+.qz-wrap{display:flex;flex-direction:column;gap:.75rem;}
+.qz-counter{font-size:.75rem;color:var(--t3);font-weight:600;}
+.qz-q{font-size:.875rem;font-weight:600;color:var(--t1);line-height:1.5;margin-bottom:.5rem;}
+.qz-opts{display:flex;flex-direction:column;gap:.375rem;}
+.qz-opt{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);cursor:pointer;transition:all .15s;text-align:left;font-size:.8125rem;color:var(--t1);}
+.qz-opt:hover:not(:disabled){border-color:var(--acc);background:#fff3ed;}
+.qz-opt .qz-letter{width:22px;height:22px;border-radius:50%;background:var(--bdr);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;transition:all .15s;}
+.qz-opt.correct{border-color:#22c55e;background:#f0fdf4;}
+.qz-opt.correct .qz-letter{background:#22c55e;color:#fff;}
+.qz-opt.wrong{border-color:#ef4444;background:#fef2f2;}
+.qz-opt.wrong .qz-letter{background:#ef4444;color:#fff;}
+.qz-opt:disabled{cursor:default;}
+.qz-explanation{font-size:.8rem;color:#555;background:#f8f8f6;border-radius:8px;padding:.625rem .75rem;line-height:1.5;border-left:3px solid var(--acc);}
+.qz-next-btn{width:100%;padding:.5rem;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;transition:background .15s;}
+.qz-next-btn:hover{background:var(--acc2);}
+.qz-score{text-align:center;padding:1.5rem 1rem;}
+.qz-score-ring{width:72px;height:72px;border-radius:50%;border:4px solid var(--acc);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;font-size:1.25rem;font-weight:800;color:var(--acc);}
+.qz-score-label{font-size:.875rem;font-weight:700;color:var(--t1);margin-bottom:.25rem;}
+.qz-score-sub{font-size:.8rem;color:var(--t3);}
+.qz-retry-btn{margin-top:.75rem;width:100%;padding:.5rem;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:.8rem;font-weight:600;color:var(--t2);}
+.qz-retry-btn:hover{background:var(--hov);}
+
+/* Save deck modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:14px;padding:1.5rem;width:min(320px,90vw);box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:.875rem;}
+.modal-input{width:100%;padding:.625rem .75rem;border:1.5px solid var(--bdr);border-radius:8px;font-size:.875rem;font-family:inherit;outline:none;}
+.modal-input:focus{border-color:var(--acc);}
+.modal-actions{display:flex;gap:.5rem;margin-top:.875rem;}
+.modal-cancel{flex:1;padding:.5rem;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);font-size:.875rem;font-weight:600;color:var(--t2);}
+.modal-save{flex:1;padding:.5rem;border:none;border-radius:8px;background:var(--acc);color:#fff;font-size:.875rem;font-weight:700;}
+.modal-save:hover{background:var(--acc2);}
+
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a1a;color:#fff;padding:.625rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:300;transition:transform .3s ease;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.bottom-tools{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--sb);border-top:1px solid var(--bdr);padding:.5rem .75rem;z-index:100;gap:.375rem;overflow-x:auto;}
+.bottom-tools::-webkit-scrollbar{display:none;}
+
+@media(max-width:860px){
+  html,body{overflow:auto;}
+  .shell{height:auto;min-height:100vh;}
+  .body{flex-direction:column;overflow:visible;height:auto;}
+  .viewer{overflow:visible;padding:1.25rem 1rem;}
+  .side-panel{width:100%!important;opacity:1!important;pointer-events:auto!important;border-left:none;border-top:1px solid var(--bdr);display:none;}
+  .side-panel.mobile-open{display:flex;}
+  .side-panel.hidden{display:none!important;}
+  .panel-toggle{display:none;}
+  .bottom-tools{display:flex;}
+  body{padding-bottom:60px;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- Topbar -->
+<div class="topbar">
+  <a href="{% url 'list_materials' %}" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </a>
+  <span class="topbar-title">{{ material.title }}</span>
+  <div class="topbar-right">
+    <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <span class="page-counter" id="pageCounter" onclick="openPageJump()" title="Click to jump to page">1 / {{ total_pages }}</span>
+    <div class="page-jump-wrap" id="pageJumpWrap" style="display:none;">
+      <input class="page-jump-input" id="pageJumpInput" type="number" min="1" max="{{ total_pages }}" placeholder="…"
+        onkeydown="handlePageJumpKey(event)" onblur="closePageJump()">
+      <span class="page-jump-of">/ {{ total_pages }}</span>
+    </div>
+    <button class="nav-btn" id="nextBtn" onclick="changePage(1)" {% if total_pages == 1 %}disabled{% endif %}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <button class="panel-toggle active" id="panelToggle" onclick="togglePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      AI Tools
+    </button>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<!-- Body -->
+<div class="body">
+
+  <!-- Viewer -->
+  <div class="viewer" id="viewer">
+    <div class="viewer-inner">
+      <div class="page-label"><span class="page-label-dot"></span><span id="pageLabel">Page 1 of {{ total_pages }}</span></div>
+      <div id="imgGrid" class="img-grid" style="display:none;"></div>
+      <div class="page-text" id="pageText"></div>
+    </div>
+  </div>
+
+  <!-- Side panel -->
+  <div class="side-panel" id="sidePanel">
+    <div class="panel-head">
+      <div class="panel-head-title">AI Tools — Page <span id="panelPageNum">1</span></div>
+      <div class="tool-grid">
+        <button class="tool-btn" onclick="runTool('summarise')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Summarise
+        </button>
+        <button class="tool-btn" onclick="runTool('explain')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Explain
+        </button>
+        <button class="tool-btn" onclick="runTool('quiz')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Quiz Me
+        </button>
+        <button class="tool-btn" onclick="runTool('flashcards')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          Flashcards
+        </button>
+        <a href="{% url 'podcast_view' material.pk %}" class="tool-btn full">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+          Podcast
+        </a>
+        <a href="{% url 'material_detail' material.pk %}" class="chat-link-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Chat with AI about this material
+        </a>
+      </div>
+    </div>
+    <div class="panel-body" id="panelBody">
+      <div class="panel-idle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
+        Pick a tool above to get AI help for this page
+      </div>
+    </div>
+  </div>
+
+</div><!-- .body -->
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- Mobile bottom tools -->
+<div class="bottom-tools" id="bottomTools">
+  <button class="tool-btn" onclick="runTool('summarise');openMobilePanel()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
+    Summarise
+  </button>
+  <button class="tool-btn" onclick="runTool('explain');openMobilePanel()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg>
+    Explain
+  </button>
+  <button class="tool-btn" onclick="runTool('quiz');openMobilePanel()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+    Quiz Me
+  </button>
+  <button class="tool-btn" onclick="runTool('flashcards');openMobilePanel()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+    Flashcards
+  </button>
+  <a href="{% url 'podcast_view' material.pk %}" class="tool-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/></svg>
+    Podcast
+  </a>
+</div>
+
+</div><!-- .shell -->
+
+<!-- Save deck modal -->
+<div class="modal-overlay" id="saveDeckModal">
+  <div class="modal-box">
+    <div class="modal-title">Save Flashcard Deck</div>
+    <input class="modal-input" id="deckNameInput" type="text" placeholder="Deck name…" maxlength="80">
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeSaveModal()">Cancel</button>
+      <button class="modal-save" onclick="confirmSaveDeck()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const PAGES = {{ pages_json|safe }};
+const AJAX_URL = '{% url "learn_ajax" material.pk %}';
+const SAVE_URL = '{% url "flashcards_save" material.pk %}';
+const CSRF = '{{ csrf_token }}';
+const TOTAL = {{ total_pages }};
+let currentPage = 0;
+let panelOpen = true;
+
+// pending cards for save
+let pendingCards = [];
+let pendingLabel = '';
+
+// ── page rendering ─────────────────────────────────────────────
+function renderPage(n) {
+  currentPage = n;
+  const page = PAGES[n];
+  const text   = typeof page === 'string' ? page : (page.text || '');
+  const images = typeof page === 'string' ? [] : (page.images || []);
+  const label  = typeof page === 'string' ? `Page ${n+1} of ${TOTAL}` : (page.label ? `${page.label} · ${n+1} of ${TOTAL}` : `Page ${n+1} of ${TOTAL}`);
+
+  // Images
+  const imgWrap = document.getElementById('imgGrid');
+  if (images.length) {
+    const single = images.length === 1;
+    imgWrap.className = 'img-grid' + (single ? ' single' : '');
+    imgWrap.innerHTML = images.map(src =>
+      `<img src="${src}" alt="Slide image" loading="lazy" onclick="openLightbox('${src}')">`
+    ).join('');
+    imgWrap.style.display = 'grid';
+  } else {
+    imgWrap.style.display = 'none';
+    imgWrap.innerHTML = '';
+  }
+
+  document.getElementById('pageText').textContent = text;
+  document.getElementById('pageLabel').textContent = label;
+  document.getElementById('pageCounter').textContent = `${n+1} / ${TOTAL}`;
+  document.getElementById('panelPageNum').textContent = n+1;
+  document.getElementById('prevBtn').disabled = n === 0;
+  document.getElementById('nextBtn').disabled = n === TOTAL - 1;
+  const pct = TOTAL > 1 ? ((n+1) / TOTAL * 100) : 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('viewer').scrollTop = 0;
+  resetPanel(images.length ? 'slide' : 'page');
+}
+
+function resetPanel(unit='page') {
+  document.getElementById('panelBody').innerHTML = `
+    <div class="panel-idle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
+      Pick a tool above to get AI help for this ${unit}
+    </div>`;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  pendingCards = [];
+}
+
+function changePage(dir) {
+  const next = currentPage + dir;
+  if (next >= 0 && next < TOTAL) renderPage(next);
+}
+
+// ── page jump ──────────────────────────────────────────────────
+function openPageJump() {
+  document.getElementById('pageCounter').style.display = 'none';
+  const wrap = document.getElementById('pageJumpWrap');
+  wrap.style.display = 'flex';
+  const input = document.getElementById('pageJumpInput');
+  input.value = currentPage + 1;
+  input.focus();
+  input.select();
+}
+function closePageJump() {
+  document.getElementById('pageJumpWrap').style.display = 'none';
+  document.getElementById('pageCounter').style.display = '';
+}
+function handlePageJumpKey(e) {
+  if (e.key === 'Enter') {
+    const val = parseInt(document.getElementById('pageJumpInput').value, 10);
+    if (!isNaN(val) && val >= 1 && val <= TOTAL) {
+      renderPage(val - 1);
+    }
+    closePageJump();
+  } else if (e.key === 'Escape') {
+    closePageJump();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changePage(-1);
+});
+
+// ── lightbox ───────────────────────────────────────────────────
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightboxImg').src = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLightbox(); closeSaveModal(); } });
+
+// ── panel toggle ───────────────────────────────────────────────
+function togglePanel() {
+  panelOpen = !panelOpen;
+  const panel = document.getElementById('sidePanel');
+  const btn   = document.getElementById('panelToggle');
+  panel.classList.toggle('hidden', !panelOpen);
+  btn.classList.toggle('active', panelOpen);
+}
+
+function openMobilePanel() {
+  document.getElementById('sidePanel').classList.add('mobile-open');
+}
+
+// ── toast ──────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── save deck modal ────────────────────────────────────────────
+function openSaveModal(cards, label) {
+  pendingCards = cards;
+  pendingLabel = label;
+  document.getElementById('deckNameInput').value = label;
+  document.getElementById('saveDeckModal').classList.add('open');
+  setTimeout(() => document.getElementById('deckNameInput').select(), 50);
+}
+function closeSaveModal() {
+  document.getElementById('saveDeckModal').classList.remove('open');
+}
+async function confirmSaveDeck() {
+  const name = document.getElementById('deckNameInput').value.trim() || pendingLabel;
+  closeSaveModal();
+  try {
+    const res = await fetch(SAVE_URL, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cards: pendingCards, name })
+    });
+    const data = await res.json();
+    if (data.success) showToast(`Deck "${data.name}" saved`);
+    else showToast('Save failed: ' + (data.error || 'unknown error'));
+  } catch(e) {
+    showToast('Network error saving deck');
+  }
+}
+
+// ── AI tools ───────────────────────────────────────────────────
+async function runTool(action) {
+  const page = PAGES[currentPage];
+  const pageText  = typeof page === 'string' ? page : (page.text || '');
+  const pageLabel = typeof page === 'string' ? `Page ${currentPage+1}` : (page.label || `Page ${currentPage+1}`);
+  const body = document.getElementById('panelBody');
+
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  const labels = {summarise:'Summarise',explain:'Explain',quiz:'Quiz Me',flashcards:'Flashcards'};
+  document.querySelectorAll('.tool-btn').forEach(b => {
+    if (b.textContent.trim().startsWith(labels[action] || action)) b.classList.add('active');
+  });
+
+  body.innerHTML = `<div class="spin-wrap"><div class="spin"></div>Generating…</div>`;
+
+  try {
+    const res = await fetch(AJAX_URL, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, page_text: pageText, page_label: pageLabel })
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      body.innerHTML = `<div style="color:#ef4444;font-size:.875rem;padding:1rem;">${data.error || 'Something went wrong.'}</div>`;
+      return;
+    }
+
+    if (action === 'flashcards' && data.cards) {
+      renderFlashcards(data.cards, pageLabel, body);
+    } else if (action === 'quiz' && data.questions) {
+      renderQuiz(data.questions, body);
+    } else {
+      body.innerHTML = `<div class="ai-result">${formatResult(data.result || '')}</div>`;
+    }
+  } catch(e) {
+    body.innerHTML = `<div style="color:#ef4444;font-size:.875rem;padding:1rem;">Network error: ${e.message}</div>`;
+  }
+}
+
+// ── Flashcards renderer ────────────────────────────────────────
+function renderFlashcards(cards, label, container) {
+  let idx = 0;
+
+  function draw() {
+    const card = cards[idx];
+    container.innerHTML = `
+      <div class="fc-wrap">
+        <div class="fc-counter">${idx+1} / ${cards.length}</div>
+        <div class="fc-card" id="fcCard" onclick="this.classList.toggle('flipped')">
+          <div class="fc-inner">
+            <div class="fc-front">${esc(card.front)}</div>
+            <div class="fc-back">${esc(card.back)}</div>
+          </div>
+        </div>
+        <div class="fc-hint">Tap card to flip</div>
+        <div class="fc-nav">
+          <button class="fc-nav-btn" onclick="fcNav(-1)" ${idx===0?'disabled':''}>← Prev</button>
+          <button class="fc-nav-btn" onclick="fcNav(1)" ${idx===cards.length-1?'disabled':''}>Next →</button>
+        </div>
+        <button class="fc-save-btn" onclick="openSaveModal(window._fcCards, window._fcLabel)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Deck
+        </button>
+      </div>`;
+    window._fcCards = cards;
+    window._fcLabel = label;
+    window._fcIdx = idx;
+    window._fcDraw = draw;
+  }
+
+  window.fcNav = function(dir) {
+    idx = Math.max(0, Math.min(cards.length-1, idx+dir));
+    draw();
+  };
+
+  draw();
+}
+
+// ── Quiz renderer ──────────────────────────────────────────────
+function renderQuiz(questions, container) {
+  let qIdx = 0, score = 0;
+
+  function drawQ() {
+    const q = questions[qIdx];
+    const opts = Object.entries(q.opts || {});
+    container.innerHTML = `
+      <div class="qz-wrap">
+        <div class="qz-counter">Question ${qIdx+1} of ${questions.length}</div>
+        <div class="qz-q">${esc(q.q)}</div>
+        <div class="qz-opts" id="qzOpts">
+          ${opts.map(([k,v]) => `
+            <button class="qz-opt" onclick="pickAnswer('${k}','${q.ans}','${esc(q.explanation||'')}')">
+              <span class="qz-letter">${k}</span>${esc(v)}
+            </button>`).join('')}
+        </div>
+      </div>`;
+    window._qzScore = score;
+    window._qzIdx = qIdx;
+    window._qzQuestions = questions;
+    window._qzContainer = container;
+  }
+
+  window.pickAnswer = function(chosen, correct, explanation) {
+    const opts = document.querySelectorAll('.qz-opt');
+    opts.forEach(btn => {
+      btn.disabled = true;
+      const letter = btn.querySelector('.qz-letter').textContent.trim();
+      if (letter === correct) btn.classList.add('correct');
+      else if (letter === chosen && chosen !== correct) btn.classList.add('wrong');
+    });
+    if (chosen === correct) score++;
+    window._qzScore = score;
+
+    const wrap = document.querySelector('.qz-wrap');
+    if (explanation) {
+      const expEl = document.createElement('div');
+      expEl.className = 'qz-explanation';
+      expEl.textContent = explanation;
+      wrap.appendChild(expEl);
+    }
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'qz-next-btn';
+    nextBtn.textContent = qIdx < questions.length-1 ? 'Next Question →' : 'See Results';
+    nextBtn.onclick = () => {
+      qIdx++;
+      if (qIdx < questions.length) drawQ();
+      else showScore();
+    };
+    wrap.appendChild(nextBtn);
+  };
+
+  function showScore() {
+    const pct = Math.round(score / questions.length * 100);
+    container.innerHTML = `
+      <div class="qz-score">
+        <div class="qz-score-ring">${pct}%</div>
+        <div class="qz-score-label">${score} / ${questions.length} correct</div>
+        <div class="qz-score-sub">${pct>=80?'Great work!':pct>=50?'Good effort — review the section again':'Keep studying — you\'ve got this'}</div>
+        <button class="qz-retry-btn" onclick="renderQuiz(window._qzQuestions, window._qzContainer)">Try Again</button>
+      </div>`;
+  }
+
+  drawQ();
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatResult(text) {
+  let html = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'$1')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+  html = html.replace(/^[•\-\*]\s+(.+)/gm, '<li>$1</li>');
+  if (html.includes('<li>')) html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+  return `<p>${html}</p>`;
+}
+
+renderPage(0);
+</script>
+</body>
+</html>

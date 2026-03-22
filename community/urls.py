@@ -65,6 +65,7 @@ urlpatterns = [
 
     # Community profiles
     path('profile/edit/me/', views.community_profile_edit, name='profile_edit'),
+    path('profile/avatar/', views.upload_avatar, name='upload_avatar'),
     path('profile/<str:username>/', views.community_profile, name='profile'),
 
     # Messages
@@ -138,6 +139,17 @@ urlpatterns = [
     path('api/friends/pending/', views.pending_friend_requests, name='pending_friend_requests'),
     path('api/users/search/', views.search_users, name='search_users'),
     path('api/profile-stats/<str:username>/', views.profile_stats, name='profile_stats'),
+
+    # Paraphraser
+    path('api/paraphrase/', views.paraphrase_ajax, name='paraphrase_ajax'),
+
+    # Citation Intelligence Engine
+    path('api/cite/', views.citation_ajax, name='citation_ajax'),
+
+    # Nexa workspace linking
+    path('workspaces/<uuid:ws_id>/nexa-link/', views.nexa_link_workspace, name='nexa_link_workspace'),
+    path('api/nexa/tasks/', views.nexa_my_tasks, name='nexa_my_tasks'),
+    path('api/nexa/tasks/<uuid:task_id>/submit/', views.nexa_submit_task, name='nexa_submit_task'),
 
     # Radar APIs (used by AI Hub)
     path('api/workspaces/list/', views.api_workspaces_list, name='api_workspaces_list'),

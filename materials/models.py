@@ -1,5 +1,13 @@
 from django.db import models
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+import os
+
+# Store study material files locally — bypasses Cloudinary's 10 MB limit
+_materials_storage = FileSystemStorage(
+    location=os.path.join(settings.MEDIA_ROOT, 'study_materials'),
+    base_url=settings.MEDIA_URL + 'study_materials/',
+)
 
 
 class StudyMaterial(models.Model):
@@ -13,7 +21,7 @@ class StudyMaterial(models.Model):
     ]
     
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='study_materials/')
+    file = models.FileField(upload_to='', storage=_materials_storage)
     material_type = models.CharField(max_length=20, choices=MATERIAL_TYPE_CHOICES)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='study_materials')
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -35,4 +43,19 @@ class StudyMaterial(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class SavedFlashcardDeck(models.Model):
+    """Saved set of AI-generated flashcards for a study material."""
+    material = models.ForeignKey(StudyMaterial, on_delete=models.CASCADE, related_name='flashcard_decks')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='flashcard_decks')
+    name = models.CharField(max_length=200)
+    cards = models.JSONField()  # list of {front, back}
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.material.title})"
 

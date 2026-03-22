@@ -1,267 +1,240 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{{ title }} - NEXA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>{{ title }} — NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0d0d;
+  --surface:#161616;
+  --surface2:#1e1e1e;
+  --border:#272727;
+  --border2:#333;
+  --text:#f2f2f2;
+  --text2:#999;
+  --text3:#555;
+  --acc:#f97316;
+  --acc2:#fb923c;
+  --green:#22c55e;
+  --red:#ef4444;
+  --yellow:#f59e0b;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
 
-:root {
-  --bg: #0a0a0a;
-  --surface: #111111;
-  --surface2: #1a1a1a;
-  --border: #222222;
-  --border2: #2e2e2e;
-  --text: #f0f0f0;
-  --text2: #888;
-  --text3: #555;
-  --accent: #6366f1;
-  --accent-hover: #4f52e0;
-  --green: #22c55e;
-  --red: #ef4444;
-  --yellow: #f59e0b;
+/* ── Topbar ── */
+.topbar{
+  height:48px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 1rem;gap:.75rem;flex-shrink:0;
+  position:relative;z-index:10;
 }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.back-btn{
+  display:flex;align-items:center;gap:.375rem;color:var(--text2);
+  font-size:.8125rem;padding:.375rem .625rem;border:1px solid var(--border2);
+  border-radius:6px;white-space:nowrap;flex-shrink:0;transition:all .15s;background:none;
 }
-
-/* ── Top bar ── */
-.topbar {
-  height: 52px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.25rem;
-  flex-shrink: 0;
-  gap: 1rem;
+.back-btn:hover{color:var(--text);border-color:#555;}
+.back-btn svg{width:13px;height:13px;}
+.topbar-title{font-size:.875rem;font-weight:600;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.topbar-right{display:flex;align-items:center;gap:.75rem;flex-shrink:0;margin-left:auto;}
+.progress-counter{font-size:.8125rem;color:var(--text3);font-weight:500;letter-spacing:.02em;}
+.score-chip{
+  background:rgba(34,197,94,.1);color:var(--green);
+  border:1px solid rgba(34,197,94,.2);border-radius:20px;
+  padding:.2rem .75rem;font-size:.8rem;font-weight:600;display:none;
 }
-.topbar-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
-.back-btn {
-  display: flex; align-items: center; gap: 0.375rem;
-  color: var(--text2); text-decoration: none; font-size: 0.8125rem;
-  padding: 0.375rem 0.75rem; border: 1px solid var(--border2);
-  border-radius: 6px; white-space: nowrap; flex-shrink: 0;
-  transition: all 0.15s;
-}
-.back-btn:hover { color: var(--text); border-color: #444; }
-.topbar-title { font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); }
-.topbar-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
-.score-chip {
-  background: rgba(34,197,94,0.12); color: var(--green);
-  border: 1px solid rgba(34,197,94,0.25); border-radius: 20px;
-  padding: 0.25rem 0.875rem; font-size: 0.8125rem; font-weight: 600;
-}
-.progress-label { font-size: 0.8125rem; color: var(--text3); }
 
 /* ── Screens ── */
-.screen { display: none; flex: 1; }
-.screen.active { display: flex; }
-.center-screen { align-items: center; justify-content: center; flex-direction: column; gap: 1.5rem; padding: 2rem; text-align: center; }
+.screen{display:none;flex:1;min-height:0;}
+.screen.active{display:flex;}
+.center-screen{align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;padding:2rem;overflow-y:auto;}
 
 /* ── Idle ── */
-.idle-card {
-  background: var(--surface); border: 1px solid var(--border2);
-  border-radius: 16px; padding: 2.5rem 2rem; max-width: 440px; width: 100%;
+.idle-wrap{max-width:420px;width:100%;}
+.idle-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:2.5rem 2rem;text-align:center;}
+.idle-icon{width:60px;height:60px;background:rgba(249,115,22,.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
+.idle-icon svg{width:28px;height:28px;color:var(--acc);}
+.idle-title{font-size:1.1875rem;font-weight:700;margin-bottom:.5rem;}
+.idle-desc{color:var(--text2);font-size:.875rem;line-height:1.65;margin-bottom:1.5rem;}
+.idle-chips{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.75rem;}
+.idle-chip{background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:.3rem .875rem;font-size:.775rem;color:var(--text2);}
+.gen-btn{
+  width:100%;padding:.8125rem;background:var(--acc);color:#fff;border:none;
+  border-radius:10px;font-size:.9375rem;font-weight:700;transition:background .15s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
 }
-.idle-icon { width: 56px; height: 56px; background: rgba(99,102,241,0.12); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
-.idle-icon svg { width: 28px; height: 28px; color: var(--accent); }
-.idle-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
-.idle-desc { color: var(--text2); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.75rem; }
-.idle-meta { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.75rem; flex-wrap: wrap; }
-.meta-chip { background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 0.375rem 0.75rem; font-size: 0.8rem; color: var(--text2); }
-.generate-btn {
-  width: 100%; padding: 0.875rem; background: var(--accent); color: #fff;
-  border: none; border-radius: 10px; font-size: 0.9375rem; font-weight: 600;
-  cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-}
-.generate-btn:hover { background: var(--accent-hover); }
+.gen-btn:hover{background:var(--acc2);}
+.gen-btn svg{width:16px;height:16px;}
 
 /* ── Loading ── */
-.loading-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 2.5rem 2rem; max-width: 360px; width: 100%; text-align: center; }
-.spinner-ring {
-  width: 52px; height: 52px; border-radius: 50%;
-  border: 3px solid var(--border2); border-top-color: var(--accent);
-  animation: spin 0.75s linear infinite; margin: 0 auto 1.25rem;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.375rem; }
-.loading-sub { font-size: 0.8125rem; color: var(--text2); }
-.loading-dots span { animation: blink 1.2s infinite; }
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink { 0%,80%,100% { opacity: 0; } 40% { opacity: 1; } }
+.loading-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:2.5rem 2rem;max-width:340px;width:100%;text-align:center;}
+.spinner{width:48px;height:48px;border-radius:50%;border:3px solid var(--border2);border-top-color:var(--acc);animation:spin .7s linear infinite;margin:0 auto 1.25rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-title{font-size:1rem;font-weight:600;margin-bottom:.375rem;}
+.loading-sub{font-size:.8125rem;color:var(--text2);}
+.dots span{animation:blink 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
 
 /* ── Error ── */
-.error-card { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 16px; padding: 2rem; max-width: 400px; width: 100%; }
-.error-icon { font-size: 2rem; margin-bottom: 0.75rem; }
-.error-title { font-size: 1rem; font-weight: 600; color: #f87171; margin-bottom: 0.5rem; }
-.error-msg { font-size: 0.875rem; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.5; }
-.retry-btn { padding: 0.625rem 1.5rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+.error-card{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:16px;padding:2rem;max-width:380px;width:100%;text-align:center;}
+.error-title{font-size:1rem;font-weight:600;color:#f87171;margin-bottom:.5rem;}
+.error-msg{font-size:.875rem;color:var(--text2);margin-bottom:1.25rem;line-height:1.5;}
+.retry-btn{padding:.625rem 1.5rem;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;}
 
 /* ── Quiz layout ── */
-#quizScreen { flex-direction: row; height: calc(100vh - 52px); overflow: hidden; }
+#quizScreen{flex-direction:row;height:calc(100vh - 48px);overflow:hidden;}
 
-.passage-panel {
-  flex: 1; overflow-y: auto; padding: 2rem;
-  border-right: 1px solid var(--border);
-  background: var(--surface);
+/* Left: passage */
+.passage-panel{
+  flex:1;min-width:0;overflow-y:auto;background:var(--surface);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
 }
-.passage-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 1rem; }
-.passage-text { font-size: 0.9rem; line-height: 1.85; color: #b0b0b0; }
-.passage-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; object-position: center; border-radius: 10px; margin: 1.25rem 0 0.5rem; display: none; border: 1px solid var(--border2); }
-.img-caption { font-size: 0.75rem; color: var(--text3); font-style: italic; margin-bottom: 1rem; display: none; }
-.img-loading { display: none; height: 160px; background: var(--surface2); border-radius: 10px; margin: 1.25rem 0; border: 1px solid var(--border2); align-items: center; justify-content: center; }
-.img-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-.img-spinner { width: 24px; height: 24px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
-.img-loading-text { font-size: 0.75rem; color: var(--text3); }
+.passage-inner{padding:1.75rem 2rem;flex:1;}
+.passage-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:1rem;}
+.passage-img-wrap{position:relative;width:100%;border-radius:12px;overflow:hidden;margin-bottom:.75rem;background:var(--surface2);border:1px solid var(--border);}
+.passage-img{width:100%;display:block;max-height:320px;object-fit:cover;object-position:center;}
+.img-caption{font-size:.75rem;color:var(--text3);font-style:italic;padding:.5rem .75rem;background:rgba(0,0,0,.4);}
+.img-skeleton{height:220px;display:flex;align-items:center;justify-content:center;gap:.5rem;color:var(--text3);font-size:.8125rem;}
+.img-skeleton-spin{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;}
+.passage-text{font-size:.9rem;line-height:1.9;color:#aaa;}
 
-.question-panel {
-  width: 440px; flex-shrink: 0; display: flex; flex-direction: column;
-  overflow: hidden; background: var(--bg);
+/* Right: question */
+.question-panel{
+  width:420px;flex-shrink:0;display:flex;flex-direction:column;
+  background:var(--bg);overflow:hidden;
 }
-.q-header { padding: 1.5rem 1.5rem 0; }
-.q-counter { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 0.75rem; }
-.q-text { font-size: 1rem; font-weight: 600; line-height: 1.55; color: var(--text); }
+.q-progress-bar{height:3px;background:var(--border);flex-shrink:0;}
+.q-progress-fill{height:100%;background:var(--acc);transition:width .4s ease;}
 
-.options-wrap { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.625rem; overflow-y: auto; flex: 1; }
-.opt-btn {
-  display: flex; align-items: center; gap: 0.875rem;
-  padding: 0.875rem 1rem; background: var(--surface);
-  border: 1.5px solid var(--border2); border-radius: 10px;
-  color: #c8c8c8; font-size: 0.9rem; cursor: pointer;
-  text-align: left; transition: all 0.15s; width: 100%;
-  font-family: inherit;
+.q-body{flex:1;overflow-y:auto;padding:1.5rem 1.5rem 0;}
+.q-counter{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.875rem;}
+.q-text{font-size:1rem;font-weight:600;line-height:1.6;color:var(--text);margin-bottom:1.25rem;}
+
+/* Options — Gemini style */
+.options{display:flex;flex-direction:column;gap:.5rem;padding-bottom:1rem;}
+.opt-btn{
+  display:flex;align-items:center;gap:.875rem;
+  padding:.875rem 1rem;background:var(--surface);
+  border:1.5px solid var(--border2);border-radius:10px;
+  color:#ccc;font-size:.9rem;cursor:pointer;text-align:left;
+  transition:all .15s;width:100%;font-family:inherit;
 }
-.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(99,102,241,0.06); color: var(--text); }
-.opt-btn:disabled { cursor: default; }
-.opt-btn.correct { border-color: var(--green); background: rgba(34,197,94,0.08); color: #86efac; }
-.opt-btn.wrong   { border-color: var(--red);   background: rgba(239,68,68,0.08);  color: #fca5a5; }
-.opt-letter {
-  width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.8125rem; font-weight: 700; flex-shrink: 0; transition: all 0.15s;
+.opt-btn:hover:not(:disabled){border-color:var(--acc);background:rgba(249,115,22,.06);color:var(--text);}
+.opt-btn:disabled{cursor:default;}
+.opt-btn.correct{border-color:var(--green);background:rgba(34,197,94,.08);color:#86efac;}
+.opt-btn.wrong{border-color:var(--red);background:rgba(239,68,68,.08);color:#fca5a5;}
+.opt-letter{
+  width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8125rem;font-weight:700;flex-shrink:0;transition:all .15s;color:var(--text2);
 }
-.opt-btn.correct .opt-letter { border-color: var(--green); background: var(--green); color: #000; }
-.opt-btn.wrong   .opt-letter { border-color: var(--red);   background: var(--red);   color: #fff; }
+.opt-btn:hover:not(:disabled) .opt-letter{border-color:var(--acc);color:var(--acc);}
+.opt-btn.correct .opt-letter{border-color:var(--green);background:var(--green);color:#000;}
+.opt-btn.wrong   .opt-letter{border-color:var(--red);background:var(--red);color:#fff;}
 
 /* Explanation */
-.exp-box {
-  margin: 0 1.5rem 0.75rem; padding: 1rem 1.125rem;
-  border-radius: 10px; font-size: 0.875rem; line-height: 1.6;
-  display: none;
+.exp-box{
+  margin:0 1.5rem .75rem;padding:.875rem 1rem;border-radius:10px;
+  font-size:.875rem;line-height:1.6;display:none;
 }
-.exp-box.wrong-exp { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; }
-.exp-box.right-exp { background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.2); color: #86efac; }
-.exp-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.375rem; opacity: 0.7; }
+.exp-box.right-exp{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac;}
+.exp-box.wrong-exp{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#fca5a5;}
+.exp-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.375rem;opacity:.75;}
 
 /* Footer */
-.q-footer {
-  padding: 1rem 1.5rem; border-top: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+.q-footer{
+  padding:.875rem 1.5rem;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
 }
-.proceed-btn {
-  padding: 0.625rem 1.5rem; background: var(--accent); color: #fff;
-  border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
-  cursor: pointer; transition: background 0.15s;
+.proceed-btn{
+  padding:.625rem 1.5rem;background:var(--acc);color:#fff;border:none;
+  border-radius:8px;font-size:.9rem;font-weight:700;transition:background .15s;
 }
-.proceed-btn:hover:not(:disabled) { background: var(--accent-hover); }
-.proceed-btn:disabled { opacity: 0.35; cursor: default; }
-.skip-btn { background: none; border: none; color: var(--text3); font-size: 0.8125rem; cursor: pointer; padding: 0.5rem; font-family: inherit; }
-.skip-btn:hover { color: var(--text2); }
-
-/* Progress bar */
-.progress-bar-wrap { height: 3px; background: var(--border); flex-shrink: 0; }
-.progress-bar-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
+.proceed-btn:hover:not(:disabled){background:var(--acc2);}
+.proceed-btn:disabled{opacity:.3;cursor:default;}
+.skip-btn{background:none;border:none;color:var(--text3);font-size:.8125rem;padding:.5rem;font-family:inherit;}
+.skip-btn:hover{color:var(--text2);}
 
 /* ── Results ── */
-#resultsScreen { flex-direction: column; align-items: center; justify-content: center; padding: 2rem; gap: 1.5rem; overflow-y: auto; }
-.results-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; text-align: center; }
-.results-ring {
-  width: 110px; height: 110px; border-radius: 50%;
-  border: 4px solid var(--green); display: flex; flex-direction: column;
-  align-items: center; justify-content: center; margin: 0 auto 1.5rem;
+#resultsScreen{flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.5rem;overflow-y:auto;}
+.results-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:2.5rem 2rem;max-width:400px;width:100%;text-align:center;}
+.results-ring{
+  width:108px;height:108px;border-radius:50%;border:4px solid var(--green);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 1.5rem;
 }
-.results-pct { font-size: 2rem; font-weight: 800; color: var(--green); line-height: 1; }
-.results-lbl { font-size: 0.7rem; color: var(--text3); margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.06em; }
-.results-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.375rem; }
-.results-sub { font-size: 0.875rem; color: var(--text2); margin-bottom: 1.75rem; }
-.results-btns { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
-.btn-primary { padding: 0.625rem 1.5rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 0.375rem; }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-ghost { padding: 0.625rem 1.25rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text2); font-size: 0.875rem; cursor: pointer; font-family: inherit; }
-.btn-ghost:hover { color: var(--text); border-color: #444; }
+.results-pct{font-size:2rem;font-weight:800;color:var(--green);line-height:1;}
+.results-lbl{font-size:.6875rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:.25rem;}
+.results-title{font-size:1.1875rem;font-weight:700;margin-bottom:.375rem;}
+.results-sub{font-size:.875rem;color:var(--text2);margin-bottom:1.75rem;}
+.results-btns{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;}
+.btn-primary{padding:.625rem 1.5rem;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:700;display:flex;align-items:center;gap:.375rem;}
+.btn-primary:hover{background:var(--acc2);}
+.btn-ghost{padding:.625rem 1.25rem;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:.875rem;}
+.btn-ghost:hover{color:var(--text);border-color:#555;}
 
-/* ── Bottom nav (mobile) ── */
-.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.5rem; z-index: 100; justify-content: space-around; }
-.bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.5rem; color: var(--text3); text-decoration: none; font-size: 0.625rem; }
-.bottom-nav-item svg { width: 20px; height: 20px; }
-.bottom-nav-item.active { color: var(--accent); }
-
-@media (max-width: 900px) {
-  body { overflow: auto; }
-  #quizScreen { flex-direction: column; height: auto; overflow: visible; }
-  #quizScreen.active { flex-direction: column; }
-  .passage-panel { border-right: none; border-bottom: 1px solid var(--border); padding: 1.25rem; max-height: 260px; overflow-y: auto; }
-  .question-panel { width: 100%; }
-  .bottom-nav { display: flex; }
-  body { padding-bottom: 64px; }
-  .idle-card, .loading-card, .error-card { margin: 0 1rem; }
+/* ── Mobile ── */
+@media(max-width:860px){
+  html,body{overflow:auto;}
+  #quizScreen{flex-direction:column;height:auto;overflow:visible;}
+  #quizScreen.active{flex-direction:column;}
+  .passage-panel{border-right:none;border-bottom:1px solid var(--border);max-height:240px;overflow-y:auto;}
+  .passage-inner{padding:1rem 1.25rem;}
+  .question-panel{width:100%;}
+  .screen{min-height:calc(100vh - 48px);}
+  body{padding-bottom:0;}
 }
 </style>
-
 </head>
-<body>
+<body style="display:flex;flex-direction:column;height:100vh;">
 
-<!-- Top bar -->
+<!-- Topbar -->
 <div class="topbar">
-  <div class="topbar-left">
-    <a href="{% url 'select_material_for_action' 'quiz' %}" class="back-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      Back
-    </a>
-    <span class="topbar-title">{{ material.title }}</span>
-  </div>
+  <a href="{% url 'list_materials' %}" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </a>
+  <span class="topbar-title">{{ material.title }}</span>
   <div class="topbar-right">
-    <span class="progress-label" id="progressLabel"></span>
-    <span class="score-chip" id="scoreChip" style="display:none"></span>
+    <span class="score-chip" id="scoreChip"></span>
+    <span class="progress-counter" id="progressCounter"></span>
   </div>
 </div>
 
 <!-- Idle -->
 <div class="screen active center-screen" id="idleScreen">
-  <div class="idle-card">
-    <div class="idle-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  <div class="idle-wrap">
+    <div class="idle-card">
+      <div class="idle-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div class="idle-title">Quiz: {{ material.title }}</div>
+      <div class="idle-desc">5 multiple-choice questions generated from your material. Wrong answers show an explanation so you learn from mistakes.</div>
+      <div class="idle-chips">
+        <span class="idle-chip">5 Questions</span>
+        <span class="idle-chip">Multiple Choice</span>
+        <span class="idle-chip">Instant Feedback</span>
+      </div>
+      <button class="gen-btn" onclick="generate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Generate Quiz
+      </button>
     </div>
-    <div class="idle-title">Quiz: {{ material.title }}</div>
-    <div class="idle-desc">5 multiple choice questions generated from your material. Wrong answers show an explanation so you can learn from mistakes.</div>
-    <div class="idle-meta">
-      <span class="meta-chip">5 Questions</span>
-      <span class="meta-chip">Multiple Choice</span>
-      <span class="meta-chip">Instant Feedback</span>
-    </div>
-    <button class="generate-btn" onclick="generate()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      Generate Quiz
-    </button>
   </div>
 </div>
 
 <!-- Loading -->
 <div class="screen center-screen" id="loadingScreen">
   <div class="loading-card">
-    <div class="spinner-ring"></div>
-    <div class="loading-title">Building your quiz<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+    <div class="spinner"></div>
+    <div class="loading-title">Building your quiz<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
     <div class="loading-sub">AI is reading your material and writing questions</div>
   </div>
 </div>
@@ -269,7 +242,7 @@ body {
 <!-- Error -->
 <div class="screen center-screen" id="errorScreen">
   <div class="error-card">
-    <div class="error-icon">⚠️</div>
+    <div style="font-size:2rem;margin-bottom:.75rem;">⚠️</div>
     <div class="error-title">Couldn't generate quiz</div>
     <div class="error-msg" id="errorMsg"></div>
     <button class="retry-btn" onclick="generate()">Try Again</button>
@@ -278,25 +251,32 @@ body {
 
 <!-- Quiz -->
 <div class="screen" id="quizScreen">
+  <!-- Left: passage -->
   <div class="passage-panel" id="passagePanel">
-    <div class="passage-label">Passage</div>
-    <div class="img-loading" id="imgLoading">
-      <div class="img-loading-inner">
-        <div class="img-spinner"></div>
-        <div class="img-loading-text">Finding illustration…</div>
+    <div class="passage-inner">
+      <div class="passage-label">Passage</div>
+      <div id="imgWrap" class="passage-img-wrap" style="display:none;">
+        <img id="passageImg" class="passage-img" alt="">
+        <div id="imgCaption" class="img-caption"></div>
       </div>
+      <div id="imgSkeleton" class="passage-img-wrap">
+        <div class="img-skeleton">
+          <div class="img-skeleton-spin"></div>
+          Finding illustration…
+        </div>
+      </div>
+      <div class="passage-text" id="passageText"></div>
     </div>
-    <img id="passageImg" class="passage-img" alt="">
-    <div id="imgCaption" class="img-caption"></div>
-    <div class="passage-text" id="passageText"></div>
   </div>
+
+  <!-- Right: question -->
   <div class="question-panel">
-    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
-    <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="q-body" id="qBody">
       <div class="q-counter" id="qCounter">Question 1 of 5</div>
       <div class="q-text" id="qText"></div>
+      <div class="options" id="optionsWrap"></div>
     </div>
-    <div class="options-wrap" id="optionsWrap"></div>
     <div class="exp-box" id="expBox">
       <div class="exp-label" id="expLabel"></div>
       <div id="expText"></div>
@@ -327,46 +307,23 @@ body {
   </div>
 </div>
 
-<!-- Mobile bottom nav -->
-<nav class="bottom-nav">
-  <a href="{% url 'dashboard' %}" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Home
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    AI
-  </a>
-  <a href="{% url 'list_materials' %}" class="bottom-nav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    Materials
-  </a>
-  <a href="{% url 'community:feed' %}" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    Community
-  </a>
-</nav>
-
-
 <script>
-const AJAX_URL  = '{% url "quiz_ajax" material.pk %}';
-const WIKI_URL  = '{% url "wiki_image_ajax" %}';
-const CSRF      = '{{ csrf_token }}';
-const MAT_TEXT  = `{{ material.extracted_text|default:""|escapejs }}`;
+const AJAX_URL = '{% url "quiz_ajax" material.pk %}';
+const WIKI_URL = '{% url "wiki_image_ajax" %}';
+const CSRF     = '{{ csrf_token }}';
+const MAT_TEXT = `{{ material.extracted_text|default:""|escapejs }}`;
 
 let questions = [], idx = 0, score = 0, answered = 0, userAnswers = [];
 
-// ── helpers ────────────────────────────────────────────────────
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// ── generate ───────────────────────────────────────────────────
 async function generate() {
   showScreen('loadingScreen');
   document.getElementById('scoreChip').style.display = 'none';
-  document.getElementById('progressLabel').textContent = '';
+  document.getElementById('progressCounter').textContent = '';
   try {
     const res = await fetch(AJAX_URL, {
       method: 'POST',
@@ -388,24 +345,23 @@ async function generate() {
   }
 }
 
-// ── load question ──────────────────────────────────────────────
 function loadQ() {
   const q = questions[idx];
   const total = questions.length;
 
   // topbar
-  document.getElementById('progressLabel').textContent = `${idx + 1} / ${total}`;
-  document.getElementById('progressBar').style.width = `${((idx) / total) * 100}%`;
-  document.getElementById('qCounter').textContent = `Question ${idx + 1} of ${total}`;
+  document.getElementById('progressCounter').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('progressFill').style.width = `${(idx / total) * 100}%`;
+  document.getElementById('qCounter').textContent = `QUESTION ${idx + 1} OF ${total}`;
   document.getElementById('qText').textContent = q.q;
 
-  // score chip
   if (answered > 0) {
-    document.getElementById('scoreChip').style.display = 'inline-flex';
-    document.getElementById('scoreChip').textContent = `${score} / ${answered}`;
+    const chip = document.getElementById('scoreChip');
+    chip.style.display = 'inline-block';
+    chip.textContent = `${score} / ${answered}`;
   }
 
-  // passage text
+  // passage
   if (MAT_TEXT) {
     const chunk = 700, len = MAT_TEXT.length;
     const start = Math.max(0, Math.floor((idx / total) * len) - 100);
@@ -415,12 +371,9 @@ function loadQ() {
     document.getElementById('passageText').textContent = 'No passage available.';
   }
 
-  // reset image
-  const img = document.getElementById('passageImg');
-  const cap = document.getElementById('imgCaption');
-  const imgLoad = document.getElementById('imgLoading');
-  img.style.display = 'none'; cap.style.display = 'none';
-  imgLoad.style.display = 'flex';
+  // image reset
+  document.getElementById('imgWrap').style.display = 'none';
+  document.getElementById('imgSkeleton').style.display = 'block';
   fetchWikiImage(q.q);
 
   // options
@@ -435,24 +388,21 @@ function loadQ() {
     wrap.appendChild(btn);
   });
 
-  // reset explanation + footer
+  // reset state
   const exp = document.getElementById('expBox');
   exp.style.display = 'none'; exp.className = 'exp-box';
   document.getElementById('proceedBtn').disabled = true;
   document.getElementById('proceedBtn').textContent = idx < total - 1 ? 'Proceed' : 'Finish';
   document.getElementById('skipBtn').style.display = 'inline-block';
 
-  // scroll panels to top
   document.getElementById('passagePanel').scrollTop = 0;
-  wrap.scrollTop = 0;
+  document.getElementById('qBody').scrollTop = 0;
 }
 
-// ── pick answer ────────────────────────────────────────────────
 function pick(chosen) {
   const q = questions[idx];
   const correct = q.ans;
-  const btns = document.querySelectorAll('.opt-btn');
-  btns.forEach(b => {
+  document.querySelectorAll('.opt-btn').forEach(b => {
     b.disabled = true;
     if (b.dataset.letter === correct) b.classList.add('correct');
     if (b.dataset.letter === chosen && chosen !== correct) b.classList.add('wrong');
@@ -463,11 +413,13 @@ function pick(chosen) {
   if (isRight) score++;
   userAnswers[idx] = { chosen, correct, isRight };
 
-  document.getElementById('scoreChip').style.display = 'inline-flex';
-  document.getElementById('scoreChip').textContent = `${score} / ${answered}`;
+  const chip = document.getElementById('scoreChip');
+  chip.style.display = 'inline-block';
+  chip.textContent = `${score} / ${answered}`;
 
   const exp = document.getElementById('expBox');
-  document.getElementById('expText').textContent = q.explanation || (isRight ? '' : `The correct answer is ${correct}: ${q.opts[correct]}`);
+  document.getElementById('expText').textContent =
+    q.explanation || (isRight ? '' : `The correct answer is ${correct}: ${q.opts[correct]}`);
 
   if (!isRight) {
     exp.className = 'exp-box wrong-exp';
@@ -483,11 +435,11 @@ function pick(chosen) {
   document.getElementById('skipBtn').style.display = 'none';
 }
 
-// ── proceed / skip ─────────────────────────────────────────────
 function proceed() {
   if (idx < questions.length - 1) { idx++; loadQ(); }
   else showResults();
 }
+
 function skip() {
   userAnswers[idx] = { chosen: null, correct: questions[idx].ans, isRight: false };
   answered++;
@@ -495,45 +447,39 @@ function skip() {
   else showResults();
 }
 
-// ── results ────────────────────────────────────────────────────
 function showResults() {
   const total = questions.length;
   const pct = Math.round((score / total) * 100);
   document.getElementById('resultsPct').textContent = pct + '%';
   document.getElementById('resultsTitle').textContent =
     pct >= 80 ? '🎉 Excellent work!' : pct >= 60 ? '👍 Good effort!' : '📚 Keep studying!';
-  document.getElementById('resultsSub').textContent =
-    `You scored ${score} out of ${total} questions.`;
+  document.getElementById('resultsSub').textContent = `You scored ${score} out of ${total} questions.`;
   const ring = document.getElementById('resultsRing');
   const pctEl = document.getElementById('resultsPct');
   if (pct >= 80) { ring.style.borderColor = 'var(--green)'; pctEl.style.color = 'var(--green)'; }
   else if (pct >= 60) { ring.style.borderColor = 'var(--yellow)'; pctEl.style.color = 'var(--yellow)'; }
   else { ring.style.borderColor = 'var(--red)'; pctEl.style.color = '#f87171'; }
-  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('progressFill').style.width = '100%';
   showScreen('resultsScreen');
 }
 
 function reviewMode() {
   idx = 0; loadQ();
-  // re-apply stored answer
-  setTimeout(() => {
-    const ua = userAnswers[0];
-    if (ua && ua.chosen) pick(ua.chosen);
-  }, 50);
+  setTimeout(() => { const ua = userAnswers[0]; if (ua && ua.chosen) pick(ua.chosen); }, 50);
   showScreen('quizScreen');
 }
 
-// ── Wikipedia image ────────────────────────────────────────────
 async function fetchWikiImage(questionText) {
   const stopwords = /\b(which|what|how|why|where|when|who|the|a|an|of|is|are|was|were|in|on|at|to|for|with|that|this|does|do|did|following|both|between|relates|condition|conditions)\b/gi;
   let kw = questionText.replace(/\?/g, '').replace(stopwords, ' ').replace(/\s+/g, ' ').trim();
   kw = kw.split(' ').slice(0, 4).join(' ');
 
-  const imgEl = document.getElementById('passageImg');
-  const cap   = document.getElementById('imgCaption');
-  const loader = document.getElementById('imgLoading');
+  const imgWrap = document.getElementById('imgWrap');
+  const imgEl   = document.getElementById('passageImg');
+  const cap     = document.getElementById('imgCaption');
+  const skel    = document.getElementById('imgSkeleton');
 
-  if (!kw) { loader.style.display = 'none'; return; }
+  if (!kw) { skel.style.display = 'none'; return; }
 
   try {
     const res = await fetch(WIKI_URL, {
@@ -542,19 +488,17 @@ async function fetchWikiImage(questionText) {
       body: JSON.stringify({ query: kw })
     });
     const data = await res.json();
-    loader.style.display = 'none';
+    skel.style.display = 'none';
     if (data.image_url) {
       imgEl.src = data.image_url;
-      imgEl.style.display = 'block';
       cap.textContent = `Wikipedia: ${data.title}`;
-      cap.style.display = 'block';
+      imgWrap.style.display = 'block';
     }
   } catch {
-    loader.style.display = 'none';
+    skel.style.display = 'none';
   }
 }
 
-// auto-start
 generate();
 </script>
 </body>

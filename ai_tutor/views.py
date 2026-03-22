@@ -162,7 +162,108 @@ def essay_request(request):
 
 
 @login_required
+def essay_edit_chat(request):
+    """AJAX: chat with AI to edit/improve the current essay. Returns a reply and optionally an updated essay."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        essay_text = data.get('essay_text', '').strip()
+        if not message or not essay_text:
+            return JsonResponse({'ok': False, 'error': 'Message and essay required'}, status=400)
+
+        from .ai_utils import get_openai_client
+        client = get_openai_client()
+
+        system = (
+            "You are Nexa, an expert essay editor. The user will share their essay and ask you to edit or improve it. "
+            "If the user asks for a change (e.g. 'make it more persuasive', 'shorten it', 'fix grammar'), "
+            "return BOTH a short conversational reply AND the full updated essay. "
+            "If the user asks a question or wants advice without a rewrite, just reply conversationally. "
+            "Format your response as JSON: "
+            '{"reply": "short message to user", "updated_essay": "full updated essay or null if no rewrite needed"} '
+            "Return ONLY valid JSON, no extra text."
+        )
+
+        resp = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": f"My essay:\n\n{essay_text}\n\nMy request: {message}"},
+            ],
+            max_tokens=2000,
+            temperature=0.7,
+        )
+        raw = resp.choices[0].message.content.strip()
+
+        # Parse JSON response
+        import re
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if match:
+            result = json.loads(match.group())
+        else:
+            result = {'reply': raw, 'updated_essay': None}
+
+        return JsonResponse({
+            'ok': True,
+            'reply': result.get('reply', ''),
+            'updated_essay': result.get('updated_essay') or None,
+        })
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def essay_generate_ajax(request):
+    """AJAX: generate essay and return JSON so the frontend can stream/typewrite it."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        topic = data.get('topic', '').strip()
+        if not topic:
+            return JsonResponse({'ok': False, 'error': 'Topic is required'}, status=400)
+        word_count = int(data.get('word_count', 500))
+        writing_style = data.get('writing_style', 'argumentative')
+        output_format = data.get('output_format', 'text')
+
+        styled_topic = f"{topic} [Style: {writing_style}]"
+
+        # Inject selected references into the prompt
+        references = data.get('references', [])  # list of {title, snippet, url}
+        ref_block = ''
+        if references:
+            ref_lines = '\n'.join(
+                f"- [{r['title']}]({r['url']}): {r['snippet']}" for r in references
+            )
+            ref_block = f"\n\nUse the following real sources as references and cite them naturally in the essay:\n{ref_lines}"
+            styled_topic += ref_block
+
+        essay_text, sources = generate_essay_with_sources(styled_topic, user=request.user, word_count=word_count)
+
+        essay = EssayRequest.objects.create(
+            user=request.user,
+            topic=topic,
+            word_count=word_count,
+            research_done=True,
+            essay_text=essay_text,
+            output_format=output_format,
+        )
+        return JsonResponse({
+            'ok': True,
+            'essay_text': essay_text,
+            'essay_id': essay.id,
+            'topic': topic,
+            'detail_url': f'/ai/essay/{essay.id}/',
+        })
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+
+@login_required
 def essay_detail(request, essay_id):
+
     """View essay details."""
     essay = get_object_or_404(EssayRequest, id=essay_id, user=request.user)
     
@@ -240,6 +341,80 @@ def chat_with_image(request):
             'timestamp': conversation.created_at.strftime('%H:%M')
         })
 
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def essay_web_search(request):
+    """Search the web and return structured article cards for the user to pick as references."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        query = data.get('query', '').strip()
+        if not query:
+            return JsonResponse({'error': 'Query required'}, status=400)
+
+        import urllib.request, urllib.parse, re
+
+        results = []
+
+        # ── DuckDuckGo Instant Answer API ──────────────────────────────
+        ddg_url = f"https://api.duckduckgo.com/?q={urllib.parse.quote(query)}&format=json&no_html=1&skip_disambig=1"
+        req = urllib.request.Request(ddg_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            ddg = json.loads(resp.read().decode())
+
+        # Abstract (Wikipedia-style summary)
+        if ddg.get('AbstractText') and ddg.get('AbstractURL'):
+            results.append({
+                'title': ddg.get('Heading') or query,
+                'snippet': ddg['AbstractText'][:300],
+                'url': ddg['AbstractURL'],
+                'source': ddg.get('AbstractSource', 'Web'),
+            })
+
+        # Related topics
+        for r in ddg.get('RelatedTopics', [])[:8]:
+            if isinstance(r, dict) and r.get('Text') and r.get('FirstURL'):
+                title = r.get('Text', '')[:60]
+                results.append({
+                    'title': title,
+                    'snippet': r['Text'][:300],
+                    'url': r['FirstURL'],
+                    'source': 'DuckDuckGo',
+                })
+            # Handle grouped topics
+            elif isinstance(r, dict) and r.get('Topics'):
+                for sub in r['Topics'][:3]:
+                    if sub.get('Text') and sub.get('FirstURL'):
+                        results.append({
+                            'title': sub['Text'][:60],
+                            'snippet': sub['Text'][:300],
+                            'url': sub['FirstURL'],
+                            'source': 'DuckDuckGo',
+                        })
+
+        # Results section (news/web results)
+        for r in ddg.get('Results', [])[:5]:
+            if r.get('Text') and r.get('FirstURL'):
+                results.append({
+                    'title': r.get('Text', '')[:80],
+                    'snippet': r['Text'][:300],
+                    'url': r['FirstURL'],
+                    'source': 'Web',
+                })
+
+        # Deduplicate by URL
+        seen = set()
+        unique = []
+        for r in results:
+            if r['url'] not in seen:
+                seen.add(r['url'])
+                unique.append(r)
+
+        return JsonResponse({'ok': True, 'results': unique[:10], 'query': query})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -409,6 +584,13 @@ def essay_guidance(request):
         if not topic:
             return JsonResponse({'error': 'Topic required'}, status=400)
 
+        # Build reference context block
+        references = data.get('references', [])
+        ref_block = ''
+        if references:
+            ref_lines = '\n'.join(f"- [{r['title']}]({r['url']}): {r['snippet']}" for r in references)
+            ref_block = f"\n\nReal-world sources to draw from:\n{ref_lines}\n"
+
         from .ai_utils import get_openai_client
         client = get_openai_client()
 
@@ -420,6 +602,7 @@ def essay_guidance(request):
                 "2. Key concepts and terms they must understand\n"
                 "3. Common mistakes students make on this topic\n"
                 "4. What a strong essay on this topic must include\n\n"
+                f"{ref_block}"
                 "Be concise, practical, and student-friendly. No markdown."
             ),
             'thesis': (
@@ -429,6 +612,7 @@ def essay_guidance(request):
                 "- Make a clear, arguable claim\n"
                 "- Be one sentence\n"
                 "- Be suitable for an academic essay\n\n"
+                f"{ref_block}"
                 "Format:\nThesis 1: ...\nThesis 2: ...\nThesis 3: ...\n\nNo extra commentary."
             ),
             'outline': (
@@ -439,6 +623,7 @@ def essay_guidance(request):
                 "Body Paragraph 2: Main point, supporting evidence, explanation\n"
                 "Body Paragraph 3: Main point, supporting evidence, explanation\n"
                 "Conclusion: Restate thesis, summarise points, closing thought\n\n"
+                f"{ref_block}"
                 "Be specific to this topic. No markdown symbols."
             ),
         }
@@ -482,6 +667,7 @@ def essay_improve(request):
         essay_text = data.get('essay_text', '').strip()
         improvements = data.get('improvements', ['grammar', 'clarity'])
         tone = data.get('tone', '')
+        references = data.get('references', [])
         if not essay_text:
             return JsonResponse({'error': 'Essay text required'}, status=400)
 
@@ -496,6 +682,9 @@ def essay_improve(request):
             improvement_instructions.append("Improve paragraph structure and logical flow between ideas")
         if tone:
             improvement_instructions.append(f"Adjust the tone to be {tone}")
+        if references:
+            ref_lines = '\n'.join(f"- [{r['title']}]({r['url']}): {r['snippet']}" for r in references)
+            improvement_instructions.append(f"Incorporate and cite these real sources where relevant:\n{ref_lines}")
 
         instructions_text = "\n".join(f"- {i}" for i in improvement_instructions)
 

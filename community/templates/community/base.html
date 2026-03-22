@@ -24,7 +24,7 @@ input,textarea,select{font-family:inherit;}
 .shell{display:flex;height:100vh;overflow:hidden;}
 
 /* Col 1: server/app icon rail */
-.rail{width:var(--rail);background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.375rem;flex-shrink:0;border-right:1px solid var(--b1);overflow-y:auto;}
+.rail{display:none!important;}
 .rail-icon{width:48px;height:48px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:800;color:var(--t2);transition:all .2s;cursor:pointer;position:relative;flex-shrink:0;}
 .rail-icon:hover,.rail-icon.active{border-radius:16px;background:var(--white);color:#000;}
 .rail-icon.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:4px;height:40px;background:var(--white);border-radius:0 4px 4px 0;}

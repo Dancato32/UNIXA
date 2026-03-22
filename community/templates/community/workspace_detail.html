@@ -448,7 +448,7 @@ html,body,.shell,.main-area,.content-scroll,.page,.ws-shell,.ws-main,.ws-panel,.
       {% if ws.workspace_type == 'nexa' %}
       <button class="ws-nav-item active" id="nav-nexa-tutor" onclick="showPanel('nexa-tutor',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        AI Tutor
+        AI Chat
       </button>
       <button class="ws-nav-item" id="nav-nexa-essay" onclick="showPanel('nexa-essay',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -465,6 +465,14 @@ html,body,.shell,.main-area,.content-scroll,.page,.ws-shell,.ws-main,.ws-panel,.
       <button class="ws-nav-item" id="nav-nexa-files" onclick="showPanel('files',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         My Files
+      </button>
+      <button class="ws-nav-item" id="nav-nexa-tasks" onclick="showPanel('nexa-tasks',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        My Tasks
+      </button>
+      <button class="ws-nav-item" id="nav-nexa-linked" onclick="showPanel('nexa-linked',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Linked Workspaces
       </button>
       {% else %}
       <button class="ws-nav-item active" onclick="showPanel('chat',this)">
@@ -496,6 +504,13 @@ html,body,.shell,.main-area,.content-scroll,.page,.ws-shell,.ws-main,.ws-panel,.
         Members
       </button>
       {% endif %}{# end nexa else #}
+      {% if ws.workspace_type != 'nexa' %}
+      <div class="ws-nav-section" style="margin-top:.5rem;">Nexa</div>
+      <button class="ws-nav-item" id="nav-nexa-connect" onclick="nexaToggleLink()" style="{% if is_linked_to_nexa %}color:#818cf8;{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span id="nexa-connect-label">{% if is_linked_to_nexa %}Linked to My Nexa{% else %}Connect to My Nexa{% endif %}</span>
+      </button>
+      {% endif %}
       {% if is_owner %}
       <div class="ws-nav-section" style="margin-top:.5rem;">Settings</div>
       <form method="post" action="{% url 'community:workspace_delete' ws.id %}" onsubmit="return confirm('Delete this workspace? This cannot be undone.')">
@@ -531,7 +546,7 @@ html,body,.shell,.main-area,.content-scroll,.page,.ws-shell,.ws-main,.ws-panel,.
   <!-- Main panels -->
   <div class="ws-main">
     <!-- Chat panel -->
-    <div class="ws-panel active" id="panel-chat">
+    <div class="ws-panel {% if ws.workspace_type != 'nexa' %}active{% endif %}" id="panel-chat">
 
       <!-- Nexa AI presence banner -->
       <div class="nexa-banner" id="nexa-banner">
@@ -822,6 +837,19 @@ html,body,.shell,.main-area,.content-scroll,.page,.ws-shell,.ws-main,.ws-panel,.
         <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.75rem;">
           <button class="btn btn-ghost btn-sm" onclick="closeSubmitModal()">Cancel</button>
           <button class="btn btn-primary btn-sm" onclick="wsSubmitTask()">Submit for Review</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nexa Task Submit Modal -->
+    <div id="nexa-submit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:1rem;">
+      <div style="background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:1.25rem;width:100%;max-width:520px;">
+        <div style="font-size:.9375rem;font-weight:700;margin-bottom:.75rem;">📤 Submit Task — <span id="nexa-submit-task-title"></span></div>
+        <div style="font-size:.75rem;color:var(--t3);margin-bottom:.5rem;">Write or paste your completed work. It will be saved as a file in the group workspace and marked for review.</div>
+        <textarea id="nexa-submit-content" style="width:100%;min-height:160px;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.75rem;color:var(--t1);font-size:.8125rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="Paste your completed work here…"></textarea>
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.75rem;">
+          <button class="btn btn-ghost btn-sm" onclick="closeNexaSubmit()">Cancel</button>
+          <button class="btn btn-primary btn-sm" id="nexa-submit-btn" onclick="nexaDoSubmit()">Submit</button>
         </div>
       </div>
     </div>
@@ -1124,62 +1152,62 @@ html,body,.shell,.main-area,.content-scroll,.page,.ws-shell,.ws-main,.ws-panel,.
       </div>
     </div>
 
-  </div><!-- /ws-main -->
-</div><!-- /ws-shell -->
+    {% if ws.workspace_type == 'nexa' %}
 
-<!-- ── Nexa Workspace Panels (injected after ws-shell for Nexa type) ── -->
-{% if ws.workspace_type == 'nexa' %}
-<script>
-// For Nexa workspaces, override the default active panel to nexa-tutor
-document.addEventListener('DOMContentLoaded', function() {
-  // Move nexa panels into ws-main
-  var wsMain = document.querySelector('.ws-main');
-  if (!wsMain) return;
-  ['nexa-tutor','nexa-essay','nexa-assignment','nexa-search'].forEach(function(id) {
-    var el = document.getElementById('panel-' + id);
-    if (el) wsMain.appendChild(el);
-  });
-  // Deactivate chat panel, activate nexa-tutor
-  document.querySelectorAll('.ws-panel').forEach(function(p){ p.classList.remove('active'); });
-  var tp = document.getElementById('panel-nexa-tutor');
-  if (tp) tp.classList.add('active');
-});
-</script>
-{% endif %}
-
-<!-- Mobile sidebar overlay -->
-<div class="mob-overlay" id="ws-mob-overlay" onclick="toggleWsSidebar()" style="display:none;"></div>
-
-<!-- ── Nexa Workspace Panels ── -->
-{% if ws.workspace_type == 'nexa' %}
-
-<!-- Nexa AI Tutor Panel -->
-<div class="ws-panel" id="panel-nexa-tutor" style="display:none;flex-direction:column;">
-  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;background:linear-gradient(90deg,rgba(99,102,241,.08),transparent);">
-    <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+<!-- Nexa AI Chat Panel -->
+<div class="ws-panel active" id="panel-nexa-tutor" style="flex-direction:column;">
+  <!-- Nexa bird banner (same as group chat) -->
+  <div class="nexa-banner" id="nexa-chat-banner">
+    <div class="nexa-bird-wrap">
+      <div class="nexa-bird">
+        <div class="nb-body">
+          <div class="nb-head">
+            <div class="nb-eye left"><div class="nb-pupil"></div></div>
+            <div class="nb-eye right"><div class="nb-pupil"></div></div>
+            <div class="nb-beak-top"></div>
+            <div class="nb-beak-bot"></div>
+            <div class="nb-crest">
+              <div class="nb-crest-f f1"></div>
+              <div class="nb-crest-f f2"></div>
+              <div class="nb-crest-f f3"></div>
+            </div>
+          </div>
+          <div class="nb-wing left"></div>
+          <div class="nb-wing right"></div>
+          <div class="nb-belly"></div>
+          <div class="nb-tail"></div>
+          <div class="nb-feet">
+            <div class="nb-foot left"></div>
+            <div class="nb-foot right"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div>
-      <div style="font-size:.875rem;font-weight:800;">Nexa AI Tutor</div>
-      <div style="font-size:.6875rem;color:var(--t3);">Your personal AI — ask anything, learn anything</div>
-    </div>
-    <div style="margin-left:auto;display:flex;gap:.375rem;flex-wrap:wrap;">
-      <button class="aim-qp" onclick="nexaTutorPrompt('Explain this concept to me step by step')">📖 Explain</button>
-      <button class="aim-qp" onclick="nexaTutorPrompt('Quiz me on what I just learned')">❓ Quiz me</button>
-      <button class="aim-qp" onclick="nexaTutorPrompt('Summarize the key points')">📝 Summarize</button>
-      <button class="aim-qp" onclick="nexaTutorPrompt('Give me practice problems')">🎯 Practice</button>
+    <div class="nexa-banner-text">
+      <span class="nexa-name">Nexa</span>
+      <span class="nexa-status"><span class="nexa-dot"></span>Active · ask me anything</span>
     </div>
   </div>
+  <!-- Messages -->
   <div class="aim-chat-msgs" id="nexa-tutor-msgs">
     <div class="aim-msg ai">
-      <div class="aim-msg-av ai-av">N</div>
-      <div class="aim-bubble">
-        👋 Hey {{ user.username }}! I'm <strong>Nexa</strong>, your personal AI tutor.<br><br>
-        I can help you understand any topic, explain concepts, quiz you, summarize notes, solve problems, and much more.<br><br>
-        What would you like to learn today?
+      <div class="aim-msg-av nexa-av">NX</div>
+      <div class="aim-bubble nexa-bubble">
+        Hey {{ user.username }}! I'm <strong>Nexa</strong>, your personal AI assistant.<br><br>
+        I can help with anything — research, writing, coding, math, brainstorming, answering questions, and more.<br><br>
+        What can I help you with?
       </div>
     </div>
   </div>
+  <!-- Quick prompts -->
+  <div style="display:flex;gap:.375rem;flex-wrap:wrap;padding:.5rem 1rem;border-top:1px solid var(--b1);flex-shrink:0;">
+    <button class="aim-qp" onclick="nexaTutorPrompt('Help me write ')">✍️ Write</button>
+    <button class="aim-qp" onclick="nexaTutorPrompt('Explain ')">💡 Explain</button>
+    <button class="aim-qp" onclick="nexaTutorPrompt('Summarise ')">📝 Summarise</button>
+    <button class="aim-qp" onclick="nexaTutorPrompt('Help me brainstorm ideas for ')">🧠 Brainstorm</button>
+    <button class="aim-qp" onclick="nexaTutorPrompt('Solve this problem: ')">🔢 Solve</button>
+  </div>
+  <!-- Input -->
   <div class="aim-chat-input-area">
     <form class="aim-chat-form" onsubmit="nexaTutorSend(event)">
       <input type="text" class="aim-chat-input" id="nexa-tutor-input" placeholder="Ask Nexa anything…" autocomplete="off">
@@ -1191,62 +1219,345 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Nexa Essay Writer Panel -->
-<div class="ws-panel" id="panel-nexa-essay" style="display:none;flex-direction:column;">
-  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
-    <div style="font-size:.875rem;font-weight:800;">✍️ Essay Writer</div>
-    <a href="{% url 'essay_request' %}" class="btn btn-primary btn-sm" style="margin-left:auto;">Open Full Editor →</a>
-  </div>
-  <div class="panel-scroll" style="padding:1rem;">
-    <div style="font-size:.8125rem;color:var(--t3);margin-bottom:1rem;">Generate a full essay with AI. For the full editor with formatting, export, and restyle — use the button above.</div>
-    <div style="display:flex;flex-direction:column;gap:.75rem;">
-      <div>
-        <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Essay Topic / Prompt</label>
-        <textarea id="nexa-essay-topic" rows="3" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:.625rem .75rem;color:var(--t1);font-size:.875rem;outline:none;resize:vertical;box-sizing:border-box;" placeholder="e.g. The impact of social media on mental health…"></textarea>
+<style>
+.ew-mode-tabs{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0;}
+.ew-tab{flex:1;padding:.55rem .2rem;font-size:.6rem;font-weight:700;color:var(--t3);background:none;border:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.2rem;border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.04em;transition:all .15s;}
+.ew-tab svg{width:12px;height:12px;}
+.ew-tab:hover{color:var(--t2);}
+.ew-tab.active.ew-gen{border-bottom-color:#f97316;color:#f97316;}
+.ew-tab.active.ew-guide{border-bottom-color:#16a34a;color:#16a34a;}
+.ew-tab.active.ew-imp{border-bottom-color:#7c3aed;color:#7c3aed;}
+.ew-pane{display:none;flex:1;overflow-y:auto;flex-direction:column;}
+.ew-pane.active{display:flex;}
+.ew-body{padding:.875rem 1rem;display:flex;flex-direction:column;gap:.75rem;}
+.ew-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:.3rem;}
+.ew-input{width:100%;padding:.55rem .75rem;font-size:.8rem;background:var(--s3);border:1px solid var(--b2);border-radius:7px;color:var(--t1);font-family:inherit;outline:none;transition:border-color .15s;box-sizing:border-box;}
+.ew-input:focus{border-color:#aaa;}
+.ew-input::placeholder{color:var(--t3);}
+textarea.ew-input{resize:none;}
+.ew-select{width:100%;padding:.5rem .75rem;font-size:.8rem;background:var(--s3);border:1px solid var(--b2);border-radius:7px;color:var(--t1);font-family:inherit;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .65rem center;box-sizing:border-box;}
+.ew-chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem;}
+.ew-chip{padding:.18rem .5rem;background:var(--s2);border:1px solid var(--b2);border-radius:20px;font-size:.625rem;color:var(--t2);cursor:pointer;transition:all .15s;}
+.ew-chip:hover{background:var(--s3);color:var(--t1);border-color:#bbb;}
+.ew-style-pills{display:flex;flex-wrap:wrap;gap:.3rem;}
+.ew-pill{cursor:pointer;}
+.ew-pill input{display:none;}
+.ew-pill-inner{padding:.25rem .55rem;background:var(--s3);border:1px solid var(--b2);border-radius:20px;font-size:.7rem;font-weight:500;color:var(--t2);transition:all .15s;}
+.ew-pill:hover .ew-pill-inner{border-color:#aaa;color:var(--t1);}
+.ew-pill input:checked+.ew-pill-inner{background:rgba(249,115,22,.1);border-color:#f97316;color:#ea6c00;}
+.ew-imp-pill input:checked+.ew-pill-inner{background:rgba(124,58,237,.1);border-color:#7c3aed;color:#7c3aed;}
+.ew-btn{width:100%;padding:.65rem;font-size:.8rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.45rem;transition:all .15s;}
+.ew-btn svg{width:13px;height:13px;}
+.ew-btn-gen{background:#f97316;color:#fff;}
+.ew-btn-gen:hover{background:#ea6c00;}
+.ew-btn-guide{background:rgba(22,163,74,.1);color:#16a34a;border:1px solid rgba(22,163,74,.25);}
+.ew-btn-guide:hover{background:rgba(22,163,74,.18);}
+.ew-btn-imp{background:rgba(124,58,237,.1);color:#7c3aed;border:1px solid rgba(124,58,237,.25);}
+.ew-btn-imp:hover{background:rgba(124,58,237,.18);}
+.ew-btn:disabled{opacity:.5;cursor:not-allowed;}
+/* Web search */
+.ew-ws-toggle{display:flex;align-items:center;gap:.4rem;width:100%;padding:.375rem .6rem;font-size:.7rem;font-weight:600;background:var(--s3);border:1px solid var(--b2);border-radius:7px;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s;}
+.ew-ws-toggle:hover{border-color:#aaa;color:var(--t1);}
+.ew-ws-toggle svg{width:11px;height:11px;flex-shrink:0;}
+.ew-ws-badge{margin-left:auto;background:#f97316;color:#fff;border-radius:10px;padding:.05rem .35rem;font-size:.58rem;font-weight:700;display:none;}
+.ew-ws-badge.vis{display:inline-block;}
+.ew-ws-panel{display:none;flex-direction:column;gap:.4rem;margin-top:.4rem;}
+.ew-ws-panel.open{display:flex;}
+.ew-ws-row{display:flex;gap:.35rem;}
+.ew-ws-input{flex:1;padding:.4rem .6rem;font-size:.75rem;background:var(--s3);border:1px solid var(--b2);border-radius:7px;color:var(--t1);font-family:inherit;outline:none;}
+.ew-ws-input:focus{border-color:#aaa;}
+.ew-ws-btn{padding:.4rem .65rem;font-size:.7rem;font-weight:600;background:var(--s2);border:1px solid var(--b2);border-radius:7px;color:var(--t2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;}
+.ew-ws-btn:hover{color:var(--t1);border-color:#aaa;}
+.ew-ws-results{display:flex;flex-direction:column;gap:.3rem;max-height:180px;overflow-y:auto;}
+.ew-art{padding:.45rem .6rem;background:var(--s3);border:1px solid var(--b2);border-radius:7px;cursor:pointer;transition:all .15s;}
+.ew-art:hover{border-color:#aaa;}
+.ew-art.sel{border-color:#f97316;background:rgba(249,115,22,.06);}
+.ew-art-top{display:flex;align-items:flex-start;gap:.35rem;}
+.ew-art-chk{width:13px;height:13px;border:1.5px solid var(--b2);border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.ew-art.sel .ew-art-chk{background:#f97316;border-color:#f97316;}
+.ew-art-chk svg{width:8px;height:8px;color:#fff;display:none;}
+.ew-art.sel .ew-art-chk svg{display:block;}
+.ew-art-title{font-size:.72rem;font-weight:600;color:var(--t1);line-height:1.35;}
+.ew-art-snip{font-size:.65rem;color:var(--t2);margin-top:.2rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ew-art-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.25rem;}
+.ew-art-src{font-size:.58rem;font-weight:600;padding:.08rem .35rem;background:var(--s2);border:1px solid var(--b2);border-radius:4px;color:var(--t3);}
+.ew-art-link{font-size:.58rem;color:#3b82f6;text-decoration:none;}
+.ew-art-link:hover{text-decoration:underline;}
+.ew-empty{font-size:.72rem;color:var(--t3);text-align:center;padding:.6rem 0;}
+/* Right output area */
+.ew-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--s3);}
+.ew-right-toolbar{display:flex;align-items:center;gap:.5rem;padding:.55rem 1rem;background:var(--s2);border-bottom:1px solid var(--b1);flex-shrink:0;}
+.ew-right-title{font-size:.8rem;font-weight:600;color:var(--t2);}
+.ew-right-content{flex:1;overflow-y:auto;padding:1.5rem 1.75rem;}
+.ew-right-content::-webkit-scrollbar{width:4px;}
+.ew-right-content::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
+/* Stream */
+.ew-stream-topic{font-size:.9375rem;font-weight:700;margin-bottom:.2rem;}
+.ew-stream-sub{font-size:.72rem;color:var(--t2);margin-bottom:.75rem;}
+.ew-stream-body{background:var(--s2);border:1px solid var(--b2);border-radius:9px;padding:1rem 1.25rem;font-size:.8375rem;line-height:1.85;color:#333;white-space:pre-wrap;word-break:break-word;min-height:120px;max-height:40vh;overflow-y:auto;}
+.ew-stream-body::-webkit-scrollbar{width:3px;}
+.ew-stream-body::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
+.ew-cursor{display:inline-block;width:2px;height:1em;background:#f97316;margin-left:1px;vertical-align:text-bottom;animation:ewblink .6s step-end infinite;}
+@keyframes ewblink{0%,100%{opacity:1;}50%{opacity:0;}}
+.ew-stream-actions{display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap;}
+.ew-sa{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .75rem;font-size:.72rem;font-weight:600;border-radius:7px;cursor:pointer;border:none;font-family:inherit;transition:all .15s;text-decoration:none;}
+.ew-sa-open{background:#f97316;color:#fff;}
+.ew-sa-open:hover{background:#ea6c00;}
+.ew-sa-copy,.ew-sa-new{background:var(--s2);color:var(--t2);border:1px solid var(--b2);}
+.ew-sa-copy:hover,.ew-sa-new:hover{color:var(--t1);border-color:#aaa;}
+/* Edit chat */
+.ew-chat{display:flex;flex-direction:column;margin-top:.75rem;border-top:1px solid var(--b1);padding-top:.75rem;}
+.ew-chat-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:.4rem;}
+.ew-chat-suggs{display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.4rem;}
+.ew-chat-chip{padding:.18rem .5rem;background:var(--s2);border:1px solid var(--b2);border-radius:20px;font-size:.62rem;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ew-chat-chip:hover{background:var(--s3);color:var(--t1);border-color:#aaa;}
+.ew-chat-msgs{display:flex;flex-direction:column;gap:.5rem;max-height:200px;overflow-y:auto;padding-right:.2rem;}
+.ew-chat-msgs::-webkit-scrollbar{width:3px;}
+.ew-chat-msgs::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
+.ew-cm{display:flex;gap:.4rem;align-items:flex-start;}
+.ew-cm.user{flex-direction:row-reverse;}
+.ew-cm-av{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;flex-shrink:0;margin-top:2px;}
+.ew-cm.user .ew-cm-av{background:var(--s2);color:var(--t2);border:1px solid var(--b2);}
+.ew-cm.ai .ew-cm-av{background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;}
+.ew-cm-bub{max-width:88%;padding:.4rem .65rem;border-radius:9px;font-size:.775rem;line-height:1.6;word-break:break-word;}
+.ew-cm.user .ew-cm-bub{background:var(--s2);border:1px solid var(--b2);color:var(--t1);}
+.ew-cm.ai .ew-cm-bub{background:#fff3ed;border:1px solid rgba(249,115,22,.2);color:#7c2d12;}
+.ew-chat-row{display:flex;gap:.4rem;margin-top:.5rem;}
+.ew-chat-ta{flex:1;padding:.45rem .65rem;font-size:.775rem;background:var(--s3);border:1px solid var(--b2);border-radius:7px;color:var(--t1);font-family:inherit;outline:none;resize:none;line-height:1.5;max-height:70px;overflow-y:auto;}
+.ew-chat-ta:focus{border-color:#aaa;}
+.ew-chat-send{width:32px;height:32px;background:#f97316;border:none;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;align-self:flex-end;}
+.ew-chat-send:hover{background:#ea6c00;}
+.ew-chat-send:disabled{opacity:.4;cursor:default;}
+.ew-chat-send svg{width:13px;height:13px;color:#fff;}
+/* Result cards */
+.ew-result-sec{margin-bottom:1.25rem;}
+.ew-result-sec-title{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:.5rem;}
+.ew-result-card{background:var(--s2);border:1px solid var(--b2);border-radius:9px;padding:.875rem 1rem;font-size:.8rem;line-height:1.75;color:#333;white-space:pre-wrap;}
+.ew-feedback-card{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.2);border-radius:9px;padding:.75rem 1rem;font-size:.775rem;line-height:1.6;color:#5b21b6;}
+.ew-improved-card{background:var(--s2);border:1px solid var(--b2);border-radius:9px;padding:1rem 1.125rem;font-size:.8375rem;line-height:1.8;color:#333;white-space:pre-wrap;max-height:500px;overflow-y:auto;}
+.ew-copy-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .65rem;font-size:.68rem;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-family:inherit;transition:all .15s;margin-top:.5rem;}
+.ew-copy-btn:hover{color:var(--t1);border-color:#aaa;}
+/* Welcome */
+.ew-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;}
+.ew-welcome-icon{width:44px;height:44px;background:var(--s2);border:1px solid var(--b2);border-radius:11px;display:flex;align-items:center;justify-content:center;margin:0 auto .875rem;}
+.ew-welcome-icon svg{width:20px;height:20px;color:var(--t3);}
+.ew-welcome-title{font-size:.9375rem;font-weight:700;margin-bottom:.35rem;}
+.ew-welcome-sub{font-size:.775rem;color:var(--t2);max-width:280px;line-height:1.6;}
+/* Layout */
+.ew-layout{display:flex;flex:1;overflow:hidden;height:100%;}
+.ew-left{width:260px;flex-shrink:0;background:var(--s2);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;}
+@keyframes ewspin{to{transform:rotate(360deg);}}
+</style>
+<div class="ws-panel" id="panel-nexa-essay" style="flex-direction:column;padding:0;">
+  <div class="ew-layout">
+    <!-- Left: mode tabs + panes -->
+    <div class="ew-left">
+      <div class="ew-mode-tabs">
+        <button class="ew-tab ew-gen active" onclick="ewSwitchMode('gen',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Generate
+        </button>
+        <button class="ew-tab ew-guide" onclick="ewSwitchMode('guide',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Guidance
+        </button>
+        <button class="ew-tab ew-imp" onclick="ewSwitchMode('imp',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Improver
+        </button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
-        <div>
-          <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Word Count</label>
-          <select id="nexa-essay-words" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;">
-            <option value="300">~300 words</option>
-            <option value="500" selected>~500 words</option>
-            <option value="800">~800 words</option>
-            <option value="1200">~1200 words</option>
-            <option value="2000">~2000 words</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:.8125rem;font-weight:600;color:var(--t2);display:block;margin-bottom:.375rem;">Style</label>
-          <select id="nexa-essay-style" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;">
-            <option value="academic">Academic</option>
-            <option value="persuasive">Persuasive</option>
-            <option value="narrative">Narrative</option>
-            <option value="descriptive">Descriptive</option>
-            <option value="analytical">Analytical</option>
-          </select>
+      <!-- Pane: Generate -->
+      <div class="ew-pane active" id="ew-pane-gen">
+        <div class="ew-body">
+          <div>
+            <div class="ew-label">Essay Topic</div>
+            <textarea id="ew-topic" class="ew-input" rows="3" placeholder="e.g. The impact of AI on modern education…"></textarea>
+            <div class="ew-chips">
+              <span class="ew-chip" onclick="document.getElementById('ew-topic').value='The impact of artificial intelligence on education'">AI in Education</span>
+              <span class="ew-chip" onclick="document.getElementById('ew-topic').value='Climate change and its effects on biodiversity'">Climate Change</span>
+              <span class="ew-chip" onclick="document.getElementById('ew-topic').value='The importance of mental health awareness'">Mental Health</span>
+              <span class="ew-chip" onclick="document.getElementById('ew-topic').value='Social media and its impact on society'">Social Media</span>
+            </div>
+          </div>
+          <div>
+            <div class="ew-label">Writing Style</div>
+            <div class="ew-style-pills">
+              <label class="ew-pill"><input type="radio" name="ew-style" value="argumentative" checked><span class="ew-pill-inner">Argumentative</span></label>
+              <label class="ew-pill"><input type="radio" name="ew-style" value="narrative"><span class="ew-pill-inner">Narrative</span></label>
+              <label class="ew-pill"><input type="radio" name="ew-style" value="descriptive"><span class="ew-pill-inner">Descriptive</span></label>
+              <label class="ew-pill"><input type="radio" name="ew-style" value="expository"><span class="ew-pill-inner">Expository</span></label>
+            </div>
+          </div>
+          <div>
+            <div class="ew-label">Essay Length</div>
+            <select id="ew-words" class="ew-select">
+              <option value="250">250 words</option>
+              <option value="500" selected>500 words</option>
+              <option value="750">750 words</option>
+              <option value="1000">1000 words</option>
+              <option value="1500">1500 words</option>
+              <option value="2000">2000 words</option>
+            </select>
+          </div>
+          <div>
+            <button type="button" class="ew-ws-toggle" onclick="ewToggleWS('gen')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Web References
+              <span class="ew-ws-badge" id="ew-ws-badge-gen">0</span>
+            </button>
+            <div class="ew-ws-panel" id="ew-ws-panel-gen">
+              <div class="ew-ws-row">
+                <input class="ew-ws-input" id="ew-ws-input-gen" placeholder="Search keyword…" onkeydown="if(event.key==='Enter')ewRunWS('gen')">
+                <button class="ew-ws-btn" onclick="ewRunWS('gen')">Search</button>
+              </div>
+              <div class="ew-ws-results" id="ew-ws-results-gen"><div class="ew-empty">Search for articles to use as references</div></div>
+            </div>
+          </div>
+          <button class="ew-btn ew-btn-gen" id="ew-gen-btn" onclick="ewGenerate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Generate Essay
+          </button>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="nexaGenerateEssay()" id="nexa-essay-btn" style="justify-content:center;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
-        Generate Essay
-      </button>
-      <div id="nexa-essay-result" style="margin-top:.5rem;"></div>
-    </div>
-    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--b1);">
-      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:.625rem;">Your Recent Essays</div>
-      <a href="{% url 'essay_request' %}" class="ws-card" style="text-decoration:none;">
-        <div class="ws-icon" style="font-size:1.125rem;">📄</div>
-        <div class="ws-info">
-          <div class="ws-name">Essay Manager</div>
-          <div class="ws-meta">View, edit, and export all your essays</div>
+      <!-- Pane: Guidance -->
+      <div class="ew-pane" id="ew-pane-guide">
+        <div class="ew-body">
+          <div>
+            <div class="ew-label">Your Essay Topic</div>
+            <textarea id="ew-guide-topic" class="ew-input" rows="3" placeholder="e.g. The causes and effects of World War I…"></textarea>
+            <div class="ew-chips">
+              <span class="ew-chip" onclick="document.getElementById('ew-guide-topic').value='The causes and effects of World War I'">WW1</span>
+              <span class="ew-chip" onclick="document.getElementById('ew-guide-topic').value='Effects of social media on teenagers'">Social Media</span>
+              <span class="ew-chip" onclick="document.getElementById('ew-guide-topic').value='Climate change solutions'">Climate</span>
+            </div>
+          </div>
+          <div>
+            <div class="ew-label">What do you need?</div>
+            <select id="ew-guide-action" class="ew-select">
+              <option value="all">Everything (Breakdown + Thesis + Outline)</option>
+              <option value="breakdown">Topic Breakdown only</option>
+              <option value="thesis">Thesis Statements only</option>
+              <option value="outline">Essay Outline only</option>
+            </select>
+          </div>
+          <div>
+            <button type="button" class="ew-ws-toggle" onclick="ewToggleWS('guide')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Web References
+              <span class="ew-ws-badge" id="ew-ws-badge-guide">0</span>
+            </button>
+            <div class="ew-ws-panel" id="ew-ws-panel-guide">
+              <div class="ew-ws-row">
+                <input class="ew-ws-input" id="ew-ws-input-guide" placeholder="Search keyword…" onkeydown="if(event.key==='Enter')ewRunWS('guide')">
+                <button class="ew-ws-btn" onclick="ewRunWS('guide')">Search</button>
+              </div>
+              <div class="ew-ws-results" id="ew-ws-results-guide"><div class="ew-empty">Search for articles to use as references</div></div>
+            </div>
+          </div>
+          <button class="ew-btn ew-btn-guide" id="ew-guide-btn" onclick="ewGuidance()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Get Guidance
+          </button>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--t3);flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
+      </div>
+      <!-- Pane: Improver -->
+      <div class="ew-pane" id="ew-pane-imp">
+        <div class="ew-body">
+          <div>
+            <div class="ew-label">Paste Your Essay</div>
+            <textarea id="ew-imp-text" class="ew-input" rows="6" placeholder="Paste your essay here…"></textarea>
+          </div>
+          <div>
+            <div class="ew-label">Improvements</div>
+            <div style="display:flex;flex-direction:column;gap:.3rem;">
+              <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;"><input type="checkbox" id="ew-imp-grammar" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--t2);">Grammar &amp; spelling</span></label>
+              <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;"><input type="checkbox" id="ew-imp-vocab" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--t2);">Better vocabulary</span></label>
+              <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;"><input type="checkbox" id="ew-imp-clarity" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--t2);">Clarity &amp; flow</span></label>
+              <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;"><input type="checkbox" id="ew-imp-structure" style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--t2);">Paragraph structure</span></label>
+            </div>
+          </div>
+          <div>
+            <div class="ew-label">Tone (optional)</div>
+            <select id="ew-imp-tone" class="ew-select">
+              <option value="">Keep original tone</option>
+              <option value="formal and academic">Formal / Academic</option>
+              <option value="persuasive">Persuasive</option>
+              <option value="concise and direct">Concise &amp; Direct</option>
+              <option value="friendly and conversational">Friendly / Conversational</option>
+            </select>
+          </div>
+          <div>
+            <button type="button" class="ew-ws-toggle" onclick="ewToggleWS('imp')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Web References
+              <span class="ew-ws-badge" id="ew-ws-badge-imp">0</span>
+            </button>
+            <div class="ew-ws-panel" id="ew-ws-panel-imp">
+              <div class="ew-ws-row">
+                <input class="ew-ws-input" id="ew-ws-input-imp" placeholder="Search keyword…" onkeydown="if(event.key==='Enter')ewRunWS('imp')">
+                <button class="ew-ws-btn" onclick="ewRunWS('imp')">Search</button>
+              </div>
+              <div class="ew-ws-results" id="ew-ws-results-imp"><div class="ew-empty">Search for articles to use as references</div></div>
+            </div>
+          </div>
+          <button class="ew-btn ew-btn-imp" id="ew-imp-btn" onclick="ewImprove()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Improve My Essay
+          </button>
+        </div>
+      </div>
+    </div><!-- end ew-left -->
+    <!-- Right: output area -->
+    <div class="ew-right">
+      <div class="ew-right-toolbar">
+        <span class="ew-right-title" id="ew-right-title">Essay Writer</span>
+        <div style="flex:1;"></div>
+        <a href="{% url 'essay_request' %}" style="font-size:.7rem;font-weight:600;color:#f97316;text-decoration:none;">Open Full Editor →</a>
+      </div>
+      <div class="ew-right-content" id="ew-right-content">
+        <!-- Welcome -->
+        <div id="ew-view-welcome" class="ew-welcome">
+          <div class="ew-welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+          <div class="ew-welcome-title">Essay Writer</div>
+          <div class="ew-welcome-sub">Generate a full essay, get guidance before writing, or improve your own work.</div>
+        </div>
+        <!-- Stream view -->
+        <div id="ew-view-stream" style="display:none;">
+          <div class="ew-stream-topic" id="ew-stream-topic"></div>
+          <div class="ew-stream-sub" id="ew-stream-sub">Generating…</div>
+          <div class="ew-stream-body" id="ew-stream-body"><span class="ew-cursor" id="ew-cursor"></span></div>
+          <div class="ew-stream-actions" id="ew-stream-actions" style="display:none;">
+            <a class="ew-sa ew-sa-open" id="ew-open-btn" href="#">View Essay</a>
+            <button class="ew-sa ew-sa-copy" onclick="ewCopyStream()">Copy</button>
+            <button class="ew-sa ew-sa-new" onclick="ewReset()">New Essay</button>
+          </div>
+          <div class="ew-chat" id="ew-chat" style="display:none;">
+            <div class="ew-chat-label">Edit with AI</div>
+            <div class="ew-chat-suggs">
+              <span class="ew-chat-chip" onclick="ewChatSugg(this)">Make it more persuasive</span>
+              <span class="ew-chat-chip" onclick="ewChatSugg(this)">Shorten it</span>
+              <span class="ew-chat-chip" onclick="ewChatSugg(this)">Improve the introduction</span>
+              <span class="ew-chat-chip" onclick="ewChatSugg(this)">Fix grammar</span>
+              <span class="ew-chat-chip" onclick="ewChatSugg(this)">Make it more formal</span>
+            </div>
+            <div class="ew-chat-msgs" id="ew-chat-msgs"></div>
+            <div class="ew-chat-row">
+              <textarea class="ew-chat-ta" id="ew-chat-input" rows="1" placeholder="Ask AI to edit your essay…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ewSendChat();}"></textarea>
+              <button class="ew-chat-send" id="ew-chat-send" onclick="ewSendChat()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Guidance results -->
+        <div id="ew-view-guide" style="display:none;"></div>
+        <!-- Improver results -->
+        <div id="ew-view-imp" style="display:none;"></div>
+      </div>
     </div>
-  </div>
+  </div><!-- end ew-layout -->
 </div>
 
+
 <!-- Nexa Assignment Panel -->
-<div class="ws-panel" id="panel-nexa-assignment" style="display:none;flex-direction:column;">
+<div class="ws-panel" id="panel-nexa-assignment" style="flex-direction:column;">
   <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
     <div style="font-size:.875rem;font-weight:800;">📋 Assignments</div>
     <a href="{% url 'assignment_list' %}" class="btn btn-primary btn-sm" style="margin-left:auto;">Open Full Solver →</a>
@@ -1285,7 +1596,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Nexa Deep Search Panel -->
-<div class="ws-panel" id="panel-nexa-search" style="display:none;flex-direction:column;">
+<div class="ws-panel" id="panel-nexa-search" style="flex-direction:column;">
   <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
     <div style="font-size:.875rem;font-weight:800;">🔍 Deep Search</div>
     <div style="font-size:.75rem;color:var(--t3);margin-left:.25rem;">Live web research with AI synthesis</div>
@@ -1307,12 +1618,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% endif %}{# end nexa panels #}
 
+<!-- Nexa My Tasks Panel -->
+{% if ws.workspace_type == 'nexa' %}
+<div class="ws-panel" id="panel-nexa-tasks" style="flex-direction:column;">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
+    <div style="font-size:.875rem;font-weight:800;">✅ My Tasks</div>
+    <div style="font-size:.75rem;color:var(--t3);margin-left:.25rem;">Tasks assigned to you across linked workspaces</div>
+  </div>
+  <div class="panel-scroll" style="padding:1rem;" id="nexa-tasks-panel">
+    {% if my_tasks %}
+    {% for t in my_tasks %}
+    <div class="task-card" id="nexa-task-{{ t.id }}" style="margin-bottom:.625rem;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;">
+        <div>
+          <div class="task-card-title">{{ t.title }}</div>
+          <div class="task-card-meta">
+            <span style="background:rgba(99,102,241,.12);color:#818cf8;padding:.1rem .4rem;border-radius:4px;font-size:.6875rem;">{{ t.workspace.name }}</span>
+            {% if t.due_date %}<span>Due {{ t.due_date }}</span>{% endif %}
+            {% if t.review_status == 'pending' %}<span style="color:var(--orange);">⏳ Pending review</span>{% elif t.review_status == 'approved' %}<span style="color:var(--green);">✅ Approved</span>{% elif t.review_status == 'revision' %}<span style="color:#ef4444;">🔁 Revision needed</span>{% endif %}
+          </div>
+          {% if t.description %}<div style="font-size:.75rem;color:var(--t3);margin-top:.375rem;line-height:1.5;">{{ t.description|truncatechars:120 }}</div>{% endif %}
+        </div>
+        {% if t.review_status != 'pending' and t.review_status != 'approved' %}
+        <button class="btn btn-primary btn-sm" style="flex-shrink:0;" onclick="openNexaSubmit('{{ t.id }}','{{ t.title|escapejs }}')">Submit</button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;color:var(--t3);font-size:.8125rem;padding:2rem 0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto .75rem;display:block;opacity:.3;"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      No tasks assigned to you yet.<br>Link a workspace to see tasks here.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Nexa Linked Workspaces Panel -->
+<div class="ws-panel" id="panel-nexa-linked" style="flex-direction:column;">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem;flex-shrink:0;">
+    <div style="font-size:.875rem;font-weight:800;">🔗 Linked Workspaces</div>
+    <div style="font-size:.75rem;color:var(--t3);margin-left:.25rem;">Group workspaces connected to your Nexa</div>
+  </div>
+  <div class="panel-scroll" style="padding:1rem;">
+    {% if linked_workspaces %}
+    {% for lw in linked_workspaces %}
+    <div style="background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.625rem;display:flex;align-items:center;gap:.75rem;">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">
+        {% if lw.workspace_type == 'startup' %}🚀{% elif lw.workspace_type == 'study_group' %}📚{% elif lw.workspace_type == 'group_project' %}📋{% else %}🤝{% endif %}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.875rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ lw.name }}</div>
+        <div style="font-size:.6875rem;color:var(--t3);">{{ lw.get_workspace_type_display }}{% if lw.subject %} · {{ lw.subject }}{% endif %}</div>
+      </div>
+      <a href="{% url 'community:workspace_detail' lw.id %}" class="btn btn-ghost btn-sm">Open</a>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;color:var(--t3);font-size:.8125rem;padding:2rem 0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto .75rem;display:block;opacity:.3;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      No linked workspaces yet.<br>Go to a group workspace and click "Connect to My Nexa".
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+  </div><!-- /ws-main -->
+</div><!-- /ws-shell -->
+
 <!-- Mobile workspace bottom tab bar -->
 <nav class="ws-mob-tabs" id="ws-mob-tabs">
   {% if ws.workspace_type == 'nexa' %}
   <button class="ws-mob-tab active" id="wstab-nexa-tutor" onclick="wsMobTab('nexa-tutor',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    Tutor
+    AI Chat
   </button>
   <button class="ws-mob-tab" id="wstab-nexa-essay" onclick="wsMobTab('nexa-essay',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -1329,6 +1709,14 @@ document.addEventListener('DOMContentLoaded', function() {
   <button class="ws-mob-tab" id="wstab-files" onclick="wsMobTab('files',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
     Files
+  </button>
+  <button class="ws-mob-tab" id="wstab-nexa-tasks" onclick="wsMobTab('nexa-tasks',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Tasks
+  </button>
+  <button class="ws-mob-tab" id="wstab-nexa-linked" onclick="wsMobTab('nexa-linked',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    Linked
   </button>
   {% else %}
   <button class="ws-mob-tab active" id="wstab-chat" onclick="wsMobTab('chat',this)">
@@ -3092,7 +3480,7 @@ function nexaTutorSend(e) {
   fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-    body: JSON.stringify({ message: msg, source: 'nexa_tutor' }),
+    body: JSON.stringify({ message: msg, source: 'nexa_assistant' }),
   })
     .then(r => r.json())
     .then(data => {
@@ -3119,9 +3507,10 @@ function nexaAppendMsg(content, role) {
   const div = document.createElement('div');
   div.className = 'aim-msg ' + role;
   const avHtml = role === 'ai'
-    ? '<div class="aim-msg-av ai-av">N</div>'
+    ? '<div class="aim-msg-av nexa-av">NX</div>'
     : `<div class="aim-msg-av">${MY_USERNAME.slice(0,1).toUpperCase()}</div>`;
-  div.innerHTML = avHtml + `<div class="aim-bubble">${esc(content).replace(/\n/g,'<br>')}</div>`;
+  const bubbleCls = role === 'ai' ? 'aim-bubble nexa-bubble' : 'aim-bubble';
+  div.innerHTML = avHtml + `<div class="${bubbleCls}">${esc(content).replace(/\n/g,'<br>')}</div>`;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -3142,38 +3531,7 @@ function nexaRemoveTyping(containerId) {
   if (t) t.remove();
 }
 
-/* Essay Writer */
-function nexaGenerateEssay() {
-  const topic = (document.getElementById('nexa-essay-topic') || {}).value?.trim();
-  const type = (document.getElementById('nexa-essay-type') || {}).value || 'argumentative';
-  const words = (document.getElementById('nexa-essay-words') || {}).value || '500';
-  if (!topic) { alert('Please enter an essay topic.'); return; }
-
-  const btn = document.getElementById('nexa-essay-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
-  const result = document.getElementById('nexa-essay-result');
-  if (result) result.innerHTML = '<div class="aim-loading"><div class="aim-loading-dots"><span></span><span></span><span></span></div>Writing your essay…</div>';
-
-  const prompt = `Write a ${words}-word ${type} essay on the following topic: "${topic}". Format it with an introduction, body paragraphs, and conclusion. Use clear academic language.`;
-
-  fetch('/community/workspaces/' + WS_ID + '/ai/chat/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-    body: JSON.stringify({ message: prompt, source: 'nexa_essay' }),
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg> Generate Essay'; }
-      const reply = data.reply || '';
-      if (result) result.innerHTML = reply
-        ? `<div style="background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:1rem;font-size:.8125rem;line-height:1.7;white-space:pre-wrap;color:var(--t1);">${esc(reply)}<div style="margin-top:.75rem;display:flex;gap:.5rem;"><button class="btn btn-ghost btn-sm" onclick="nexaCopyText('nexa-essay-result')">📋 Copy</button></div></div>`
-        : '<div style="color:var(--red);font-size:.8125rem;">Failed to generate. Try again.</div>';
-    })
-    .catch(() => {
-      if (btn) { btn.disabled = false; btn.textContent = 'Generate Essay'; }
-      if (result) result.innerHTML = '<div style="color:var(--red);font-size:.8125rem;">Connection error. Try again.</div>';
-    });
-}
+/* Essay Writer — replaced by full ew* functions above */
 
 /* Assignment Solver */
 function nexaSolveAssignment() {
@@ -3296,6 +3654,380 @@ document.getElementById('nexa-tutor-input') && document.getElementById('nexa-tut
 document.getElementById('nexa-search-input') && document.getElementById('nexa-search-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') nexaDeepSearch();
 });
+
+/* ── Nexa Link Toggle (non-nexa workspaces) ── */
+function nexaToggleLink() {
+  const btn = document.getElementById('nav-nexa-connect');
+  const label = document.getElementById('nexa-connect-label');
+  if (btn) btn.style.opacity = '.5';
+  fetch('/community/workspaces/' + WS_ID + '/nexa-link/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (btn) btn.style.opacity = '1';
+      if (data.ok) {
+        if (data.linked) {
+          if (label) label.textContent = 'Linked to My Nexa';
+          if (btn) btn.style.color = '#818cf8';
+          if (typeof showUXToast === 'function') showUXToast('Workspace linked to your Nexa ✓');
+        } else {
+          if (label) label.textContent = 'Connect to My Nexa';
+          if (btn) btn.style.color = '';
+          if (typeof showUXToast === 'function') showUXToast('Workspace unlinked from Nexa');
+        }
+      } else if (data.error) {
+        if (typeof showUXToast === 'function') showUXToast('Error: ' + data.error);
+      }
+    })
+    .catch(() => { if (btn) btn.style.opacity = '1'; });
+}
+
+/* ── Nexa Task Submit ── */
+let nexaSubmitTaskId = null;
+
+function openNexaSubmit(taskId, taskTitle) {
+  nexaSubmitTaskId = taskId;
+  const modal = document.getElementById('nexa-submit-modal');
+  const titleEl = document.getElementById('nexa-submit-task-title');
+  if (titleEl) titleEl.textContent = taskTitle;
+  if (modal) modal.style.display = 'flex';
+  const ta = document.getElementById('nexa-submit-content');
+  if (ta) { ta.value = ''; ta.focus(); }
+}
+
+function closeNexaSubmit() {
+  const modal = document.getElementById('nexa-submit-modal');
+  if (modal) modal.style.display = 'none';
+  nexaSubmitTaskId = null;
+}
+
+function nexaDoSubmit() {
+  if (!nexaSubmitTaskId) return;
+  const content = (document.getElementById('nexa-submit-content') || {}).value?.trim();
+  if (!content) { alert('Please enter your work before submitting.'); return; }
+  const btn = document.getElementById('nexa-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+  fetch('/community/api/nexa/tasks/' + nexaSubmitTaskId + '/submit/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ content }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit'; }
+      if (data.ok) {
+        closeNexaSubmit();
+        // Update the task card to show pending review
+        const card = document.getElementById('nexa-task-' + nexaSubmitTaskId);
+        if (card) {
+          const metaEl = card.querySelector('.task-card-meta');
+          if (metaEl) metaEl.insertAdjacentHTML('beforeend', '<span style="color:var(--orange);">⏳ Pending review</span>');
+          const submitBtn = card.querySelector('button');
+          if (submitBtn) submitBtn.remove();
+        }
+        if (typeof showUXToast === 'function') showUXToast('Work submitted for review ✓');
+      } else {
+        alert(data.error || 'Submission failed.');
+      }
+    })
+    .catch(() => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit'; }
+      alert('Connection error. Try again.');
+    });
+}
+
+// ── Essay Writer Panel (Nexa workspace) ──────────────────────
+const EW_CSRF = '{{ csrf_token }}';
+const EW_GEN_URL = '{% url "essay_generate_ajax" %}';
+const EW_GUIDE_URL = '{% url "essay_guidance" %}';
+const EW_IMP_URL = '{% url "essay_improve" %}';
+const EW_WS_URL = '{% url "essay_web_search" %}';
+const EW_CHAT_URL = '{% url "essay_edit_chat" %}';
+
+const ewRefs = {gen:[], guide:[], imp:[]};
+let ewStreamText = '';
+let ewStreamId = null;
+let ewChatBusy = false;
+
+function ewSwitchMode(mode, btn) {
+  document.querySelectorAll('.ew-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.ew-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('ew-pane-' + mode).classList.add('active');
+  const titles = {gen:'Essay Writer', guide:'Essay Guidance', imp:'Essay Improver'};
+  document.getElementById('ew-right-title').textContent = titles[mode];
+}
+
+function ewShowView(name) {
+  ['welcome','stream','guide','imp'].forEach(v => {
+    const el = document.getElementById('ew-view-' + v);
+    if (el) el.style.display = v === name ? '' : 'none';
+  });
+}
+
+function ewSleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function ewEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function ewTypewriter(text, container) {
+  container.innerHTML = '';
+  const cursor = document.createElement('span');
+  cursor.className = 'ew-cursor';
+  container.appendChild(cursor);
+  const words = text.split(' ');
+  let buf = '';
+  for (let i = 0; i < words.length; i++) {
+    buf += (i === 0 ? '' : ' ') + words[i];
+    const tn = container.firstChild;
+    if (tn && tn.nodeType === Node.TEXT_NODE) { tn.textContent = buf; }
+    else { container.insertBefore(document.createTextNode(buf), cursor); }
+    container.scrollTop = container.scrollHeight;
+    await ewSleep(words[i].length <= 3 ? 16 : words[i].length <= 6 ? 24 : 34);
+  }
+  cursor.remove();
+}
+
+async function ewTypeInto(text, el) {
+  el.textContent = '';
+  const words = text.split(' ');
+  for (let i = 0; i < words.length; i++) {
+    el.textContent += (i === 0 ? '' : ' ') + words[i];
+    if (el.parentElement) el.parentElement.scrollTop = el.parentElement.scrollHeight;
+    await ewSleep(words[i].length <= 3 ? 10 : words[i].length <= 6 ? 18 : 26);
+  }
+}
+
+async function ewGenerate() {
+  const topic = document.getElementById('ew-topic').value.trim();
+  if (!topic) return;
+  const wordCount = document.getElementById('ew-words').value;
+  const style = document.querySelector('[name="ew-style"]:checked')?.value || 'argumentative';
+  const btn = document.getElementById('ew-gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div style="width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:ewspin .8s linear infinite;display:inline-block;"></div> Generating…';
+  ewShowView('stream');
+  document.getElementById('ew-stream-topic').textContent = topic;
+  document.getElementById('ew-stream-sub').textContent = 'Writing your essay…';
+  document.getElementById('ew-stream-body').innerHTML = '<span class="ew-cursor"></span>';
+  document.getElementById('ew-stream-actions').style.display = 'none';
+  document.getElementById('ew-chat').style.display = 'none';
+  ewStreamText = '';
+  try {
+    const resp = await fetch(EW_GEN_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':EW_CSRF},
+      body: JSON.stringify({topic, word_count: wordCount, writing_style: style, output_format: 'text', references: ewRefs.gen})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Generation failed');
+    ewStreamText = data.essay_text;
+    ewStreamId = data.essay_id;
+    await ewTypewriter(ewStreamText, document.getElementById('ew-stream-body'));
+    document.getElementById('ew-stream-sub').textContent = ewStreamText.split(/\s+/).length + ' words · Done';
+    document.getElementById('ew-stream-actions').style.display = 'flex';
+    document.getElementById('ew-open-btn').href = data.detail_url;
+    document.getElementById('ew-chat').style.display = 'flex';
+  } catch(e) {
+    document.getElementById('ew-stream-body').textContent = 'Error: ' + e.message;
+    document.getElementById('ew-stream-sub').textContent = 'Failed';
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Generate Essay';
+}
+
+function ewCopyStream() { if (ewStreamText) navigator.clipboard.writeText(ewStreamText); }
+function ewReset() { ewShowView('welcome'); document.getElementById('ew-chat-msgs').innerHTML = ''; document.getElementById('ew-chat').style.display = 'none'; }
+
+function ewChatSugg(el) { document.getElementById('ew-chat-input').value = el.textContent.trim(); ewSendChat(); }
+
+async function ewSendChat() {
+  if (ewChatBusy) return;
+  const input = document.getElementById('ew-chat-input');
+  const msg = input.value.trim();
+  if (!msg || !ewStreamText) return;
+  input.value = '';
+  ewChatBusy = true;
+  document.getElementById('ew-chat-send').disabled = true;
+  const msgs = document.getElementById('ew-chat-msgs');
+  const userEl = document.createElement('div');
+  userEl.className = 'ew-cm user';
+  userEl.innerHTML = `<div class="ew-cm-av">{{ user.username|slice:":1"|upper }}</div><div class="ew-cm-bub">${ewEsc(msg)}</div>`;
+  msgs.appendChild(userEl);
+  msgs.scrollTop = msgs.scrollHeight;
+  const aiEl = document.createElement('div');
+  aiEl.className = 'ew-cm ai';
+  const aiBub = document.createElement('div');
+  aiBub.className = 'ew-cm-bub';
+  aiBub.textContent = '…';
+  aiEl.innerHTML = '<div class="ew-cm-av">N</div>';
+  aiEl.appendChild(aiBub);
+  msgs.appendChild(aiEl);
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const resp = await fetch(EW_CHAT_URL, {
+      method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':EW_CSRF},
+      body: JSON.stringify({message: msg, essay_text: ewStreamText})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Error');
+    aiBub.textContent = '';
+    const words = data.reply.split(' ');
+    for (let i = 0; i < words.length; i++) {
+      aiBub.textContent += (i === 0 ? '' : ' ') + words[i];
+      msgs.scrollTop = msgs.scrollHeight;
+      await ewSleep(20);
+    }
+    if (data.updated_essay) {
+      ewStreamText = data.updated_essay;
+      await ewTypewriter(ewStreamText, document.getElementById('ew-stream-body'));
+      document.getElementById('ew-stream-sub').textContent = ewStreamText.split(/\s+/).length + ' words · Updated';
+    }
+  } catch(e) { aiBub.textContent = 'Error: ' + e.message; }
+  ewChatBusy = false;
+  document.getElementById('ew-chat-send').disabled = false;
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function ewGuidance() {
+  const topic = document.getElementById('ew-guide-topic').value.trim();
+  if (!topic) return;
+  const action = document.getElementById('ew-guide-action').value;
+  const btn = document.getElementById('ew-guide-btn');
+  btn.disabled = true; btn.textContent = 'Thinking…';
+  ewShowView('guide');
+  const gv = document.getElementById('ew-view-guide');
+  gv.innerHTML = `<div style="padding:2rem;text-align:center;"><div style="width:24px;height:24px;border:2px solid var(--b2);border-top-color:#22c55e;border-radius:50%;animation:ewspin .8s linear infinite;margin:0 auto .75rem;"></div><div style="font-size:.775rem;color:var(--t2);">Analysing your topic…</div></div>`;
+  try {
+    const resp = await fetch(EW_GUIDE_URL, {
+      method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':EW_CSRF},
+      body: JSON.stringify({topic, action, references: ewRefs.guide})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Error');
+    gv.innerHTML = `<div style="font-size:.9375rem;font-weight:700;margin-bottom:.2rem;">${ewEsc(topic)}</div><div style="font-size:.72rem;color:var(--t2);margin-bottom:1rem;">Smart Essay Guidance</div><div id="ew-guide-body"></div>`;
+    const body = document.getElementById('ew-guide-body');
+    const sections = action === 'all'
+      ? [['breakdown','Topic Breakdown',data.results.breakdown],['thesis','Thesis Statements',data.results.thesis],['outline','Essay Outline',data.results.outline]]
+      : [[action, action.charAt(0).toUpperCase()+action.slice(1), data.result]];
+    for (const [, label, text] of sections) {
+      const sec = document.createElement('div');
+      sec.className = 'ew-result-sec';
+      const card = document.createElement('div');
+      card.className = 'ew-result-card';
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'ew-copy-btn';
+      copyBtn.textContent = 'Copy';
+      copyBtn.onclick = () => { navigator.clipboard.writeText(text); copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1500); };
+      sec.innerHTML = `<div class="ew-result-sec-title">${ewEsc(label)}</div>`;
+      sec.appendChild(card);
+      sec.appendChild(copyBtn);
+      body.appendChild(sec);
+      await ewTypeInto(text, card);
+    }
+  } catch(e) {
+    gv.innerHTML = `<div style="padding:1.5rem;color:#f87171;font-size:.8rem;">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Get Guidance';
+}
+
+async function ewImprove() {
+  const text = document.getElementById('ew-imp-text').value.trim();
+  if (!text) return;
+  const improvements = [];
+  if (document.getElementById('ew-imp-grammar').checked) improvements.push('grammar');
+  if (document.getElementById('ew-imp-vocab').checked) improvements.push('vocabulary');
+  if (document.getElementById('ew-imp-clarity').checked) improvements.push('clarity');
+  if (document.getElementById('ew-imp-structure').checked) improvements.push('structure');
+  const tone = document.getElementById('ew-imp-tone').value;
+  const btn = document.getElementById('ew-imp-btn');
+  btn.disabled = true; btn.textContent = 'Improving…';
+  ewShowView('imp');
+  const iv = document.getElementById('ew-view-imp');
+  iv.innerHTML = `<div style="padding:2rem;text-align:center;"><div style="width:24px;height:24px;border:2px solid var(--b2);border-top-color:#a78bfa;border-radius:50%;animation:ewspin .8s linear infinite;margin:0 auto .75rem;"></div><div style="font-size:.775rem;color:var(--t2);">Improving your essay…</div></div>`;
+  try {
+    const resp = await fetch(EW_IMP_URL, {
+      method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':EW_CSRF},
+      body: JSON.stringify({essay_text: text, improvements, tone, references: ewRefs.imp})
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Error');
+    iv.innerHTML = `<div style="font-size:.9375rem;font-weight:700;margin-bottom:.2rem;">Improved Essay</div><div style="font-size:.72rem;color:var(--t2);margin-bottom:1rem;">AI-enhanced version of your work</div><div id="ew-imp-body"></div>`;
+    const body = document.getElementById('ew-imp-body');
+    const fbSec = document.createElement('div');
+    fbSec.className = 'ew-result-sec';
+    fbSec.innerHTML = '<div class="ew-result-sec-title">What was improved</div>';
+    const fbCard = document.createElement('div');
+    fbCard.className = 'ew-feedback-card';
+    fbSec.appendChild(fbCard);
+    body.appendChild(fbSec);
+    await ewTypeInto(data.feedback, fbCard);
+    const impSec = document.createElement('div');
+    impSec.className = 'ew-result-sec';
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'ew-copy-btn';
+    copyBtn.textContent = 'Copy';
+    copyBtn.onclick = () => { navigator.clipboard.writeText(data.improved); copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1500); };
+    impSec.innerHTML = '<div class="ew-result-sec-title" style="display:flex;justify-content:space-between;align-items:center;"><span>Improved Text</span></div>';
+    impSec.querySelector('.ew-result-sec-title').appendChild(copyBtn);
+    const impCard = document.createElement('div');
+    impCard.className = 'ew-improved-card';
+    impSec.appendChild(impCard);
+    body.appendChild(impSec);
+    await ewTypeInto(data.improved, impCard);
+  } catch(e) {
+    iv.innerHTML = `<div style="padding:1.5rem;color:#f87171;font-size:.8rem;">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Improve My Essay';
+}
+
+function ewToggleWS(pane) {
+  document.getElementById('ew-ws-panel-' + pane).classList.toggle('open');
+}
+
+async function ewRunWS(pane) {
+  const input = document.getElementById('ew-ws-input-' + pane);
+  const query = input.value.trim();
+  if (!query) return;
+  const resultsEl = document.getElementById('ew-ws-results-' + pane);
+  resultsEl.innerHTML = '<div class="ew-empty">Searching…</div>';
+  try {
+    const resp = await fetch(EW_WS_URL, {
+      method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':EW_CSRF},
+      body: JSON.stringify({query})
+    });
+    const data = await resp.json();
+    if (!data.ok || !data.results.length) { resultsEl.innerHTML = '<div class="ew-empty">No results found.</div>'; return; }
+    resultsEl.innerHTML = '';
+    data.results.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'ew-art';
+      if (ewRefs[pane].some(x => x.url === r.url)) card.classList.add('sel');
+      card.innerHTML = `<div class="ew-art-top"><div class="ew-art-chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="ew-art-title">${ewEsc(r.title)}</div></div><div class="ew-art-snip">${ewEsc(r.snippet)}</div><div class="ew-art-foot"><span class="ew-art-src">${ewEsc(r.source)}</span><a class="ew-art-link" href="${ewEsc(r.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit ↗</a></div>`;
+      card.addEventListener('click', () => {
+        const idx = ewRefs[pane].findIndex(x => x.url === r.url);
+        if (idx === -1) { ewRefs[pane].push(r); card.classList.add('sel'); }
+        else { ewRefs[pane].splice(idx,1); card.classList.remove('sel'); }
+        const badge = document.getElementById('ew-ws-badge-' + pane);
+        badge.textContent = ewRefs[pane].length;
+        badge.classList.toggle('vis', ewRefs[pane].length > 0);
+      });
+      resultsEl.appendChild(card);
+    });
+  } catch(e) { resultsEl.innerHTML = `<div class="ew-empty">Error: ${e.message}</div>`; }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('ew-chat-input');
+  if (ta) ta.addEventListener('input', () => { ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,70)+'px'; });
+});
+
 </script>
 {% endif %}
 {% endblock %}

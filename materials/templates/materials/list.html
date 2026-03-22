@@ -2,2271 +2,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{ title }} - NEXA</title>
-    
-    <!-- Universal Mobile Fix -->
-    <link rel="stylesheet" href="{% static 'css/mobile-fix.css' %}">
-    
-    <!-- Mobile Responsive CSS -->
-    <link rel="stylesheet" href="{% static 'materials/mobile-responsive.css' %}">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        :root {
-            --bg-primary: #0d0d0d;
-            --bg-secondary: #161616;
-            --bg-tertiary: #1e1e1e;
-            --bg-elevated: #252525;
-            --text-primary: #e8e8e8;
-            --text-secondary: #a0a0a0;
-            --text-tertiary: #6b6b6b;
-            --border: #2a2a2a;
-            --border-light: #333333;
-            --accent: #ffffff;
-            --accent-hover: #e0e0e0;
-            --accent-glow: rgba(255, 255, 255, 0.1);
-            --sidebar-width: 240px;
-            --toolbar-width: 56px;
-            --ai-panel-width: 380px;
-            --header-height: 48px;
-            --error: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: var(--text-primary);
-            background-color: var(--bg-primary);
-            line-height: 1.5;
-            font-size: 15px;
-            overflow: hidden;
-        }
-        
-        /* Layout */
-        .app-layout {
-            display: flex;
-            height: 100vh;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-        
-        .sidebar-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .sidebar-brand {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            text-decoration: none;
-            letter-spacing: -0.02em;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .brand-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #ffffff, #888888);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            color: #000;
-            font-weight: 700;
-        }
-        
-        .sidebar-nav {
-            flex: 1;
-            padding: 0.75rem 0.5rem;
-            overflow-y: auto;
-        }
-        
-        .nav-item {
-            margin-bottom: 2px;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 0.75rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            border-radius: 6px;
-            transition: all 0.15s ease;
-        }
-        
-        .nav-link:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-        
-        .nav-link.active {
-            background-color: var(--accent-glow);
-            color: var(--accent);
-        }
-        
-        .nav-link-icon {
-            font-size: 1rem;
-            font-weight: 600;
-            width: 1.25rem;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        
-        .nav-divider {
-            height: 1px;
-            background-color: var(--border);
-            margin: 0.75rem 0;
-        }
-        
-        .nav-section-title {
-            font-size: 0.6875rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 0.5rem 0.75rem 0.25rem;
-        }
-        
-        .nav-link.logout {
-            color: var(--text-tertiary);
-        }
-        
-        .nav-link.logout:hover {
-            color: var(--text-primary);
-        }
-        
-        /* Main Workspace */
-        .workspace {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        /* Header */
-        .header {
-            height: var(--header-height);
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1rem;
-            flex-shrink: 0;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .header-title {
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-        
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-            font-size: 0.8125rem;
-            color: var(--text-tertiary);
-        }
-        
-        .breadcrumb-sep {
-            color: var(--text-tertiary);
-        }
-        
-        .breadcrumb-item {
-            color: var(--text-secondary);
-        }
-        
-        .breadcrumb-item.active {
-            color: var(--text-primary);
-        }
-        
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .search-box {
-            position: relative;
-        }
-        
-        .search-input {
-            padding: 0.375rem 0.75rem 0.375rem 2rem;
-            font-size: 0.8125rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            width: 200px;
-            transition: all 0.2s ease;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            background-color: var(--bg-elevated);
-            width: 280px;
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 0.625rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-tertiary);
-            font-size: 0.75rem;
-        }
-        
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        
-        .user-menu:hover {
-            background-color: var(--bg-tertiary);
-        }
-        
-        .user-avatar {
-            width: 1.75rem;
-            height: 1.75rem;
-            background: linear-gradient(135deg, #ffffff, #888888);
-            color: #000;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6875rem;
-            font-weight: 600;
-        }
-        
-        .user-name {
-            font-size: 0.8125rem;
-            color: var(--text-primary);
-        }
-        
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        /* Toolbar */
-        .toolbar {
-            width: var(--toolbar-width);
-            background-color: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0.75rem 0.5rem;
-            gap: 0.25rem;
-            flex-shrink: 0;
-        }
-        
-        .toolbar-btn {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            position: relative;
-        }
-        
-        .toolbar-btn:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-        
-        .toolbar-btn.active {
-            background-color: var(--accent-glow);
-            color: var(--accent);
-        }
-        
-        .toolbar-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-        
-        .toolbar-btn[data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            left: 52px;
-            background-color: var(--bg-elevated);
-            color: var(--text-primary);
-            padding: 0.375rem 0.625rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            z-index: 100;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        
-        .toolbar-divider {
-            width: 24px;
-            height: 1px;
-            background-color: var(--border);
-            margin: 0.5rem 0;
-        }
-        
-        /* Main Editor Area */
-        .editor-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background-color: var(--bg-primary);
-        }
-        
-        .editor-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem;
-        }
-        
-        .editor-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        /* Materials List */
-        .materials-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .materials-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: -0.02em;
-        }
-        
-        .materials-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            font-size: 0.8125rem;
-            font-weight: 500;
-            border-radius: 6px;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: all 0.15s ease;
-        }
-        
-        .btn-primary {
-            background-color: #ffffff;
-            color: #000;
-        }
-        
-        .btn-primary:hover {
-            background-color: #e0e0e0;
-        }
-        
-        .btn-secondary {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-        
-        .btn-secondary:hover {
-            background-color: var(--bg-elevated);
-            border-color: var(--border-light);
-        }
-        
-        .btn-ghost {
-            background: transparent;
-            color: var(--text-secondary);
-            padding: 0.375rem 0.625rem;
-        }
-        
-        .btn-ghost:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-        
-        .btn-danger {
-            background-color: var(--error);
-            color: #fff;
-        }
-        
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-        
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-        
-        .btn-icon {
-            padding: 0.5rem;
-        }
-        
-        /* Materials Grid */
-        .materials-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        
-        .material-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 1rem 1.25rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .material-card:hover {
-            border-color: var(--accent);
-            background-color: var(--bg-tertiary);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .material-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.625rem;
-        }
-        
-        .material-title {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .material-type-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            padding: 0.25rem 0.625rem;
-            border-radius: 9999px;
-            font-size: 0.6875rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-        }
-        
-        .badge-pdf {
-            background-color: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-        }
-        
-        .badge-word {
-            background-color: rgba(59, 130, 246, 0.15);
-            color: #93c5fd;
-        }
-        
-        .badge-powerpoint {
-            background-color: rgba(245, 158, 11, 0.15);
-            color: #fcd34d;
-        }
-        
-        .badge-slides {
-            background-color: rgba(168, 85, 247, 0.15);
-            color: #d8b4fe;
-        }
-        
-        .material-meta {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.875rem;
-        }
-        
-        .material-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-        
-        .material-actions {
-            display: flex;
-            gap: 0.5rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid var(--border);
-        }
-        
-        .material-card:hover .material-actions {
-            border-color: var(--border-light);
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            background-color: var(--bg-secondary);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-        
-        .empty-state-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1.25rem;
-            background: linear-gradient(135deg, var(--accent-glow), rgba(6, 182, 212, 0.1));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent);
-        }
-        
-        .empty-state-icon svg {
-            width: 32px;
-            height: 32px;
-        }
-        
-        .empty-state h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-        
-        .empty-state p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        /* AI Panel */
-        .ai-panel {
-            width: var(--ai-panel-width);
-            background-color: var(--bg-secondary);
-            border-left: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-        
-        .ai-panel-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .ai-panel-title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .ai-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #ffffff, #888888);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-size: 0.75rem;
-        }
-        
-        .ai-panel-subtitle {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            font-weight: 400;
-        }
-        
-        .ai-panel-actions {
-            display: flex;
-            gap: 0.25rem;
-        }
-        
-        .ai-panel-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .ai-suggestion-card {
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 1rem;
-            transition: all 0.2s ease;
-        }
-        
-        .ai-suggestion-card:hover {
-            border-color: var(--accent);
-        }
-        
-        .ai-suggestion-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.625rem;
-        }
-        
-        .ai-suggestion-icon {
-            width: 20px;
-            height: 20px;
-            background-color: #ffffff;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-size: 0.625rem;
-        }
-        
-        .ai-suggestion-title {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .ai-suggestion-desc {
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-        
-        .ai-suggestion-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-        
-        .ai-quick-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .ai-quick-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            padding: 0.625rem 0.875rem;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 0.8125rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            text-align: left;
-            text-decoration: none;
-        }
-        
-        .ai-quick-btn:hover {
-            background-color: var(--bg-elevated);
-            border-color: var(--accent);
-            color: var(--text-primary);
-        }
-        
-        .ai-quick-btn svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-        
-        .ai-input-area {
-            padding: 1rem;
-            border-top: 1px solid var(--border);
-        }
-        
-        .ai-input-wrapper {
-            display: flex;
-            gap: 0.5rem;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 0.5rem;
-        }
-        
-        .ai-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            font-size: 0.8125rem;
-            padding: 0.375rem 0.5rem;
-            resize: none;
-            outline: none;
-            font-family: inherit;
-        }
-        
-        .ai-input::placeholder {
-            color: var(--text-tertiary);
-        }
-        
-        .ai-send-btn {
-            width: 32px;
-            height: 32px;
-            background-color: #ffffff;
-            border: none;
-            border-radius: 6px;
-            color: #000;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.15s ease;
-        }
-        
-        .ai-send-btn:hover {
-            background-color: #e0e0e0;
-        }
-        
-        .ai-send-btn:disabled {
-            background-color: var(--bg-elevated);
-            color: var(--text-tertiary);
-            cursor: not-allowed;
-        }
-        
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 0.25rem;
-            margin-top: 2rem;
-        }
-        
-        .page-link {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.8125rem;
-            color: var(--text-primary);
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            text-decoration: none;
-            transition: all 0.1s ease;
-        }
-        
-        .page-link:hover {
-            background-color: var(--bg-tertiary);
-        }
-        
-        .page-link.active {
-            background-color: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-        }
-        
-        /* Loading state */
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Material Detail View */
-        .material-detail-view {
-            display: none;
-        }
-        
-        .material-detail-view.active {
-            display: block;
-        }
-        
-        .detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-        }
-        
-        .detail-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .detail-meta {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .detail-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-        }
-        
-        .detail-content {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .detail-section {
-            padding: 1.25rem;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .detail-section:last-child {
-            border-bottom: none;
-        }
-        
-        .detail-section-title {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .detail-text {
-            background-color: var(--bg-tertiary);
-            border-radius: 6px;
-            padding: 1rem;
-            max-height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-size: 0.8125rem;
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
-        
-        .detail-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .ai-panel {
-                width: 320px;
-            }
-        }
-        
-        @media (max-width: 992px) {
-            .ai-panel {
-                display: none;
-            }
-            
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-                z-index: 1000;
-            }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 999;
-            }
-            
-            .sidebar-overlay.open {
-                display: block;
-            }
-            
-            .menu-toggle {
-                display: flex !important;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            /* Force mobile layout */
-            html, body {
-                width: 100% !important;
-                max-width: 100vw !important;
-                overflow-x: hidden !important;
-            }
-            
-            .app-layout {
-                width: 100% !important;
-                max-width: 100vw !important;
-                overflow-x: hidden !important;
-                display: block !important;
-            }
-            
-            .sidebar {
-                display: flex;
-                width: 280px;
-                max-width: 80vw;
-                transform: translateX(-100%);
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                bottom: 0 !important;
-                z-index: 1000 !important;
-                transition: transform 0.3s ease !important;
-            }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
-            /* Workspace takes full width */
-            .workspace {
-                width: 100% !important;
-                max-width: 100vw !important;
-                margin-left: 0 !important;
-                padding-top: 0 !important;
-                display: flex !important;
-                flex-direction: column !important;
-            }
-            
-            /* Content area full width */
-            .content-area {
-                width: 100% !important;
-                max-width: 100vw !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                display: flex !important;
-                flex-direction: column !important;
-            }
-            
-            /* Editor area full width */
-            .editor-area {
-                display: flex !important;
-                flex-direction: column !important;
-                height: auto !important;
-                min-height: calc(100vh - 120px) !important;
-                overflow: visible !important;
-                width: 100% !important;
-                max-width: 100vw !important;
-            }
-            
-            .editor-scroll {
-                display: block !important;
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                padding: 1rem !important;
-                flex: 1 !important;
-                width: 100% !important;
-                max-width: 100vw !important;
-                box-sizing: border-box !important;
-            }
-            
-            /* Editor content full width */
-            .editor-content {
-                max-width: 100% !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            
-            /* Mobile toolbar - horizontal instead of vertical */
-            .toolbar {
-                display: flex !important;
-                flex-direction: row !important;
-                width: 100% !important;
-                max-width: 100vw !important;
-                height: auto !important;
-                padding: 0.5rem 1rem !important;
-                gap: 0.5rem !important;
-                border-right: none !important;
-                border-bottom: 1px solid var(--border) !important;
-                background: var(--bg-secondary) !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                position: relative !important;
-                box-sizing: border-box !important;
-            }
-            
-            .toolbar-btn {
-                width: 44px !important;
-                height: 44px !important;
-                flex-shrink: 0 !important;
-            }
-            
-            .toolbar-divider {
-                width: 1px !important;
-                height: 32px !important;
-                background: var(--border) !important;
-                margin: 0 0.25rem !important;
-            }
-            
-            /* Header adjustments for mobile */
-            .header {
-                flex-wrap: wrap !important;
-                height: auto !important;
-                min-height: 50px !important;
-                padding: 0.5rem !important;
-                gap: 0.5rem !important;
-                width: 100% !important;
-                max-width: 100vw !important;
-                box-sizing: border-box !important;
-            }
-            
-            .header-left {
-                flex: 1 !important;
-                min-width: 0 !important;
-            }
-            
-            .header-right {
-                display: flex !important;
-                align-items: center !important;
-                width: 100% !important;
-                margin-top: 0.5rem !important;
-            }
-            
-            .materials-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-                width: 100% !important;
-            }
-            
-            .materials-title {
-                font-size: 1.25rem;
-            }
-            
-            /* Materials grid full width */
-            .materials-grid {
-                width: 100% !important;
-                max-width: 100% !important;
-                display: grid !important;
-                grid-template-columns: 1fr !important;
-                gap: 1rem !important;
-                padding: 0 !important;
-            }
-            
-            .material-card {
-                padding: 0.875rem 1rem;
-                width: 100% !important;
-                max-width: 100% !important;
-                box-sizing: border-box !important;
-            }
-            
-            .material-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            
-            .material-meta {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-            
-            .material-actions {
-                flex-wrap: wrap;
-            }
-            
-            .breadcrumb {
-                display: none;
-            }
-            
-            .header-title {
-                font-size: 0.875rem;
-            }
-            
-            /* Mobile search - always visible on mobile */
-            .search-box {
-                display: flex !important;
-                position: relative !important;
-                flex: 1 !important;
-                max-width: 200px !important;
-                margin-right: 0.5rem !important;
-            }
-            
-            .search-input {
-                display: block !important;
-                width: 100% !important;
-                padding: 0.375rem 0.5rem !important;
-                font-size: 0.8125rem !important;
-            }
-            
-            .user-name {
-                display: none;
-            }
-            
-            .page-link {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
-            }
-            
-            /* Show menu toggle */
-            .menu-toggle {
-                display: flex !important;
-            }
-            
-            /* Add padding for bottom nav */
-            body {
-                padding-bottom: 70px !important;
-            }
-            
-            /* AI Panel hidden on mobile */
-            .ai-panel {
-                display: none !important;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .editor-scroll {
-                padding: 0.75rem;
-            }
-            
-            .materials-actions {
-                width: 100%;
-            }
-            
-            .materials-actions .btn {
-                flex: 1;
-            }
-            
-            .btn {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.75rem;
-            }
-        }
-        
-        /* Mobile Menu Toggle */
-        .menu-toggle {
-            display: none;
-            width: 40px;
-            height: 40px;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            border-radius: 8px;
-        }
-        
-        .menu-toggle:hover {
-            background-color: var(--bg-tertiary);
-        }
-        
-        .menu-toggle svg {
-            width: 24px;
-            height: 24px;
-        }
-        
-        /* Bottom Navigation for Mobile */
-        .bottom-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            padding: 0.5rem;
-            z-index: 100;
-        }
-        
-        @media (max-width: 992px) {
-            .bottom-nav {
-                display: flex;
-                justify-content: space-around;
-            }
-            
-            .workspace {
-                padding-bottom: 70px !important;
-            }
-        }
-        
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.5rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.625rem;
-            border-radius: 8px;
-            transition: all 0.15s ease;
-        }
-        
-        .bottom-nav-item:hover,
-        .bottom-nav-item.active {
-            color: var(--text-primary);
-            background: var(--bg-tertiary);
-        }
-        
-        .bottom-nav-item svg {
-            width: 20px;
-            height: 20px;
-        }
-        
-        /* Quick Actions Grid Styles */
-        .quick-actions-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-            padding: 0.5rem 0;
-        }
-        
-        .quick-action-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-            width: 100%;
-            color: var(--text-primary);
-            text-decoration: none;
-        }
-        
-        .quick-action-item:hover,
-        .quick-action-item:active {
-            background: var(--bg-elevated);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-        
-        .quick-action-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--accent-glow);
-            border-radius: 10px;
-            flex-shrink: 0;
-        }
-        
-        .quick-action-icon svg {
-            width: 20px;
-            height: 20px;
-            color: var(--accent);
-        }
-        
-        .quick-action-content {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .quick-action-title {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-        
-        .quick-action-desc {
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-            line-height: 1.3;
-        }
-        
-        @media (max-width: 480px) {
-            .quick-action-item {
-                padding: 0.875rem;
-            }
-            
-            .quick-action-icon {
-                width: 36px;
-                height: 36px;
-            }
-            
-            .quick-action-icon svg {
-                width: 18px;
-                height: 18px;
-            }
-            
-            .quick-action-title {
-                font-size: 0.875rem;
-            }
-            
-            .quick-action-desc {
-                font-size: 0.75rem;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Study Materials — NEXA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f7f7f5;--sb:#fff;--bdr:#e8e8e4;
+  --t1:#1a1a1a;--t2:#555;--t3:#999;
+  --hov:#f0f0ec;--acc:#f97316;--acc2:#ea6c00;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ── Shell ── */
+.shell{display:flex;height:100vh;overflow:hidden;}
+
+/* ── Sidebar ── */
+.nx-sidebar{width:220px;background:var(--sb);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;z-index:200;}
+.nx-sb-head{padding:.875rem 1rem .5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+.nx-logo{font-size:.9375rem;font-weight:800;color:var(--t1);display:flex;align-items:center;gap:.375rem;}
+.nx-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#f97316,#fb923c);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.875rem;flex-shrink:0;}
+.nx-sb-close{display:none;width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:6px;align-items:center;justify-content:center;color:var(--t2);}
+.nx-sb-close svg{width:16px;height:16px;}
+.nx-nav{flex:1;overflow-y:auto;padding:.5rem 0;}
+.nx-nav-item{display:flex;align-items:center;gap:.625rem;padding:.45rem .875rem;border-radius:6px;color:var(--t2);font-size:.8375rem;font-weight:500;cursor:pointer;margin:1px .5rem;transition:all .12s;border:none;background:none;width:calc(100% - 1rem);text-align:left;text-decoration:none;font-family:inherit;}
+.nx-nav-item:hover{background:var(--hov);color:var(--t1);}
+.nx-nav-item.active{background:#fff3ed;color:#ea6c00;font-weight:600;}
+.nx-nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7;}
+.nx-nav-item.active svg{opacity:1;}
+.nx-nav-sep{height:1px;background:var(--bdr);margin:.375rem .75rem;}
+.nx-user{padding:.75rem 1rem;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:.625rem;}
+.nx-user-av{width:32px;height:32px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;overflow:hidden;color:#555;}
+.nx-user-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.nx-user-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1);}
+.nx-user-email{font-size:.6875rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── Main ── */
+.nx-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:var(--bg);}
+
+/* ── Top bar ── */
+.nx-topbar{height:52px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.5rem;gap:.75rem;flex-shrink:0;}
+.nx-mob-menu{display:none;width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:8px;align-items:center;justify-content:center;color:var(--t2);}
+.nx-mob-menu svg{width:20px;height:20px;}
+.nx-topbar-title{font-size:.9375rem;font-weight:700;color:var(--t1);}
+.nx-topbar-right{margin-left:auto;display:flex;align-items:center;gap:.625rem;}
+.nx-search-wrap{position:relative;}
+.nx-search-wrap svg{position:absolute;left:.625rem;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--t3);}
+.nx-search-input{padding:.375rem .75rem .375rem 2rem;font-size:.8125rem;border:1px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--t1);width:200px;outline:none;font-family:inherit;transition:all .2s;}
+.nx-search-input:focus{border-color:#ccc;background:#fff;width:240px;}
+
+/* ── Content ── */
+.nx-scroll{flex:1;overflow-y:auto;padding:2rem;}
+.nx-content{max-width:860px;margin:0 auto;}
+
+/* ── Page header ── */
+.pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;}
+.pg-title{font-size:1.375rem;font-weight:800;color:var(--t1);}
+.pg-actions{display:flex;gap:.5rem;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:.375rem;padding:.5rem 1rem;border-radius:8px;font-size:.875rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;text-decoration:none;}
+.btn-primary{background:#1a1a1a;color:#fff;}
+.btn-primary:hover{background:#333;}
+.btn-outline{background:#fff;color:var(--t1);border:1px solid var(--bdr);}
+.btn-outline:hover{background:var(--hov);}
+.btn-danger{background:#ef4444;color:#fff;}
+.btn-danger:hover{background:#dc2626;}
+.btn-sm{padding:.35rem .75rem;font-size:.8125rem;}
+.btn svg{width:15px;height:15px;}
+</style>
 </head>
 <body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <a href="{% url 'dashboard' %}" class="sidebar-brand">
-                    <span class="brand-icon">N</span>
-                    NEXA
-                </a>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <div class="nav-item">
-                    <a href="{% url 'dashboard' %}" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                                <rect x="3" y="14" width="7" height="7" rx="1"/>
-                                <rect x="14" y="14" width="7" height="7" rx="1"/>
-                            </svg>
-                        </span>
-                        Dashboard
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'explore' %}" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </span>
-                        Explore
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'list_materials' %}" class="nav-link active">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                            </svg>
-                        </span>
-                        My Materials
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'ai_chat' %}" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                            </svg>
-                        </span>
-                        AI Tutor
-                    </a>
-                </div>
-                
-                <div class="nav-divider"></div>
-                
-                <div class="nav-section-title">Tools</div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'essay_request' %}" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                                <polyline points="10 9 9 9 8 9"/>
-                            </svg>
-                        </span>
-                        Essay Generator
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'assignment_list' %}" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 11l3 3L22 4"/>
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                            </svg>
-                        </span>
-                        Assignments
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'library_home' %}" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                            </svg>
-                        </span>
-                        Library
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'community:feed' %}" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                        </span>
-                        Community
-                    </a>
-                </div>
-                
-                <div class="nav-divider"></div>
-                
-                <div class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                            </svg>
-                        </span>
-                        Settings
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a href="{% url 'logout' %}" class="nav-link logout">
-                        <span class="nav-link-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                                <polyline points="16 17 21 12 16 7"/>
-                                <line x1="21" y1="12" x2="9" y2="12"/>
-                            </svg>
-                        </span>
-                        Log out
-                    </a>
-                </div>
-            </nav>
-        </aside>
-        
-        <!-- Workspace -->
-        <div class="workspace">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-left">
-                    <button class="menu-toggle" onclick="toggleSidebar()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="3" y1="12" x2="21" y2="12"/>
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <line x1="3" y1="18" x2="21" y2="18"/>
-                        </svg>
-                    </button>
-                    <div class="header-title">Study Materials</div>
-                    <div class="breadcrumb">
-                        <span class="breadcrumb-item">NEXA</span>
-                        <span class="breadcrumb-sep">/</span>
-                        <span class="breadcrumb-item active">My Materials</span>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="search-box">
-                        <span class="search-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="m21 21-4.35-4.35"/>
-                            </svg>
-                        </span>
-                        <input type="text" class="search-input" placeholder="Search materials..." id="searchInput">
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
-                        <span class="user-name">{{ user.username }}</span>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Content Area -->
-            <div class="content-area">
-                <!-- Editor Area -->
-                <div class="editor-area">
-                    <div class="editor-scroll">
-                        <div class="editor-content">
-                            <!-- List View (Default) -->
-                            <div id="materialsListView">
-                                <div class="materials-header">
-                                    <h1 class="materials-title">My Study Materials</h1>
-                                    <div class="materials-actions">
-                                        <a href="{% url 'upload_material' %}" class="btn btn-primary">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                            </svg>
-                                            Upload
-                                        </a>
-                                    </div>
-                                </div>
-                                
-                                {% if materials %}
-                                    <div class="materials-grid" id="materialsGrid">
-                                        {% for material in materials %}
-                                            <div class="material-card" data-material-id="{{ material.pk }}" onclick="viewMaterial({{ material.pk }})">
-                                                <div class="material-header">
-                                                    <h3 class="material-title">{{ material.title }}</h3>
-                                                    <span class="material-type-badge 
-                                                        {% if material.material_type == 'PDF' %}badge-pdf
-                                                        {% elif material.material_type == 'Word' %}badge-word
-                                                        {% elif material.material_type == 'PowerPoint' %}badge-powerpoint
-                                                        {% else %}badge-slides{% endif %}">
-                                                        {{ material.get_material_type_display }}
-                                                    </span>
-                                                </div>
-                                                
-                                                <div class="material-meta">
-                                                    {% if material.subject %}
-                                                        <span class="material-meta-item">{{ material.subject }}</span>
-                                                    {% endif %}
-                                                    <span class="material-meta-item">{{ material.uploaded_at|date:"M d, Y" }}</span>
-                                                    <span class="material-meta-item">{{ material.file_size|filesizeformat }}</span>
-                                                </div>
-                                                
-                                                <div class="material-actions" onclick="event.stopPropagation()">
-                                                    <a href="{{ material.file.url }}" class="btn btn-secondary btn-sm" target="_blank">
-                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                                            <polyline points="15 3 21 3 21 9"/>
-                                                            <line x1="10" y1="14" x2="21" y2="3"/>
-                                                        </svg>
-                                                        View
-                                                    </a>
-                                                    {% if material.extracted_text %}
-                                                        <button class="btn btn-secondary btn-sm" onclick="viewMaterial({{ material.pk }})">
-                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                                                <polyline points="14 2 14 8 20 8"/>
-                                                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                                                <line x1="16" y1="17" x2="8" y2="17"/>
-                                                            </svg>
-                                                            Extract
-                                                        </button>
-                                                        <a href="{% url 'learn_material' material.pk %}" class="btn btn-secondary btn-sm">
-                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-                                                            </svg>
-                                                            Learn
-                                                        </a>
-                                                    {% endif %}
-                                                    <form method="POST" action="{% url 'delete_material' material.pk %}" style="display: inline;">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="btn btn-danger btn-sm" 
-                                                                onclick="return confirm('Are you sure you want to delete this material?')">
-                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                                <polyline points="3 6 5 6 21 6"/>
-                                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                    
-                                    {% if materials.has_other_pages %}
-                                        <div class="pagination">
-                                            {% if materials.has_previous %}
-                                                <a href="?page={{ materials.previous_page_number }}" class="page-link">Previous</a>
-                                            {% endif %}
-                                            
-                                            {% for num in materials.paginator.page_range %}
-                                                {% if materials.number == num %}
-                                                    <span class="page-link active">{{ num }}</span>
-                                                {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
-                                                    <a href="?page={{ num }}" class="page-link">{{ num }}</a>
-                                                {% endif %}
-                                            {% endfor %}
-                                            
-                                            {% if materials.has_next %}
-                                                <a href="?page={{ materials.next_page_number }}" class="page-link">Next</a>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                {% else %}
-                                    <!-- Empty State -->
-                                    <div class="empty-state">
-                                        <div class="empty-state-icon">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                                            </svg>
-                                        </div>
-                                        <h3>No materials yet</h3>
-                                        <p>Start by uploading your first study material.</p>
-                                        <a href="{% url 'upload_material' %}" class="btn btn-primary">
-                                            Upload Your First Material
-                                        </a>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Detail View (Hidden by default) -->
-                            <div id="materialDetailView" class="material-detail-view">
-                                <div class="detail-header">
-                                    <div>
-                                        <h1 class="detail-title" id="detailTitle">Material Title</h1>
-                                        <div class="detail-meta">
-                                            <span class="detail-meta-item" id="detailType">PDF</span>
-                                            <span class="detail-meta-item" id="detailDate">Jan 1, 2024</span>
-                                            <span class="detail-meta-item" id="detailSize">1.2 MB</span>
-                                        </div>
-                                    </div>
-                                    <div class="detail-actions">
-                                        <a href="#" class="btn btn-secondary" id="detailDownloadBtn" target="_blank">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                <polyline points="7 10 12 15 17 10"/>
-                                                <line x1="12" y1="15" x2="12" y2="3"/>
-                                            </svg>
-                                            Download
-                                        </a>
-                                        <button class="btn btn-ghost" onclick="closeDetail()">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                                <line x1="6" y1="6" x2="18" y2="18"/>
-                                            </svg>
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="detail-content">
-                                    <div class="detail-section">
-                                        <h3 class="detail-section-title">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                                <polyline points="14 2 14 8 20 8"/>
-                                            </svg>
-                                            Extracted Text
-                                        </h3>
-                                        <div class="detail-text" id="detailText">
-                                            Loading...
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="detail-actions" style="margin-top: 1rem;">
-                                    <form method="POST" id="detailDeleteForm" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger" 
-                                                onclick="return confirm('Are you sure you want to delete this material?')">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6"/>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                            </svg>
-                                            Delete Material
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- AI Panel -->
-                <div class="ai-panel">
-                    <div class="ai-panel-header">
-                        <div class="ai-panel-title">
-                            <div class="ai-icon">AI</div>
-                            <div>
-                                <div>Study Assistant</div>
-                                <div class="ai-panel-subtitle">AI-powered help</div>
-                            </div>
-                        </div>
-                        <div class="ai-panel-actions">
-                            <button class="btn btn-ghost btn-icon" onclick="clearAIChat()">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="ai-panel-body" id="aiPanelBody">
-                        <div class="ai-suggestion-card">
-                            <div class="ai-suggestion-header">
-                                <div class="ai-suggestion-icon">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                                    </svg>
-                                </div>
-                                <span class="ai-suggestion-title">Quick Actions</span>
-                            </div>
-                            <p class="ai-suggestion-desc">Select a material to get AI-powered insights, summaries, and study help.</p>
-                        </div>
-                        
-                        <div class="ai-quick-actions">
-                            <a class="ai-quick-btn" href="{% url 'select_material_for_action' 'summarize' %}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14 2 14 8 20 8"/>
-                                    <line x1="16" y1="13" x2="8" y2="13"/>
-                                    <line x1="16" y1="17" x2="8" y2="17"/>
-                                </svg>
-                                Summarize Content
-                            </a>
-                            <a class="ai-quick-btn" href="{% url 'select_material_for_action' 'quiz' %}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                                </svg>
-                                Generate Quiz
-                            </a>
-                            <a class="ai-quick-btn" href="{% url 'select_material_for_action' 'flashcards' %}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="4" width="20" height="16" rx="2"/>
-                                    <line x1="2" y1="10" x2="22" y2="10"/>
-                                </svg>
-                                Create Flashcards
-                            </a>
-                            <a class="ai-quick-btn" href="{% url 'select_material_for_action' 'podcast' %}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                                    <line x1="12" y1="19" x2="12" y2="23"/>
-                                    <line x1="8" y1="23" x2="16" y2="23"/>
-                                </svg>
-                                Generate Podcast
-                            </a>
-                        </div>
-                        
-                        <div id="aiResponseArea" style="display: none;">
-                            <div class="ai-suggestion-card" id="aiResponseCard">
-                                <div class="ai-suggestion-header">
-                                    <div class="ai-suggestion-icon">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                                        </svg>
-                                    </div>
-                                    <span class="ai-suggestion-title">AI Response</span>
-                                </div>
-                                <p class="ai-suggestion-desc" id="aiResponseText">Loading...</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="ai-input-area">
-                        <div class="ai-input-wrapper">
-                            <textarea class="ai-input" placeholder="Ask AI about your materials..." rows="1" id="aiInput"></textarea>
-                            <button class="ai-send-btn" id="aiSendBtn" onclick="sendAIMessage()">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="22" y1="2" x2="11" y2="13"/>
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-        
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <a href="{% url 'dashboard' %}" class="bottom-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
-                </svg>
-                Home
-            </a>
-            <a href="{% url 'explore' %}" class="bottom-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                Explore
-            </a>
-            <a href="{% url 'list_materials' %}" class="bottom-nav-item active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                </svg>
-                Materials
-            </a>
-            <a href="{% url 'ai_chat' %}" class="bottom-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                AI
-            </a>
-            <a href="{% url 'community:feed' %}" class="bottom-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                Community
-            </a>
-        </nav>
+<!-- Mobile overlay -->
+<div id="nx-overlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;"></div>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <div class="nx-sidebar" id="nx-sidebar">
+    <div class="nx-sb-head">
+      <a href="{% url 'community:community_home' %}" class="nx-logo">
+        <div class="nx-logo-icon">✦</div>Nexa
+      </a>
+      <button class="nx-sb-close" id="nx-sb-close" onclick="closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
-    
-    <script>
-        // Sidebar Toggle
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
-        }
-        
-        // Material data storage
-        const materialsData = {};
-        
-        {% for material in materials %}
-            materialsData[{{ material.pk }}] = {
-                id: {{ material.pk }},
-                title: "{{ material.title|escapejs }}",
-                type: "{{ material.get_material_type_display|escapejs }}",
-                date: "{{ material.uploaded_at|date:"M d, Y" }}",
-                size: "{{ material.file_size|filesizeformat }}",
-                fileUrl: "{{ material.file.url }}",
-                extractedText: {% if material.extracted_text %}"{{ material.extracted_text|escapejs }}"{% else %}null{% endif %},
-                {% if material.subject %}subject: "{{ material.subject|escapejs }}",{% endif %}
-                deleteUrl: "{% url 'delete_material' material.pk %}"
-            };
-        {% endfor %}
-        
-        // Current state
-        let currentMaterialId = null;
-        
-        // View Material
-        function viewMaterial(materialId) {
-            const material = materialsData[materialId];
-            if (!material) return;
-            
-            currentMaterialId = materialId;
-            
-            document.getElementById('detailTitle').textContent = material.title;
-            document.getElementById('detailType').textContent = material.type;
-            document.getElementById('detailDate').textContent = material.date;
-            document.getElementById('detailSize').textContent = material.size;
-            document.getElementById('detailDownloadBtn').href = material.fileUrl;
-            document.getElementById('detailDeleteForm').action = material.deleteUrl;
-            
-            if (material.extractedText) {
-                document.getElementById('detailText').textContent = material.extractedText;
-            } else {
-                document.getElementById('detailText').textContent = 'No extracted text available for this material.';
-            }
-            
-            document.getElementById('materialsListView').style.display = 'none';
-            document.getElementById('materialDetailView').classList.add('active');
-            
-            // Update AI panel
-            updateAIContext(material);
-        }
-        
-        // Close Detail View
-        function closeDetail() {
-            currentMaterialId = null;
-            document.getElementById('materialsListView').style.display = 'block';
-            document.getElementById('materialDetailView').classList.remove('active');
-        }
-        
-        // Update AI Context
-        function updateAIContext(material) {
-            const suggestionCard = document.querySelector('.ai-suggestion-card');
-            suggestionCard.innerHTML = `
-                <div class="ai-suggestion-header">
-                    <div class="ai-suggestion-icon">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                        </svg>
-                    </div>
-                    <span class="ai-suggestion-title">Current Material</span>
-                </div>
-                <p class="ai-suggestion-desc">Selected: <strong>${material.title}</strong><br>${material.type} - ${material.size}</p>
-            `;
-        }
-        
-        // AI Quick Actions
-        function aiQuickAction(action) {
-            if (!currentMaterialId) {
-                alert('Please select a material first by clicking on it.');
-                return;
-            }
-            
-            const material = materialsData[currentMaterialId];
-            
-            if (!material.extractedText) {
-                showAIResponse('No extracted text available for this material. Please upload a document with extractable text.');
-                return;
-            }
-            
-            showLoading(true);
-            
-            fetch('{% url "ai_material_action" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    action: action,
-                    material_id: material.id,
-                    material_title: material.title,
-                    extracted_text: material.extractedText
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                showLoading(false);
-                if (data.success) {
-                    showAIResponse(data.response);
-                } else {
-                    showAIResponse(data.error || 'An error occurred. Please try again.');
-                }
-            })
-            .catch(error => {
-                showLoading(false);
-                showAIResponse('Failed to connect to AI. Please check your connection and try again.');
-                console.error('AI Error:', error);
-            });
-        }
-        
-        // Open Podcast Mode
-        function openPodcast() {
-            if (!currentMaterialId) {
-                alert('Please select a material first by clicking on it.');
-                return;
-            }
-            
-            const material = materialsData[currentMaterialId];
-            if (!material.extractedText) {
-                alert('No extracted text available for this material. Please upload a document with extractable text.');
-                return;
-            }
-            
-            window.location.href = '/materials/podcast/' + currentMaterialId + '/';
-        }
-        
-        // Show AI Response
-        function showAIResponse(text) {
-            document.getElementById('aiResponseArea').style.display = 'block';
-            document.getElementById('aiResponseText').textContent = text;
-        }
-        
-        function showLoading(show) {
-            if (show) {
-                document.getElementById('aiResponseArea').style.display = 'block';
-                document.getElementById('aiResponseText').innerHTML = '<div class="loading-spinner"></div><p style="text-align: center; margin-top: 0.5rem;">Processing...</p>';
-            }
-        }
-        
-        // Send AI Message
-        function sendAIMessage() {
-            const input = document.getElementById('aiInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            if (!currentMaterialId) {
-                alert('Please select a material first by clicking on it.');
-                return;
-            }
-            
-            const material = materialsData[currentMaterialId];
-            
-            if (!material.extractedText) {
-                showAIResponse('No extracted text available for this material.');
-                return;
-            }
-            
-            showLoading(true);
-            input.value = '';
-            
-            fetch('{% url "ai_material_action" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    action: 'ask',
-                    message: message,
-                    material_id: material.id,
-                    material_title: material.title,
-                    extracted_text: material.extractedText
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                showLoading(false);
-                if (data.success) {
-                    showAIResponse(data.response);
-                } else {
-                    showAIResponse(data.error || 'An error occurred. Please try again.');
-                }
-            })
-            .catch(error => {
-                showLoading(false);
-                showAIResponse('Failed to connect to AI. Please check your connection and try again.');
-                console.error('AI Error:', error);
-            });
-        }
-        
-        // Clear AI Chat
-        function clearAIChat() {
-            document.getElementById('aiResponseArea').style.display = 'none';
-            document.getElementById('aiInput').value = '';
-            
-            const suggestionCard = document.querySelector('.ai-suggestion-card');
-            suggestionCard.innerHTML = `
-                <div class="ai-suggestion-header">
-                    <div class="ai-suggestion-icon">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                        </svg>
-                    </div>
-                    <span class="ai-suggestion-title">Quick Actions</span>
-                </div>
-                <p class="ai-suggestion-desc">Select a material to get AI-powered insights, summaries, and study help.</p>
-            `;
-        }
-        
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.material-card');
-            
-            cards.forEach(card => {
-                const title = card.querySelector('.material-title').textContent.toLowerCase();
-                const type = card.querySelector('.material-type-badge').textContent.toLowerCase();
-                
-                if (title.includes(query) || type.includes(query)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-        
-        // Handle Enter key in AI input
-        document.getElementById('aiInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendAIMessage();
-            }
-        });
-        
-        // Set view mode (grid/list) - for future enhancement
-        function setViewMode(mode) {
-            console.log('View mode:', mode);
-        }
-        
-        // Sort materials
-        function sortMaterials(by) {
-            const grid = document.getElementById('materialsGrid');
-            const cards = Array.from(grid.querySelectorAll('.material-card'));
-            
-            cards.sort((a, b) => {
-                if (by === 'name') {
-                    const titleA = a.querySelector('.material-title').textContent;
-                    const titleB = b.querySelector('.material-title').textContent;
-                    return titleA.localeCompare(titleB);
-                } else {
-                    // For date, we need the data attributes or re-parse
-                    const idA = a.dataset.materialId;
-                    const idB = b.dataset.materialId;
-                    return materialsData[idB].date.localeCompare(materialsData[idA].date);
-                }
-            });
-            
-            cards.forEach(card => grid.appendChild(card));
-        }
-    </script>
-    
-    <!-- UI Controller (must load first) -->
-    <script src="{% static 'materials/ui-controller.js' %}"></script>
-    
-    <!-- Mobile Interactions -->
-    <script src="{% static 'materials/mobile-interactions.js' %}"></script>
-    
-    <!-- Floating Action Button -->
-    <button class="quick-actions-fab" onclick="toggleQuickActions()" aria-label="Quick Actions">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-    </button>
-    
-    <!-- Backdrop for mobile panels -->
-    <div class="quick-actions-backdrop"></div>
-    
-    <!-- Mobile Quick Actions Panel -->
-    <div class="quick-actions-mobile">
-        <div class="quick-actions-mobile-header">
-            <div class="quick-actions-mobile-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                </svg>
-                Quick Actions
-            </div>
-            <button class="quick-actions-close" onclick="toggleQuickActions()" aria-label="Close">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-            </button>
-        </div>
-        <div class="quick-actions-mobile-body">
-            <div class="quick-actions-grid">
-                <button class="quick-action-item" onclick="window.location.href='{% url 'upload_material' %}'">
-                    <div class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                    </div>
-                    <div class="quick-action-content">
-                        <div class="quick-action-title">Upload Material</div>
-                        <div class="quick-action-desc">Add new study materials</div>
-                    </div>
-                </button>
-                
-                <a class="quick-action-item" href="{% url 'select_material_for_action' 'summarize' %}">
-                    <div class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                        </svg>
-                    </div>
-                    <div class="quick-action-content">
-                        <div class="quick-action-title">Summarize</div>
-                        <div class="quick-action-desc">Get AI summary of material</div>
-                    </div>
-                </a>
-                
-                <a class="quick-action-item" href="{% url 'select_material_for_action' 'quiz' %}">
-                    <div class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 11l3 3L22 4"/>
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                        </svg>
-                    </div>
-                    <div class="quick-action-content">
-                        <div class="quick-action-title">Generate Quiz</div>
-                        <div class="quick-action-desc">Create quiz from material</div>
-                    </div>
-                </a>
-                
-                <a class="quick-action-item" href="{% url 'select_material_for_action' 'flashcards' %}">
-                    <div class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
-                            <polyline points="17 2 12 7 7 2"/>
-                        </svg>
-                    </div>
-                    <div class="quick-action-content">
-                        <div class="quick-action-title">Flashcards</div>
-                        <div class="quick-action-desc">Create study flashcards</div>
-                    </div>
-                </a>
-                
-                <a class="quick-action-item" href="{% url 'select_material_for_action' 'podcast' %}">
-                    <div class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        </svg>
-                    </div>
-                    <div class="quick-action-content">
-                        <div class="quick-action-title">Podcast Mode</div>
-                        <div class="quick-action-desc">Listen to material as audio</div>
-                    </div>
-                </a>
-                
-                <a class="quick-action-item" href="{% url 'ai_chat' %}">
-                    <div class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                        </svg>
-                    </div>
-                    <div class="quick-action-content">
-                        <div class="quick-action-title">Ask AI</div>
-                        <div class="quick-action-desc">Chat with AI about material</div>
-                    </div>
-                </a>
-                
-                <button class="quick-action-item" onclick="location.reload()">
-                    <div class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="23 4 23 10 17 10"/>
-                            <polyline points="1 20 1 14 7 14"/>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                        </svg>
-                    </div>
-                    <div class="quick-action-content">
-                        <div class="quick-action-title">Refresh</div>
-                        <div class="quick-action-desc">Reload materials list</div>
-                    </div>
-                </button>
-            </div>
-        </div>
+    <div class="nx-nav">
+      <a class="nx-nav-item" href="{% url 'community:community_home' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+      </a>
+      <a class="nx-nav-item active" href="{% url 'list_materials' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Study Materials
+      </a>
+      <a class="nx-nav-item" href="{% url 'upload_material' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>Upload Material
+      </a>
+      <div class="nx-nav-sep"></div>
+      <a class="nx-nav-item" href="{% url 'ai_community:hub' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Nexa Chat
+      </a>
+      <a class="nx-nav-item" href="{% url 'ai_chat' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>AI Tutor
+      </a>
+      <a class="nx-nav-item" href="{% url 'community:community_home' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community
+      </a>
     </div>
+    <div class="nx-user">
+      <div class="nx-user-av">{{ request.user.username|slice:":1"|upper }}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="nx-user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div class="nx-user-email">{{ request.user.email }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="nx-main">
+    <div class="nx-topbar">
+      <button class="nx-mob-menu" id="nx-mob-menu" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="nx-topbar-title">Study Materials</span>
+      <div class="nx-topbar-right">
+        <div class="nx-search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="nx-search-input" type="text" placeholder="Search materials…" id="search-input" oninput="filterMaterials(this.value)">
+        </div>
+        <a href="{% url 'upload_material' %}" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Upload
+        </a>
+      </div>
+    </div>
+
+    <div class="nx-scroll">
+      <div class="nx-content">
+        <div class="pg-head">
+          <div>
+            <div class="pg-title">My Study Materials</div>
+            <div style="font-size:.875rem;color:var(--t3);margin-top:.25rem;">{{ materials.paginator.count }} material{{ materials.paginator.count|pluralize }}</div>
+          </div>
+          <div class="pg-actions">
+            <a href="{% url 'upload_material' %}" class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              Upload New
+            </a>
+          </div>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+          <div style="padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.875rem;background:{% if message.tags == 'success' %}#f0fdf4{% elif message.tags == 'error' %}#fef2f2{% else %}#eff6ff{% endif %};color:{% if message.tags == 'success' %}#166534{% elif message.tags == 'error' %}#991b1b{% else %}#1e40af{% endif %};border:1px solid {% if message.tags == 'success' %}#bbf7d0{% elif message.tags == 'error' %}#fecaca{% else %}#bfdbfe{% endif %};">
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        {% if materials %}
+        <div id="materials-list" style="display:flex;flex-direction:column;gap:.625rem;">
+          {% for material in materials %}
+          <div class="mat-card" data-title="{{ material.title|lower }}" data-subject="{{ material.subject|lower }}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
+              <div style="display:flex;align-items:center;gap:.875rem;flex:1;min-width:0;">
+                <!-- File icon -->
+                <div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem;
+                  {% if material.material_type == 'PDF' %}background:#fef2f2;{% elif material.material_type == 'Word' %}background:#eff6ff;{% elif material.material_type == 'PowerPoint' %}background:#fff7ed;{% else %}background:#f5f3ff;{% endif %}">
+                  {% if material.material_type == 'PDF' %}📄{% elif material.material_type == 'Word' %}📝{% elif material.material_type == 'PowerPoint' %}📊{% else %}🗂️{% endif %}
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:.9375rem;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ material.title }}</div>
+                  <div style="display:flex;align-items:center;gap:.75rem;margin-top:.25rem;flex-wrap:wrap;">
+                    <span style="font-size:.75rem;font-weight:600;padding:.15rem .5rem;border-radius:20px;
+                      {% if material.material_type == 'PDF' %}background:#fef2f2;color:#dc2626;{% elif material.material_type == 'Word' %}background:#eff6ff;color:#2563eb;{% elif material.material_type == 'PowerPoint' %}background:#fff7ed;color:#ea580c;{% else %}background:#f5f3ff;color:#7c3aed;{% endif %}">
+                      {{ material.material_type }}
+                    </span>
+                    {% if material.subject %}<span style="font-size:.75rem;color:var(--t3);">{{ material.subject }}</span>{% endif %}
+                    <span style="font-size:.75rem;color:var(--t3);">{{ material.uploaded_at|date:"M d, Y" }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Actions -->
+              <div style="display:flex;align-items:center;gap:.375rem;flex-shrink:0;">
+                <a href="{% url 'learn_material' material.pk %}" class="btn btn-outline btn-sm" title="View">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span class="btn-label">View</span>
+                </a>
+                <a href="{% url 'summarize_material' material.pk %}" class="btn btn-outline btn-sm" title="Summarise" style="color:var(--acc);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span class="btn-label">Summarise</span>
+                </a>
+                <a href="{% url 'delete_material' material.pk %}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" title="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </a>
+              </div>
+            </div>
+            <!-- Feature links -->
+            <div style="display:flex;gap:.5rem;margin-top:.875rem;padding-top:.75rem;border-top:1px solid var(--bdr);flex-wrap:wrap;">
+              <a href="{% url 'material_detail' material.pk %}" class="feat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat with AI
+              </a>
+              <a href="{% url 'summarize_material' material.pk %}" class="feat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Summarise
+              </a>
+              <a href="{% url 'quiz_material' material.pk %}" class="feat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Quiz Me
+              </a>
+              <a href="{% url 'flashcards_material' material.pk %}" class="feat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Flashcards
+              </a>
+              <a href="{% url 'podcast_view' material.pk %}" class="feat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>Podcast
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if materials.has_other_pages %}
+        <div style="display:flex;justify-content:center;gap:.375rem;margin-top:2rem;">
+          {% if materials.has_previous %}
+          <a href="?page={{ materials.previous_page_number }}" class="pg-btn">←</a>
+          {% endif %}
+          {% for num in materials.paginator.page_range %}
+            {% if materials.number == num %}
+            <span class="pg-btn active">{{ num }}</span>
+            {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
+            <a href="?page={{ num }}" class="pg-btn">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if materials.has_next %}
+          <a href="?page={{ materials.next_page_number }}" class="pg-btn">→</a>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div style="text-align:center;padding:5rem 2rem;background:#fff;border-radius:16px;border:1px solid var(--bdr);">
+          <div style="width:72px;height:72px;background:#fff3ed;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:2rem;">📚</div>
+          <div style="font-size:1.125rem;font-weight:700;color:var(--t1);margin-bottom:.5rem;">No materials yet</div>
+          <div style="font-size:.875rem;color:var(--t3);margin-bottom:1.5rem;">Upload your first PDF, Word doc, or PowerPoint to get started.</div>
+          <a href="{% url 'upload_material' %}" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            Upload Material
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.mat-card{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:1rem 1.125rem;transition:all .15s;}
+.mat-card:hover{border-color:#ccc;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.feat-btn{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .75rem;background:var(--bg);border:1px solid var(--bdr);border-radius:20px;font-size:.75rem;font-weight:500;color:var(--t2);transition:all .15s;white-space:nowrap;}
+.feat-btn:hover{background:var(--hov);border-color:#ccc;color:var(--t1);}
+.feat-btn svg{width:13px;height:13px;flex-shrink:0;}
+.pg-btn{padding:.375rem .75rem;font-size:.8125rem;color:var(--t1);background:#fff;border:1px solid var(--bdr);border-radius:6px;text-decoration:none;transition:all .1s;display:inline-flex;align-items:center;}
+.pg-btn:hover{background:var(--hov);}
+.pg-btn.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff;}
+@media(max-width:768px){
+  .nx-sidebar{position:fixed;top:0;left:0;bottom:0;width:min(280px,85vw);transform:translateX(-100%);transition:transform .28s cubic-bezier(.32,.72,0,1);box-shadow:4px 0 24px rgba(0,0,0,.12);}
+  .nx-sidebar.open{transform:translateX(0);}
+  .nx-sb-close{display:flex!important;}
+  .nx-mob-menu{display:flex!important;}
+  .nx-search-input{width:140px;}
+  .nx-search-input:focus{width:160px;}
+  .btn-label{display:none;}
+  .nx-scroll{padding:1rem;}
+  .pg-head{flex-direction:column;align-items:flex-start;}
+  .pg-actions{display:none;}
+}
+@media(max-width:480px){
+  .nx-topbar{padding:0 .875rem;}
+  .feat-btn span{display:none;}
+}
+</style>
+<script>
+function openSidebar(){
+  document.getElementById('nx-sidebar').classList.add('open');
+  document.getElementById('nx-overlay').style.display='block';
+}
+function closeSidebar(){
+  document.getElementById('nx-sidebar').classList.remove('open');
+  document.getElementById('nx-overlay').style.display='none';
+}
+function filterMaterials(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('.mat-card').forEach(c=>{
+    const match=c.dataset.title.includes(q)||c.dataset.subject.includes(q);
+    c.style.display=match?'':'none';
+  });
+}
+</script>
 </body>
 </html>

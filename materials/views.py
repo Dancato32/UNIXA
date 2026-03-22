@@ -84,10 +84,22 @@ def upload_material(request):
     if request.method == 'POST':
         form = StudyMaterialForm(request.POST, request.FILES)
         if form.is_valid():
+            uploaded_file = request.FILES.get('file')
+            MAX_SIZE = 200 * 1024 * 1024  # 200 MB — local filesystem, no Cloudinary limit
+            if uploaded_file and uploaded_file.size > MAX_SIZE:
+                form.add_error('file', f'File too large ({uploaded_file.size // (1024*1024)} MB). Maximum allowed size is 200 MB.')
+                return render(request, 'materials/upload.html', {'form': form, 'title': 'Upload Study Material'})
             material = form.save(commit=False)
             material.owner = request.user
-            material.save()
-            uploaded_file = request.FILES.get('file')
+            try:
+                material.save()
+            except Exception as e:
+                err = str(e)
+                if 'size' in err.lower() or 'large' in err.lower() or '10485760' in err:
+                    form.add_error('file', 'File too large. Maximum allowed size is 200 MB.')
+                else:
+                    form.add_error(None, f'Upload failed: {err}')
+                return render(request, 'materials/upload.html', {'form': form, 'title': 'Upload Study Material'})
             file_extension = os.path.splitext(uploaded_file.name)[1].lower() if uploaded_file else ''
             try:
                 file_path = material.file.path
@@ -113,12 +125,21 @@ def upload_material_ajax(request):
         return JsonResponse({'error': 'POST required'}, status=405)
     form = StudyMaterialForm(request.POST, request.FILES)
     if form.is_valid():
+        uploaded_file = request.FILES.get('file')
+        MAX_SIZE = 200 * 1024 * 1024  # 200 MB — local filesystem
+        if uploaded_file and uploaded_file.size > MAX_SIZE:
+            return JsonResponse({'success': False, 'errors': {'file': [f'File too large ({uploaded_file.size // (1024*1024)} MB). Maximum allowed size is 200 MB.']}}, status=400)
         material = form.save(commit=False)
         material.owner = request.user
-        material.save()
+        try:
+            material.save()
+        except Exception as e:
+            err = str(e)
+            if 'size' in err.lower() or 'large' in err.lower() or '10485760' in err:
+                return JsonResponse({'success': False, 'errors': {'file': ['File too large. Maximum allowed size is 200 MB.']}}, status=400)
+            return JsonResponse({'success': False, 'errors': {'__all__': [f'Upload failed: {err}']}}, status=500)
 
         # Extract text — works with both local disk and Cloudinary storage
-        uploaded_file = request.FILES.get('file')
         file_extension = os.path.splitext(uploaded_file.name)[1].lower() if uploaded_file else ''
 
         try:
@@ -876,6 +897,60 @@ Flashcards:"""
 
 
 @login_required
+def flashcards_save(request, pk):
+    """Save a generated flashcard deck."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    try:
+        data = json.loads(request.body)
+        cards = data.get('cards', [])
+        name = data.get('name', '').strip() or f"Deck {material.flashcard_decks.count() + 1}"
+        if not cards:
+            return JsonResponse({'error': 'No cards to save.'}, status=400)
+        from .models import SavedFlashcardDeck
+        deck = SavedFlashcardDeck.objects.create(
+            material=material, owner=request.user, name=name, cards=cards
+        )
+        return JsonResponse({'success': True, 'deck_id': deck.pk, 'name': deck.name, 'created_at': deck.created_at.strftime('%b %d, %Y')})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def flashcards_decks(request, pk):
+    """List saved decks for a material."""
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    from .models import SavedFlashcardDeck
+    decks = SavedFlashcardDeck.objects.filter(material=material, owner=request.user).values(
+        'id', 'name', 'created_at'
+    )
+    result = [{'id': d['id'], 'name': d['name'], 'created_at': d['created_at'].strftime('%b %d, %Y'), 'count': SavedFlashcardDeck.objects.get(pk=d['id']).cards.__len__()} for d in decks]
+    return JsonResponse({'decks': result})
+
+
+@login_required
+def flashcards_load(request, pk, deck_id):
+    """Load a saved deck's cards."""
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    from .models import SavedFlashcardDeck
+    deck = get_object_or_404(SavedFlashcardDeck, pk=deck_id, material=material, owner=request.user)
+    return JsonResponse({'success': True, 'cards': deck.cards, 'name': deck.name})
+
+
+@login_required
+def flashcards_delete_deck(request, pk, deck_id):
+    """Delete a saved deck."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    from .models import SavedFlashcardDeck
+    deck = get_object_or_404(SavedFlashcardDeck, pk=deck_id, material=material, owner=request.user)
+    deck.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required
 def select_material_for_action(request, action):
     """Page to select a material before performing an action (summarize/quiz/flashcards/podcast)."""
     materials = StudyMaterial.objects.filter(owner=request.user)
@@ -1073,5 +1148,255 @@ Score X/5, what to review, ask if they want another topic."""
                 last_error = e
                 continue  # try next model on any error
         raise last_error
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def learn_view(request, pk):
+    """Full material viewer with side-panel AI tools — shows text + images per slide/page."""
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+
+    ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
+    pages = []
+
+    # Try to get the local file path
+    file_path = None
+    try:
+        file_path = material.file.path
+        if not os.path.exists(file_path):
+            file_path = None
+    except Exception:
+        file_path = None
+
+    if file_path and ext == '.pptx':
+        pages = _extract_pptx_pages(file_path)
+    elif file_path and ext == '.pdf':
+        pages = _extract_pdf_pages(file_path)
+    elif file_path and ext in ('.docx', '.doc'):
+        pages = _extract_docx_pages(file_path)
+    else:
+        # Fallback: split extracted_text into text-only pages
+        text = material.extracted_text or ''
+        if text:
+            paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
+            current, size = [], 0
+            for para in paragraphs:
+                current.append(para)
+                size += len(para)
+                if size >= 800:
+                    pages.append({'text': '\n\n'.join(current), 'images': []})
+                    current, size = [], 0
+            if current:
+                pages.append({'text': '\n\n'.join(current), 'images': []})
+
+    if not pages:
+        pages = [{'text': 'No content could be extracted from this material.', 'images': []}]
+
+    return render(request, 'materials/viewer.html', {
+        'material': material,
+        'pages_json': json.dumps(pages),
+        'total_pages': len(pages),
+        'title': f'View: {material.title}',
+        'file_ext': ext,
+    })
+
+
+def _extract_pptx_pages(file_path):
+    """Extract each slide as a page with text + images (base64)."""
+    import base64, io
+    pages = []
+    try:
+        import pptx
+        from pptx.util import Inches
+        prs = pptx.Presentation(file_path)
+        for slide_num, slide in enumerate(prs.slides, 1):
+            text_parts = []
+            images = []
+            for shape in slide.shapes:
+                # Text
+                if hasattr(shape, 'text') and shape.text.strip():
+                    text_parts.append(shape.text.strip())
+                # Images
+                if shape.shape_type == 13:  # MSO_SHAPE_TYPE.PICTURE
+                    try:
+                        img_blob = shape.image.blob
+                        img_ext = shape.image.ext or 'png'
+                        b64 = base64.b64encode(img_blob).decode('utf-8')
+                        mime = 'image/jpeg' if img_ext.lower() in ('jpg','jpeg') else f'image/{img_ext.lower()}'
+                        images.append(f'data:{mime};base64,{b64}')
+                    except Exception:
+                        pass
+            pages.append({
+                'text': '\n\n'.join(text_parts) or f'Slide {slide_num}',
+                'images': images,
+                'label': f'Slide {slide_num}',
+            })
+    except ImportError:
+        pages = [{'text': 'python-pptx is required to view slides. Install with: pip install python-pptx', 'images': []}]
+    except Exception as e:
+        pages = [{'text': f'Error reading presentation: {str(e)}', 'images': []}]
+    return pages
+
+
+def _extract_pdf_pages(file_path):
+    """Extract each PDF page as text + images (base64) using PyMuPDF (fitz) if available, else PyPDF2."""
+    import base64
+    pages = []
+    # Try PyMuPDF first — best image extraction
+    try:
+        import fitz  # PyMuPDF
+        doc = fitz.open(file_path)
+        for page_num, page in enumerate(doc, 1):
+            text = page.get_text('text').strip()
+            images = []
+            for img_index, img in enumerate(page.get_images(full=True)):
+                try:
+                    xref = img[0]
+                    base_image = doc.extract_image(xref)
+                    img_bytes = base_image['image']
+                    img_ext = base_image.get('ext', 'png')
+                    b64 = base64.b64encode(img_bytes).decode('utf-8')
+                    mime = 'image/jpeg' if img_ext.lower() in ('jpg','jpeg') else f'image/{img_ext.lower()}'
+                    images.append(f'data:{mime};base64,{b64}')
+                except Exception:
+                    pass
+            pages.append({
+                'text': text or f'Page {page_num}',
+                'images': images,
+                'label': f'Page {page_num}',
+            })
+        doc.close()
+        return pages
+    except ImportError:
+        pass
+    except Exception:
+        pass
+
+    # Fallback: PyPDF2 (text only)
+    try:
+        import PyPDF2
+        with open(file_path, 'rb') as f:
+            reader = PyPDF2.PdfReader(f)
+            for page_num, page in enumerate(reader.pages, 1):
+                text = page.extract_text() or ''
+                pages.append({'text': text.strip() or f'Page {page_num}', 'images': [], 'label': f'Page {page_num}'})
+    except Exception as e:
+        pages = [{'text': f'Error reading PDF: {str(e)}', 'images': []}]
+    return pages
+
+
+def _extract_docx_pages(file_path):
+    """Extract Word doc — split into ~800 char pages, extract inline images."""
+    import base64, io
+    pages = []
+    try:
+        import docx
+        doc = docx.Document(file_path)
+        current_text, current_images, size = [], [], 0
+        page_num = 1
+
+        for para in doc.paragraphs:
+            txt = para.text.strip()
+            if txt:
+                current_text.append(txt)
+                size += len(txt)
+            if size >= 800:
+                pages.append({'text': '\n\n'.join(current_text), 'images': current_images, 'label': f'Section {page_num}'})
+                current_text, current_images, size = [], [], 0
+                page_num += 1
+
+        # Extract inline images from the document
+        for rel in doc.part.rels.values():
+            if 'image' in rel.reltype:
+                try:
+                    img_part = rel.target_part
+                    img_bytes = img_part.blob
+                    ct = img_part.content_type or 'image/png'
+                    b64 = base64.b64encode(img_bytes).decode('utf-8')
+                    current_images.append(f'data:{ct};base64,{b64}')
+                except Exception:
+                    pass
+
+        if current_text or current_images:
+            pages.append({'text': '\n\n'.join(current_text), 'images': current_images, 'label': f'Section {page_num}'})
+    except ImportError:
+        pages = [{'text': 'python-docx is required. Install with: pip install python-docx', 'images': []}]
+    except Exception as e:
+        pages = [{'text': f'Error reading document: {str(e)}', 'images': []}]
+    return pages
+
+
+@login_required
+def learn_ajax(request, pk):
+    """AJAX: AI assist for a specific page/section of the material."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    try:
+        data = json.loads(request.body)
+        action = data.get('action', 'summarise')
+        page_text = data.get('page_text', '').strip()
+        page_label = data.get('page_label', 'this section')
+        if not page_text:
+            return JsonResponse({'error': 'No text provided.'}, status=400)
+
+        if action == 'summarise':
+            prompt = f'Summarise this section titled "{page_label}" in 4-6 clear bullet points. Start each bullet with "• ". Plain text only, no markdown bold.\n\n{page_text}'
+            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            return JsonResponse({'success': True, 'action': action, 'result': raw})
+
+        elif action == 'explain':
+            prompt = f'Explain the key concepts in this section titled "{page_label}" clearly, as if teaching a student. Use numbered points. Plain text only.\n\n{page_text}'
+            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            return JsonResponse({'success': True, 'action': action, 'result': raw})
+
+        elif action == 'quiz':
+            prompt = f'''Create 4 multiple choice questions from this section titled "{page_label}".
+Return ONLY valid JSON array, no extra text:
+[
+  {{"q":"question text","opts":{{"A":"option","B":"option","C":"option","D":"option"}},"ans":"A","explanation":"why A is correct"}},
+  ...
+]
+
+Section:
+{page_text}'''
+            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            import re
+            # extract JSON array
+            match = re.search(r'\[.*\]', raw, re.DOTALL)
+            if match:
+                questions = json.loads(match.group())
+                return JsonResponse({'success': True, 'action': action, 'questions': questions})
+            return JsonResponse({'success': False, 'error': 'Could not parse quiz questions.'}, status=500)
+
+        elif action == 'flashcards':
+            prompt = f'''Create 6 flashcards from this section titled "{page_label}".
+Return ONLY valid JSON array, no extra text:
+[
+  {{"front":"term or concept","back":"clear definition or explanation"}},
+  ...
+]
+
+Section:
+{page_text}'''
+            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            import re
+            match = re.search(r'\[.*\]', raw, re.DOTALL)
+            if match:
+                cards = json.loads(match.group())
+                return JsonResponse({'success': True, 'action': action, 'cards': cards})
+            # fallback: parse FRONT/BACK format
+            pairs = re.findall(r'FRONT:\s*(.+?)\nBACK:\s*(.+?)(?=\nFRONT:|\Z)', raw, re.DOTALL)
+            if pairs:
+                cards = [{'front': f.strip(), 'back': b.strip()} for f, b in pairs]
+                return JsonResponse({'success': True, 'action': action, 'cards': cards})
+            return JsonResponse({'success': False, 'error': 'Could not parse flashcards.'}, status=500)
+
+        else:
+            prompt = f'Help me understand this section:\n\n{page_text}'
+            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            return JsonResponse({'success': True, 'action': action, 'result': raw})
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

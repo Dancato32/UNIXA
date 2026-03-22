@@ -817,6 +817,33 @@ class Friendship(models.Model):
         return f'{self.requester} → {self.recipient} ({self.status})'
 
 
+# ── Nexa Workspace Link ───────────────────────────────────────────────────────
+
+class NexaWorkspaceLink(models.Model):
+    """Links a personal Nexa workspace to one or more group workspaces."""
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    nexa_workspace = models.ForeignKey(
+        GroupWorkspace,
+        on_delete=models.CASCADE,
+        related_name='linked_group_workspaces',
+        limit_choices_to={'workspace_type': 'nexa', 'is_personal': True},
+    )
+    linked_workspace = models.ForeignKey(
+        GroupWorkspace,
+        on_delete=models.CASCADE,
+        related_name='nexa_links',
+    )
+    linked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('nexa_workspace', 'linked_workspace')
+        ordering = ['-linked_at']
+
+    def __str__(self):
+        return f'{self.nexa_workspace} → {self.linked_workspace}'
+
+
 # ── Custom Community Membership ───────────────────────────────────────────────
 
 class CustomCommunityMembership(models.Model):

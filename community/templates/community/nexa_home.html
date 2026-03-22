@@ -1,0 +1,1336 @@
+{% extends "community/base.html" %}
+{% block title %}Nexa{% endblock %}
+{% block mobile_title %}Nexa{% endblock %}
+{% block breadcrumb_label %}Nexa{% endblock %}
+{% block topbar_title %}Nexa{% endblock %}
+{% block topbar_desc %}Your personal AI{% endblock %}
+{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+:root{
+  --nx-bg:#f7f7f5;--nx-sb:#fff;--nx-bdr:#e8e8e4;
+  --nx-t1:#1a1a1a;--nx-t2:#555;--nx-t3:#999;
+  --nx-hov:#f0f0ec;--nx-acc:#f97316;
+}
+body,.shell,.main-area,.content-scroll,.page{background:var(--nx-bg)!important;}
+
+/* ── Shell ── */
+.nx-shell{display:flex;height:calc(100vh - 48px);overflow:hidden;background:var(--nx-bg);position:relative;}
+
+/* ── Sidebar ── */
+.nx-sidebar{width:220px;background:var(--nx-sb);border-right:1px solid var(--nx-bdr);display:flex;flex-direction:column;flex-shrink:0;z-index:200;}
+.nx-sb-head{padding:.875rem 1rem .5rem;border-bottom:1px solid var(--nx-bdr);display:flex;align-items:center;justify-content:space-between;}
+.nx-logo{font-size:.9375rem;font-weight:800;color:var(--nx-t1);display:flex;align-items:center;gap:.375rem;}
+.nx-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#f97316,#fb923c);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.875rem;flex-shrink:0;}
+.nx-sb-close{display:none;width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:6px;align-items:center;justify-content:center;color:var(--nx-t2);}
+.nx-sb-close svg{width:16px;height:16px;}
+.nx-new-btn{display:flex;align-items:center;gap:.5rem;width:calc(100% - 1.5rem);margin:.625rem .75rem 0;padding:.5rem .875rem;background:var(--nx-bg);border:1px solid var(--nx-bdr);border-radius:8px;color:var(--nx-t2);font-size:.8125rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;}
+.nx-new-btn:hover{background:var(--nx-hov);}
+.nx-new-btn svg{width:14px;height:14px;flex-shrink:0;}
+.nx-nav{flex:1;overflow-y:auto;padding:.5rem 0;}
+.nx-nav-item{display:flex;align-items:center;gap:.625rem;padding:.45rem .875rem;border-radius:6px;color:var(--nx-t2);font-size:.8375rem;font-weight:500;cursor:pointer;margin:1px .5rem;transition:all .12s;border:none;background:none;width:calc(100% - 1rem);text-align:left;text-decoration:none;font-family:inherit;}
+.nx-nav-item:hover{background:var(--nx-hov);color:var(--nx-t1);}
+.nx-nav-item.active{background:#fff3ed;color:#ea6c00;font-weight:600;}
+.nx-nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7;}
+.nx-nav-item.active svg{opacity:1;}
+.nx-nav-sep{height:1px;background:var(--nx-bdr);margin:.375rem .75rem;}
+.nx-user{padding:.75rem 1rem;border-top:1px solid var(--nx-bdr);display:flex;align-items:center;gap:.625rem;}
+.nx-user-av{width:32px;height:32px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;overflow:hidden;color:#555;}
+.nx-user-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.nx-user-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--nx-t1);}
+.nx-user-email{font-size:.6875rem;color:var(--nx-t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── Main ── */
+.nx-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:var(--nx-bg);}
+
+/* ── Mobile top bar ── */
+.nx-mob-bar{display:none;height:52px;background:#fff;border-bottom:1px solid var(--nx-bdr);align-items:center;padding:0 .875rem;gap:.625rem;flex-shrink:0;}
+.nx-mob-bar button{width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--nx-t2);}
+.nx-mob-bar button svg{width:20px;height:20px;}
+.nx-mob-title{flex:1;font-size:.9375rem;font-weight:700;color:var(--nx-t1);}
+
+/* ── Overlay ── */
+.nx-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;}
+.nx-overlay.open{display:block;}
+
+/* ── Mobile bottom nav ── */
+.nx-bot-nav{display:none;height:58px;background:#fff;border-top:1px solid var(--nx-bdr);flex-shrink:0;align-items:center;justify-content:space-around;padding:0 .25rem;padding-bottom:env(safe-area-inset-bottom,0);}
+.nx-bn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.375rem .5rem;border:none;background:none;cursor:pointer;color:var(--nx-t3);font-size:.5625rem;font-weight:600;border-radius:10px;transition:color .15s;flex:1;}
+.nx-bn svg{width:22px;height:22px;}
+.nx-bn.active{color:var(--nx-acc);}
+.nx-bn.active svg{stroke:var(--nx-acc);}
+
+/* ── Message styles ── */
+.nx-msg{display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.25rem;}
+.nx-msg.user{flex-direction:row-reverse;}
+.nx-msg-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;background:#e0e0e0;color:#555;}
+.nx-msg-av.ai{background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;font-size:.5625rem;font-weight:900;}
+.nx-bubble{max-width:80%;padding:.625rem .9375rem;border-radius:18px;font-size:.9rem;line-height:1.7;word-break:break-word;}
+.nx-msg.user .nx-bubble{background:#1a1a1a;color:#fff;border-radius:18px 18px 4px 18px;}
+.nx-msg.ai .nx-bubble{background:#fff;color:#1a1a1a;border-radius:4px 18px 18px 18px;border:1px solid #e8e8e4;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.nx-bubble .katex-display{display:block;text-align:center;margin:.75em 0;overflow-x:auto;scrollbar-width:none;}
+.nx-bubble .katex-display::-webkit-scrollbar{display:none;}
+.nx-bubble .katex{font-size:1.05em;}
+.nx-bubble ol,.nx-bubble ul{margin:.4em 0 .4em 1.4em;padding:0;line-height:1.7;}
+/* Typing */
+.nx-typing{display:flex;gap:4px;padding:.5rem .25rem;}
+.nx-typing span{width:6px;height:6px;border-radius:50%;background:#ccc;animation:nxdot 1.2s infinite;}
+.nx-typing span:nth-child(2){animation-delay:.2s;}
+.nx-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes nxdot{0%,80%,100%{transform:scale(0);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+/* Task buttons */
+.nx-task-btn{display:flex;align-items:center;gap:.5rem;width:100%;padding:.5rem .75rem;background:#fff;border:1px solid #e8e8e4;border-radius:8px;font-size:.8125rem;color:#333;cursor:pointer;margin-bottom:.375rem;transition:all .15s;font-family:inherit;text-align:left;}
+.nx-task-btn:hover,.nx-task-btn:active{background:var(--nx-hov);border-color:#ccc;}
+/* Search card */
+.nx-search-card{background:#fff;border:1px solid #e8e8e4;border-radius:12px;padding:1.125rem;margin-bottom:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.nx-search-card-head{display:flex;align-items:center;gap:.625rem;margin-bottom:.75rem;}
+.nx-search-card-icon{width:32px;height:32px;background:linear-gradient(135deg,#f97316,#fb923c);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nx-search-card-icon svg{width:16px;height:16px;color:#fff;}
+.nx-search-card-title{font-weight:700;font-size:.9375rem;color:#1a1a1a;}
+.nx-search-card-query{font-size:.75rem;color:#f97316;margin-top:.1rem;}
+.nx-search-summary{font-size:.875rem;line-height:1.7;color:#444;margin-bottom:.875rem;padding-bottom:.875rem;border-bottom:1px solid #f0f0ec;}
+.nx-findings-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#f97316;margin-bottom:.5rem;}
+.nx-finding{display:flex;gap:.5rem;margin-bottom:.375rem;font-size:.8125rem;line-height:1.5;color:#555;}
+.nx-finding::before{content:'•';color:#f97316;flex-shrink:0;}
+.nx-source{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .625rem;background:#f7f7f5;border-radius:6px;margin-bottom:.375rem;text-decoration:none;color:#555;transition:background .15s;font-size:.8125rem;}
+.nx-source:hover{background:var(--nx-hov);}
+.nx-source-dot{width:8px;height:8px;border-radius:50%;background:#f97316;flex-shrink:0;margin-top:.25rem;}
+.nx-source-title{font-weight:600;color:#1a1a1a;}
+.nx-source-snippet{font-size:.75rem;color:#888;margin-top:.1rem;}
+
+/* ── Paraphraser ── */
+.para-shell{display:flex;flex:1;overflow:hidden;height:100%;}
+.para-left{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--nx-bdr);min-width:0;}
+.para-right{width:420px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;background:#fff;}
+.para-topbar{padding:.625rem 1rem;border-bottom:1px solid var(--nx-bdr);background:#fff;display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
+.para-topbar-title{font-size:.9375rem;font-weight:700;color:#1a1a1a;}
+.para-modes{display:flex;gap:.375rem;flex-wrap:wrap;padding:.625rem 1rem;border-bottom:1px solid var(--nx-bdr);background:#fafaf8;flex-shrink:0;}
+.para-mode-pill{padding:.3rem .75rem;border-radius:20px;border:1.5px solid var(--nx-bdr);background:#fff;font-size:.75rem;font-weight:600;color:var(--nx-t2);cursor:pointer;transition:all .15s;font-family:inherit;}
+.para-mode-pill:hover{border-color:#f97316;color:#f97316;}
+.para-mode-pill.active{background:#f97316;border-color:#f97316;color:#fff;}
+.para-input-area{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:1rem;}
+.para-textarea{flex:1;width:100%;border:1.5px solid var(--nx-bdr);border-radius:10px;padding:.875rem 1rem;font-size:.9375rem;line-height:1.7;color:#1a1a1a;background:#fff;resize:none;outline:none;font-family:inherit;transition:border-color .15s;box-sizing:border-box;}
+.para-textarea:focus{border-color:#f97316;}
+.para-input-footer{display:flex;align-items:center;gap:.5rem;margin-top:.625rem;flex-shrink:0;}
+.para-char-count{font-size:.75rem;color:var(--nx-t3);margin-right:auto;}
+.para-voice-btn{width:34px;height:34px;border:1.5px solid var(--nx-bdr);background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--nx-t2);transition:all .15s;}
+.para-voice-btn:hover,.para-voice-btn.recording{border-color:#f97316;color:#f97316;background:#fff3ed;}
+.para-voice-btn svg{width:16px;height:16px;}
+.para-go-btn{padding:.5rem 1.25rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;}
+.para-go-btn:hover{background:#333;}
+.para-go-btn:disabled{background:#ccc;cursor:not-allowed;}
+.para-style-toggle{font-size:.75rem;color:var(--nx-t2);background:none;border:1.5px solid var(--nx-bdr);border-radius:8px;padding:.3rem .75rem;cursor:pointer;font-family:inherit;transition:all .15s;}
+.para-style-toggle:hover{border-color:#f97316;color:#f97316;}
+/* Right panel */
+.para-right-tabs{display:flex;border-bottom:1px solid var(--nx-bdr);flex-shrink:0;}
+.para-rtab{flex:1;padding:.625rem;font-size:.8125rem;font-weight:600;color:var(--nx-t2);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;}
+.para-rtab.active{color:#f97316;border-bottom-color:#f97316;}
+.para-output-area{flex:1;overflow-y:auto;padding:1rem;}
+.para-output-text{font-size:.9375rem;line-height:1.8;color:#1a1a1a;white-space:pre-wrap;word-break:break-word;}
+.para-output-text .para-highlight{background:#fff3cd;border-radius:3px;padding:0 2px;}
+.para-output-actions{display:flex;gap:.5rem;padding:.625rem 1rem;border-top:1px solid var(--nx-bdr);flex-shrink:0;}
+.para-action-btn{padding:.375rem .875rem;border:1.5px solid var(--nx-bdr);background:#fff;border-radius:8px;font-size:.8125rem;font-weight:600;color:var(--nx-t2);cursor:pointer;font-family:inherit;transition:all .15s;}
+.para-action-btn:hover{border-color:#f97316;color:#f97316;}
+.para-change-item{padding:.625rem .75rem;background:#f7f7f5;border-radius:8px;margin-bottom:.5rem;border-left:3px solid #f97316;}
+.para-change-orig{font-size:.8125rem;color:#888;text-decoration:line-through;margin-bottom:.2rem;}
+.para-change-new{font-size:.875rem;font-weight:600;color:#1a1a1a;margin-bottom:.2rem;}
+.para-change-reason{font-size:.75rem;color:#f97316;}
+.para-explanation{background:#fff3ed;border:1px solid #fed7aa;border-radius:10px;padding:.875rem 1rem;font-size:.875rem;line-height:1.7;color:#7c2d12;margin-bottom:.75rem;}
+.para-style-panel{padding:1rem;border-top:1px solid var(--nx-bdr);background:#fafaf8;flex-shrink:0;display:none;}
+.para-style-panel.open{display:block;}
+.para-style-panel textarea{width:100%;height:80px;border:1.5px solid var(--nx-bdr);border-radius:8px;padding:.625rem .75rem;font-size:.8125rem;resize:none;outline:none;font-family:inherit;box-sizing:border-box;}
+.para-style-panel textarea:focus{border-color:#f97316;}
+.para-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--nx-t3);text-align:center;gap:.5rem;padding:2rem;}
+.para-empty svg{width:40px;height:40px;opacity:.3;}
+.para-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:.75rem;color:var(--nx-t2);}
+.para-subject-row{display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-bottom:1px solid var(--nx-bdr);background:#fafaf8;flex-shrink:0;}
+.para-subject-row label{font-size:.75rem;font-weight:600;color:var(--nx-t2);white-space:nowrap;}
+.para-subject-select{flex:1;border:1.5px solid var(--nx-bdr);border-radius:8px;padding:.3rem .625rem;font-size:.8125rem;background:#fff;color:#1a1a1a;outline:none;font-family:inherit;}
+.para-subject-select:focus{border-color:#f97316;}
+.para-realtime-badge{font-size:.6875rem;background:#dcfce7;color:#166534;border-radius:20px;padding:.15rem .5rem;font-weight:600;}
+@media(max-width:768px){
+  .para-shell{flex-direction:column;}
+  .para-right{width:100%;border-top:1px solid var(--nx-bdr);border-right:none;max-height:50vh;}
+}
+
+/* ── Citation Generator ── */
+.cite-shell{display:flex;flex:1;overflow:hidden;height:100%;}
+.cite-left{width:340px;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--nx-bdr);flex-shrink:0;background:#fff;}
+.cite-right{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:var(--nx-bg);}
+.cite-topbar{padding:.625rem 1rem;border-bottom:1px solid var(--nx-bdr);background:#fff;display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
+.cite-topbar-title{font-size:.9375rem;font-weight:700;color:#1a1a1a;}
+/* Left panel sections */
+.cite-section{padding:.75rem 1rem;border-bottom:1px solid var(--nx-bdr);flex-shrink:0;}
+.cite-section-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--nx-t3);margin-bottom:.5rem;}
+.cite-style-pills{display:flex;gap:.375rem;flex-wrap:wrap;}
+.cite-style-pill{padding:.25rem .625rem;border-radius:20px;border:1.5px solid var(--nx-bdr);background:#fff;font-size:.75rem;font-weight:600;color:var(--nx-t2);cursor:pointer;transition:all .15s;font-family:inherit;}
+.cite-style-pill:hover{border-color:#f97316;color:#f97316;}
+.cite-style-pill.active{background:#f97316;border-color:#f97316;color:#fff;}
+.cite-type-pills{display:flex;gap:.375rem;flex-wrap:wrap;}
+.cite-type-pill{padding:.25rem .625rem;border-radius:20px;border:1.5px solid var(--nx-bdr);background:#fff;font-size:.75rem;font-weight:600;color:var(--nx-t2);cursor:pointer;transition:all .15s;font-family:inherit;}
+.cite-type-pill:hover{border-color:#1a1a1a;color:#1a1a1a;}
+.cite-type-pill.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff;}
+.cite-input-tabs{display:flex;border-bottom:1px solid var(--nx-bdr);flex-shrink:0;}
+.cite-itab{flex:1;padding:.5rem;font-size:.8125rem;font-weight:600;color:var(--nx-t2);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;}
+.cite-itab.active{color:#f97316;border-bottom-color:#f97316;}
+.cite-input-body{flex:1;overflow-y:auto;padding:.75rem 1rem;}
+.cite-field{margin-bottom:.625rem;}
+.cite-field label{display:block;font-size:.75rem;font-weight:600;color:var(--nx-t2);margin-bottom:.25rem;}
+.cite-field input,.cite-field textarea,.cite-field select{width:100%;border:1.5px solid var(--nx-bdr);border-radius:8px;padding:.4rem .625rem;font-size:.8375rem;color:#1a1a1a;background:#fff;outline:none;font-family:inherit;box-sizing:border-box;transition:border-color .15s;}
+.cite-field input:focus,.cite-field textarea:focus,.cite-field select:focus{border-color:#f97316;}
+.cite-field textarea{resize:vertical;min-height:60px;}
+.cite-url-row{display:flex;gap:.375rem;align-items:flex-start;}
+.cite-url-row input{flex:1;}
+.cite-fetch-btn{padding:.4rem .75rem;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:.8125rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:background .15s;}
+.cite-fetch-btn:hover{background:#ea6c00;}
+.cite-fetch-btn:disabled{background:#ccc;cursor:not-allowed;}
+.cite-go-btn{width:100%;padding:.5rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;margin-top:.25rem;}
+.cite-go-btn:hover{background:#333;}
+.cite-go-btn:disabled{background:#ccc;cursor:not-allowed;}
+.cite-voice-btn{width:34px;height:34px;border:1.5px solid var(--nx-bdr);background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--nx-t2);transition:all .15s;flex-shrink:0;}
+.cite-voice-btn:hover,.cite-voice-btn.recording{border-color:#f97316;color:#f97316;background:#fff3ed;}
+.cite-voice-btn svg{width:15px;height:15px;}
+/* Right panel */
+.cite-right-tabs{display:flex;border-bottom:1px solid var(--nx-bdr);background:#fff;flex-shrink:0;}
+.cite-rtab{flex:1;padding:.625rem;font-size:.8125rem;font-weight:600;color:var(--nx-t2);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;}
+.cite-rtab.active{color:#f97316;border-bottom-color:#f97316;}
+.cite-output-area{flex:1;overflow-y:auto;padding:1.25rem;}
+/* Citation card */
+.cite-card{background:#fff;border:1px solid var(--nx-bdr);border-radius:12px;padding:1rem 1.125rem;margin-bottom:.875rem;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.cite-card-style{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#f97316;margin-bottom:.375rem;}
+.cite-card-text{font-size:.9rem;line-height:1.8;color:#1a1a1a;font-family:Georgia,serif;word-break:break-word;}
+.cite-card-actions{display:flex;gap:.375rem;margin-top:.75rem;flex-wrap:wrap;}
+.cite-card-btn{padding:.3rem .75rem;border:1.5px solid var(--nx-bdr);background:#fff;border-radius:8px;font-size:.75rem;font-weight:600;color:var(--nx-t2);cursor:pointer;font-family:inherit;transition:all .15s;}
+.cite-card-btn:hover{border-color:#f97316;color:#f97316;}
+.cite-card-btn.add-bib{background:#f97316;border-color:#f97316;color:#fff;}
+.cite-card-btn.add-bib:hover{background:#ea6c00;}
+/* Teach panel */
+.cite-teach-block{background:#fff3ed;border:1px solid #fed7aa;border-radius:10px;padding:.875rem 1rem;margin-bottom:.75rem;}
+.cite-teach-title{font-size:.75rem;font-weight:700;color:#ea6c00;margin-bottom:.5rem;display:flex;align-items:center;gap:.375rem;}
+.cite-teach-parts{display:flex;flex-direction:column;gap:.375rem;}
+.cite-teach-part{display:flex;gap:.625rem;align-items:flex-start;font-size:.8125rem;line-height:1.5;}
+.cite-teach-part-label{font-weight:700;color:#1a1a1a;min-width:80px;flex-shrink:0;}
+.cite-teach-part-val{color:#555;flex:1;}
+.cite-teach-part-why{font-size:.75rem;color:#f97316;margin-top:.1rem;}
+/* Credibility */
+.cite-cred-bar{height:8px;border-radius:4px;background:#e8e8e4;margin:.375rem 0;overflow:hidden;}
+.cite-cred-fill{height:100%;border-radius:4px;transition:width .4s;}
+.cite-cred-score{font-size:1.25rem;font-weight:800;}
+/* Bibliography */
+.cite-bib-item{display:flex;align-items:flex-start;gap:.625rem;padding:.625rem .75rem;background:#fff;border:1px solid var(--nx-bdr);border-radius:8px;margin-bottom:.375rem;}
+.cite-bib-num{font-size:.75rem;font-weight:700;color:#f97316;min-width:20px;flex-shrink:0;margin-top:.1rem;}
+.cite-bib-text{font-size:.8375rem;line-height:1.6;color:#1a1a1a;font-family:Georgia,serif;flex:1;word-break:break-word;}
+.cite-bib-del{width:24px;height:24px;border:none;background:none;cursor:pointer;color:#ccc;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .15s;}
+.cite-bib-del:hover{color:#dc2626;}
+.cite-bib-del svg{width:13px;height:13px;}
+.cite-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--nx-t3);text-align:center;gap:.5rem;padding:2rem;}
+.cite-empty svg{width:40px;height:40px;opacity:.25;}
+.cite-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:.75rem;color:var(--nx-t2);}
+.cite-fixer-area{padding:.75rem 1rem;flex:1;display:flex;flex-direction:column;gap:.5rem;}
+.cite-fixer-area textarea{flex:1;min-height:100px;border:1.5px solid var(--nx-bdr);border-radius:8px;padding:.625rem .75rem;font-size:.875rem;resize:none;outline:none;font-family:inherit;box-sizing:border-box;}
+.cite-fixer-area textarea:focus{border-color:#f97316;}
+.cite-bib-export-row{display:flex;gap:.5rem;padding:.75rem 1rem;border-top:1px solid var(--nx-bdr);flex-shrink:0;background:#fff;}
+.cite-bib-export-btn{padding:.4rem .875rem;border:1.5px solid var(--nx-bdr);background:#fff;border-radius:8px;font-size:.8125rem;font-weight:600;color:var(--nx-t2);cursor:pointer;font-family:inherit;transition:all .15s;}
+.cite-bib-export-btn:hover{border-color:#f97316;color:#f97316;}
+.cite-bib-count{font-size:.75rem;color:var(--nx-t3);margin-left:auto;align-self:center;}
+@media(max-width:768px){
+  .cite-shell{flex-direction:column;}
+  .cite-left{width:100%;border-right:none;border-bottom:1px solid var(--nx-bdr);max-height:55vh;}
+}
+
+/* ── Mobile breakpoint ── */
+@media(max-width:768px){
+  .nx-shell{flex-direction:column;height:calc(100vh - 48px);}
+  .nx-sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:min(280px,85vw);
+    transform:translateX(-100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+    z-index:200;border-right:1px solid var(--nx-bdr);
+    box-shadow:4px 0 24px rgba(0,0,0,.12);
+  }
+  .nx-sidebar.open{transform:translateX(0);}
+  .nx-sb-close{display:flex;}
+  .nx-mob-bar{display:flex;}
+  .nx-bot-nav{display:flex;}
+  .nx-main{height:calc(100vh - 48px - 52px - 58px);overflow:hidden;}
+  .nx-msg .nx-bubble{max-width:88%;}
+  /* welcome grid → single column on mobile */
+  .nx-task-grid{grid-template-columns:1fr!important;}
+  .nx-welcome-heading{font-size:1.25rem!important;}
+  #nx-msgs{padding:.875rem 1rem!important;}
+  #nx-input-bar{padding:.5rem .875rem .75rem!important;}
+}
+@media(max-width:480px){
+  .nx-bubble{font-size:.85rem;}
+  .nx-task-btn{font-size:.75rem;padding:.4rem .625rem;}
+}
+</style>
+{% endblock %}
+
+{% block pre_content %}
+<style>
+.content-scroll{overflow:hidden!important;}
+.page{padding:0!important;max-width:100%!important;height:calc(100dvh - 48px);height:calc(100vh - 48px);overflow:hidden!important;}
+html,body,.shell,.main-area,.content-scroll,.page{overflow-x:hidden!important;}
+.rail{display:none!important;}
+.sidebar{display:none!important;}
+.topbar{background:#fff!important;border-bottom:1px solid #e8e8e4!important;}
+/* hide base mobile bar — we have our own */
+.mobile-bar{display:none!important;}
+.bottom-nav{display:none!important;}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Mobile overlay -->
+<div class="nx-overlay" id="nx-overlay" onclick="closeSidebar()"></div>
+
+<div class="nx-shell">
+  <!-- ── Sidebar ── -->
+  <div class="nx-sidebar" id="nx-sidebar">
+    <div class="nx-sb-head">
+      <div class="nx-logo"><div class="nx-logo-icon">✦</div>Nexa</div>
+      <button class="nx-sb-close" onclick="closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <button class="nx-new-btn" onclick="newChat();closeSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Chat
+    </button>
+    <div class="nx-nav">
+      <button class="nx-nav-item active" id="nav-home" onclick="switchMode('chat',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+      </button>
+      <a class="nx-nav-item" href="{% url 'community:community_home' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Community
+      </a>
+      <a class="nx-nav-item" href="{% url 'community:workspace_list' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>My Workspaces
+      </a>
+      <button class="nx-nav-item" id="nav-search" onclick="switchMode('search',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Deep Search
+      </button>
+      <div class="nx-nav-sep"></div>
+      <button class="nx-nav-item" id="nav-essay" onclick="switchMode('essay',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>AI Writer
+      </button>
+      <a class="nx-nav-item" href="{% url 'list_materials' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Chat with PDF
+      </a>
+      <button class="nx-nav-item" id="nav-lit" onclick="switchMode('lit',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Literature Review
+      </button>
+      <button class="nx-nav-item" id="nav-topics" onclick="switchMode('topics',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Find Topics
+      </button>
+      <div class="nx-nav-sep"></div>
+      <button class="nx-nav-item" id="nav-para" onclick="switchMode('para',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Paraphraser
+      </button>
+      <button class="nx-nav-item" id="nav-cite" onclick="switchMode('cite',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>Citation Generator
+      </button>
+      <button class="nx-nav-item" id="nav-extract" onclick="switchMode('extract',this);closeSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>Extract Data
+      </button>
+      <a class="nx-nav-item" href="/ai-tutor/chat/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Tutor
+      </a>
+      <div class="nx-nav-sep"></div>
+      <a class="nx-nav-item" href="{% url 'community:workspace_detail' ws_id=ws.id %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Workspace
+      </a>
+      <a class="nx-nav-item" href="{% url 'community:community_home' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community
+      </a>
+    </div>
+    <div class="nx-user">
+      <div class="nx-user-av">{% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="nx-user-name">{{ user.get_full_name|default:user.username }}</div>
+        <div class="nx-user-email">{{ user.email }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main ── -->
+  <div class="nx-main">
+    <!-- Mobile top bar -->
+    <div class="nx-mob-bar">
+      <button onclick="openSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="nx-mob-title" id="mob-title">Nexa</div>
+      <button onclick="newChat()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </button>
+    </div>
+
+    <!-- CHAT panel -->
+    <div id="panel-chat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div id="nx-msgs" style="flex:1;overflow-y:auto;padding:1.5rem 2rem;display:flex;flex-direction:column;gap:.75rem;max-width:800px;width:100%;margin:0 auto;box-sizing:border-box;">
+        <div id="nx-welcome" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:3rem 1rem 1.5rem;gap:1.25rem;">
+          <div class="nx-welcome-heading" style="font-size:1.75rem;font-weight:800;color:#1a1a1a;line-height:1.2;">How can I help with your research?</div>
+          <div style="width:100%;max-width:640px;background:#fff;border:1.5px solid #e0e0dc;border-radius:14px;padding:.875rem 1rem .625rem;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+            <textarea id="nx-welcome-input" rows="2" placeholder="Give me any task to work on…" style="width:100%;background:none;border:none;color:#1a1a1a;font-size:1rem;outline:none;resize:none;line-height:1.5;font-family:inherit;"></textarea>
+            <div style="display:flex;align-items:center;gap:.5rem;margin-top:.375rem;padding-top:.375rem;border-top:1px solid #f0f0ec;">
+              <span style="font-size:.8125rem;color:#888;background:#f0f0ec;border-radius:6px;padding:.2rem .5rem;">Auto</span>
+              <span style="font-size:.8125rem;color:#888;background:#f0f0ec;border-radius:6px;padding:.2rem .5rem;">⚡ Apps</span>
+              <button onclick="nxSendFromWelcome()" style="margin-left:auto;width:32px;height:32px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+          <div style="width:100%;max-width:640px;margin-top:.5rem;">
+            <div style="font-size:.8125rem;color:#999;margin-bottom:.75rem;">Build your task</div>
+            <div class="nx-task-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.625rem;">
+              <div>
+                <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#aaa;margin-bottom:.4rem;">I WANT TO</div>
+                <button class="nx-task-btn" onclick="usePrompt('Review literature on ')">📚 Review Literature</button>
+                <button class="nx-task-btn" onclick="usePrompt('Write a draft about ')">✍️ Write a Draft</button>
+                <button class="nx-task-btn" onclick="usePrompt('Summarise this topic: ')">📝 Summarise</button>
+              </div>
+              <div>
+                <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#aaa;margin-bottom:.4rem;">USE</div>
+                <button class="nx-task-btn" onclick="switchMode('search',document.getElementById('nav-search'))">🔍 Deep Search</button>
+                <button class="nx-task-btn" onclick="usePrompt('Paraphrase this: ')">🔄 Paraphraser</button>
+                <button class="nx-task-btn" onclick="usePrompt('Generate a citation for: ')">🔗 Citation Gen</button>
+              </div>
+              <div>
+                <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#aaa;margin-bottom:.4rem;">MAKE A</div>
+                <button class="nx-task-btn" onclick="switchMode('essay',document.getElementById('nav-essay'))">📄 Word document</button>
+                <button class="nx-task-btn" onclick="usePrompt('Create a presentation outline on: ')">📊 PPT outline</button>
+                <button class="nx-task-btn" onclick="usePrompt('Write a research report on: ')">🗂️ Research report</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="nx-input-bar" style="display:none;padding:.75rem 1.5rem 1rem;flex-shrink:0;max-width:800px;width:100%;margin:0 auto;box-sizing:border-box;">
+        <div style="background:#fff;border:1.5px solid #e0e0dc;border-radius:14px;padding:.5rem .625rem .5rem .875rem;display:flex;align-items:flex-end;gap:.5rem;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+          <textarea id="nx-input" rows="1" placeholder="Ask Nexa anything…" style="flex:1;background:none;border:none;color:#1a1a1a;font-size:.9375rem;outline:none;resize:none;max-height:160px;line-height:1.5;padding:.25rem 0;font-family:inherit;"></textarea>
+          <button onclick="nxSend()" style="width:34px;height:34px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div style="text-align:center;font-size:.6875rem;color:#aaa;margin-top:.375rem;">Nexa can make mistakes. Verify important info.</div>
+      </div>
+    </div>
+
+    <!-- DEEP SEARCH panel -->
+    <div id="panel-search" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div style="padding:.75rem 1.25rem;border-bottom:1px solid #e8e8e4;background:#fff;flex-shrink:0;display:flex;align-items:center;gap:.5rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" style="width:18px;height:18px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="font-size:.9375rem;font-weight:700;color:#1a1a1a;">Deep Search</span>
+      </div>
+      <div id="nx-search-results" style="flex:1;overflow-y:auto;padding:1.25rem 1.25rem;max-width:800px;width:100%;margin:0 auto;box-sizing:border-box;">
+        <div style="text-align:center;padding:3rem 1rem;color:#aaa;">
+          <div style="font-size:2.5rem;margin-bottom:.75rem;">🔍</div>
+          <div style="font-size:1rem;font-weight:700;color:#333;margin-bottom:.375rem;">Search the web with AI</div>
+          <div style="font-size:.875rem;">Get summarised research with sources</div>
+        </div>
+      </div>
+      <div style="padding:.75rem 1.25rem 1rem;flex-shrink:0;max-width:800px;width:100%;margin:0 auto;box-sizing:border-box;">
+        <div style="background:#fff;border:1.5px solid #e0e0dc;border-radius:14px;padding:.5rem .625rem .5rem .875rem;display:flex;align-items:center;gap:.5rem;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+          <input id="nx-search-input" placeholder="Search anything…" style="flex:1;background:none;border:none;color:#1a1a1a;font-size:.9375rem;outline:none;padding:.25rem 0;font-family:inherit;">
+          <button onclick="nxDeepSearch()" style="width:34px;height:34px;background:#f97316;color:#fff;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI WRITER panel -->
+    <div id="panel-essay" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div style="padding:.75rem 1.25rem;border-bottom:1px solid #e8e8e4;background:#fff;flex-shrink:0;display:flex;align-items:center;gap:.5rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" style="width:18px;height:18px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span style="font-size:.9375rem;font-weight:700;color:#1a1a1a;">AI Writer</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem;margin-bottom:.75rem;">✍️</div>
+          <div style="font-size:1rem;font-weight:700;color:#1a1a1a;margin-bottom:.375rem;">AI Writer</div>
+          <div style="font-size:.875rem;color:#888;margin-bottom:1.5rem;">Essays, reports, summaries</div>
+          <a href="/ai-tutor/essay/" style="display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.875rem;font-weight:600;text-decoration:none;">Open Essay Editor →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL panels -->
+    <div id="panel-pdf" style="display:none;flex-direction:column;flex:1;overflow:hidden;"><div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:1.5rem;text-align:center;"><div style="font-size:3rem;">📄</div><div style="font-size:1rem;font-weight:700;color:#1a1a1a;">Chat with PDF</div><div style="font-size:.875rem;color:#888;">Upload a PDF and ask questions about it</div><a href="{% url 'list_materials' %}" style="padding:.625rem 1.25rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;">Go to Study Materials →</a></div></div>
+    <div id="panel-lit" style="display:none;flex-direction:column;flex:1;overflow:hidden;"><div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:1.5rem;text-align:center;"><div style="font-size:3rem;">📚</div><div style="font-size:1rem;font-weight:700;color:#1a1a1a;">Literature Review</div><div style="font-size:.875rem;color:#888;">Get a structured review of any research topic</div><button onclick="switchMode('chat',document.getElementById('nav-home'));usePrompt('Write a literature review on: ')" style="padding:.625rem 1.25rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;">Start in Chat →</button></div></div>
+    <div id="panel-topics" style="display:none;flex-direction:column;flex:1;overflow:hidden;"><div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:1.5rem;text-align:center;"><div style="font-size:3rem;">🔎</div><div style="font-size:1rem;font-weight:700;color:#1a1a1a;">Find Topics</div><div style="font-size:.875rem;color:#888;">Discover research topics in any field</div><button onclick="switchMode('search',document.getElementById('nav-search'))" style="padding:.625rem 1.25rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;">Use Deep Search →</button></div></div>
+    <div id="panel-para" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <!-- Paraphraser top bar -->
+      <div class="para-topbar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span class="para-topbar-title">Smart Paraphraser</span>
+        <span class="para-realtime-badge" id="para-rt-badge" style="display:none;">⚡ Live</span>
+        <label style="display:flex;align-items:center;gap:.375rem;margin-left:auto;font-size:.75rem;color:var(--nx-t2);cursor:pointer;">
+          <input type="checkbox" id="para-realtime-toggle" style="accent-color:#f97316;"> Real-time
+        </label>
+        <label style="display:flex;align-items:center;gap:.375rem;margin-left:.75rem;font-size:.75rem;color:var(--nx-t2);cursor:pointer;">
+          <input type="checkbox" id="para-explain-toggle" checked style="accent-color:#f97316;"> Explain changes
+        </label>
+      </div>
+      <!-- Mode pills -->
+      <div class="para-modes">
+        <button class="para-mode-pill active" data-mode="simple" onclick="paraSetMode(this)">Simple</button>
+        <button class="para-mode-pill" data-mode="academic" onclick="paraSetMode(this)">Academic</button>
+        <button class="para-mode-pill" data-mode="exam" onclick="paraSetMode(this)">Exam (WAEC)</button>
+        <button class="para-mode-pill" data-mode="short" onclick="paraSetMode(this)">Short</button>
+        <button class="para-mode-pill" data-mode="expanded" onclick="paraSetMode(this)">Expanded</button>
+        <button class="para-mode-pill" data-mode="creative" onclick="paraSetMode(this)">Creative</button>
+        <button class="para-mode-pill" data-mode="bullet" onclick="paraSetMode(this)">Bullet Points</button>
+      </div>
+      <!-- Subject row -->
+      <div class="para-subject-row">
+        <label for="para-subject">Subject:</label>
+        <select id="para-subject" class="para-subject-select">
+          <option value="">Auto-detect</option>
+          <option value="English">English</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+          <option value="History">History</option>
+          <option value="Geography">Geography</option>
+          <option value="Economics">Economics</option>
+          <option value="Government">Government</option>
+          <option value="Literature">Literature</option>
+          <option value="Computer Science">Computer Science</option>
+        </select>
+        <button class="para-style-toggle" onclick="paraToggleStylePanel()">✦ Style Clone</button>
+      </div>
+      <!-- Style clone panel -->
+      <div class="para-style-panel" id="para-style-panel">
+        <div style="font-size:.8125rem;font-weight:600;color:#1a1a1a;margin-bottom:.375rem;">Paste a sample of your writing style</div>
+        <div style="font-size:.75rem;color:var(--nx-t3);margin-bottom:.5rem;">Nexa will learn your tone and paraphrase in your voice.</div>
+        <textarea id="para-style-sample" placeholder="Paste a paragraph you've written before…"></textarea>
+      </div>
+      <!-- Main shell -->
+      <div class="para-shell">
+        <!-- Left: input -->
+        <div class="para-left">
+          <div class="para-input-area">
+            <textarea class="para-textarea" id="para-input" placeholder="Paste or type the text you want to paraphrase…" maxlength="8000"></textarea>
+            <div class="para-input-footer">
+              <span class="para-char-count" id="para-char-count">0 / 8000</span>
+              <button class="para-voice-btn" id="para-voice-btn" title="Voice input" onclick="paraToggleVoice()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              </button>
+              <button class="para-go-btn" id="para-go-btn" onclick="paraRun()">Paraphrase →</button>
+            </div>
+          </div>
+        </div>
+        <!-- Right: output -->
+        <div class="para-right">
+          <div class="para-right-tabs">
+            <button class="para-rtab active" id="para-tab-output" onclick="paraShowTab('output')">Output</button>
+            <button class="para-rtab" id="para-tab-changes" onclick="paraShowTab('changes')">Changes <span id="para-changes-badge" style="display:none;background:#f97316;color:#fff;border-radius:10px;padding:0 5px;font-size:.6875rem;"></span></button>
+          </div>
+          <div class="para-output-area" id="para-output-area">
+            <div class="para-empty" id="para-empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <div style="font-size:.875rem;font-weight:600;color:#555;">Output appears here</div>
+              <div style="font-size:.8125rem;">Choose a mode and click Paraphrase</div>
+            </div>
+          </div>
+          <div class="para-output-actions" id="para-output-actions" style="display:none;">
+            <button class="para-action-btn" onclick="paraCopy()">Copy</button>
+            <button class="para-action-btn" onclick="paraSpeak()">🔊 Read</button>
+            <button class="para-action-btn" onclick="paraClear()">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="panel-cite" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <!-- Citation top bar -->
+      <div class="cite-topbar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        <span class="cite-topbar-title">Citation Intelligence Engine</span>
+        <label style="display:flex;align-items:center;gap:.375rem;margin-left:auto;font-size:.75rem;color:var(--nx-t2);cursor:pointer;">
+          <input type="checkbox" id="cite-teach-toggle" checked style="accent-color:#f97316;"> Teach me
+        </label>
+        <button class="cite-voice-btn" id="cite-voice-btn" title="Voice input" onclick="citeToggleVoice()" style="margin-left:.5rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
+      <div class="cite-shell">
+        <!-- ── Left: controls ── -->
+        <div class="cite-left">
+          <!-- Citation style -->
+          <div class="cite-section">
+            <div class="cite-section-label">Citation Style</div>
+            <div class="cite-style-pills">
+              <button class="cite-style-pill active" data-style="APA" onclick="citeSetStyle(this)">APA</button>
+              <button class="cite-style-pill" data-style="MLA" onclick="citeSetStyle(this)">MLA</button>
+              <button class="cite-style-pill" data-style="Harvard" onclick="citeSetStyle(this)">Harvard</button>
+              <button class="cite-style-pill" data-style="Chicago" onclick="citeSetStyle(this)">Chicago</button>
+              <button class="cite-style-pill" data-style="IEEE" onclick="citeSetStyle(this)">IEEE</button>
+              <button class="cite-style-pill" data-style="WAEC" onclick="citeSetStyle(this)">WAEC/SHS</button>
+            </div>
+          </div>
+          <!-- Source type -->
+          <div class="cite-section">
+            <div class="cite-section-label">Source Type</div>
+            <div class="cite-type-pills">
+              <button class="cite-type-pill active" data-type="website" onclick="citeSetType(this)">Website</button>
+              <button class="cite-type-pill" data-type="book" onclick="citeSetType(this)">Book</button>
+              <button class="cite-type-pill" data-type="journal" onclick="citeSetType(this)">Journal</button>
+              <button class="cite-type-pill" data-type="video" onclick="citeSetType(this)">Video</button>
+              <button class="cite-type-pill" data-type="pdf" onclick="citeSetType(this)">PDF/Report</button>
+            </div>
+          </div>
+          <!-- Input tabs -->
+          <div class="cite-input-tabs">
+            <button class="cite-itab active" id="cite-itab-url" onclick="citeShowInputTab('url')">URL / DOI</button>
+            <button class="cite-itab" id="cite-itab-manual" onclick="citeShowInputTab('manual')">Manual</button>
+            <button class="cite-itab" id="cite-itab-fixer" onclick="citeShowInputTab('fixer')">Fix Citation</button>
+          </div>
+          <!-- URL tab -->
+          <div class="cite-input-body" id="cite-body-url">
+            <div class="cite-field">
+              <label>URL or DOI</label>
+              <div class="cite-url-row">
+                <input type="text" id="cite-url-input" placeholder="https://… or 10.xxxx/…">
+                <button class="cite-fetch-btn" id="cite-fetch-btn" onclick="citeFetchMeta()">Detect →</button>
+              </div>
+            </div>
+            <div id="cite-detected-fields" style="display:none;">
+              <div style="font-size:.75rem;font-weight:600;color:#22c55e;margin-bottom:.5rem;">✓ Metadata detected — review below</div>
+              <div class="cite-field"><label>Author(s)</label><input type="text" id="cite-d-author" placeholder="Last, First"></div>
+              <div class="cite-field"><label>Title</label><input type="text" id="cite-d-title"></div>
+              <div class="cite-field"><label>Year</label><input type="text" id="cite-d-year" style="max-width:100px;"></div>
+              <div class="cite-field"><label>Publisher / Website</label><input type="text" id="cite-d-publisher"></div>
+              <div class="cite-field"><label>Access Date</label><input type="date" id="cite-d-accessed"></div>
+            </div>
+            <button class="cite-go-btn" id="cite-go-url" onclick="citeGenerate('url')">Generate Citation →</button>
+          </div>
+          <!-- Manual tab -->
+          <div class="cite-input-body" id="cite-body-manual" style="display:none;">
+            <div class="cite-field"><label>Author(s)</label><input type="text" id="cite-m-author" placeholder="Last, First M."></div>
+            <div class="cite-field"><label>Title</label><input type="text" id="cite-m-title" placeholder="Title of the work"></div>
+            <div class="cite-field"><label>Year</label><input type="text" id="cite-m-year" placeholder="2024" style="max-width:100px;"></div>
+            <div class="cite-field"><label>Publisher / Journal</label><input type="text" id="cite-m-publisher"></div>
+            <div class="cite-field"><label>Volume / Issue</label><input type="text" id="cite-m-volume" placeholder="Vol. 12, No. 3"></div>
+            <div class="cite-field"><label>Pages</label><input type="text" id="cite-m-pages" placeholder="pp. 45–67"></div>
+            <div class="cite-field"><label>URL (optional)</label><input type="text" id="cite-m-url"></div>
+            <div class="cite-field"><label>DOI (optional)</label><input type="text" id="cite-m-doi"></div>
+            <button class="cite-go-btn" onclick="citeGenerate('manual')">Generate Citation →</button>
+          </div>
+          <!-- Fixer tab -->
+          <div class="cite-fixer-area" id="cite-body-fixer" style="display:none;">
+            <div style="font-size:.8125rem;color:var(--nx-t2);margin-bottom:.375rem;">Paste a messy or incorrect citation — AI will fix and reformat it.</div>
+            <textarea id="cite-fixer-input" placeholder="Paste your citation here…"></textarea>
+            <button class="cite-go-btn" onclick="citeFixCitation()">Fix & Reformat →</button>
+          </div>
+        </div>
+        <!-- ── Right: output ── -->
+        <div class="cite-right">
+          <div class="cite-right-tabs">
+            <button class="cite-rtab active" id="cite-rtab-result" onclick="citeShowRTab('result')">Result</button>
+            <button class="cite-rtab" id="cite-rtab-credibility" onclick="citeShowRTab('credibility')">Credibility</button>
+            <button class="cite-rtab" id="cite-rtab-bib" onclick="citeShowRTab('bib')">Bibliography <span id="cite-bib-badge" style="display:none;background:#f97316;color:#fff;border-radius:10px;padding:0 5px;font-size:.6875rem;"></span></button>
+          </div>
+          <div class="cite-output-area" id="cite-output-area">
+            <div class="cite-empty" id="cite-empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              <div style="font-size:.875rem;font-weight:600;color:#555;">Your citation appears here</div>
+              <div style="font-size:.8125rem;">Enter a URL, fill manually, or paste to fix</div>
+            </div>
+          </div>
+          <div id="cite-bib-export-row" class="cite-bib-export-row" style="display:none;">
+            <button class="cite-bib-export-btn" onclick="citeCopyBib()">Copy All</button>
+            <button class="cite-bib-export-btn" onclick="citeClearBib()">Clear</button>
+            <span class="cite-bib-count" id="cite-bib-count"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="panel-extract" style="display:none;flex-direction:column;flex:1;overflow:hidden;"><div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:1.5rem;text-align:center;"><div style="font-size:3rem;">📊</div><div style="font-size:1rem;font-weight:700;color:#1a1a1a;">Extract Data</div><div style="font-size:.875rem;color:#888;">Pull key data and stats from any text</div><button onclick="switchMode('chat',document.getElementById('nav-home'));usePrompt('Extract key data from: ')" style="padding:.625rem 1.25rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;">Start in Chat →</button></div></div>
+    <div id="panel-detect" style="display:none;flex-direction:column;flex:1;overflow:hidden;"><div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:1.5rem;text-align:center;"><div style="font-size:3rem;">🤖</div><div style="font-size:1rem;font-weight:700;color:#1a1a1a;">AI Tutor</div><div style="font-size:.875rem;color:#888;">Chat with your personal AI tutor</div><a href="/ai-tutor/chat/" style="padding:.625rem 1.25rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;">Open AI Tutor →</a></div></div>
+
+    <!-- Mobile bottom nav -->
+    <div class="nx-bot-nav">
+      <button class="nx-bn active" id="bn-chat" onclick="switchMode('chat',document.getElementById('nav-home'));setBn('bn-chat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat
+      </button>
+      <button class="nx-bn" id="bn-search" onclick="switchMode('search',document.getElementById('nav-search'));setBn('bn-search')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search
+      </button>
+      <button class="nx-bn" id="bn-essay" onclick="switchMode('essay',document.getElementById('nav-essay'));setBn('bn-essay')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Write
+      </button>
+      <button class="nx-bn" id="bn-more" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>More
+      </button>
+    </div>
+  </div><!-- /nx-main -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+const CSRF = '{{ csrf_token }}';
+const WS_ID = '{{ ws.id }}';
+let chatHistory = [], chatStarted = false;
+const ALL_PANELS = ['chat','search','essay','pdf','lit','topics','para','cite','extract','detect'];
+
+/* ── Sidebar open/close ── */
+function openSidebar(){
+  document.getElementById('nx-sidebar').classList.add('open');
+  document.getElementById('nx-overlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('nx-sidebar').classList.remove('open');
+  document.getElementById('nx-overlay').classList.remove('open');
+}
+
+/* ── Bottom nav active ── */
+function setBn(id){
+  document.querySelectorAll('.nx-bn').forEach(b=>b.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+/* ── Panel switching ── */
+function switchMode(mode, btn){
+  document.querySelectorAll('.nx-nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  ALL_PANELS.forEach(m=>{
+    const p = document.getElementById('panel-'+m);
+    if(p) p.style.display = m===mode ? 'flex' : 'none';
+  });
+  const titles = {chat:'Nexa',search:'Deep Search',essay:'AI Writer',pdf:'Chat with PDF',lit:'Literature Review',topics:'Find Topics',para:'Paraphraser',cite:'Citation Generator',extract:'Extract Data',detect:'AI Tutor'};
+  const mob = document.getElementById('mob-title');
+  if(mob) mob.textContent = titles[mode]||'Nexa';
+}
+
+/* ── Math rendering ── */
+function renderMath(el){
+  if(!el||typeof renderMathInElement==='undefined') return;
+  renderMathInElement(el,{
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],
+    throwOnError:false
+  });
+}
+
+/* ── Sanitize AI output ── */
+function sanitizeAI(s){
+  let t=String(s);
+  t=t.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<iframe[\s\S]*?<\/iframe>/gi,'');
+  const math=[];
+  const save=m=>{math.push(m);return '\x00M'+(math.length-1)+'\x00';};
+  t=t.replace(/\$\$[\s\S]+?\$\$/g,save).replace(/\\\[[\s\S]+?\\\]/g,save)
+     .replace(/\\\([\s\S]+?\\\)/g,save).replace(/\$[^\$\n]{1,300}?\$/g,save);
+  t=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  t=t.replace(/\*\*\*(.+?)\*\*\*/gs,'<strong><em>$1</em></strong>')
+     .replace(/\*\*(.+?)\*\*/gs,'<strong>$1</strong>')
+     .replace(/\*([^\*\n]+?)\*/g,'<em>$1</em>')
+     .replace(/`([^`\n]+)`/g,'<code style="background:rgba(0,0,0,.06);padding:.1em .3em;border-radius:3px;font-size:.85em;font-family:monospace;">$1</code>');
+  t=t.replace(/((?:^\d+\..+(?:\n|$))+)/gm,m=>'<ol style="margin:.4em 0 .4em 1.4em;padding:0;">'+m.trim().split('\n').map(l=>'<li>'+l.replace(/^\d+\.\s*/,'')+'</li>').join('')+'</ol>');
+  t=t.replace(/((?:^[-•]\s.+(?:\n|$))+)/gm,m=>'<ul style="margin:.4em 0 .4em 1.4em;padding:0;">'+m.trim().split('\n').map(l=>'<li>'+l.replace(/^[-•]\s/,'')+'</li>').join('')+'</ul>');
+  t=t.replace(/\n/g,'<br>');
+  t=t.replace(/\x00M(\d+)\x00/g,(_,i)=>math[parseInt(i)]);
+  return t;
+}
+
+/* ── Append message ── */
+function appendMsg(role, content){
+  const msgs=document.getElementById('nx-msgs');
+  const welcome=document.getElementById('nx-welcome');
+  if(welcome) welcome.remove();
+  if(!chatStarted){
+    chatStarted=true;
+    document.getElementById('nx-input-bar').style.display='block';
+  }
+  const isAI=role==='ai';
+  const div=document.createElement('div');
+  div.className='nx-msg '+role;
+  const av=isAI?'<div class="nx-msg-av ai">NX</div>':'<div class="nx-msg-av">{{ user.username|slice:":1"|upper }}</div>';
+  const body=isAI?sanitizeAI(content):'<span>'+String(content).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
+  div.innerHTML=av+'<div class="nx-bubble">'+body+'</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  if(isAI) renderMath(div.querySelector('.nx-bubble'));
+  return div;
+}
+
+function showTyping(){
+  const msgs=document.getElementById('nx-msgs');
+  const d=document.createElement('div');
+  d.className='nx-msg ai';d.id='nx-typing';
+  d.innerHTML='<div class="nx-msg-av ai">NX</div><div class="nx-bubble"><div class="nx-typing"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('nx-typing');if(t)t.remove();}
+
+/* ── Send ── */
+function doSend(text){
+  if(!text) return;
+  switchMode('chat',document.getElementById('nav-home'));
+  setBn('bn-chat');
+  appendMsg('user',text);
+  chatHistory.push({role:'user',content:text});
+  showTyping();
+  fetch('/community/workspaces/'+WS_ID+'/ai/chat/',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+    body:JSON.stringify({message:'nexa '+text,source:'manager'}),
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    removeTyping();
+    if(data.deep_search){renderSearchResult(data.deep_search,document.getElementById('nx-msgs'));return;}
+    const reply=data.reply||'';
+    if(reply){appendMsg('ai',reply);chatHistory.push({role:'assistant',content:reply});}
+  })
+  .catch(()=>{removeTyping();appendMsg('ai','Something went wrong. Try again.');});
+}
+function nxSend(){
+  const inp=document.getElementById('nx-input');
+  const t=inp.value.trim();if(!t)return;
+  inp.value='';inp.style.height='auto';doSend(t);
+}
+function nxSendFromWelcome(){
+  const inp=document.getElementById('nx-welcome-input');
+  const t=inp?inp.value.trim():'';if(!t)return;
+  inp.value='';doSend(t);
+}
+
+/* ── Deep search ── */
+function nxDeepSearch(){
+  const inp=document.getElementById('nx-search-input');
+  const q=inp.value.trim();if(!q)return;
+  const res=document.getElementById('nx-search-results');
+  res.innerHTML='<div style="text-align:center;padding:2rem;color:#aaa;"><div class="nx-typing" style="justify-content:center;margin-bottom:.5rem;"><span></span><span></span><span></span></div>Searching…</div>';
+  fetch('/community/workspaces/'+WS_ID+'/ai/deep-search/',{
+    method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+    body:JSON.stringify({query:q}),
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    res.innerHTML='';
+    if(data.ok&&data.result) renderSearchResult(data.result,res);
+    else res.innerHTML='<div style="padding:2rem;color:#aaa;text-align:center;">No results found.</div>';
+  })
+  .catch(()=>{res.innerHTML='<div style="padding:2rem;color:#aaa;text-align:center;">Search failed.</div>';});
+}
+
+function renderSearchResult(r,container){
+  const sources=(r.sources||[]).slice(0,5);
+  const findings=(r.key_findings||[]).slice(0,6);
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const div=document.createElement('div');
+  div.className='nx-search-card';
+  div.innerHTML=`<div class="nx-search-card-head"><div class="nx-search-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div><div class="nx-search-card-title">Search Results</div><div class="nx-search-card-query">${esc(r.search_query||'')}</div></div></div>
+  <div class="nx-search-summary">${sanitizeAI(r.summary||'')}</div>
+  ${findings.length?'<div class="nx-findings-title">Key Findings</div>'+findings.map(f=>'<div class="nx-finding">'+sanitizeAI(f)+'</div>').join(''):''}
+  ${sources.length?'<div class="nx-findings-title" style="margin-top:.75rem;">Sources</div>'+sources.map(s=>`<a class="nx-source" href="${esc(s.url||'#')}" target="_blank" rel="noopener"><div class="nx-source-dot"></div><div><div class="nx-source-title">${esc(s.title||s.url||'Source')}</div>${s.snippet?'<div class="nx-source-snippet">'+esc(s.snippet)+'</div>':''}</div></a>`).join(''):''}`;
+  container.appendChild(div);container.scrollTop=container.scrollHeight;renderMath(div);
+}
+
+/* ── New chat ── */
+function newChat(){
+  chatHistory=[];chatStarted=false;
+  const msgs=document.getElementById('nx-msgs');
+  msgs.innerHTML=`<div id="nx-welcome" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:3rem 1rem 1.5rem;gap:1.25rem;">
+    <div class="nx-welcome-heading" style="font-size:1.75rem;font-weight:800;color:#1a1a1a;line-height:1.2;">How can I help with your research?</div>
+    <div style="width:100%;max-width:640px;background:#fff;border:1.5px solid #e0e0dc;border-radius:14px;padding:.875rem 1rem .625rem;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+      <textarea id="nx-welcome-input" rows="2" placeholder="Give me any task to work on…" style="width:100%;background:none;border:none;color:#1a1a1a;font-size:1rem;outline:none;resize:none;line-height:1.5;font-family:inherit;"></textarea>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-top:.375rem;padding-top:.375rem;border-top:1px solid #f0f0ec;">
+        <span style="font-size:.8125rem;color:#888;background:#f0f0ec;border-radius:6px;padding:.2rem .5rem;">Auto</span>
+        <span style="font-size:.8125rem;color:#888;background:#f0f0ec;border-radius:6px;padding:.2rem .5rem;">⚡ Apps</span>
+        <button onclick="nxSendFromWelcome()" style="margin-left:auto;width:32px;height:32px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('nx-input-bar').style.display='none';
+  switchMode('chat',document.getElementById('nav-home'));
+  setBn('bn-chat');
+  setTimeout(()=>{
+    const wi=document.getElementById('nx-welcome-input');
+    if(wi) wi.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();nxSendFromWelcome();}});
+  },50);
+}
+
+function usePrompt(text){
+  switchMode('chat',document.getElementById('nav-home'));
+  setBn('bn-chat');
+  const wi=document.getElementById('nx-welcome-input');
+  if(wi){wi.value=text;wi.focus();return;}
+  const inp=document.getElementById('nx-input');
+  if(inp){inp.value=text;inp.focus();}
+}
+
+/* ── Paraphraser ── */
+let paraMode = 'simple';
+let paraDebounceTimer = null;
+let paraRecognition = null;
+let paraIsRecording = false;
+let paraCurrentOutput = '';
+let paraCurrentChanges = [];
+let paraCurrentExplanation = '';
+let paraActiveTab = 'output';
+
+function paraSetMode(btn){
+  document.querySelectorAll('.para-mode-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  paraMode = btn.dataset.mode;
+  if(document.getElementById('para-realtime-toggle').checked && document.getElementById('para-input').value.trim().length > 20){
+    clearTimeout(paraDebounceTimer);
+    paraDebounceTimer = setTimeout(paraRun, 800);
+  }
+}
+
+function paraToggleStylePanel(){
+  const p = document.getElementById('para-style-panel');
+  p.classList.toggle('open');
+}
+
+function paraShowTab(tab){
+  paraActiveTab = tab;
+  document.getElementById('para-tab-output').classList.toggle('active', tab==='output');
+  document.getElementById('para-tab-changes').classList.toggle('active', tab==='changes');
+  if(tab==='output') paraRenderOutput();
+  else paraRenderChanges();
+}
+
+function _esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function paraRenderOutput(){
+  const area = document.getElementById('para-output-area');
+  if(!paraCurrentOutput){
+    area.innerHTML = '<div class="para-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg><div style="font-size:.875rem;font-weight:600;color:#555;">Output appears here</div><div style="font-size:.8125rem;">Choose a mode and click Paraphrase</div></div>';
+    document.getElementById('para-output-actions').style.display='none';
+    return;
+  }
+  const explainOn = document.getElementById('para-explain-toggle').checked;
+  let html = '';
+  if(explainOn && paraCurrentExplanation){
+    html += '<div class="para-explanation">💡 '+_esc(paraCurrentExplanation)+'</div>';
+  }
+  let outputText = _esc(paraCurrentOutput);
+  if(explainOn && paraCurrentChanges.length){
+    paraCurrentChanges.forEach(c=>{
+      if(c.replacement){
+        const safe = _esc(c.replacement).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        try{ outputText = outputText.replace(new RegExp(safe,'g'), '<span class="para-highlight">'+_esc(c.replacement)+'</span>'); }catch(e){}
+      }
+    });
+  }
+  html += '<div class="para-output-text">'+outputText+'</div>';
+  area.innerHTML = html;
+  document.getElementById('para-output-actions').style.display='flex';
+}
+
+function paraRenderChanges(){
+  const area = document.getElementById('para-output-area');
+  if(!paraCurrentChanges.length){
+    area.innerHTML = '<div class="para-empty"><div style="font-size:.875rem;font-weight:600;color:#555;">No changes tracked yet</div></div>';
+    return;
+  }
+  let html = '<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#f97316;margin-bottom:.75rem;">'+paraCurrentChanges.length+' change'+(paraCurrentChanges.length!==1?'s':'')+' made</div>';
+  paraCurrentChanges.forEach(c=>{
+    html += '<div class="para-change-item"><div class="para-change-orig">"'+_esc(c.original||'')+'"</div><div class="para-change-new">→ "'+_esc(c.replacement||'')+'"</div><div class="para-change-reason">'+_esc(c.reason||'')+'</div></div>';
+  });
+  area.innerHTML = html;
+}
+
+async function paraRun(){
+  const text = document.getElementById('para-input').value.trim();
+  if(!text) return;
+  const btn = document.getElementById('para-go-btn');
+  btn.disabled = true; btn.textContent = 'Paraphrasing…';
+  const area = document.getElementById('para-output-area');
+  area.innerHTML = '<div class="para-loading"><div class="nx-typing" style="justify-content:center;"><span></span><span></span><span></span></div><div style="font-size:.875rem;">Paraphrasing…</div></div>';
+  document.getElementById('para-output-actions').style.display='none';
+  const styleSample = document.getElementById('para-style-sample').value.trim();
+  const subject = document.getElementById('para-subject').value;
+  try {
+    const res = await fetch('/community/api/paraphrase/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({text, mode:paraMode, style_sample:styleSample, subject}),
+    });
+    const data = await res.json();
+    if(data.error){ area.innerHTML='<div class="para-empty"><div style="color:#dc2626;font-size:.875rem;">'+_esc(data.error)+'</div></div>'; return; }
+    paraCurrentOutput = data.paraphrased||'';
+    paraCurrentChanges = data.changes||[];
+    paraCurrentExplanation = data.explanation||'';
+    const badge = document.getElementById('para-changes-badge');
+    if(paraCurrentChanges.length){ badge.textContent=paraCurrentChanges.length; badge.style.display='inline'; }
+    else badge.style.display='none';
+    if(paraActiveTab==='output') paraRenderOutput(); else paraRenderChanges();
+  } catch(e){
+    area.innerHTML='<div class="para-empty"><div style="color:#dc2626;font-size:.875rem;">Request failed. Try again.</div></div>';
+  } finally {
+    btn.disabled=false; btn.textContent='Paraphrase →';
+  }
+}
+
+function paraCopy(){
+  if(!paraCurrentOutput) return;
+  navigator.clipboard.writeText(paraCurrentOutput).then(()=>{
+    const btn = document.querySelector('.para-action-btn');
+    const orig = btn.textContent; btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent=orig,1500);
+  });
+}
+
+function paraClear(){
+  document.getElementById('para-input').value='';
+  document.getElementById('para-char-count').textContent='0 / 8000';
+  paraCurrentOutput=''; paraCurrentChanges=[]; paraCurrentExplanation='';
+  document.getElementById('para-changes-badge').style.display='none';
+  paraRenderOutput();
+}
+
+function paraSpeak(){
+  if(!paraCurrentOutput||!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(paraCurrentOutput);
+  utt.rate=0.95; utt.pitch=1;
+  window.speechSynthesis.speak(utt);
+}
+
+function paraToggleVoice(){
+  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
+    alert('Speech recognition not supported. Try Chrome.');
+    return;
+  }
+  if(paraIsRecording){ paraStopVoice(); return; }
+  const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  paraRecognition = new SR();
+  paraRecognition.continuous=true; paraRecognition.interimResults=true; paraRecognition.lang='en-US';
+  const inp = document.getElementById('para-input');
+  const baseText = inp.value;
+  paraRecognition.onresult = e=>{
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    inp.value=baseText+final+interim;
+    paraUpdateCharCount();
+  };
+  paraRecognition.onerror=()=>paraStopVoice();
+  paraRecognition.onend=()=>paraStopVoice();
+  paraRecognition.start();
+  paraIsRecording=true;
+  document.getElementById('para-voice-btn').classList.add('recording');
+}
+
+function paraStopVoice(){
+  if(paraRecognition){try{paraRecognition.stop();}catch(e){} paraRecognition=null;}
+  paraIsRecording=false;
+  document.getElementById('para-voice-btn').classList.remove('recording');
+}
+
+function paraUpdateCharCount(){
+  const v=document.getElementById('para-input').value;
+  document.getElementById('para-char-count').textContent=v.length+' / 8000';
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('para-input');
+  if(!inp) return;
+  inp.addEventListener('input',()=>{
+    paraUpdateCharCount();
+    if(document.getElementById('para-realtime-toggle').checked && inp.value.trim().length>30){
+      clearTimeout(paraDebounceTimer);
+      paraDebounceTimer=setTimeout(paraRun,1200);
+    }
+  });
+  const rtToggle=document.getElementById('para-realtime-toggle');
+  if(rtToggle) rtToggle.addEventListener('change',function(){
+    document.getElementById('para-rt-badge').style.display=this.checked?'inline':'none';
+  });
+});
+
+/* ── Citation Generator ── */
+let citeStyle = 'APA';
+let citeType = 'website';
+let citeInputTab = 'url';
+let citeRTab = 'result';
+let citeBibList = [];
+let citeCurrentResult = null;
+let citeVoiceRecog = null;
+let citeIsRecording = false;
+
+function citeSetStyle(btn){
+  document.querySelectorAll('.cite-style-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  citeStyle = btn.dataset.style;
+}
+function citeSetType(btn){
+  document.querySelectorAll('.cite-type-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  citeType = btn.dataset.type;
+}
+function citeShowInputTab(tab){
+  citeInputTab = tab;
+  ['url','manual','fixer'].forEach(t=>{
+    document.getElementById('cite-itab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('cite-body-'+t).style.display = t===tab?'flex':'none';
+    if(t==='url'||t==='manual') document.getElementById('cite-body-'+t).style.flexDirection='column';
+  });
+}
+function citeShowRTab(tab){
+  citeRTab = tab;
+  ['result','credibility','bib'].forEach(t=>{
+    document.getElementById('cite-rtab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='result') citeRenderResult();
+  else if(tab==='credibility') citeRenderCredibility();
+  else citeRenderBib();
+}
+
+function _cesc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function citeFetchMeta(){
+  const url = document.getElementById('cite-url-input').value.trim();
+  if(!url){ alert('Enter a URL or DOI first.'); return; }
+  const btn = document.getElementById('cite-fetch-btn');
+  btn.disabled=true; btn.textContent='Detecting…';
+  try{
+    const res = await fetch('/community/api/cite/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({action:'detect', url, source_type:citeType}),
+    });
+    const data = await res.json();
+    if(data.error){ alert(data.error); return; }
+    const m = data.metadata||{};
+    document.getElementById('cite-d-author').value = m.author||'';
+    document.getElementById('cite-d-title').value = m.title||'';
+    document.getElementById('cite-d-year').value = m.year||'';
+    document.getElementById('cite-d-publisher').value = m.publisher||'';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('cite-d-accessed').value = m.accessed||today;
+    document.getElementById('cite-detected-fields').style.display='block';
+  }catch(e){ alert('Detection failed. Fill manually.'); }
+  finally{ btn.disabled=false; btn.textContent='Detect →'; }
+}
+
+async function citeGenerate(mode){
+  let payload = {action:'generate', style:citeStyle, source_type:citeType};
+  if(mode==='url'){
+    const detected = document.getElementById('cite-detected-fields').style.display!=='none';
+    payload.url = document.getElementById('cite-url-input').value.trim();
+    if(detected){
+      payload.author = document.getElementById('cite-d-author').value;
+      payload.title = document.getElementById('cite-d-title').value;
+      payload.year = document.getElementById('cite-d-year').value;
+      payload.publisher = document.getElementById('cite-d-publisher').value;
+      payload.accessed = document.getElementById('cite-d-accessed').value;
+    }
+  } else {
+    payload.author = document.getElementById('cite-m-author').value;
+    payload.title = document.getElementById('cite-m-title').value;
+    payload.year = document.getElementById('cite-m-year').value;
+    payload.publisher = document.getElementById('cite-m-publisher').value;
+    payload.volume = document.getElementById('cite-m-volume').value;
+    payload.pages = document.getElementById('cite-m-pages').value;
+    payload.url = document.getElementById('cite-m-url').value;
+    payload.doi = document.getElementById('cite-m-doi').value;
+  }
+  if(!payload.title && !payload.url){ alert('Enter at least a title or URL.'); return; }
+  citeShowRTab('result');
+  citeSetLoading();
+  try{
+    const res = await fetch('/community/api/cite/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if(data.error){ citeSetError(data.error); return; }
+    citeCurrentResult = data;
+    citeRenderResult();
+  }catch(e){ citeSetError('Request failed. Try again.'); }
+}
+
+async function citeFixCitation(){
+  const raw = document.getElementById('cite-fixer-input').value.trim();
+  if(!raw){ alert('Paste a citation to fix.'); return; }
+  citeShowRTab('result');
+  citeSetLoading();
+  try{
+    const res = await fetch('/community/api/cite/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({action:'fix', raw_citation:raw, style:citeStyle}),
+    });
+    const data = await res.json();
+    if(data.error){ citeSetError(data.error); return; }
+    citeCurrentResult = data;
+    citeRenderResult();
+  }catch(e){ citeSetError('Request failed. Try again.'); }
+}
+
+function citeSetLoading(){
+  document.getElementById('cite-output-area').innerHTML='<div class="cite-loading"><div class="nx-typing" style="justify-content:center;"><span></span><span></span><span></span></div><div style="font-size:.875rem;">Generating citation…</div></div>';
+}
+function citeSetError(msg){
+  document.getElementById('cite-output-area').innerHTML='<div class="cite-empty"><div style="color:#dc2626;font-size:.875rem;">'+_cesc(msg)+'</div></div>';
+}
+
+function citeRenderResult(){
+  const area = document.getElementById('cite-output-area');
+  if(!citeCurrentResult||!citeCurrentResult.citation){
+    area.innerHTML='<div class="cite-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg><div style="font-size:.875rem;font-weight:600;color:#555;">Your citation appears here</div><div style="font-size:.8125rem;">Enter a URL, fill manually, or paste to fix</div></div>';
+    return;
+  }
+  const r = citeCurrentResult;
+  const teachOn = document.getElementById('cite-teach-toggle').checked;
+  let html = '<div class="cite-card">';
+  html += '<div class="cite-card-style">'+_cesc(r.style||citeStyle)+'</div>';
+  html += '<div class="cite-card-text">'+_cesc(r.citation)+'</div>';
+  if(r.in_text) html += '<div style="margin-top:.5rem;font-size:.8125rem;color:#888;">In-text: <span style="font-family:Georgia,serif;color:#1a1a1a;">'+_cesc(r.in_text)+'</span></div>';
+  html += '<div class="cite-card-actions">';
+  html += '<button class="cite-card-btn" onclick="citeCopySingle()">Copy</button>';
+  html += '<button class="cite-card-btn" onclick="citeSpeak()">🔊 Read</button>';
+  html += '<button class="cite-card-btn add-bib" onclick="citeAddToBib()">+ Bibliography</button>';
+  html += '</div></div>';
+  if(teachOn && r.parts && r.parts.length){
+    html += '<div class="cite-teach-block"><div class="cite-teach-title">📖 What each part means</div><div class="cite-teach-parts">';
+    r.parts.forEach(p=>{
+      html += '<div class="cite-teach-part"><div class="cite-teach-part-label">'+_cesc(p.label)+'</div><div><div class="cite-teach-part-val">'+_cesc(p.value)+'</div><div class="cite-teach-part-why">'+_cesc(p.why)+'</div></div></div>';
+    });
+    html += '</div></div>';
+  }
+  if(r.note) html += '<div style="font-size:.8125rem;color:#888;background:#f7f7f5;border-radius:8px;padding:.625rem .75rem;">💡 '+_cesc(r.note)+'</div>';
+  area.innerHTML = html;
+}
+
+function citeRenderCredibility(){
+  const area = document.getElementById('cite-output-area');
+  if(!citeCurrentResult||!citeCurrentResult.credibility){
+    area.innerHTML='<div class="cite-empty"><div style="font-size:.875rem;font-weight:600;color:#555;">Generate a citation first</div><div style="font-size:.8125rem;">Credibility analysis will appear here</div></div>';
+    return;
+  }
+  const c = citeCurrentResult.credibility;
+  const score = c.score||0;
+  const color = score>=70?'#22c55e':score>=40?'#f97316':'#dc2626';
+  let html = '<div class="cite-card">';
+  html += '<div class="cite-card-style">Source Credibility Analysis</div>';
+  html += '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem;">';
+  html += '<div class="cite-cred-score" style="color:'+color+';">'+score+'<span style="font-size:.875rem;font-weight:400;color:#888;">/100</span></div>';
+  html += '<div style="flex:1;"><div class="cite-cred-bar"><div class="cite-cred-fill" style="width:'+score+'%;background:'+color+';"></div></div>';
+  html += '<div style="font-size:.75rem;color:'+color+';font-weight:600;margin-top:.25rem;">'+_cesc(c.label||'')+'</div></div></div>';
+  if(c.reasons && c.reasons.length){
+    html += '<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;margin-bottom:.5rem;">Analysis</div>';
+    c.reasons.forEach(r=>{ html+='<div style="display:flex;gap:.5rem;font-size:.8125rem;line-height:1.5;margin-bottom:.375rem;color:#555;"><span style="color:'+color+';">•</span>'+_cesc(r)+'</div>'; });
+  }
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+function citeRenderBib(){
+  const area = document.getElementById('cite-output-area');
+  const exportRow = document.getElementById('cite-bib-export-row');
+  if(!citeBibList.length){
+    area.innerHTML='<div class="cite-empty"><div style="font-size:.875rem;font-weight:600;color:#555;">Bibliography is empty</div><div style="font-size:.8125rem;">Generate citations and click "+ Bibliography"</div></div>';
+    exportRow.style.display='none';
+    return;
+  }
+  exportRow.style.display='flex';
+  document.getElementById('cite-bib-count').textContent=citeBibList.length+' source'+(citeBibList.length!==1?'s':'');
+  const sorted = [...citeBibList].sort((a,b)=>a.citation.localeCompare(b.citation));
+  let html = '<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#f97316;margin-bottom:.75rem;">References / Works Cited</div>';
+  sorted.forEach((item,i)=>{
+    html += '<div class="cite-bib-item"><div class="cite-bib-num">'+(i+1)+'.</div><div class="cite-bib-text">'+_cesc(item.citation)+'</div>';
+    html += '<button class="cite-bib-del" onclick="citeRemoveBib('+item._id+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+  });
+  area.innerHTML = html;
+}
+
+let _citeBibId = 0;
+function citeAddToBib(){
+  if(!citeCurrentResult||!citeCurrentResult.citation) return;
+  citeBibList.push({citation:citeCurrentResult.citation, _id:++_citeBibId});
+  const badge = document.getElementById('cite-bib-badge');
+  badge.textContent=citeBibList.length; badge.style.display='inline';
+  const btn = document.querySelector('.cite-card-btn.add-bib');
+  if(btn){ const orig=btn.textContent; btn.textContent='Added ✓'; setTimeout(()=>btn.textContent=orig,1500); }
+}
+function citeRemoveBib(id){
+  citeBibList = citeBibList.filter(x=>x._id!==id);
+  const badge = document.getElementById('cite-bib-badge');
+  if(citeBibList.length){ badge.textContent=citeBibList.length; }
+  else badge.style.display='none';
+  citeRenderBib();
+}
+function citeCopyBib(){
+  const sorted=[...citeBibList].sort((a,b)=>a.citation.localeCompare(b.citation));
+  const text=sorted.map((x,i)=>(i+1)+'. '+x.citation).join('\n\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=event.target; const orig=btn.textContent; btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent=orig,1500);
+  });
+}
+function citeClearBib(){
+  if(!confirm('Clear all bibliography entries?')) return;
+  citeBibList=[]; _citeBibId=0;
+  document.getElementById('cite-bib-badge').style.display='none';
+  citeRenderBib();
+}
+function citeCopySingle(){
+  if(!citeCurrentResult||!citeCurrentResult.citation) return;
+  navigator.clipboard.writeText(citeCurrentResult.citation).then(()=>{
+    const btn=event.target; const orig=btn.textContent; btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent=orig,1500);
+  });
+}
+function citeSpeak(){
+  if(!citeCurrentResult||!citeCurrentResult.citation||!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt=new SpeechSynthesisUtterance(citeCurrentResult.citation);
+  utt.rate=0.9; window.speechSynthesis.speak(utt);
+}
+function citeToggleVoice(){
+  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
+    alert('Speech recognition not supported. Try Chrome.'); return;
+  }
+  if(citeIsRecording){ citeStopVoice(); return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  citeVoiceRecog=new SR(); citeVoiceRecog.lang='en-US';
+  citeVoiceRecog.onresult=e=>{
+    const transcript=e.results[0][0].transcript.toLowerCase();
+    // Try to extract URL from speech
+    const urlMatch=transcript.match(/https?:\/\/\S+/);
+    if(urlMatch){ document.getElementById('cite-url-input').value=urlMatch[0]; citeShowInputTab('url'); }
+    else { document.getElementById('cite-url-input').value=transcript; }
+    citeStopVoice();
+  };
+  citeVoiceRecog.onerror=()=>citeStopVoice();
+  citeVoiceRecog.onend=()=>citeStopVoice();
+  citeVoiceRecog.start(); citeIsRecording=true;
+  document.getElementById('cite-voice-btn').classList.add('recording');
+}
+function citeStopVoice(){
+  if(citeVoiceRecog){try{citeVoiceRecog.stop();}catch(e){} citeVoiceRecog=null;}
+  citeIsRecording=false;
+  document.getElementById('cite-voice-btn').classList.remove('recording');
+}
+
+/* ── Input bindings ── */
+const nxInp=document.getElementById('nx-input');
+if(nxInp){
+  nxInp.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px';});
+  nxInp.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();nxSend();}});
+}
+const nxSrch=document.getElementById('nx-search-input');
+if(nxSrch) nxSrch.addEventListener('keydown',e=>{if(e.key==='Enter') nxDeepSearch();});
+const nxWi=document.getElementById('nx-welcome-input');
+if(nxWi) nxWi.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();nxSendFromWelcome();}});
+</script>
+{% endblock %}
