@@ -6,7 +6,6 @@
 <style>
 * { box-sizing: border-box; }
 body { background: #0d0d0d; }
-
 .rm-page {
   background: #0d0d0d; min-height: 100vh;
   margin: -1.5rem -2rem; padding: 0;
@@ -14,8 +13,6 @@ body { background: #0d0d0d; }
 }
 @media(max-width:900px){ .rm-page { margin: -.875rem -.875rem; } }
 @media(max-width:480px){ .rm-page { margin: -.625rem -.625rem; } }
-
-/* ── Top bar ── */
 .rm-topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: .75rem 1rem; background: #0d0d0d;
@@ -34,8 +31,6 @@ body { background: #0d0d0d; }
 }
 .rm-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: blink 1.2s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-/* ── Video area ── */
 .rm-video-wrap {
   position: relative; background: #111;
   display: flex; align-items: center; justify-content: center;
@@ -50,9 +45,10 @@ body { background: #0d0d0d; }
   gap: .75rem; color: #555; font-size: .9375rem; text-align: center; padding: 2rem;
   position: absolute; inset: 0;
 }
+</style>
+{% endblock %}
+<style>
 .rm-no-stream svg { width: 48px; height: 48px; opacity: .4; }
-
-/* Overlays on video */
 .rm-overlay-tl {
   position: absolute; top: .75rem; left: .75rem;
   display: flex; align-items: center; gap: .5rem;
@@ -63,14 +59,11 @@ body { background: #0d0d0d; }
   border-radius: 20px; display: flex; align-items: center; gap: .35rem;
   backdrop-filter: blur(4px);
 }
-
-/* Live comments overlay (bottom of video) */
 .rm-comments-overlay {
   position: absolute; bottom: 0; left: 0; right: 0;
   padding: .5rem .75rem 1rem;
   background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
-  pointer-events: none;
-  max-height: 45%;
+  pointer-events: none; max-height: 45%;
   display: flex; flex-direction: column; justify-content: flex-end;
   gap: .3rem; overflow: hidden;
 }
@@ -79,22 +72,15 @@ body { background: #0d0d0d; }
   background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
   border-radius: 14px; padding: .3rem .65rem;
   font-size: .8125rem; color: #fff; max-width: 90%;
-  animation: fadeUp .25s ease;
-  align-self: flex-start;
+  animation: fadeUp .25s ease; align-self: flex-start;
 }
 @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 .rm-cmt-user { font-weight: 700; color: #a78bfa; flex-shrink: 0; }
 .rm-cmt-text { word-break: break-word; }
-
-/* ── Info strip ── */
-.rm-info {
-  padding: .75rem 1rem .375rem; background: #0d0d0d;
-}
+.rm-info { padding: .75rem 1rem .375rem; background: #0d0d0d; }
 .rm-topic { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .2rem; }
 .rm-host-line { font-size: .8125rem; color: #666; }
 .rm-host-line span { color: #999; }
-
-/* ── Controls ── */
 .rm-controls {
   display: flex; align-items: center; justify-content: center;
   gap: .875rem; padding: .75rem 1rem 1rem; background: #0d0d0d;
@@ -110,8 +96,6 @@ body { background: #0d0d0d; }
 .rm-btn-red { background: #ef4444; color: #fff; }
 .rm-btn-red:hover { background: #dc2626; }
 .rm-btn-off { background: #1e1e1e; color: #444; }
-
-/* ── Comment input bar ── */
 .rm-comment-bar {
   display: flex; align-items: center; gap: .625rem;
   padding: .625rem 1rem .875rem; background: #0d0d0d;
@@ -120,24 +104,18 @@ body { background: #0d0d0d; }
 .rm-comment-input {
   flex: 1; background: #1a1a1a; border: 1.5px solid #2a2a2a;
   border-radius: 22px; padding: .55rem 1rem;
-  font-size: .875rem; color: #fff; outline: none;
-  transition: border-color .15s;
+  font-size: .875rem; color: #fff; outline: none; transition: border-color .15s;
 }
 .rm-comment-input::placeholder { color: #555; }
 .rm-comment-input:focus { border-color: #a855f7; }
 .rm-comment-send {
   width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
   background: #a855f7; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
+  display: flex; align-items: center; justify-content: center; transition: background .15s;
 }
 .rm-comment-send:hover { background: #9333ea; }
 .rm-comment-send svg { width: 16px; height: 16px; color: #fff; }
-
-/* ── Participants ── */
-.rm-participants {
-  padding: .625rem 1rem 5rem; background: #0d0d0d;
-}
+.rm-participants { padding: .625rem 1rem 5rem; background: #0d0d0d; }
 .rm-part-title {
   font-size: .75rem; font-weight: 600; color: #444;
   margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .05em;
@@ -155,8 +133,6 @@ body { background: #0d0d0d; }
 }
 .rm-part-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .rm-host-crown { color: #f59e0b; font-size: .65rem; }
-
-/* ── Viewer waiting ── */
 .rm-waiting {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: .75rem; padding: 2.5rem 1rem; color: #555; text-align: center;
@@ -169,12 +145,10 @@ body { background: #0d0d0d; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
-{% endblock %}
 
 {% block content %}
 <div class="rm-page">
 
-  <!-- Top bar -->
   <div class="rm-topbar">
     <button class="rm-back" onclick="rmLeaveAndGo()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
@@ -184,7 +158,6 @@ body { background: #0d0d0d; }
     <div style="width:56px;"></div>
   </div>
 
-  <!-- Video -->
   <div class="rm-video-wrap" id="rm-video-wrap">
     {% if is_host %}
       <video id="rm-video-host" autoplay muted playsinline></video>
@@ -200,7 +173,6 @@ body { background: #0d0d0d; }
       <video id="rm-video-viewer" autoplay playsinline style="display:none;"></video>
     {% endif %}
 
-    <!-- Top-left overlays: viewer count -->
     <div class="rm-overlay-tl">
       <div class="rm-viewer-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -208,17 +180,14 @@ body { background: #0d0d0d; }
       </div>
     </div>
 
-    <!-- Live comments overlay on video -->
     <div class="rm-comments-overlay" id="rm-comments-overlay"></div>
   </div>
 
-  <!-- Info -->
   <div class="rm-info">
     <div class="rm-topic">{{ room.topic }}</div>
     <div class="rm-host-line">Hosted by <span>{{ room.host.username }}</span></div>
   </div>
 
-  <!-- Controls -->
   <div class="rm-controls">
     {% if is_host %}
     <button class="rm-btn rm-btn-dark" id="rm-btn-mic" onclick="rmToggleMic()" title="Mute/Unmute">
@@ -233,23 +202,15 @@ body { background: #0d0d0d; }
     </button>
   </div>
 
-  <!-- Comment input -->
   <div class="rm-comment-bar">
-    <input
-      id="rm-comment-input"
-      class="rm-comment-input"
-      type="text"
-      placeholder="Say something…"
-      maxlength="280"
-      autocomplete="off"
-      onkeydown="if(event.key==='Enter')rmSendComment()"
-    >
+    <input id="rm-comment-input" class="rm-comment-input" type="text"
+      placeholder="Say something…" maxlength="280" autocomplete="off"
+      onkeydown="if(event.key==='Enter')rmSendComment()">
     <button class="rm-comment-send" onclick="rmSendComment()" aria-label="Send comment">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
 
-  <!-- Participants -->
   <div class="rm-participants">
     <div class="rm-part-title">Watching</div>
     <div class="rm-part-list" id="rm-part-list">
@@ -258,9 +219,7 @@ body { background: #0d0d0d; }
         <div class="rm-part-avatar">
           {% if p.user.community_profile.avatar %}
             <img src="{{ p.user.community_profile.avatar.url }}" alt="">
-          {% else %}
-            {{ p.user.username|slice:":1"|upper }}
-          {% endif %}
+          {% else %}{{ p.user.username|slice:":1"|upper }}{% endif %}
         </div>
         {{ p.user.username }}
         {% if p.user == room.host %}<span class="rm-host-crown">♛</span>{% endif %}
@@ -284,291 +243,6 @@ const RM_POLL_URL   = '/community/rooms/' + RM_ROOM_ID + '/poll/';
 const RM_LEAVE_URL  = '/community/rooms/' + RM_ROOM_ID + '/leave/';
 const RM_CMT_URL    = '/community/rooms/' + RM_ROOM_ID + '/comment/';
 
-// ── State ──────────────────────────────────────────────────────────────────
-let localStream  = null;
-let peerConns    = {};
-let viewerPc     = null;
-let micEnabled   = true;
-let camEnabled   = true;
-let pollTimer    = null;
-let leftRoom     = false;
-let seenCmtIds   = new Set();  // track rendered comments to avoid duplicates
-
-const ICE_SERVERS = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-];
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-function rmPost(url, body) {
-  return fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': RM_CSRF },
-    body: JSON.stringify(body),
-  }).then(r => r.json());
-}
-function rmSendSignal(type, payload, target) {
-  return rmPost(RM_SIGNAL_URL, { type, payload, target: target || 'all' });
-}
-
-// ── Comments ───────────────────────────────────────────────────────────────
-function rmRenderComment(cmt) {
-  if (seenCmtIds.has(cmt.id)) return;
-  seenCmtIds.add(cmt.id);
-  const overlay = document.getElementById('rm-comments-overlay');
-  if (!overlay) return;
-  const el = document.createElement('div');
-  el.className = 'rm-cmt-bubble';
-  el.innerHTML = `<span class="rm-cmt-user">${escHtml(cmt.username)}</span><span class="rm-cmt-text">${escHtml(cmt.text)}</span>`;
-  overlay.appendChild(el);
-  // Keep max 6 visible bubbles
-  const bubbles = overlay.querySelectorAll('.rm-cmt-bubble');
-  if (bubbles.length > 6) bubbles[0].remove();
-  // Auto-scroll
-  overlay.scrollTop = overlay.scrollHeight;
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-async function rmSendComment() {
-  const input = document.getElementById('rm-comment-input');
-  const text = (input.value || '').trim();
-  if (!text) return;
-  input.value = '';
-  // Optimistically render own comment
-  const tempId = 'local_' + Date.now();
-  rmRenderComment({ id: tempId, username: RM_USERNAME, text, ts: '' });
-  try {
-    const d = await rmPost(RM_CMT_URL, { text });
-    if (d.ok && d.comment) {
-      // Replace temp with real id so poll doesn't duplicate it
-      seenCmtIds.add(d.comment.id);
-    }
-  } catch(e) {}
-}
-
-// ── Host: start streaming ──────────────────────────────────────────────────
-async function rmHostStart() {
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  } catch(e) {
-    try { localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true }); }
-    catch(e2) { console.warn('No media access', e2); }
-  }
-  const vid = document.getElementById('rm-video-host');
-  const noCam = document.getElementById('rm-no-cam');
-  if (localStream && vid) {
-    vid.srcObject = localStream;
-    vid.style.display = 'block';
-    if (noCam) noCam.style.display = 'none';
-  } else {
-    if (vid) vid.style.display = 'none';
-    if (noCam) noCam.style.display = 'flex';
-  }
-  await rmSendSignal('host_ready', { host: RM_USERNAME }, 'all');
-  rmStartPoll();
-}
-
-// ── Host: connect a viewer ─────────────────────────────────────────────────
-async function rmHostConnectViewer(viewerUsername) {
-  if (peerConns[viewerUsername]) return;
-  const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-  peerConns[viewerUsername] = pc;
-  if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-  pc.onicecandidate = e => { if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, viewerUsername); };
-  pc.onconnectionstatechange = () => {
-    if (['disconnected','failed','closed'].includes(pc.connectionState)) {
-      pc.close(); delete peerConns[viewerUsername];
-    }
-  };
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  await rmSendSignal('offer', { sdp: offer }, viewerUsername);
-}
-
-// ── Viewer: connect to host ────────────────────────────────────────────────
-async function rmViewerConnect() {
-  if (viewerPc) return;
-  viewerPc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-  viewerPc.ontrack = e => {
-    const vid = document.getElementById('rm-video-viewer');
-    const waiting = document.getElementById('rm-waiting');
-    if (vid) { vid.srcObject = e.streams[0]; vid.style.display = 'block'; }
-    if (waiting) waiting.style.display = 'none';
-  };
-  viewerPc.onicecandidate = e => { if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, RM_HOST_NAME); };
-  viewerPc.onconnectionstatechange = () => {
-    if (['disconnected','failed'].includes(viewerPc.connectionState)) {
-      const waiting = document.getElementById('rm-waiting');
-      if (waiting) { waiting.style.display = 'flex'; waiting.innerHTML = '<div class="rm-waiting-spinner"></div><span>Reconnecting…</span>'; }
-      const vid = document.getElementById('rm-video-viewer');
-      if (vid) vid.style.display = 'none';
-      viewerPc = null;
-      setTimeout(rmViewerConnect, 3000);
-    }
-  };
-  await rmSendSignal('viewer_ready', { viewer: RM_USERNAME }, RM_HOST_NAME);
-}
-
-// ── Poll loop ──────────────────────────────────────────────────────────────
-async function rmPoll() {
-  if (leftRoom) return;
-  try {
-    const data = await fetch(RM_POLL_URL).then(r => r.json());
-
-    // Real-time viewer count
-    if (data.room) {
-      const el = document.getElementById('rm-count-num');
-      if (el) el.textContent = data.room.viewer_count ?? data.participants?.length ?? 0;
-      if (data.room.status === 'closed' && !RM_IS_HOST) {
-        rmShowToast('Stream ended');
-        setTimeout(() => window.location.href = '/community/live/', 1500);
-        return;
-      }
-    }
-
-    // Participant chips
-    if (data.participants) rmUpdateParticipants(data.participants);
-
-    // New comments
-    for (const cmt of (data.comments || [])) rmRenderComment(cmt);
-
-    // WebRTC signals
-    for (const sig of (data.signals || [])) await rmHandleSignal(sig);
-
-  } catch(e) { /* network hiccup */ }
-
-  if (!leftRoom) pollTimer = setTimeout(rmPoll, 2000);
-}
-
-function rmStartPoll() {
-  if (pollTimer) clearTimeout(pollTimer);
-  pollTimer = setTimeout(rmPoll, 1000);
-}
-
-// ── Signal handler ─────────────────────────────────────────────────────────
-async function rmHandleSignal(sig) {
-  const { type, payload, from } = sig;
-  if (RM_IS_HOST) {
-    if (type === 'viewer_ready') {
-      await rmHostConnectViewer(from);
-    } else if (type === 'answer') {
-      const pc = peerConns[from];
-      if (pc && pc.signalingState === 'have-local-offer')
-        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-    } else if (type === 'ice') {
-      const pc = peerConns[from];
-      if (pc && payload.candidate)
-        try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
-    }
-  } else {
-    if (type === 'host_ready') {
-      await rmViewerConnect();
-    } else if (type === 'offer') {
-      if (!viewerPc) await rmViewerConnect();
-      if (viewerPc && viewerPc.signalingState === 'stable') {
-        await viewerPc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-        const answer = await viewerPc.createAnswer();
-        await viewerPc.setLocalDescription(answer);
-        await rmSendSignal('answer', { sdp: answer }, RM_HOST_NAME);
-      }
-    } else if (type === 'ice') {
-      if (viewerPc && payload.candidate)
-        try { await viewerPc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
-    }
-  }
-}
-
-// ── Participant chips ──────────────────────────────────────────────────────
-function rmUpdateParticipants(usernames) {
-  const list = document.getElementById('rm-part-list');
-  if (!list) return;
-  usernames.forEach(u => {
-    if (!document.getElementById('rm-chip-' + u)) {
-      const chip = document.createElement('div');
-      chip.className = 'rm-part-chip';
-      chip.id = 'rm-chip-' + u;
-      chip.innerHTML = `<div class="rm-part-avatar">${u.slice(0,1).toUpperCase()}</div>${escHtml(u)}${u === RM_HOST_NAME ? ' <span class="rm-host-crown">♛</span>' : ''}`;
-      list.appendChild(chip);
-    }
-  });
-  list.querySelectorAll('.rm-part-chip').forEach(chip => {
-    const u = chip.id.replace('rm-chip-', '');
-    if (!usernames.includes(u)) chip.remove();
-  });
-}
-
-// ── Controls ───────────────────────────────────────────────────────────────
-function rmToggleMic() {
-  if (!localStream) return;
-  micEnabled = !micEnabled;
-  localStream.getAudioTracks().forEach(t => t.enabled = micEnabled);
-  const btn = document.getElementById('rm-btn-mic');
-  if (btn) btn.className = micEnabled ? 'rm-btn rm-btn-dark' : 'rm-btn rm-btn-off';
-}
-function rmToggleCam() {
-  if (!localStream) return;
-  camEnabled = !camEnabled;
-  localStream.getVideoTracks().forEach(t => t.enabled = camEnabled);
-  const btn = document.getElementById('rm-btn-cam');
-  if (btn) btn.className = camEnabled ? 'rm-btn rm-btn-dark' : 'rm-btn rm-btn-off';
-  const vid = document.getElementById('rm-video-host');
-  const noCam = document.getElementById('rm-no-cam');
-  if (vid) vid.style.display = camEnabled ? 'block' : 'none';
-  if (noCam) noCam.style.display = camEnabled ? 'none' : 'flex';
-}
-
-async function rmLeaveAndGo() {
-  leftRoom = true;
-  if (pollTimer) clearTimeout(pollTimer);
-  if (localStream) localStream.getTracks().forEach(t => t.stop());
-  Object.values(peerConns).forEach(pc => pc.close());
-  if (viewerPc) viewerPc.close();
-  try { await rmPost(RM_LEAVE_URL, {}); } catch(e) {}
-  window.location.href = '/community/live/';
-}
-
-function rmShowToast(msg) {
-  const t = document.createElement('div');
-  t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:.625rem 1.25rem;border-radius:20px;font-size:.875rem;z-index:9999;pointer-events:none;';
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
-}
-
-// ── Init ───────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  if (RM_IS_HOST) {
-    rmHostStart();
-  } else {
-    rmStartPoll();
-    rmViewerConnect();
-  }
-});
-
-window.addEventListener('beforeunload', () => {
-  if (!leftRoom) {
-    if (localStream) localStream.getTracks().forEach(t => t.stop());
-    navigator.sendBeacon(RM_LEAVE_URL, JSON.stringify({ csrfmiddlewaretoken: RM_CSRF }));
-  }
-});
-</script>
-{% endblock %}
-{% block extra_js %}
-<script>
-const RM_IS_HOST    = {{ is_host|yesno:"true,false" }};
-const RM_ROOM_ID    = '{{ room.id }}';
-const RM_USERNAME   = '{{ request.user.username }}';
-const RM_HOST_NAME  = '{{ room.host.username }}';
-const RM_CSRF       = '{{ csrf_token }}';
-const RM_SIGNAL_URL = '/community/rooms/' + RM_ROOM_ID + '/signal/';
-const RM_POLL_URL   = '/community/rooms/' + RM_ROOM_ID + '/poll/';
-const RM_LEAVE_URL  = '/community/rooms/' + RM_ROOM_ID + '/leave/';
-const RM_CMT_URL    = '/community/rooms/' + RM_ROOM_ID + '/comment/';
-
-// ── ICE servers — STUN + TURN for NAT traversal on mobile/cellular ─────────
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
@@ -577,20 +251,19 @@ const ICE_SERVERS = [
   { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
 ];
 
-// ── State ──────────────────────────────────────────────────────────────────
 let localStream      = null;
-let peerConns        = {};   // host only: { viewerUsername -> RTCPeerConnection }
-let viewerPc         = null; // viewer only
+let peerConns        = {};
+let viewerPc         = null;
 let viewerConnecting = false;
 let micEnabled       = true;
 let camEnabled       = true;
 let pollTimer        = null;
 let leftRoom         = false;
 let seenCmtIds       = new Set();
-let lastHostOfferSdp = null; // track last offer we processed so we don't re-process same one
+let lastHostOfferSdp = null;
 let hostReBroadcastTimer = null;
+let hostBroadcastOffer   = null;
 
-// ── Helpers ────────────────────────────────────────────────────────────────
 function rmPost(url, body) {
   return fetch(url, {
     method: 'POST',
@@ -602,7 +275,6 @@ function rmSendSignal(type, payload, target) {
   return rmPost(RM_SIGNAL_URL, { type, payload, target: target || 'all' });
 }
 
-// ── Comments ───────────────────────────────────────────────────────────────
 function rmRenderComment(cmt) {
   if (seenCmtIds.has(cmt.id)) return;
   seenCmtIds.add(cmt.id);
@@ -615,11 +287,9 @@ function rmRenderComment(cmt) {
   const bubbles = overlay.querySelectorAll('.rm-cmt-bubble');
   if (bubbles.length > 6) bubbles[0].remove();
 }
-
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 async function rmSendComment() {
   const input = document.getElementById('rm-comment-input');
   const text = (input.value || '').trim();
@@ -634,15 +304,6 @@ async function rmSendComment() {
 }
 
 // ── HOST FLOW ──────────────────────────────────────────────────────────────
-// 1. Get media
-// 2. Create ONE offer with ICE gathered, store it persistently
-// 3. Re-broadcast every 10s for late joiners
-// 4. When a viewer sends an answer (to that offer), create a dedicated PC,
-//    replay the same offer as local description, then set viewer's answer
-
-// The broadcast offer SDP — stored so we can replay it per-viewer
-let hostBroadcastOffer = null;
-
 async function rmHostStart() {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -653,8 +314,7 @@ async function rmHostStart() {
   const vid = document.getElementById('rm-video-host');
   const noCam = document.getElementById('rm-no-cam');
   if (localStream && vid) {
-    vid.srcObject = localStream;
-    vid.style.display = 'block';
+    vid.srcObject = localStream; vid.style.display = 'block';
     if (noCam) noCam.style.display = 'none';
   } else {
     if (vid) vid.style.display = 'none';
@@ -671,7 +331,6 @@ async function rmHostBroadcastOffer() {
     if (localStream) localStream.getTracks().forEach(t => tempPc.addTrack(t, localStream));
     const offer = await tempPc.createOffer();
     await tempPc.setLocalDescription(offer);
-    // Wait for ICE gathering to complete (max 3s) so SDP includes all candidates
     await new Promise(resolve => {
       if (tempPc.iceGatheringState === 'complete') { resolve(); return; }
       tempPc.addEventListener('icegatheringstatechange', () => {
@@ -686,27 +345,21 @@ async function rmHostBroadcastOffer() {
 }
 
 async function rmHostHandleAnswer(viewerUsername, answerSdp) {
-  // Skip if already connected
   const existing = peerConns[viewerUsername];
   if (existing && ['connected','connecting'].includes(existing.connectionState)) return;
   if (existing) { existing.close(); delete peerConns[viewerUsername]; }
-  if (!hostBroadcastOffer) return; // no offer yet, can't match
+  if (!hostBroadcastOffer) return;
 
   const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
   peerConns[viewerUsername] = pc;
   if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-
-  pc.onicecandidate = e => {
-    if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, viewerUsername);
-  };
+  pc.onicecandidate = e => { if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, viewerUsername); };
   pc.onconnectionstatechange = () => {
     if (['disconnected','failed','closed'].includes(pc.connectionState)) {
       pc.close(); delete peerConns[viewerUsername];
     }
   };
-
   try {
-    // Replay the same offer SDP the viewer answered against
     await pc.setLocalDescription(hostBroadcastOffer);
     await pc.setRemoteDescription(new RTCSessionDescription(answerSdp));
   } catch(e) {
@@ -716,83 +369,54 @@ async function rmHostHandleAnswer(viewerUsername, answerSdp) {
 }
 
 // ── VIEWER FLOW ────────────────────────────────────────────────────────────
-// 1. On each poll tick, check data.host_offer
-// 2. If host_offer exists and we don't have a working PC yet → connect
-// 3. Create RTCPeerConnection, setRemoteDescription(host_offer.sdp)
-// 4. createAnswer, setLocalDescription, send answer to host
-// 5. Exchange ICE via signals
-// 6. If connectionState goes failed → reset and retry on next poll
-
 async function rmViewerHandleOffer(hostOfferSdp) {
-  // Don't reconnect if already connected
   if (viewerPc && ['connected','connecting'].includes(viewerPc.connectionState)) return;
-  // Don't reconnect if we're mid-handshake
   if (viewerConnecting) return;
-  // Avoid re-processing the exact same offer SDP
   const offerKey = JSON.stringify(hostOfferSdp);
   if (offerKey === lastHostOfferSdp && viewerPc && viewerPc.connectionState !== 'failed') return;
 
   viewerConnecting = true;
   lastHostOfferSdp = offerKey;
-
-  // Clean up old PC
   if (viewerPc) { viewerPc.close(); viewerPc = null; }
 
   try {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     viewerPc = pc;
-
     pc.ontrack = e => {
       const vid = document.getElementById('rm-video-viewer');
       const waiting = document.getElementById('rm-waiting');
-      if (vid && e.streams && e.streams[0]) {
-        vid.srcObject = e.streams[0];
-        vid.style.display = 'block';
-      }
+      if (vid && e.streams && e.streams[0]) { vid.srcObject = e.streams[0]; vid.style.display = 'block'; }
       if (waiting) waiting.style.display = 'none';
     };
-
-    pc.onicecandidate = e => {
-      if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, RM_HOST_NAME);
-    };
-
+    pc.onicecandidate = e => { if (e.candidate) rmSendSignal('ice', { candidate: e.candidate }, RM_HOST_NAME); };
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'connected') {
         viewerConnecting = false;
-        const waiting = document.getElementById('rm-waiting');
-        if (waiting) waiting.style.display = 'none';
+        const w = document.getElementById('rm-waiting');
+        if (w) w.style.display = 'none';
       }
       if (['disconnected','failed'].includes(pc.connectionState)) {
         viewerConnecting = false;
-        lastHostOfferSdp = null; // allow retry with same offer
-        const waiting = document.getElementById('rm-waiting');
-        if (waiting) {
-          waiting.style.display = 'flex';
-          waiting.innerHTML = '<div class="rm-waiting-spinner"></div><span>Reconnecting…</span>';
-        }
+        lastHostOfferSdp = null;
+        const w = document.getElementById('rm-waiting');
+        if (w) { w.style.display = 'flex'; w.innerHTML = '<div class="rm-waiting-spinner"></div><span>Reconnecting…</span>'; }
         const vid = document.getElementById('rm-video-viewer');
         if (vid) vid.style.display = 'none';
         if (viewerPc === pc) viewerPc = null;
       }
     };
-
     await pc.setRemoteDescription(new RTCSessionDescription(hostOfferSdp));
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
     await rmSendSignal('answer', { sdp: answer }, RM_HOST_NAME);
-
-    // Wait up to 5s for connection; if still not connected, reset for retry
     setTimeout(() => {
       if (viewerPc === pc && !['connected','connecting'].includes(pc.connectionState)) {
-        viewerConnecting = false;
-        lastHostOfferSdp = null;
+        viewerConnecting = false; lastHostOfferSdp = null;
       }
     }, 5000);
-
   } catch(e) {
     console.warn('rmViewerHandleOffer error', e);
-    viewerConnecting = false;
-    lastHostOfferSdp = null;
+    viewerConnecting = false; lastHostOfferSdp = null;
     if (viewerPc) { viewerPc.close(); viewerPc = null; }
   }
 }
@@ -802,8 +426,6 @@ async function rmPoll() {
   if (leftRoom) return;
   try {
     const data = await fetch(RM_POLL_URL).then(r => r.json());
-
-    // Viewer count
     if (data.room) {
       const el = document.getElementById('rm-count-num');
       if (el) el.textContent = data.room.viewer_count ?? (data.participants || []).length;
@@ -813,14 +435,9 @@ async function rmPoll() {
         return;
       }
     }
-
-    // Participants
     if (data.participants) rmUpdateParticipants(data.participants);
-
-    // Comments
     for (const cmt of (data.comments || [])) rmRenderComment(cmt);
 
-    // ── HOST: handle answers + ICE from viewers ──
     if (RM_IS_HOST) {
       for (const sig of (data.signals || [])) {
         const { type, payload, from } = sig;
@@ -828,30 +445,20 @@ async function rmPoll() {
           await rmHostHandleAnswer(from, payload.sdp);
         } else if (type === 'ice') {
           const pc = peerConns[from];
-          if (pc && payload.candidate) {
-            try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
-          }
+          if (pc && payload.candidate) try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
         }
       }
-    }
-
-    // ── VIEWER: pick up host_offer on every tick ──
-    if (!RM_IS_HOST) {
+    } else {
       if (data.host_offer && data.host_offer.sdp && data.host_offer.sdp.sdp) {
-        // host_offer = { sdp: { sdp: RTCSessionDescription }, from: username }
         await rmViewerHandleOffer(data.host_offer.sdp.sdp);
       }
-      // Handle ICE candidates from host
       for (const sig of (data.signals || [])) {
-        const { type, payload } = sig;
-        if (type === 'ice' && viewerPc && payload.candidate) {
-          try { await viewerPc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
+        if (sig.type === 'ice' && viewerPc && sig.payload.candidate) {
+          try { await viewerPc.addIceCandidate(new RTCIceCandidate(sig.payload.candidate)); } catch(e) {}
         }
       }
     }
-
-  } catch(e) { /* network hiccup, retry next tick */ }
-
+  } catch(e) {}
   if (!leftRoom) pollTimer = setTimeout(rmPoll, 2000);
 }
 
@@ -860,15 +467,13 @@ function rmStartPoll() {
   pollTimer = setTimeout(rmPoll, 500);
 }
 
-// ── Participant chips ──────────────────────────────────────────────────────
 function rmUpdateParticipants(usernames) {
   const list = document.getElementById('rm-part-list');
   if (!list) return;
   usernames.forEach(u => {
     if (!document.getElementById('rm-chip-' + u)) {
       const chip = document.createElement('div');
-      chip.className = 'rm-part-chip';
-      chip.id = 'rm-chip-' + u;
+      chip.className = 'rm-part-chip'; chip.id = 'rm-chip-' + u;
       chip.innerHTML = `<div class="rm-part-avatar">${escHtml(u.slice(0,1).toUpperCase())}</div>${escHtml(u)}${u === RM_HOST_NAME ? ' <span class="rm-host-crown">♛</span>' : ''}`;
       list.appendChild(chip);
     }
@@ -879,7 +484,6 @@ function rmUpdateParticipants(usernames) {
   });
 }
 
-// ── Controls ───────────────────────────────────────────────────────────────
 function rmToggleMic() {
   if (!localStream) return;
   micEnabled = !micEnabled;
@@ -918,13 +522,9 @@ function rmShowToast(msg) {
   setTimeout(() => t.remove(), 2500);
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (RM_IS_HOST) {
-    rmHostStart();
-  } else {
-    rmStartPoll(); // viewer just polls — offer comes back in poll response
-  }
+  if (RM_IS_HOST) { rmHostStart(); }
+  else { rmStartPoll(); }
 });
 
 window.addEventListener('beforeunload', () => {
