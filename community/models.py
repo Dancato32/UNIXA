@@ -1402,3 +1402,88 @@ class HelpBeacon(models.Model):
 
     def __str__(self):
         return f'Beacon: {self.title} [{self.urgency}]'
+
+
+# ── MyNexa Local-First System ─────────────────────────────────────────────────
+
+NEXA_TOOL_CHOICES = [
+    ('chat',    'AI Chat'),
+    ('search',  'Deep Search'),
+    ('essay',   'AI Writer'),
+    ('para',    'Paraphraser'),
+    ('cite',    'Citation Generator'),
+    ('extract', 'Extract Data'),
+    ('lit',     'Literature Review'),
+    ('topics',  'Find Topics'),
+    ('pdf',     'Chat with PDF'),
+    ('tutor',   'AI Tutor'),
+]
+
+NEXA_SYNC_STATUS = [
+    ('draft',  'Draft'),
+    ('pushed', 'Pushed'),
+    ('synced', 'Synced'),
+]
+
+
+class NexaDraft(models.Model):
+    """
+    A piece of content created inside MyNexa (local-first).
+    Can be pushed to any shared workspace.
+    """
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='nexa_drafts'
+    )
+    source_workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.CASCADE, related_name='drafts',
+        limit_choices_to={'workspace_type': GroupWorkspace.TYPE_NEXA, 'is_personal': True},
+    )
+    target_workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='received_drafts',
+    )
+    tool = models.CharField(max_length=50, db_index=True, choices=NEXA_TOOL_CHOICES)
+    title = models.CharField(max_length=255, blank=True)
+    content = models.TextField(blank=True)
+    meta = models.JSONField(default=dict, blank=True)  # tool-specific data
+    sync_status = models.CharField(max_length=10, choices=NEXA_SYNC_STATUS, default='draft')
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'Draft({self.tool}): {self.title or self.id}'
+
+
+class NexaSyncLog(models.Model):
+    """Audit trail for every push/sync action from MyNexa to a shared workspace."""
+
+    ACTION_PUSH   = 'push'
+    ACTION_SYNC   = 'sync'
+    ACTION_RECALL = 'recall'
+    ACTION_CHOICES = [
+        (ACTION_PUSH,   'Push'),
+        (ACTION_SYNC,   'Sync'),
+        (ACTION_RECALL, 'Recall'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    draft = models.ForeignKey(NexaDraft, on_delete=models.CASCADE, related_name='sync_logs')
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='nexa_sync_logs'
+    )
+    target_workspace = models.ForeignKey(
+        GroupWorkspace, on_delete=models.SET_NULL, null=True, blank=True, related_name='sync_logs'
+    )
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES, default=ACTION_PUSH)
+    note = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'SyncLog({self.action}): {self.draft} → {self.target_workspace}'

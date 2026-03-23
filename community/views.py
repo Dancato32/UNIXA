@@ -26,6 +26,8 @@ from community.models import (
     HelpBeacon,
     Message,
     MicroRoom,
+    NexaDraft,
+    NexaSyncLog,
     NexaWorkspaceLink,
     Notification,
     Post,
@@ -1150,27 +1152,161 @@ def workspace_list(request):
 
 @login_required
 def nexa_workspace(request):
-    """Personal Nexa AI page — redirects to workspace detail which renders nexa_home.html."""
+    """Canonical MyNexa entry point — ensures workspace exists then redirects."""
+    ws = _get_or_create_mynexa(request.user)
+    return redirect('community:workspace_detail', ws_id=ws.id)
+
+
+def _get_or_create_mynexa(user):
+    """Get or create the user's MyNexa workspace."""
     ws = GroupWorkspace.objects.filter(
-        owner=request.user,
+        owner=user,
         workspace_type=GroupWorkspace.TYPE_NEXA,
         is_personal=True,
     ).first()
     if not ws:
         ws = GroupWorkspace.objects.create(
-            name='My Nexa Workspace',
-            description='Your personal AI-powered learning hub.',
+            name='MyNexa',
+            description='Your personal command center.',
             workspace_type=GroupWorkspace.TYPE_NEXA,
             privacy=GroupWorkspace.PRIVACY_PRIVATE,
-            owner=request.user,
+            owner=user,
             is_personal=True,
         )
-        WorkspaceMember.objects.create(
-            workspace=ws,
-            user=request.user,
-            role=WorkspaceMember.ROLE_OWNER,
+        WorkspaceMember.objects.get_or_create(
+            workspace=ws, user=user,
+            defaults={'role': WorkspaceMember.ROLE_OWNER},
         )
-    return redirect('community:workspace_detail', ws_id=ws.id)
+    return ws
+
+
+@login_required
+@require_POST
+def mynexa_save_draft(request):
+    """Save or update a draft inside MyNexa."""
+    import json as _json
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'bad json'}, status=400)
+
+    ws = _get_or_create_mynexa(request.user)
+    draft_id = data.get('draft_id')
+    tool = data.get('tool', 'chat')
+    title = (data.get('title') or '').strip()[:255]
+    content = (data.get('content') or '').strip()
+    meta = data.get('meta', {})
+
+    if draft_id:
+        draft = NexaDraft.objects.filter(id=draft_id, owner=request.user).first()
+        if draft:
+            draft.title = title or draft.title
+            draft.content = content or draft.content
+            draft.meta = meta or draft.meta
+            draft.save(update_fields=['title', 'content', 'meta', 'updated_at'])
+            return JsonResponse({'ok': True, 'draft_id': str(draft.id)})
+
+    draft = NexaDraft.objects.create(
+        owner=request.user,
+        source_workspace=ws,
+        tool=tool,
+        title=title,
+        content=content,
+        meta=meta,
+        sync_status='draft',
+    )
+    return JsonResponse({'ok': True, 'draft_id': str(draft.id)})
+
+
+@login_required
+def mynexa_drafts(request):
+    """List all drafts for the current user's MyNexa."""
+    tool = request.GET.get('tool', '')
+    qs = NexaDraft.objects.filter(owner=request.user).order_by('-updated_at')
+    if tool:
+        qs = qs.filter(tool=tool)
+    drafts = [
+        {
+            'id': str(d.id),
+            'tool': d.tool,
+            'title': d.title or f'Untitled {d.tool}',
+            'content_preview': d.content[:120],
+            'sync_status': d.sync_status,
+            'updated_at': d.updated_at.strftime('%b %d, %H:%M'),
+            'target_workspace': str(d.target_workspace_id) if d.target_workspace_id else None,
+        }
+        for d in qs[:50]
+    ]
+    return JsonResponse({'drafts': drafts})
+
+
+@login_required
+@require_POST
+def mynexa_push(request, draft_id):
+    """Push a draft from MyNexa to a shared workspace."""
+    import json as _json
+    draft = get_object_or_404(NexaDraft, id=draft_id, owner=request.user)
+    try:
+        data = _json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'bad json'}, status=400)
+
+    target_id = data.get('workspace_id')
+    if not target_id:
+        return JsonResponse({'error': 'workspace_id required'}, status=400)
+
+    target_ws = get_object_or_404(GroupWorkspace, id=target_id, is_active=True)
+    # Must be a member
+    if not WorkspaceMember.objects.filter(workspace=target_ws, user=request.user).exists():
+        return JsonResponse({'error': 'Not a member of that workspace'}, status=403)
+
+    # Create a task in the target workspace from the draft
+    task_title = draft.title or f'{draft.get_tool_display()} from MyNexa'
+    WorkspaceTask.objects.create(
+        workspace=target_ws,
+        created_by=request.user,
+        assigned_to=request.user,
+        title=task_title,
+        description=draft.content[:2000],
+        status=WorkspaceTask.STATUS_TODO,
+    )
+
+    # Update draft
+    draft.target_workspace = target_ws
+    draft.sync_status = 'pushed'
+    draft.save(update_fields=['target_workspace', 'sync_status', 'updated_at'])
+
+    NexaSyncLog.objects.create(
+        draft=draft,
+        actor=request.user,
+        target_workspace=target_ws,
+        action=NexaSyncLog.ACTION_PUSH,
+        note=f'Pushed "{task_title}" to {target_ws.name}',
+    )
+
+    return JsonResponse({'ok': True, 'workspace': target_ws.name})
+
+
+@login_required
+def mynexa_workspaces(request):
+    """Return shared workspaces the user can push to."""
+    memberships = WorkspaceMember.objects.filter(
+        user=request.user,
+        workspace__is_active=True,
+    ).exclude(
+        workspace__workspace_type=GroupWorkspace.TYPE_NEXA,
+    ).select_related('workspace').order_by('-workspace__updated_at')
+
+    workspaces = [
+        {
+            'id': str(m.workspace.id),
+            'name': m.workspace.name,
+            'type': m.workspace.workspace_type,
+            'role': m.role,
+        }
+        for m in memberships
+    ]
+    return JsonResponse({'workspaces': workspaces})
 
 
 @login_required
@@ -1415,11 +1551,15 @@ def workspace_detail(request, ws_id):
 
     # Nexa workspaces get the full AI tools interface
     if ws.workspace_type == GroupWorkspace.TYPE_NEXA:
+        drafts = NexaDraft.objects.filter(
+            owner=request.user, source_workspace=ws
+        ).order_by('-updated_at')[:20]
         return render(request, 'community/nexa_home.html', {
             'ws': ws,
             'membership': membership,
             'linked_workspaces': linked_workspaces,
             'my_tasks': my_tasks,
+            'drafts': drafts,
         })
 
     return render(request, 'community/workspace_detail.html', {

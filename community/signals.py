@@ -195,29 +195,14 @@ def on_custom_community_join(sender, instance, created, **kwargs):
 from django.contrib.auth import get_user_model as _get_user_model
 
 def _create_personal_workspace(sender, instance, created, **kwargs):
-    """Create a private personal workspace + a Nexa workspace for every new user."""
+    """Auto-create MyNexa workspace for every new user — the single personal hub."""
     if not created:
         return
     try:
         from community.models import GroupWorkspace, WorkspaceMember
-        # Personal workspace
-        ws = GroupWorkspace.objects.create(
-            name='My Personal Workspace',
-            description='Your private workspace — only visible to you.',
-            workspace_type=GroupWorkspace.TYPE_GENERAL,
-            privacy=GroupWorkspace.PRIVACY_PRIVATE,
-            owner=instance,
-            is_personal=True,
-        )
-        WorkspaceMember.objects.create(
-            workspace=ws,
-            user=instance,
-            role=WorkspaceMember.ROLE_OWNER,
-        )
-        # Nexa workspace — personal AI hub
         nexa_ws = GroupWorkspace.objects.create(
-            name='My Nexa Workspace',
-            description='Your personal AI-powered learning hub. Chat with Nexa, write essays, solve assignments, and more.',
+            name='MyNexa',
+            description='Your personal command center. All tools, drafts, and actions live here.',
             workspace_type=GroupWorkspace.TYPE_NEXA,
             privacy=GroupWorkspace.PRIVACY_PRIVATE,
             owner=instance,
@@ -230,7 +215,7 @@ def _create_personal_workspace(sender, instance, created, **kwargs):
         )
     except Exception as e:
         import logging
-        logging.getLogger(__name__).warning('personal workspace creation failed: %s', e)
+        logging.getLogger(__name__).warning('MyNexa workspace creation failed: %s', e)
 
 
 def _connect_user_signal():

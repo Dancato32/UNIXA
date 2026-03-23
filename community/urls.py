@@ -91,7 +91,12 @@ urlpatterns = [
 
     # Group Workspaces
     path('workspaces/', views.workspace_list, name='workspace_list'),
-    path('workspaces/nexa/', views.nexa_workspace, name='nexa_workspace'),
+    # Nexa workspace (MyNexa)
+    path('mynexa/', views.nexa_workspace, name='nexa_workspace'),
+    path('mynexa/drafts/', views.mynexa_drafts, name='mynexa_drafts'),
+    path('mynexa/drafts/save/', views.mynexa_save_draft, name='mynexa_save_draft'),
+    path('mynexa/drafts/<uuid:draft_id>/push/', views.mynexa_push, name='mynexa_push'),
+    path('mynexa/workspaces/', views.mynexa_workspaces, name='mynexa_workspaces'),
     path('workspaces/create/', views.workspace_create, name='workspace_create'),
     path('workspaces/join/<str:invite_code>/', views.workspace_join, name='workspace_join'),
     path('workspaces/users/search/', views.workspace_search_users, name='workspace_search_users'),
