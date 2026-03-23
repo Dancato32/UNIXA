@@ -564,12 +564,12 @@ body{background:var(--ws-bg);}
             </label>
             <input type="file" id="chatFileInput" style="display:none" onchange="onChatFileSelect(this);updateActionBtn()">
           </div>
-          <!-- single action button: mic when empty, send when has content -->
+          <!-- send button (always visible when typing, else mic) -->
           <button class="chat-action-btn" id="chatActionBtn" onclick="onActionBtn()">
             <!-- mic icon (default) -->
             <svg id="iconMic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             <!-- send icon (shown when typing) -->
-            <svg id="iconSend" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <svg id="iconSend" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
       </div>
@@ -1071,6 +1071,8 @@ function updateActionBtn(){
   const showSend=hasText||hasFile||!!_voiceBlob;
   document.getElementById('iconMic').style.display=showSend?'none':'block';
   document.getElementById('iconSend').style.display=showSend?'block':'none';
+  const btn=document.getElementById('chatActionBtn');
+  btn.style.background=showSend?'#6366f1':'#25d366';
 }
 
 // Single button: mic when empty, send when has content
@@ -1864,6 +1866,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateTaskCounts();
   // Start chat polling
   setInterval(pollChat, 3000);
+  // Init action button state
+  updateActionBtn();
   // Mobile sidebar button
   if(window.innerWidth<=768){
     const btn=document.getElementById('mobileSidebarBtn');
