@@ -1150,7 +1150,7 @@ def workspace_list(request):
 
 @login_required
 def nexa_workspace(request):
-    """Personal Nexa AI page — SciSpace-style interface."""
+    """Personal Nexa AI page — redirects to workspace detail which renders nexa_home.html."""
     ws = GroupWorkspace.objects.filter(
         owner=request.user,
         workspace_type=GroupWorkspace.TYPE_NEXA,
@@ -1170,7 +1170,7 @@ def nexa_workspace(request):
             user=request.user,
             role=WorkspaceMember.ROLE_OWNER,
         )
-    return render(request, 'community/nexa_home.html', {'ws': ws})
+    return redirect('community:workspace_detail', ws_id=ws.id)
 
 
 @login_required
@@ -1412,6 +1412,15 @@ def workspace_detail(request, ws_id):
             workspace_id__in=linked_ws_ids,
             assigned_to=request.user,
         ).select_related('workspace').order_by('due_date', 'created_at')
+
+    # Nexa workspaces get the full AI tools interface
+    if ws.workspace_type == GroupWorkspace.TYPE_NEXA:
+        return render(request, 'community/nexa_home.html', {
+            'ws': ws,
+            'membership': membership,
+            'linked_workspaces': linked_workspaces,
+            'my_tasks': my_tasks,
+        })
 
     return render(request, 'community/workspace_detail.html', {
         'ws': ws,
