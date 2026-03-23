@@ -1425,32 +1425,36 @@ def nexa_submit_task(request, task_id):
 
 
 def _auto_link_nexa(user, group_ws):
-    """Ensure the user's Nexa workspace is linked to group_ws. Creates Nexa ws if needed."""
+    """Ensure the user's MyNexa workspace is linked to group_ws. Creates MyNexa if needed."""
     if group_ws.workspace_type == GroupWorkspace.TYPE_NEXA:
-        return  # don't link a nexa ws to itself
-    nexa_ws = GroupWorkspace.objects.filter(
-        owner=user,
-        workspace_type=GroupWorkspace.TYPE_NEXA,
-        is_personal=True,
-    ).first()
-    if not nexa_ws:
-        nexa_ws = GroupWorkspace.objects.create(
-            name='My Nexa Workspace',
-            description='Your personal AI-powered learning hub.',
-            workspace_type=GroupWorkspace.TYPE_NEXA,
-            privacy=GroupWorkspace.PRIVACY_PRIVATE,
+        return  # never link a nexa ws to itself
+    try:
+        nexa_ws = GroupWorkspace.objects.filter(
             owner=user,
+            workspace_type=GroupWorkspace.TYPE_NEXA,
             is_personal=True,
+        ).first()
+        if not nexa_ws:
+            nexa_ws = GroupWorkspace.objects.create(
+                name='MyNexa',
+                description='Your personal command center.',
+                workspace_type=GroupWorkspace.TYPE_NEXA,
+                privacy=GroupWorkspace.PRIVACY_PRIVATE,
+                owner=user,
+                is_personal=True,
+            )
+            WorkspaceMember.objects.get_or_create(
+                workspace=nexa_ws,
+                user=user,
+                defaults={'role': WorkspaceMember.ROLE_OWNER},
+            )
+        NexaWorkspaceLink.objects.get_or_create(
+            nexa_workspace=nexa_ws,
+            linked_workspace=group_ws,
         )
-        WorkspaceMember.objects.create(
-            workspace=nexa_ws,
-            user=user,
-            role=WorkspaceMember.ROLE_OWNER,
-        )
-    NexaWorkspaceLink.objects.get_or_create(
-        nexa_workspace=nexa_ws,
-        linked_workspace=group_ws,
-    )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning('_auto_link_nexa failed for %s: %s', user, e)
 
 
 @login_required

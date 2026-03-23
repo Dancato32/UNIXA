@@ -190,7 +190,49 @@ def on_custom_community_join(sender, instance, created, **kwargs):
         )
 
 
-# ── Auto-create Personal Workspace on user registration ──────────────────────
+# ── Auto-link WorkspaceMember to MyNexa ──────────────────────────────────────
+
+from community.models import WorkspaceMember as _WorkspaceMember
+
+@receiver(post_save, sender=_WorkspaceMember)
+def on_workspace_member_added(sender, instance, created, **kwargs):
+    """Whenever a user joins any non-Nexa workspace, auto-link it to their MyNexa."""
+    if not created:
+        return
+    ws = instance.workspace
+    user = instance.user
+    if ws.workspace_type == 'nexa':
+        return  # never link nexa to itself
+    try:
+        from community.models import GroupWorkspace, NexaWorkspaceLink
+        nexa_ws = GroupWorkspace.objects.filter(
+            owner=user,
+            workspace_type=GroupWorkspace.TYPE_NEXA,
+            is_personal=True,
+        ).first()
+        if not nexa_ws:
+            nexa_ws = GroupWorkspace.objects.create(
+                name='MyNexa',
+                description='Your personal command center.',
+                workspace_type=GroupWorkspace.TYPE_NEXA,
+                privacy=GroupWorkspace.PRIVACY_PRIVATE,
+                owner=user,
+                is_personal=True,
+            )
+            _WorkspaceMember.objects.get_or_create(
+                workspace=nexa_ws,
+                user=user,
+                defaults={'role': _WorkspaceMember.ROLE_OWNER},
+            )
+        NexaWorkspaceLink.objects.get_or_create(
+            nexa_workspace=nexa_ws,
+            linked_workspace=ws,
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning('auto-link MyNexa signal failed: %s', e)
+
+
 
 from django.contrib.auth import get_user_model as _get_user_model
 
@@ -208,10 +250,10 @@ def _create_personal_workspace(sender, instance, created, **kwargs):
             owner=instance,
             is_personal=True,
         )
-        WorkspaceMember.objects.create(
+        WorkspaceMember.objects.get_or_create(
             workspace=nexa_ws,
             user=instance,
-            role=WorkspaceMember.ROLE_OWNER,
+            defaults={'role': WorkspaceMember.ROLE_OWNER},
         )
     except Exception as e:
         import logging
