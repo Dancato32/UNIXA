@@ -9,150 +9,370 @@
 {% block mobile_title %}Start My Startup{% endblock %}
 {% block extra_css %}
 <style>
-.startup-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
-@media(max-width:640px){.startup-grid{grid-template-columns:1fr;}}
-.field label{display:block;font-size:.75rem;font-weight:600;color:var(--t3);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.05em;}
-.field input,.field select,.field textarea{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:.5rem .75rem;color:var(--t1);font-size:.875rem;outline:none;transition:border-color .15s;}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--t3);}
-.field textarea{resize:vertical;min-height:80px;}
-.field select option{background:var(--s3);}
-.team-card{background:var(--s2);border:1px solid var(--b2);border-radius:10px;overflow:hidden;}
-.team-header{padding:1rem;border-bottom:1px solid var(--b2);display:flex;align-items:center;gap:.75rem;}
-.team-body{padding:1rem;}
-.member-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--b1);}
-.member-row:last-child{border-bottom:none;}
-.member-av{width:36px;height:36px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:700;flex-shrink:0;}
-.result-box{background:var(--s3);border:1px solid var(--b2);border-radius:10px;padding:1.25rem;margin-top:1.25rem;display:none;}
+/* ── Variables ── */
+.su-page{max-width:680px;margin:0 auto;padding-bottom:2rem;}
+
+/* ── Hero banner ── */
+.su-hero{
+  background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);
+  border-radius:16px;padding:1.75rem 1.5rem;margin-bottom:1.5rem;
+  color:#fff;position:relative;overflow:hidden;
+}
+.su-hero::before{
+  content:'🚀';position:absolute;right:1.25rem;top:50%;
+  transform:translateY(-50%);font-size:4rem;opacity:.18;
+  pointer-events:none;
+}
+.su-hero-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;opacity:.75;margin-bottom:.375rem;}
+.su-hero-title{font-size:1.5rem;font-weight:800;line-height:1.2;margin-bottom:.375rem;}
+.su-hero-sub{font-size:.875rem;opacity:.8;line-height:1.5;}
+
+/* ── Form card ── */
+.su-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:1.5rem;margin-bottom:1.25rem;
+  box-shadow:var(--shadow-sm);
+}
+.su-card-title{
+  font-size:.9375rem;font-weight:700;color:var(--text);
+  margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;
+}
+.su-card-title svg{width:18px;height:18px;color:var(--accent);}
+
+/* ── Fields ── */
+.su-field{margin-bottom:1rem;}
+.su-field label{
+  display:block;font-size:.75rem;font-weight:700;
+  color:var(--text3);margin-bottom:.375rem;
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.su-field input,.su-field select,.su-field textarea{
+  width:100%;background:var(--surface2);
+  border:1.5px solid var(--border);
+  border-radius:10px;padding:.625rem .875rem;
+  color:var(--text);font-size:.9375rem;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+  font-family:inherit;box-sizing:border-box;
+}
+.su-field input:focus,.su-field select:focus,.su-field textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-subtle);
+}
+.su-field input::placeholder,.su-field textarea::placeholder{color:var(--text4);}
+.su-field textarea{resize:vertical;min-height:90px;line-height:1.6;}
+.su-field select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888880' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .875rem center;
+  padding-right:2.25rem;
+}
+.su-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
+
+/* ── Stage pills ── */
+.su-stage-row{display:flex;gap:.5rem;flex-wrap:wrap;}
+.su-stage-pill{
+  padding:.4rem .875rem;border-radius:20px;
+  border:1.5px solid var(--border);background:var(--surface2);
+  font-size:.8125rem;font-weight:600;color:var(--text2);
+  cursor:pointer;transition:all .15s;font-family:inherit;
+}
+.su-stage-pill:hover{border-color:var(--accent);color:var(--accent);}
+.su-stage-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* ── Toggle ── */
+.su-toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1rem;background:var(--surface2);
+  border:1.5px solid var(--border);border-radius:10px;
+  cursor:pointer;transition:border-color .15s;
+}
+.su-toggle-row:hover{border-color:var(--accent);}
+.su-toggle-label{font-size:.9375rem;font-weight:500;color:var(--text);}
+.su-toggle-sub{font-size:.75rem;color:var(--text3);margin-top:.1rem;}
+.su-switch{
+  width:44px;height:24px;border-radius:12px;
+  background:var(--border2);position:relative;
+  transition:background .2s;flex-shrink:0;
+}
+.su-switch.on{background:var(--accent);}
+.su-switch::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:18px;height:18px;border-radius:50%;background:#fff;
+  transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.su-switch.on::after{transform:translateX(20px);}
+
+/* ── Submit button ── */
+.su-submit{
+  width:100%;padding:.875rem;border-radius:12px;
+  background:var(--accent);color:#fff;border:none;
+  font-size:1rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:.625rem;
+  transition:background .15s,transform .1s;font-family:inherit;
+  box-shadow:0 4px 14px rgba(99,102,241,.35);
+}
+.su-submit:hover{background:var(--accent-hover);}
+.su-submit:active{transform:scale(.98);}
+.su-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.su-submit svg{width:16px;height:16px;}
+
+/* ── Result box ── */
+.su-result{
+  background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+  border:1.5px solid #86efac;border-radius:12px;
+  padding:1.25rem;margin-top:1rem;display:none;
+}
+.su-result-head{display:flex;align-items:center;gap:.875rem;margin-bottom:.875rem;}
+.su-result-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;flex-shrink:0;
+}
+.su-result-name{font-size:1rem;font-weight:800;color:#14532d;}
+.su-result-sub{font-size:.8125rem;color:#166534;margin-top:.1rem;}
+.su-result-intro{font-size:.875rem;color:#166534;line-height:1.6;margin-bottom:.875rem;}
+.su-result-actions{display:flex;gap:.625rem;flex-wrap:wrap;}
+
+/* ── Team cards ── */
+.su-team-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);
+  margin-bottom:1rem;
+}
+.su-team-head{
+  padding:1rem 1.25rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:.875rem;
+  background:var(--surface2);
+}
+.su-team-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;flex-shrink:0;
+}
+.su-team-name{font-size:.9375rem;font-weight:700;color:var(--text);}
+.su-team-meta{font-size:.75rem;color:var(--text3);margin-top:.15rem;display:flex;align-items:center;gap:.375rem;flex-wrap:wrap;}
+.su-team-body{padding:1rem 1.25rem;}
+.su-member-row{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.625rem 0;border-bottom:1px solid var(--border);
+}
+.su-member-row:last-child{border-bottom:none;}
+.su-member-av{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surface4);display:flex;align-items:center;
+  justify-content:center;font-size:.875rem;font-weight:700;
+  flex-shrink:0;color:var(--text2);
+}
+.su-member-name{font-size:.875rem;font-weight:600;color:var(--text);}
+.su-member-role{font-size:.75rem;color:var(--text3);}
+
+/* ── Invite cards ── */
+.su-invite-card{
+  background:var(--surface);border:1.5px solid var(--accent-subtle);
+  border-radius:14px;padding:1rem 1.25rem;
+  display:flex;align-items:center;gap:.875rem;
+  margin-bottom:.75rem;box-shadow:var(--shadow-sm);
+}
+.su-invite-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--accent-subtle);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;flex-shrink:0;
+}
+.su-invite-info{flex:1;min-width:0;}
+.su-invite-name{font-size:.9375rem;font-weight:700;color:var(--text);}
+.su-invite-sub{font-size:.8125rem;color:var(--text3);margin-top:.1rem;}
+.su-invite-reason{font-size:.75rem;color:var(--accent-text);margin-top:.25rem;font-style:italic;}
+.su-invite-actions{display:flex;gap:.5rem;flex-shrink:0;}
+
+/* ── Section heading ── */
+.su-section-head{
+  font-size:.6875rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text3);
+  margin-bottom:.875rem;margin-top:1.5rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.su-section-head::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .su-grid{grid-template-columns:1fr;}
+  .su-hero{padding:1.25rem 1rem;}
+  .su-hero-title{font-size:1.25rem;}
+  .su-card{padding:1.125rem 1rem;}
+  .su-invite-card{flex-wrap:wrap;}
+  .su-invite-actions{width:100%;justify-content:flex-end;}
+  .su-result-actions{flex-direction:column;}
+  .su-result-actions a,.su-result-actions button{width:100%;justify-content:center;}
+}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 </style>
 {% endblock %}
-{% block content %}
-<div style="max-width:760px;margin:0 auto;">
 
-  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-    <a href="{% url 'ai_community:hub' %}" style="color:var(--t3);font-size:.875rem;display:flex;align-items:center;gap:.375rem;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      AI Hub
-    </a>
-    <span style="color:var(--t4);">/</span>
-    <h1 style="font-size:1.25rem;font-weight:800;display:flex;align-items:center;gap:.5rem;">
-      🚀 Start My Startup
-    </h1>
+{% block content %}
+<div class="su-page">
+
+  <!-- Hero -->
+  <div class="su-hero">
+    <div class="su-hero-label">AI-Powered</div>
+    <div class="su-hero-title">Start My Startup</div>
+    <div class="su-hero-sub">Describe your idea and let AI find the perfect teammates from your campus community.</div>
   </div>
 
-  <!-- Intake Form -->
-  <div style="background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
-    <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">Tell the AI about your startup idea</h2>
-    <div class="field" style="margin-bottom:.875rem;">
-      <label>Startup Idea *</label>
-      <textarea id="s-idea" placeholder="Describe your startup idea in a few sentences…"></textarea>
+  <!-- Form card -->
+  <div class="su-card">
+    <div class="su-card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Your Startup Idea
     </div>
-    <div class="startup-grid" style="margin-bottom:.875rem;">
-      <div class="field">
+
+    <div class="su-field">
+      <label>Startup Idea *</label>
+      <textarea id="s-idea" placeholder="Describe your startup idea in a few sentences — what problem does it solve?"></textarea>
+    </div>
+
+    <div class="su-grid">
+      <div class="su-field">
         <label>Industry / Category</label>
         <input type="text" id="s-industry" placeholder="EdTech, FinTech, Health…">
       </div>
-      <div class="field">
-        <label>Stage</label>
-        <select id="s-stage">
-          <option value="idea">Idea</option>
-          <option value="prototype">Prototype</option>
-          <option value="launched">Launched</option>
-        </select>
-      </div>
-      <div class="field">
+      <div class="su-field">
         <label>Skills Needed</label>
         <input type="text" id="s-roles" placeholder="Developer, Designer, Marketer…">
       </div>
-      <div class="field">
-        <label>Team Size</label>
-        <select id="s-size">
-          <option value="2">2 people</option>
-          <option value="3">3 people</option>
-          <option value="4" selected>4 people</option>
-          <option value="5">5 people</option>
-        </select>
+    </div>
+
+    <div class="su-field">
+      <label>Stage</label>
+      <div class="su-stage-row" id="stage-pills">
+        <button class="su-stage-pill active" data-val="idea" onclick="setStage(this)">💡 Idea</button>
+        <button class="su-stage-pill" data-val="prototype" onclick="setStage(this)">🔧 Prototype</button>
+        <button class="su-stage-pill" data-val="launched" onclick="setStage(this)">🚀 Launched</button>
       </div>
+      <input type="hidden" id="s-stage" value="idea">
     </div>
-    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
-      <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;color:var(--t2);cursor:pointer;">
-        <input type="checkbox" id="s-remote" checked style="width:15px;height:15px;accent-color:var(--white);">
-        Remote-friendly
-      </label>
+
+    <div class="su-field">
+      <label>Team Size</label>
+      <select id="s-size">
+        <option value="2">2 people</option>
+        <option value="3">3 people</option>
+        <option value="4" selected>4 people</option>
+        <option value="5">5 people</option>
+        <option value="6">6 people</option>
+      </select>
     </div>
-    <button class="btn btn-primary" onclick="createStartup(this)" style="width:100%;justify-content:center;padding:.625rem;">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+
+    <div class="su-field">
+      <div class="su-toggle-row" onclick="toggleRemote(this)">
+        <div>
+          <div class="su-toggle-label">Remote-friendly</div>
+          <div class="su-toggle-sub">Allow teammates from anywhere on campus</div>
+        </div>
+        <div class="su-switch on" id="remote-switch"></div>
+      </div>
+      <input type="hidden" id="s-remote" value="true">
+    </div>
+
+    <button class="su-submit" onclick="createStartup(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
       Assemble My Team with AI
     </button>
-    <div class="result-box" id="startup-result"></div>
+
+    <div class="su-result" id="startup-result"></div>
   </div>
 
-  <!-- My Startups -->
+  <!-- My Startup Teams -->
   {% if my_teams %}
-  <h2 style="font-size:1rem;font-weight:700;margin-bottom:.875rem;">My Startup Teams</h2>
-  <div style="display:flex;flex-direction:column;gap:.875rem;margin-bottom:1.5rem;">
-    {% for team in my_teams %}
-    <div class="team-card">
-      <div class="team-header">
-        <div style="width:40px;height:40px;border-radius:10px;background:var(--s4);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🚀</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:.9375rem;font-weight:700;">{{ team.name }}</div>
-          <div style="font-size:.8125rem;color:var(--t3);">{{ team.industry }} · {{ team.get_stage_display|default:team.stage }} · <span class="badge {% if team.status == 'active' %}badge-green{% else %}badge-gray{% endif %}">{{ team.get_status_display }}</span></div>
+  <div class="su-section-head">My Startup Teams</div>
+  {% for team in my_teams %}
+  <div class="su-team-card">
+    <div class="su-team-head">
+      <div class="su-team-icon">🚀</div>
+      <div style="flex:1;min-width:0;">
+        <div class="su-team-name">{{ team.name }}</div>
+        <div class="su-team-meta">
+          <span>{{ team.industry }}</span>
+          <span>·</span>
+          <span>{{ team.get_stage_display|default:team.stage }}</span>
+          <span>·</span>
+          <span class="badge {% if team.status == 'active' %}badge-green{% else %}badge-gray{% endif %}">{{ team.get_status_display }}</span>
         </div>
-        {% if team.workspace_id %}
-        <a href="/community/workspaces/{{ team.workspace_id }}/" class="btn btn-ghost btn-sm">Open Workspace</a>
-        {% endif %}
       </div>
-      <div class="team-body">
-        {% if team.ai_intro %}<p style="font-size:.8125rem;color:var(--t3);margin-bottom:.875rem;line-height:1.6;">{{ team.ai_intro }}</p>{% endif %}
-        {% for member in team.members.all %}
-        <div class="member-row">
-          <div class="member-av">{{ member.user.username|slice:":1"|upper }}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:.875rem;font-weight:600;">{{ member.user.username }}</div>
-            <div style="font-size:.75rem;color:var(--t3);">{{ member.role }}</div>
-          </div>
-          <span class="badge {% if member.status == 'accepted' %}badge-green{% elif member.status == 'declined' %}badge-gray{% else %}badge-blue{% endif %}">{{ member.get_status_display }}</span>
-        </div>
-        {% endfor %}
-      </div>
+      {% if team.workspace_id %}
+      <a href="/community/workspaces/{{ team.workspace_id }}/" class="btn btn-ghost btn-sm">Workspace →</a>
+      {% endif %}
     </div>
-    {% endfor %}
+    <div class="su-team-body">
+      {% if team.ai_intro %}<p style="font-size:.8125rem;color:var(--text3);margin-bottom:.875rem;line-height:1.6;">{{ team.ai_intro }}</p>{% endif %}
+      {% for member in team.members.all %}
+      <div class="su-member-row">
+        <div class="su-member-av">{{ member.user.username|slice:":1"|upper }}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="su-member-name">{{ member.user.username }}</div>
+          <div class="su-member-role">{{ member.role }}</div>
+        </div>
+        <span class="badge {% if member.status == 'accepted' %}badge-green{% elif member.status == 'declined' %}badge-gray{% else %}badge-blue{% endif %}">{{ member.get_status_display }}</span>
+      </div>
+      {% endfor %}
+    </div>
   </div>
+  {% endfor %}
   {% endif %}
 
   <!-- Pending Invites -->
   {% if invites %}
-  <h2 style="font-size:1rem;font-weight:700;margin-bottom:.875rem;">Pending Invitations</h2>
-  <div style="display:flex;flex-direction:column;gap:.75rem;">
-    {% for inv in invites %}
-    <div style="background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:.875rem;flex-wrap:wrap;" id="sinvite-{{ inv.team.id }}">
-      <div style="font-size:1.5rem;">🚀</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;">{{ inv.team.name }}</div>
-        <div style="font-size:.8125rem;color:var(--t3);">{{ inv.role }} · by @{{ inv.team.founder.username }}</div>
-        {% if inv.ai_reason %}<div style="font-size:.75rem;color:var(--t3);margin-top:.25rem;">{{ inv.ai_reason }}</div>{% endif %}
-      </div>
-      <div style="display:flex;gap:.5rem;">
-        <button class="btn btn-primary btn-sm" onclick="respondInvite('{{ inv.team.id }}',true,this)">Accept</button>
-        <button class="btn btn-ghost btn-sm" onclick="respondInvite('{{ inv.team.id }}',false,this)">Decline</button>
-      </div>
+  <div class="su-section-head">Pending Invitations</div>
+  {% for inv in invites %}
+  <div class="su-invite-card" id="sinvite-{{ inv.team.id }}">
+    <div class="su-invite-icon">🚀</div>
+    <div class="su-invite-info">
+      <div class="su-invite-name">{{ inv.team.name }}</div>
+      <div class="su-invite-sub">{{ inv.role }} · by @{{ inv.team.founder.username }}</div>
+      {% if inv.ai_reason %}<div class="su-invite-reason">{{ inv.ai_reason }}</div>{% endif %}
     </div>
-    {% endfor %}
+    <div class="su-invite-actions">
+      <button class="btn btn-primary btn-sm" onclick="respondInvite('{{ inv.team.id }}',true,this)">Accept</button>
+      <button class="btn btn-ghost btn-sm" onclick="respondInvite('{{ inv.team.id }}',false,this)">Decline</button>
+    </div>
   </div>
+  {% endfor %}
   {% endif %}
 
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
 const CSRF = (()=>{ const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:''; })();
 
+function setStage(pill) {
+  document.querySelectorAll('.su-stage-pill').forEach(p=>p.classList.remove('active'));
+  pill.classList.add('active');
+  document.getElementById('s-stage').value = pill.dataset.val;
+}
+
+function toggleRemote(row) {
+  const sw = document.getElementById('remote-switch');
+  const inp = document.getElementById('s-remote');
+  const isOn = sw.classList.toggle('on');
+  inp.value = isOn ? 'true' : 'false';
+}
+
 function createStartup(btn) {
   const idea = document.getElementById('s-idea').value.trim();
-  if (!idea) { alert('Please describe your startup idea.'); return; }
+  if (!idea) {
+    document.getElementById('s-idea').focus();
+    document.getElementById('s-idea').style.borderColor = 'var(--red)';
+    return;
+  }
+  document.getElementById('s-idea').style.borderColor = '';
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Assembling team…';
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Assembling team…';
   fetch('/community/ai/api/startup/create/', {
     method:'POST',
     headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},
@@ -162,7 +382,7 @@ function createStartup(btn) {
       stage: document.getElementById('s-stage').value,
       required_roles: document.getElementById('s-roles').value,
       team_size: parseInt(document.getElementById('s-size').value),
-      remote: document.getElementById('s-remote').checked,
+      remote: document.getElementById('s-remote').value === 'true',
     })
   }).then(r=>r.json()).then(d=>{
     btn.disabled=false; btn.innerHTML=orig;
@@ -170,21 +390,24 @@ function createStartup(btn) {
     res.style.display = 'block';
     if (d.ok) {
       res.innerHTML = `
-        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;">
-          <div style="font-size:2rem;">🚀</div>
+        <div class="su-result-head">
+          <div class="su-result-icon">🚀</div>
           <div>
-            <div style="font-size:1rem;font-weight:700;">${d.team_name}</div>
-            <div style="font-size:.8125rem;color:var(--t3);">${d.invited.length} teammates invited</div>
+            <div class="su-result-name">${d.team_name}</div>
+            <div class="su-result-sub">${d.invited.length} teammates invited · workspace created</div>
           </div>
         </div>
-        ${d.intro ? `<p style="font-size:.875rem;color:var(--t2);line-height:1.6;margin-bottom:.875rem;">${d.intro}</p>` : ''}
-        <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+        ${d.intro ? `<div class="su-result-intro">${d.intro}</div>` : ''}
+        <div class="su-result-actions">
           <a href="/community/workspaces/${d.workspace_id}/" class="btn btn-primary">Open Team Workspace →</a>
-          <a href="{% url 'ai_community:startup' %}" class="btn btn-ghost" onclick="location.reload()">View All Teams</a>
+          <button class="btn btn-ghost" onclick="location.reload()">View All Teams</button>
         </div>`;
     } else {
-      res.innerHTML = `<div style="color:var(--red);font-size:.875rem;">${d.error||'Failed to create startup team.'}</div>`;
+      res.style.background = 'var(--red-subtle)';
+      res.style.borderColor = 'var(--red)';
+      res.innerHTML = `<div style="color:var(--red);font-size:.875rem;font-weight:600;">${d.error||'Failed to create startup team.'}</div>`;
     }
+    res.scrollIntoView({behavior:'smooth',block:'nearest'});
   }).catch(()=>{ btn.disabled=false; btn.innerHTML=orig; alert('Failed. Please try again.'); });
 }
 
@@ -198,7 +421,7 @@ function respondInvite(teamId, accept, btn) {
     if (d.ok) {
       const card = document.getElementById('sinvite-'+teamId);
       if (accept) {
-        card.querySelector('div:last-child').innerHTML = '<span class="badge badge-green">✓ Accepted</span>';
+        card.querySelector('.su-invite-actions').innerHTML = '<span class="badge badge-green">✓ Accepted</span>';
       } else {
         card.style.opacity='.4'; card.style.pointerEvents='none';
       }
@@ -206,5 +429,4 @@ function respondInvite(teamId, accept, btn) {
   }).catch(()=>{ btn.disabled=false; });
 }
 </script>
-<style>@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}</style>
 {% endblock %}

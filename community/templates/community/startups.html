@@ -1,6 +1,6 @@
 ﻿{% extends "community/base.html" %}
 {% block title %}Startups{% endblock %}
-{% block mobile_title %}ðŸš€ Startups{% endblock %}
+{% block mobile_title %}🚀 Startups{% endblock %}
 {% block breadcrumb_label %}Startups{% endblock %}
 
 {% block extra_css %}
@@ -32,7 +32,7 @@
 {% block content %}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
   <div>
-    <h1 style="font-size:1.25rem;font-weight:800;">ðŸš€ Startups</h1>
+    <h1 style="font-size:1.25rem;font-weight:800;">🚀 Startups</h1>
     <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Student-built. Campus-born.</div>
   </div>
   <a href="{% url 'community:startup_create' %}" class="btn btn-primary btn-sm">+ Launch</a>
@@ -51,7 +51,7 @@
   <div class="startup-card" style="position:relative;">
     <a href="{% url 'community:startup_detail' slug=s.slug %}" style="text-decoration:none;color:inherit;display:block;">
       <div class="sc-header">
-        <div class="sc-logo">{% if s.logo %}<img src="{{ s.logo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">{% else %}ðŸš€{% endif %}</div>
+        <div class="sc-logo">{% if s.logo %}<img src="{{ s.logo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">{% else %}🚀{% endif %}</div>
         <div class="sc-info">
           <div class="sc-name">{{ s.name }}</div>
           <div class="sc-stage">{{ s.get_stage_display }}</div>

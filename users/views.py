@@ -6,9 +6,9 @@ User = get_user_model()
 
 
 def landing_view(request):
-    """Landing page view - accessible only to unauthenticated users."""
+    """Landing page view - authenticated users always go to community home."""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('community:community_home')
     return render(request, 'users/landing_final.html')
 
 

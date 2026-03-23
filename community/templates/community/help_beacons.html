@@ -1,6 +1,6 @@
 ﻿{% extends "community/base.html" %}
 {% block title %}Help Beacons{% endblock %}
-{% block mobile_title %}ðŸ§  Need Help{% endblock %}
+{% block mobile_title %}🧠 Need Help{% endblock %}
 {% block breadcrumb_label %}Help Beacons{% endblock %}
 
 {% block extra_css %}
@@ -35,7 +35,7 @@
 {% block content %}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
   <div>
-    <h1 style="font-size:1.25rem;font-weight:800;">ðŸ§  Help Beacons</h1>
+    <h1 style="font-size:1.25rem;font-weight:800;">🧠 Help Beacons</h1>
     <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Fast peer rescue. Be a hero.</div>
   </div>
   <button class="btn btn-primary btn-sm" onclick="document.getElementById('beacon-modal').style.display='flex'">+ Need Help</button>
@@ -54,7 +54,7 @@
   <div class="beacon-card">
     <div class="bc-top">
       <div class="bc-urgency urgency-{{ b.urgency }}">
-        {% if b.urgency == 'high' %}ðŸ”´{% elif b.urgency == 'medium' %}ðŸŸ {% else %}ðŸŸ¢{% endif %}
+        {% if b.urgency == 'high' %}🔴{% elif b.urgency == 'medium' %}🟠{% else %}🟢{% endif %}
         {{ b.get_urgency_display }}
       </div>
       <div class="bc-cat">{{ b.get_category_display }}</div>
@@ -74,7 +74,7 @@
         <div class="bc-time" style="margin-top:.25rem;">{{ b.created_at|timesince }} ago</div>
       </div>
       {% if b.requester != request.user %}
-      <button class="claim-btn" onclick="claimBeacon('{{ b.id }}',this)">Help â†’</button>
+      <button class="claim-btn" onclick="claimBeacon('{{ b.id }}',this)">Help →</button>
       {% else %}
       <span style="font-size:.75rem;color:var(--text3);">Your request</span>
       {% endif %}
@@ -94,7 +94,7 @@
 <div id="beacon-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;align-items:flex-end;justify-content:center;">
   <div style="background:var(--surface2);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;border:1px solid var(--border2);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-      <span style="font-size:1rem;font-weight:700;">ðŸ§  Need Help Now</span>
+      <span style="font-size:1rem;font-weight:700;">🧠 Need Help Now</span>
       <button onclick="document.getElementById('beacon-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:1.25rem;cursor:pointer;">âœ•</button>
     </div>
     <form id="beacon-form">
@@ -110,7 +110,7 @@
         <select name="urgency" style="flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.625rem;color:var(--text);font-size:.875rem;outline:none;">
           <option value="low">Low urgency</option>
           <option value="medium" selected>Medium</option>
-          <option value="high">High â€” urgent!</option>
+          <option value="high">High — urgent!</option>
         </select>
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Post Help Request</button>
@@ -135,17 +135,17 @@ document.getElementById('beacon-form').addEventListener('submit',function(e){
 });
 
 function claimBeacon(id,btn){
-  btn.disabled=true;btn.textContent='â€¦';
+  btn.disabled=true;btn.textContent='…';
   fetch('/community/help/'+id+'/claim/',{method:'POST',headers:{'X-CSRFToken':csrf()}})
     .then(r=>r.json()).then(d=>{
       if(d.ok){
-        showUXToast('Claimed! Opening chatâ€¦','success');
+        showUXToast('Claimed! Opening chat…','success');
         setTimeout(()=>window.location.href='/community/messages/'+d.convo_id+'/',800);
       } else {
-        btn.disabled=false;btn.textContent='Help â†’';
+        btn.disabled=false;btn.textContent='Help →';
         showUXToast(d.error||'Error','error');
       }
-    }).catch(()=>{btn.disabled=false;btn.textContent='Help â†’';});
+    }).catch(()=>{btn.disabled=false;btn.textContent='Help →';});
 }
 </script>
 {% endblock %}

@@ -203,7 +203,7 @@
               </a>
               <a href="{% url 'community:profile' post.author.username %}">{{ post.author.username }}</a>
             </span>
-            <span style="color:var(--text4);">â€¢</span>
+            <span style="color:var(--text4);">•</span>
             <span class="post-when">{{ post.created_at|timesince }} ago</span>
             {% if post.category %}<span class="post-cat">{{ post.category }}</span>{% endif %}
           </div>
@@ -236,7 +236,7 @@
               {% csrf_token %}
               <div class="ic-av">{% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</div>
               <div class="ic-wrap">
-                <textarea class="ic-input" placeholder="Add a commentâ€¦" rows="2" id="ic-text-{{ post.id }}"></textarea>
+                <textarea class="ic-input" placeholder="Add a comment…" rows="2" id="ic-text-{{ post.id }}"></textarea>
                 <div class="ic-actions">
                   <button type="button" class="btn btn-ghost btn-sm" onclick="toggleCommentBox('{{ post.id }}')">Cancel</button>
                   <button type="submit" class="btn btn-primary btn-sm">Comment</button>
@@ -376,7 +376,7 @@ function buildCommentHtml(c) {
   const rep = c.replies && c.replies.length ? '<div class="ic-replies">' + c.replies.map(function(r) {
     return '<div class="ic-item" style="padding:.375rem 0;" id="ic-comment-'+r.id+'">'+avatarEl(r.author,'22px')+'<div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">'+esc(r.author.username)+'</span><span class="ic-item-time">'+timeAgo(r.created_at)+'</span></div><div class="ic-item-text">'+esc(r.content)+'</div><div class="ic-item-actions">'+voteHtml(r.id)+'</div></div></div>';
   }).join('') + '</div>' : '';
-  return '<div class="ic-item" id="ic-comment-'+c.id+'">'+avatarEl(c.author)+'<div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">'+esc(c.author.username)+'</span><span class="ic-item-time">'+timeAgo(c.created_at)+'</span></div><div class="ic-item-text">'+esc(c.content)+'</div><div class="ic-item-actions">'+voteHtml(c.id)+'<button class="ic-act" onclick="icToggleReply(\''+c.id+'\',\''+esc(c.author.username)+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Reply</button></div><div class="ic-reply-box" id="ic-rb-'+c.id+'"><textarea class="ic-reply-input" id="ic-ri-'+c.id+'" placeholder="Replyâ€¦" rows="2"></textarea><div class="ic-reply-actions"><button class="btn btn-primary btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icSubmitReply(\''+c.postId+'\',\''+c.id+'\')">Reply</button><button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icToggleReply(\''+c.id+'\',\'\')">âœ•</button></div></div>'+rep+'</div></div>';
+  return '<div class="ic-item" id="ic-comment-'+c.id+'">'+avatarEl(c.author)+'<div class="ic-item-body"><div class="ic-item-meta"><span class="ic-item-author">'+esc(c.author.username)+'</span><span class="ic-item-time">'+timeAgo(c.created_at)+'</span></div><div class="ic-item-text">'+esc(c.content)+'</div><div class="ic-item-actions">'+voteHtml(c.id)+'<button class="ic-act" onclick="icToggleReply(\''+c.id+'\',\''+esc(c.author.username)+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Reply</button></div><div class="ic-reply-box" id="ic-rb-'+c.id+'"><textarea class="ic-reply-input" id="ic-ri-'+c.id+'" placeholder="Reply…" rows="2"></textarea><div class="ic-reply-actions"><button class="btn btn-primary btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icSubmitReply(\''+c.postId+'\',\''+c.id+'\')">Reply</button><button class="btn btn-ghost btn-sm" style="font-size:.7rem;padding:.25rem .5rem;" onclick="icToggleReply(\''+c.id+'\',\'\')">âœ•</button></div></div>'+rep+'</div></div>';
 }
 
 function toggleCommentBox(id) {
@@ -391,14 +391,14 @@ function toggleCommentBox(id) {
 function loadComments(postId) {
   const listEl = document.getElementById('ic-list-' + postId);
   if (!listEl) return;
-  listEl.innerHTML = '<div class="ic-loading">Loading commentsâ€¦</div>';
+  listEl.innerHTML = '<div class="ic-loading">Loading comments…</div>';
   fetch('/community/api/posts/' + postId + '/comments/', {headers: {'X-CSRFToken': CSRF}})
     .then(r => r.json()).then(comments => {
       loadedComments[postId] = true;
       if (!comments.length) { listEl.innerHTML = '<div class="ic-loading">No comments yet. Be the first!</div>'; return; }
       const shown = comments.slice(0, 5);
       let html = shown.map(function(c) { c.postId = postId; return buildCommentHtml(c); }).join('');
-      if (comments.length > 5) html += '<a href="/community/posts/'+postId+'/" class="ic-view-all">View all '+comments.length+' comments â†’</a>';
+      if (comments.length > 5) html += '<a href="/community/posts/'+postId+'/" class="ic-view-all">View all '+comments.length+' comments →</a>';
       listEl.innerHTML = html;
     }).catch(function() { listEl.innerHTML = '<div class="ic-loading">Could not load comments.</div>'; });
 }
@@ -448,7 +448,7 @@ function icToggleReply(commentId, username) {
   const box = document.getElementById('ic-rb-' + commentId);
   if (!box) return;
   const open = box.classList.toggle('open');
-  if (open) { const ta = document.getElementById('ic-ri-' + commentId); if (ta) { ta.placeholder = 'Reply to ' + username + 'â€¦'; ta.focus(); } }
+  if (open) { const ta = document.getElementById('ic-ri-' + commentId); if (ta) { ta.placeholder = 'Reply to ' + username + '…'; ta.focus(); } }
 }
 function icSubmitReply(postId, parentId) {
   const ta = document.getElementById('ic-ri-' + parentId);

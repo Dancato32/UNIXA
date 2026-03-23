@@ -75,7 +75,7 @@
 
     <!-- Step 1: Basic Info -->
     <div class="form-section">
-      <h2>Step 1 â€” Basic Info</h2>
+      <h2>Step 1 — Basic Info</h2>
       <div class="field">
         <label for="name">Group Name <span style="color:var(--red);">*</span></label>
         <input type="text" id="name" name="name" placeholder="e.g. Biology Study Group" required maxlength="255">
@@ -86,7 +86,7 @@
       </div>
       <div class="field">
         <label for="subject">Subject / Topic <span style="color:var(--text3);font-weight:400;">(optional)</span></label>
-        <input type="text" id="subject" name="subject" placeholder="e.g. Organic Chemistry, Calculus IIâ€¦" maxlength="100">
+        <input type="text" id="subject" name="subject" placeholder="e.g. Organic Chemistry, Calculus II…" maxlength="100">
       </div>
       <div class="field">
         <label>Workspace Type</label>
@@ -99,19 +99,19 @@
           </label>
           <label class="type-opt" id="opt-type-study_group">
             <input type="radio" name="workspace_type" value="study_group" onchange="selectType(this)">
-            <div class="type-opt-icon">ðŸ“š</div>
+            <div class="type-opt-icon">📚</div>
             <div class="type-opt-title">Study Group</div>
             <div class="type-opt-desc">Academic coaching</div>
           </label>
           <label class="type-opt" id="opt-type-group_project">
             <input type="radio" name="workspace_type" value="group_project" onchange="selectType(this)">
-            <div class="type-opt-icon">ðŸ“‹</div>
+            <div class="type-opt-icon">📋</div>
             <div class="type-opt-title">Group Project</div>
             <div class="type-opt-desc">Assignment & tasks</div>
           </label>
           <label class="type-opt" id="opt-type-startup">
             <input type="radio" name="workspace_type" value="startup" onchange="selectType(this)">
-            <div class="type-opt-icon">ðŸš€</div>
+            <div class="type-opt-icon">🚀</div>
             <div class="type-opt-title">Startup</div>
             <div class="type-opt-desc">Startup advisor mode</div>
           </label>
@@ -122,7 +122,7 @@
         <div class="privacy-opts">
           <label class="privacy-opt selected" id="opt-private">
             <input type="radio" name="privacy" value="private" checked onchange="selectPrivacy(this)">
-            <div class="privacy-opt-title">ðŸ”’ Private</div>
+            <div class="privacy-opt-title">🔒 Private</div>
             <div class="privacy-opt-desc">Invite only. Only members you add can join.</div>
           </label>
           <label class="privacy-opt" id="opt-request">
@@ -136,11 +136,11 @@
 
     <!-- Step 2: Add Members -->
     <div class="form-section">
-      <h2>Step 2 â€” Add Members</h2>
+      <h2>Step 2 — Add Members</h2>
       <div class="field">
         <label>Search users to add <span id="member-count-label" style="color:var(--green);font-weight:400;font-size:.75rem;margin-left:.5rem;"></span></label>
         <div class="member-search-wrap">
-          <input type="text" id="member-search" placeholder="Search by username or nameâ€¦" autocomplete="off">
+          <input type="text" id="member-search" placeholder="Search by username or name…" autocomplete="off">
           <div class="member-results" id="member-results"></div>
         </div>
         <div class="selected-members" id="selected-members"></div>
@@ -247,7 +247,7 @@ function renderSelected() {
   const count = Object.keys(selectedMembers).length;
   container.innerHTML = Object.entries(selectedMembers).map(([u, d]) =>
     `<div class="sel-member">
-      <div class="sel-member-av">âœ“</div>
+      <div class="sel-member-av">✓</div>
       <span>${u}</span>
       <button type="button" class="sel-member-rm" onclick="removeMember('${u.replace(/'/g,"\\'")}')">âœ•</button>
     </div>`
@@ -263,7 +263,7 @@ function renderSelected() {
 let _toastTimer = null;
 function showMemberToast(username) {
   let toast = document.getElementById('member-toast');
-  toast.textContent = `âœ“ ${username} added`;
+  toast.textContent = `✓ ${username} added`;
   toast.classList.add('show');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);

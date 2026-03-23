@@ -61,16 +61,16 @@
 {% for notif in notifications %}
 <div class="notif-card {% if not notif.is_read %}unread{% endif %}" id="notif-{{ notif.id }}">
   <div class="notif-icon {{ notif.type }}">
-    {% if notif.type == 'like' or notif.type == 'comment_like' %}â¤ï¸
-    {% elif notif.type == 'comment' %}ðŸ’¬
-    {% elif notif.type == 'reply' %}â†©ï¸
+    {% if notif.type == 'like' or notif.type == 'comment_like' %}❤️
+    {% elif notif.type == 'comment' %}💬
+    {% elif notif.type == 'reply' %}↩️
     {% elif notif.type == 'follow' %}ðŸ‘¤
     {% elif notif.type == 'friend_request' %}ðŸ¤
-    {% elif notif.type == 'friend_accepted' %}âœ…
-    {% elif notif.type == 'message' %}âœ‰ï¸
-    {% elif notif.type == 'join' %}ðŸ˜ï¸
+    {% elif notif.type == 'friend_accepted' %}✅
+    {% elif notif.type == 'message' %}âœ‰️
+    {% elif notif.type == 'join' %}ðŸ˜️
     {% elif notif.type == 'mention' %}@
-    {% else %}ðŸ””{% endif %}
+    {% else %}🔔{% endif %}
   </div>
   <div class="notif-body">
     <div class="notif-text">
@@ -88,7 +88,7 @@
       {% elif notif.type == 'friend_request' %}
         sent you a friend request
       {% elif notif.type == 'friend_accepted' %}
-        accepted your friend request &mdash; <a href="{% url 'community:dm_start' notif.actor.username %}">say hi ðŸ‘‹</a>
+        accepted your friend request &mdash; <a href="{% url 'community:dm_start' notif.actor.username %}">say hi 👋</a>
       {% elif notif.type == 'message' %}
         sent you a <a href="{% if notif.conversation %}{% url 'community:conversation_detail' notif.conversation.id %}{% else %}{% url 'community:messages' %}{% endif %}">message</a>
       {% elif notif.type == 'join' %}
@@ -138,7 +138,7 @@ async function respondFriend(notifId, username, action) {
     document.getElementById('fr-actions-' + notifId).style.display = 'none';
     const res = document.getElementById('fr-result-' + notifId);
     res.style.display = 'block';
-    res.textContent = action === 'accept' ? 'âœ… Friend request accepted' : 'Request declined';
+    res.textContent = action === 'accept' ? '✅ Friend request accepted' : 'Request declined';
   } catch(e) {}
 }
 </script>

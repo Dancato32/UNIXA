@@ -101,7 +101,7 @@
 
 <!-- Hero -->
 <div class="uni-hero">
-  <span class="uni-hero-icon">ðŸŽ“</span>
+  <span class="uni-hero-icon">🎓</span>
   <div class="uni-hero-title">Ghana Universities</div>
   <div class="uni-hero-sub">Connect with students and alumni from every university in Ghana.</div>
   <div class="uni-stats">
@@ -120,7 +120,7 @@
 <form method="get" action="" style="margin:0;">
   <div class="uni-search-wrap">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" name="q" value="{{ query }}" class="uni-search" placeholder="Search universitiesâ€¦" id="uni-search-input" autocomplete="off">
+    <input type="text" name="q" value="{{ query }}" class="uni-search" placeholder="Search universities…" id="uni-search-input" autocomplete="off">
   </div>
 </form>
 
@@ -194,7 +194,7 @@
       <form method="post" action="{% if school.id in joined_ids %}{% url 'community:school_leave' school.slug %}{% else %}{% url 'community:school_join' school.slug %}{% endif %}" style="flex:1;margin:0;" onsubmit="handleJoin(event,this)">
         {% csrf_token %}
         <button type="submit" class="uni-join-btn {% if school.id in joined_ids %}joined{% else %}join{% endif %}" id="jbtn-{{ school.id }}">
-          {% if school.id in joined_ids %}âœ“ Joined{% else %}Join{% endif %}
+          {% if school.id in joined_ids %}✓ Joined{% else %}Join{% endif %}
         </button>
       </form>
     </div>
@@ -283,7 +283,7 @@ function handleJoin(e, form) {
       const wrap = form.closest('.uni-card-wrap');
       if (wrap) wrap.dataset.joined = '0';
     } else {
-      btn.textContent = 'âœ“ Joined';
+      btn.textContent = '✓ Joined';
       btn.classList.remove('join');
       btn.classList.add('joined');
       form.action = form.action.replace('/join/', '/leave/');

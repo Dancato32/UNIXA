@@ -57,7 +57,7 @@
         <div class="ws-name">{{ m.workspace.name }}</div>
         <div style="display:flex;align-items:center;gap:.375rem;margin-top:.125rem;">
           {% if m.workspace.subject %}<span class="ws-subject">{{ m.workspace.subject }}</span>{% endif %}
-          <span style="font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:3px;background:var(--surface5);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">{% if m.workspace.workspace_type == 'startup' %}ðŸš€ Startup{% elif m.workspace.workspace_type == 'study_group' %}ðŸ“š Study{% elif m.workspace.workspace_type == 'group_project' %}ðŸ“‹ Project{% else %}ðŸ¤ General{% endif %}</span>
+          <span style="font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:3px;background:var(--surface5);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">{% if m.workspace.workspace_type == 'startup' %}🚀 Startup{% elif m.workspace.workspace_type == 'study_group' %}📚 Study{% elif m.workspace.workspace_type == 'group_project' %}📋 Project{% else %}ðŸ¤ General{% endif %}</span>
         </div>
       </div>
       <span class="ws-role {{ m.role }}">{{ m.get_role_display }}</span>

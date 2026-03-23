@@ -191,6 +191,27 @@ class Post(models.Model):
         max_length=10, choices=MEDIA_TYPE_CHOICES, default=MEDIA_NONE
     )
     category = models.CharField(max_length=100, blank=True)
+    # Opportunity fields — user can mark a post as an opportunity when creating it
+    OPP_INTERNSHIP = 'internship'
+    OPP_SCHOLARSHIP = 'scholarship'
+    OPP_JOB = 'job'
+    OPP_COMPETITION = 'competition'
+    OPP_RESEARCH = 'research'
+    OPP_GRANT = 'grant'
+    OPP_OTHER = 'other'
+    OPP_TYPE_CHOICES = [
+        (OPP_INTERNSHIP, 'Internship'),
+        (OPP_SCHOLARSHIP, 'Scholarship'),
+        (OPP_JOB, 'Job'),
+        (OPP_COMPETITION, 'Competition'),
+        (OPP_RESEARCH, 'Research'),
+        (OPP_GRANT, 'Grant'),
+        (OPP_OTHER, 'Other'),
+    ]
+    is_opportunity = models.BooleanField(default=False, db_index=True)
+    opportunity_type = models.CharField(
+        max_length=20, choices=OPP_TYPE_CHOICES, blank=True, default=''
+    )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     # Denormalized counters — updated via signals
@@ -666,6 +687,13 @@ class WorkspaceMessage(models.Model):
     reply_to = models.ForeignKey(
         'self', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='replies'
+    )
+    # peer_to: if set, this is a private peer-to-peer message between sender and peer_to
+    peer_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.CASCADE,
+        related_name='received_peer_messages',
     )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -1424,6 +1452,41 @@ NEXA_SYNC_STATUS = [
     ('pushed', 'Pushed'),
     ('synced', 'Synced'),
 ]
+
+
+class TaskActivityLog(models.Model):
+    """Tracks every AI interaction, search, note, and tool use under a task."""
+
+    TYPE_AI      = 'ai'
+    TYPE_SEARCH  = 'search'
+    TYPE_NOTE    = 'note'
+    TYPE_TOOL    = 'tool'
+    TYPE_STATUS  = 'status'
+    TYPE_CHOICES = [
+        (TYPE_AI,     'AI Response'),
+        (TYPE_SEARCH, 'Search Query'),
+        (TYPE_NOTE,   'Note'),
+        (TYPE_TOOL,   'Tool Used'),
+        (TYPE_STATUS, 'Status Change'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    task = models.ForeignKey(
+        WorkspaceTask, on_delete=models.CASCADE, related_name='activity_logs'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='task_activity_logs'
+    )
+    entry_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default=TYPE_NOTE)
+    content = models.TextField(blank=True)
+    meta = models.JSONField(default=dict, blank=True)  # tool name, query, etc.
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'ActivityLog({self.entry_type}): task={self.task_id}'
 
 
 class NexaDraft(models.Model):

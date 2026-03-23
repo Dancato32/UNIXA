@@ -68,7 +68,7 @@
         @{{ offer.user.username }}
       </div>
       {% if offer.user != request.user %}
-      <button class="deal-btn" onclick="initDeal('{{ offer.id }}','{{ offer.title|escapejs }}')">Deal â†’</button>
+      <button class="deal-btn" onclick="initDeal('{{ offer.id }}','{{ offer.title|escapejs }}')">Deal →</button>
       {% endif %}
     </div>
   </div>
@@ -93,7 +93,7 @@
     <form id="deal-form">
       {% csrf_token %}
       <input type="hidden" id="deal-offer-id" name="offer_id">
-      <textarea name="message" placeholder="What will you offer in return? Describe your skill or serviceâ€¦" rows="3" required
+      <textarea name="message" placeholder="What will you offer in return? Describe your skill or service…" rows="3" required
         style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;resize:none;margin-bottom:1rem;box-sizing:border-box;"></textarea>
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Send Proposal</button>
     </form>

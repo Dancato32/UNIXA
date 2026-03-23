@@ -189,7 +189,7 @@
         <div class="prof-name-row">
           <span class="prof-name">{{ profile.display_name|default:profile_user.username }}</span>
           {% if profile_user.is_staff %}
-          <span class="prof-badge">âš¡ PRO</span>
+          <span class="prof-badge">⚡ PRO</span>
           {% endif %}
         </div>
         {% if profile.bio %}
@@ -264,13 +264,13 @@
       <div class="post-top">
         {% if post.school_community %}
           <span class="post-community-tag">{{ post.school_community.name }}</span>
-          <span class="post-dot">â€¢</span>
+          <span class="post-dot">•</span>
         {% elif post.custom_community %}
           <span class="post-community-tag">{{ post.custom_community.name }}</span>
-          <span class="post-dot">â€¢</span>
+          <span class="post-dot">•</span>
         {% else %}
           <span class="post-community-tag">Feed</span>
-          <span class="post-dot">â€¢</span>
+          <span class="post-dot">•</span>
         {% endif %}
         <span class="post-when">{{ post.created_at|timesince }} ago</span>
       </div>
@@ -324,7 +324,7 @@ function spawnRipple(btn, e) {
 
 function toggleFollow(e) {
   const btn = document.getElementById('follow-btn');
-  if (btn) { spawnRipple(btn, e); btn.disabled = true; btn.textContent = 'â€¦'; }
+  if (btn) { spawnRipple(btn, e); btn.disabled = true; btn.textContent = '…'; }
   fetch('/community/api/follow-toggle/', {
     method: 'POST',
     headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},

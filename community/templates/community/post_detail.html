@@ -131,7 +131,7 @@
         {% elif post.custom_community %}<a href="{% url 'community:custom_detail' post.custom_community.slug %}">{{ post.custom_community.name }}</a>
         {% else %}Feed{% endif %}
       </div>
-      <div class="post-time">{{ post.created_at|date:"N j, Y Â· g:i A" }}</div>
+      <div class="post-time">{{ post.created_at|date:"N j, Y · g:i A" }}</div>
     </div>
     {% if post.author == user %}
     <a href="{% url 'community:post_delete' post.id %}" class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--red);">Delete</a>
@@ -253,7 +253,7 @@
             {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
           </div>
           <div style="flex:1;">
-            <textarea class="rc-input" id="ri-{{ comment.id }}" placeholder="Reply to {{ comment.author.username }}â€¦" rows="2"></textarea>
+            <textarea class="rc-input" id="ri-{{ comment.id }}" placeholder="Reply to {{ comment.author.username }}…" rows="2"></textarea>
             <div class="rc-footer">
               <button class="btn btn-ghost btn-sm" onclick="toggleReplyBox('{{ comment.id }}')">Cancel</button>
               <button class="btn btn-primary btn-sm" onclick="submitReply('{{ comment.id }}')">Reply</button>
@@ -472,7 +472,7 @@ function buildCommentCard(c, isReply=false) {
       <div class="rc-wrap">
         ${avatarHtml('24px','.5625rem')}
         <div style="flex:1;">
-          <textarea class="rc-input" id="ri-${c.id}" placeholder="Reply to ${c.username}â€¦" rows="2"></textarea>
+          <textarea class="rc-input" id="ri-${c.id}" placeholder="Reply to ${c.username}…" rows="2"></textarea>
           <div class="rc-footer">
             <button class="btn btn-ghost btn-sm" onclick="toggleReplyBox('${c.id}')">Cancel</button>
             <button class="btn btn-primary btn-sm" onclick="submitReply('${c.id}')">Reply</button>

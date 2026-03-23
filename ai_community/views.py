@@ -106,16 +106,34 @@ def save_ai_profile(request):
 @login_required
 def find_people(request):
     """Run AI people matching and return results."""
+    same_school = request.GET.get('same_school', '0') == '1'
     current = _user_to_dict(request.user)
-    # Get candidates: other users with AI profiles, exclude self and blocked
+
     from django.db.models import Q
     blocked_ids = set(
         request.user.blocking.values_list('blocked_id', flat=True)
     )
-    candidates_qs = User.objects.exclude(
-        id__in=blocked_ids | {request.user.id}
-    ).select_related('community_profile').prefetch_related('ai_profile')[:60]
+    base_qs = User.objects.exclude(id__in=blocked_ids | {request.user.id})
 
+    if same_school:
+        # Get the school communities the current user belongs to
+        user_school_ids = request.user.community_memberships.values_list(
+            'community_id', flat=True
+        )
+        if user_school_ids:
+            # Find other users who share at least one school community
+            school_mate_ids = (
+                CommunityMembership.objects.filter(community_id__in=user_school_ids)
+                .exclude(user=request.user)
+                .values_list('user_id', flat=True)
+                .distinct()
+            )
+            base_qs = base_qs.filter(id__in=school_mate_ids)
+        else:
+            # User has no school — return empty
+            return JsonResponse({'matches': [], 'note': 'You are not a member of any school community.'})
+
+    candidates_qs = base_qs.select_related('community_profile').prefetch_related('ai_profile')[:60]
     candidates = [_user_to_dict(u) for u in candidates_qs]
     if not candidates:
         return JsonResponse({'matches': []})

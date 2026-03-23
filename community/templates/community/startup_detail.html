@@ -41,7 +41,7 @@
 
 <div class="startup-hero">
   <div class="sh-top">
-    <div class="sh-logo">{% if startup.logo %}<img src="{{ startup.logo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">{% else %}ðŸš€{% endif %}</div>
+    <div class="sh-logo">{% if startup.logo %}<img src="{{ startup.logo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">{% else %}🚀{% endif %}</div>
     <div class="sh-info">
       <div class="sh-name">{{ startup.name }}</div>
       <div class="sh-stage">{{ startup.get_stage_display }}</div>
@@ -98,7 +98,7 @@
 </div>
 {% for update in updates %}
 <div class="update-card">
-  <div class="update-meta">{{ update.created_at|date:"M d, Y" }} Â· @{{ update.author.username }}</div>
+  <div class="update-meta">{{ update.created_at|date:"M d, Y" }} · @{{ update.author.username }}</div>
   <div class="update-body">{{ update.content }}</div>
 </div>
 {% empty %}
@@ -114,7 +114,7 @@
     </div>
     <form id="update-form">
       {% csrf_token %}
-      <textarea name="content" placeholder="Share a progress update, milestone, or dev logâ€¦" rows="4" required
+      <textarea name="content" placeholder="Share a progress update, milestone, or dev log…" rows="4" required
         style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.9375rem;outline:none;resize:none;margin-bottom:1rem;box-sizing:border-box;"></textarea>
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Post Update</button>
     </form>

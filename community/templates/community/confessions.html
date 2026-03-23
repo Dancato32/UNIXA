@@ -1,6 +1,6 @@
 ﻿{% extends "community/base.html" %}
 {% block title %}Confessions{% endblock %}
-{% block mobile_title %}ðŸŽ­ Confessions{% endblock %}
+{% block mobile_title %}🎭 Confessions{% endblock %}
 {% block breadcrumb_label %}Confessions{% endblock %}
 
 {% block extra_css %}
@@ -42,7 +42,7 @@
 {% block content %}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
   <div>
-    <h1 style="font-size:1.25rem;font-weight:800;">ðŸŽ­ Confessions</h1>
+    <h1 style="font-size:1.25rem;font-weight:800;">🎭 Confessions</h1>
     <div style="font-size:.8125rem;color:var(--text3);margin-top:.125rem;">Anonymous. Safe. Real.</div>
   </div>
   <button class="btn btn-primary btn-sm" onclick="document.getElementById('conf-modal').style.display='flex'">+ Confess</button>
@@ -83,7 +83,7 @@
     </div>
     {% endfor %}
     <div class="reply-input-row">
-      <input type="text" placeholder="Replyâ€¦" id="reply-input-{{ conf.id }}">
+      <input type="text" placeholder="Reply…" id="reply-input-{{ conf.id }}">
       <button onclick="postReply('{{ conf.id }}')">Send</button>
     </div>
   </div>
@@ -100,15 +100,15 @@
 <div id="conf-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;align-items:flex-end;justify-content:center;">
   <div style="background:var(--surface2);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:560px;border:1px solid var(--border2);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-      <span style="font-size:1rem;font-weight:700;">ðŸŽ­ Anonymous Confession</span>
+      <span style="font-size:1rem;font-weight:700;">🎭 Anonymous Confession</span>
       <button onclick="document.getElementById('conf-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:1.25rem;cursor:pointer;">âœ•</button>
     </div>
     <div style="font-size:.8125rem;color:var(--text3);margin-bottom:1rem;padding:.625rem;background:var(--surface3);border-radius:8px;">
-      ðŸ”’ Your identity is completely hidden. No one will know it's you.
+      🔒 Your identity is completely hidden. No one will know it's you.
     </div>
     <form id="conf-form">
       {% csrf_token %}
-      <textarea name="content" placeholder="What's on your mind? Share freelyâ€¦" rows="4" required
+      <textarea name="content" placeholder="What's on your mind? Share freely…" rows="4" required
         style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.9375rem;outline:none;resize:none;margin-bottom:.75rem;box-sizing:border-box;"></textarea>
       <select name="category" style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:.75rem;color:var(--text);font-size:.875rem;outline:none;margin-bottom:1rem;box-sizing:border-box;">
         {% for val,label in categories %}<option value="{{ val }}">{{ label }}</option>{% endfor %}

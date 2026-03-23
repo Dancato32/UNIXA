@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -599,6 +600,8 @@ def post_create(request):
         community_type = request.POST.get('community_type', 'feed')
         post = Post(author=request.user, content=content, title=title)
         post.category = request.POST.get('category', '')
+        post.is_opportunity = request.POST.get('is_opportunity') == '1'
+        post.opportunity_type = request.POST.get('opportunity_type', '') if post.is_opportunity else ''
 
         if community_type == 'feed':
             post.feed_only = True
@@ -650,6 +653,16 @@ def post_create(request):
                 post.media_type = Post.MEDIA_FILE
 
         post.save()
+        # If marked as opportunity, create AIOpportunity record immediately
+        if post.is_opportunity:
+            from ai_community.models import AIOpportunity
+            AIOpportunity.objects.create(
+                title=post.title or post.content[:80],
+                description=post.content[:500],
+                opp_type=post.opportunity_type or 'other',
+                source_post_id=post.id,
+                is_active=True,
+            )
         django_messages.success(request, 'Post published.')
         return redirect('community:post_detail', pk=post.id)
 
@@ -939,6 +952,7 @@ def send_media(request, convo_id):
 def dm_start(request, username):
     """Find or create a DM conversation with `username`, then redirect to it."""
     recipient = get_object_or_404(User, username=username)
+    msg = request.GET.get('msg', '')
     if recipient == request.user:
         return redirect('community:messages')
 
@@ -947,12 +961,16 @@ def dm_start(request, username):
         .filter(participants=recipient)
         .first()
     )
-    if existing:
-        return redirect('community:conversation_detail', convo_id=existing.id)
+    target = existing
+    if not existing:
+        convo = Conversation.objects.create(is_group=False)
+        convo.participants.set([request.user, recipient])
+        target = convo
 
-    convo = Conversation.objects.create(is_group=False)
-    convo.participants.set([request.user, recipient])
-    return redirect('community:conversation_detail', convo_id=convo.id)
+    url = reverse('community:conversation_detail', kwargs={'convo_id': target.id})
+    if msg:
+        url += f'?msg={msg}'
+    return redirect(url)
 
 
 @login_required
@@ -1542,6 +1560,7 @@ def workspace_detail(request, ws_id):
     # For nexa workspaces: pass linked group workspaces and assigned tasks
     linked_workspaces = []
     my_tasks = []
+    ws_task_counts = {}  # {ws_id: count of tasks assigned to user}
     if ws.workspace_type == GroupWorkspace.TYPE_NEXA:
         links = NexaWorkspaceLink.objects.filter(
             nexa_workspace=ws,
@@ -1551,19 +1570,30 @@ def workspace_detail(request, ws_id):
         my_tasks = WorkspaceTask.objects.filter(
             workspace_id__in=linked_ws_ids,
             assigned_to=request.user,
-        ).select_related('workspace').order_by('due_date', 'created_at')
-
+        ).select_related('workspace').order_by('workspace__name', 'due_date', 'created_at')
+        # Build per-workspace task counts for the user
+        from django.db.models import Count
+        counts_qs = WorkspaceTask.objects.filter(
+            workspace_id__in=linked_ws_ids,
+            assigned_to=request.user,
+        ).values('workspace_id').annotate(n=Count('id'))
+        ws_task_counts = {str(row['workspace_id']): row['n'] for row in counts_qs}
+        # Annotate each linked workspace with user's task count
+        for lw in linked_workspaces:
+            lw.my_task_count = ws_task_counts.get(str(lw.id), 0)
     # Nexa workspaces get the full AI tools interface
     if ws.workspace_type == GroupWorkspace.TYPE_NEXA:
         drafts = NexaDraft.objects.filter(
             owner=request.user, source_workspace=ws
         ).order_by('-updated_at')[:20]
+        from datetime import date
         return render(request, 'community/nexa_home.html', {
             'ws': ws,
             'membership': membership,
             'linked_workspaces': linked_workspaces,
             'my_tasks': my_tasks,
             'drafts': drafts,
+            'today': date.today(),
         })
 
     return render(request, 'community/workspace_detail.html', {
@@ -1714,6 +1744,117 @@ def workspace_poll_messages(request, ws_id):
     return JsonResponse({'messages': data})
 
 
+# ── Peer Chat ─────────────────────────────────────────────────────────────────
+
+@login_required
+def workspace_peer_chat(request, ws_id, peer_username):
+    """GET: list peer messages. POST: send a peer message."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    ws, _ = _ws_member_or_404(request, ws_id)
+    peer = get_object_or_404(User, username=peer_username)
+    # Ensure peer is a member
+    if not WorkspaceMember.objects.filter(workspace=ws, user=peer).exists():
+        return JsonResponse({'error': 'User is not a workspace member'}, status=403)
+
+    if request.method == 'POST':
+        import json as _json
+        try:
+            body = _json.loads(request.body)
+            content = body.get('content', '').strip()
+        except Exception:
+            content = request.POST.get('content', '').strip()
+        if not content:
+            return JsonResponse({'error': 'Empty message'}, status=400)
+        msg = WorkspaceMessage.objects.create(
+            workspace=ws,
+            sender=request.user,
+            content=content,
+            peer_to=peer,
+        )
+        avatar = None
+        try:
+            avatar = request.user.community_profile.avatar.url if request.user.community_profile.avatar else None
+        except Exception:
+            pass
+        return JsonResponse({
+            'id': str(msg.id),
+            'content': msg.content,
+            'sender': request.user.username,
+            'sender_avatar': avatar,
+            'created_at': msg.created_at.isoformat(),
+            'is_mine': True,
+        })
+
+    # GET: return conversation history
+    from django.db.models import Q
+    qs = WorkspaceMessage.objects.filter(
+        workspace=ws,
+        peer_to__isnull=False,
+    ).filter(
+        Q(sender=request.user, peer_to=peer) |
+        Q(sender=peer, peer_to=request.user)
+    ).select_related('sender', 'sender__community_profile').order_by('created_at')
+
+    since_raw = request.GET.get('since')
+    if since_raw:
+        from django.utils.dateparse import parse_datetime
+        since_dt = parse_datetime(since_raw)
+        if since_dt:
+            qs = qs.filter(created_at__gt=since_dt)
+
+    data = []
+    for msg in qs:
+        avatar = None
+        try:
+            avatar = msg.sender.community_profile.avatar.url if msg.sender.community_profile.avatar else None
+        except Exception:
+            pass
+        data.append({
+            'id': str(msg.id),
+            'content': msg.content,
+            'sender': msg.sender.username,
+            'sender_avatar': avatar,
+            'is_mine': msg.sender_id == request.user.id,
+            'created_at': msg.created_at.isoformat(),
+        })
+    return JsonResponse({'messages': data})
+
+
+@login_required
+def workspace_member_contributions(request, ws_id, peer_username):
+    """Return task + file contributions for a member."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    ws, _ = _ws_member_or_404(request, ws_id)
+    peer = get_object_or_404(User, username=peer_username)
+
+    tasks = WorkspaceTask.objects.filter(workspace=ws, assigned_to=peer).order_by('status', 'due_date')
+    files = ws.files.filter(uploaded_by=peer).order_by('-uploaded_at')
+
+    task_data = [{
+        'id': str(t.id),
+        'title': t.title,
+        'status': t.status,
+        'review_status': t.review_status,
+        'due_date': str(t.due_date) if t.due_date else None,
+    } for t in tasks]
+
+    file_data = [{
+        'id': str(f.id),
+        'name': f.original_name,
+        'uploaded_at': f.uploaded_at.strftime('%b %d'),
+        'url': f.file.url,
+    } for f in files]
+
+    return JsonResponse({
+        'username': peer.username,
+        'display_name': peer.get_full_name() or peer.username,
+        'tasks': task_data,
+        'files': file_data,
+    })
+
+
 @login_required
 @require_POST
 def workspace_upload_file(request, ws_id):
@@ -1735,6 +1876,34 @@ def workspace_upload_file(request, ws_id):
         'size': wf.file_size,
         'uploaded_by': request.user.username,
     })
+
+
+@login_required
+@require_POST
+def workspace_delete_file(request, ws_id, file_id):
+    from django.shortcuts import get_object_or_404
+    wf = get_object_or_404(WorkspaceFile, id=file_id, workspace_id=ws_id)
+    # Only the uploader can delete their own file
+    if wf.uploaded_by != request.user:
+        # Also allow workspace owner/admin
+        try:
+            membership = WorkspaceMember.objects.get(workspace_id=ws_id, user=request.user)
+            if membership.role not in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN):
+                return JsonResponse({'error': 'Permission denied'}, status=403)
+        except WorkspaceMember.DoesNotExist:
+            return JsonResponse({'error': 'Permission denied'}, status=403)
+    uploader = wf.uploaded_by
+    try:
+        wf.file.delete(save=False)
+    except Exception:
+        pass
+    wf.delete()
+    # Delete all tasks assigned to the uploader in this workspace
+    deleted_count, _ = WorkspaceTask.objects.filter(
+        workspace_id=ws_id,
+        assigned_to=uploader
+    ).delete()
+    return JsonResponse({'ok': True, 'tasks_deleted': deleted_count})
 
 
 @login_required
@@ -1763,10 +1932,30 @@ def workspace_add_task(request, ws_id):
     return JsonResponse({
         'id': str(task.id),
         'title': task.title,
+        'description': task.description,
         'status': task.status,
         'due_date': str(task.due_date) if task.due_date else None,
         'assigned_to': task.assigned_to.username if task.assigned_to else None,
+        'review_status': task.review_status,
     })
+
+
+@login_required
+def workspace_tasks_list(request, ws_id):
+    """Return all tasks for a workspace as JSON (for Project Hub brief view)."""
+    ws, _ = _ws_member_or_404(request, ws_id)
+    tasks = WorkspaceTask.objects.filter(workspace=ws).select_related('assigned_to').order_by('status', 'created_at')
+    return JsonResponse({'tasks': [
+        {
+            'id': str(t.id),
+            'title': t.title,
+            'status': t.status,
+            'due_date': str(t.due_date) if t.due_date else None,
+            'assigned_to': t.assigned_to.username if t.assigned_to else None,
+            'review_status': t.review_status,
+        }
+        for t in tasks
+    ]})
 
 
 @login_required
@@ -2594,6 +2783,235 @@ def workspace_task_submit(request, ws_id, task_id):
         'review_status': task.review_status,
         'message': 'Submission received. Awaiting AI review.',
     })
+
+
+@login_required
+@require_POST
+def workspace_task_start(request, ws_id, task_id):
+    """Mark task as in-progress and log the start event."""
+    from community.models import TaskActivityLog
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+    if task.status == WorkspaceTask.STATUS_TODO:
+        task.status = WorkspaceTask.STATUS_DOING
+        task.save(update_fields=['status'])
+    TaskActivityLog.objects.create(
+        task=task, user=request.user,
+        entry_type=TaskActivityLog.TYPE_STATUS,
+        content='Task started',
+    )
+    return JsonResponse({'ok': True, 'status': task.status})
+
+
+@login_required
+@require_POST
+def workspace_task_log(request, ws_id, task_id):
+    """Save an activity entry (AI response, note, tool use, search) under a task."""
+    import json as _json
+    from community.models import TaskActivityLog
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+    try:
+        body = _json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    entry_type = body.get('type', TaskActivityLog.TYPE_NOTE)
+    content    = body.get('content', '').strip()
+    meta       = body.get('meta', {})
+    if not content:
+        return JsonResponse({'error': 'content required'}, status=400)
+    log = TaskActivityLog.objects.create(
+        task=task, user=request.user,
+        entry_type=entry_type, content=content, meta=meta,
+    )
+    return JsonResponse({'ok': True, 'id': str(log.id)})
+
+
+@login_required
+def workspace_task_activity(request, ws_id, task_id):
+    """Return activity log for a task."""
+    from community.models import TaskActivityLog
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+    logs = list(
+        task.activity_logs.select_related('user')
+        .values('id', 'entry_type', 'content', 'meta', 'created_at', 'user__username')
+        .order_by('created_at')
+    )
+    for l in logs:
+        l['id'] = str(l['id'])
+        l['created_at'] = l['created_at'].strftime('%b %d, %H:%M')
+    return JsonResponse({'ok': True, 'logs': logs})
+
+
+@login_required
+def nexa_task_navigator(request, ws_id, task_id):
+    """Return task detail + AI navigator plan for MyNexa task view."""
+    import json as _json
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+
+    # Build AI navigator prompt
+    task_info = f"""Task: {task.title}
+Description: {task.description or 'No description provided.'}
+Status: {task.get_status_display()}
+Due: {task.due_date or 'No due date'}
+Workspace: {ws.name}"""
+
+    ai_prompt = f"""You are Nexa AI Task Navigator. Analyze this task and respond with a JSON object.
+
+{task_info}
+
+Respond ONLY with valid JSON in this exact format:
+{{
+  "summary": "One sentence explaining what this task is about",
+  "why_it_matters": "One sentence on why this task is important to the project",
+  "recommended_tools": [
+    {{"name": "Tool Name", "reason": "Why this tool helps", "action": "panel_key"}},
+    ...
+  ],
+  "steps": [
+    {{"step": 1, "title": "Step title", "detail": "What to do"}},
+    ...
+  ],
+  "estimated_time": "e.g. 2-3 hours",
+  "difficulty": "Easy / Medium / Hard",
+  "tips": ["tip 1", "tip 2", "tip 3"],
+  "common_mistakes": ["mistake 1", "mistake 2"]
+}}
+
+For recommended_tools, use these action keys: "chat" (AI Chat), "search" (Deep Search), "word" (Nexa Word), "sheet" (Nexa Sheets), "slide" (Nexa Slides), "para" (Paraphraser), "cite" (Citation Generator), "lit" (Literature Review).
+Generate 2-4 recommended tools and 4-6 steps. Be specific to the task."""
+
+    try:
+        from ai_community.ai_engine import _chat as _ai
+        import re
+        raw = _ai([{'role': 'user', 'content': ai_prompt}], max_tokens=1200)
+        match = re.search(r'\{[\s\S]*\}', raw)
+        navigator = _json.loads(match.group(0)) if match else {}
+    except Exception:
+        navigator = {}
+
+    return JsonResponse({
+        'ok': True,
+        'task': {
+            'id': str(task.id),
+            'title': task.title,
+            'description': task.description,
+            'status': task.status,
+            'status_display': task.get_status_display(),
+            'due_date': str(task.due_date) if task.due_date else None,
+            'workspace_name': ws.name,
+            'workspace_id': str(ws.id),
+            'review_status': task.review_status,
+            'review_feedback': task.review_feedback,
+            'submission': task.submission,
+        },
+        'navigator': navigator,
+    })
+
+
+@login_required
+@require_POST
+def workspace_task_autopilot(request, ws_id, task_id):
+    """
+    AI Autopilot: fully executes a task and returns structured output for user review.
+    Supports extra_intelligence flag for pre-execution improvements.
+    """
+    import json as _json
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+
+    try:
+        body = _json.loads(request.body)
+    except Exception:
+        body = {}
+
+    extra_intelligence = body.get('extra_intelligence', True)
+    regenerate_note    = body.get('regenerate_note', '')  # user feedback on regenerate
+
+    # Gather workspace context
+    files_preview = []
+    for f in ws.files.order_by('-uploaded_at')[:4]:
+        try:
+            url = f.file.url
+            if url.startswith('http'):
+                import requests as _req
+                raw = _req.get(url, timeout=6).content[:1500]
+            else:
+                f.file.open('rb'); raw = f.file.read(1500); f.file.close()
+            files_preview.append({'name': f.original_name, 'preview': raw.decode('utf-8', errors='ignore')})
+        except Exception:
+            files_preview.append({'name': getattr(f, 'original_name', '?'), 'preview': ''})
+
+    files_text = '\n'.join(
+        f"FILE: {fp['name']}\n{fp['preview'][:600]}" for fp in files_preview
+    ) or 'No files uploaded.'
+
+    regen_section = f'\nUser feedback on previous attempt: "{regenerate_note}"\nAddress this feedback in your new execution.\n' if regenerate_note else ''
+
+    prompt = f"""You are Nexa AI Autopilot — a full task execution engine inside a collaborative workspace.
+
+TASK: {task.title}
+DESCRIPTION: {task.description or 'No description provided.'}
+WORKSPACE: {ws.name}
+{regen_section}
+WORKSPACE FILES CONTEXT:
+{files_text}
+
+{"EXTRA INTELLIGENCE MODE IS ON: Before executing, analyse the task for weaknesses, missing requirements, or better approaches. Improve the task scope if needed and document what you improved." if extra_intelligence else ""}
+
+Your job is to FULLY EXECUTE this task. Produce a complete, high-quality output.
+
+Determine the best output format:
+- If the task involves writing, reports, essays, research → produce a DOCUMENT
+- If the task involves data, tables, calculations → produce a SPREADSHEET outline
+- If the task involves presentations, pitches, summaries → produce SLIDES
+
+Return ONLY valid JSON in this exact format:
+{{
+  "output_type": "document" | "slides" | "sheet",
+  "title": "Output title",
+  "execution_steps": [
+    {{"step": 1, "action": "What AI did", "status": "done"}}
+  ],
+  "improvements": {{"made": true/false, "list": ["improvement 1", "improvement 2"]}},
+  "output": {{
+    "for document: "content": "Full document text with headings and paragraphs",
+    "for slides: "slides": [{{"title": "Slide title", "bullets": ["point 1", "point 2"]}}],
+    "for sheet: "headers": ["Col A", "Col B"], "rows": [["val1", "val2"]]
+  }},
+  "summary": "2-3 sentence summary of what was produced",
+  "changes_made": ["change 1", "change 2", "change 3"]
+}}
+
+Be thorough. Produce real, usable content — not placeholders."""
+
+    try:
+        from ai_community.ai_engine import _chat as _ai
+        import re as _re
+        raw = _ai([{'role': 'user', 'content': prompt}], max_tokens=2500)
+        match = _re.search(r'\{[\s\S]*\}', raw)
+        result = _json.loads(match.group(0)) if match else {}
+    except Exception as e:
+        return JsonResponse({'error': f'AI execution failed: {e}'}, status=500)
+
+    if not result:
+        return JsonResponse({'error': 'AI returned empty output. Try again.'}, status=500)
+
+    # Log autopilot run in activity
+    try:
+        from community.models import TaskActivityLog
+        TaskActivityLog.objects.create(
+            task=task, user=request.user,
+            entry_type=TaskActivityLog.TYPE_AI,
+            content=f'AI Autopilot executed: {result.get("title", task.title)}',
+            meta={'output_type': result.get('output_type'), 'steps': len(result.get('execution_steps', []))},
+        )
+    except Exception:
+        pass
+
+    return JsonResponse({'ok': True, 'result': result})
 
 
 @login_required

@@ -89,7 +89,7 @@ input[type="file"]{display:none;}
       <div class="form-group">
         <label class="form-label" for="id_bio">Bio</label>
         <textarea id="id_bio" name="bio" class="form-control" maxlength="500"
-                  placeholder="Tell the community about yourselfâ€¦"
+                  placeholder="Tell the community about yourself…"
                   oninput="document.getElementById('bio-count').textContent=this.value.length">{{ profile.bio }}</textarea>
         <div class="char-count"><span id="bio-count">{{ profile.bio|length }}</span>/500</div>
       </div>

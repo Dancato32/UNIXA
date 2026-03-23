@@ -1,6 +1,6 @@
 ﻿{% extends "community/base.html" %}
 {% block title %}Campus Pulse{% endblock %}
-{% block mobile_title %}ðŸ”¥ Campus Pulse{% endblock %}
+{% block mobile_title %}🔥 Campus Pulse{% endblock %}
 {% block breadcrumb_label %}Pulse{% endblock %}
 
 {% block extra_css %}
@@ -46,7 +46,7 @@
 {% block content %}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
   <div>
-    <h1 style="font-size:1.25rem;font-weight:800;">ðŸ”¥ Campus Pulse</h1>
+    <h1 style="font-size:1.25rem;font-weight:800;">🔥 Campus Pulse</h1>
     <div class="live-indicator" style="margin-top:.25rem;"><span class="live-dot"></span>Live activity</div>
   </div>
   <a href="{% url 'community:pulse_event_create' %}" class="btn btn-primary btn-sm">+ Post Event</a>
@@ -97,7 +97,7 @@
       </div>
       <button class="join-btn {% if ev.id in joined_ids %}joined{% else %}not-joined{% endif %}"
         onclick="joinEvent('{{ ev.id }}',this)">
-        {% if ev.id in joined_ids %}Joined âœ“{% else %}Join{% endif %}
+        {% if ev.id in joined_ids %}Joined ✓{% else %}Join{% endif %}
       </button>
     </div>
   </div>
@@ -120,7 +120,7 @@ function joinEvent(id,btn){
   fetch('/community/pulse/'+id+'/join/',{method:'POST',headers:{'X-CSRFToken':csrf()}})
     .then(r=>r.json()).then(d=>{
       btn.disabled=false;
-      if(d.ok){btn.textContent='Joined âœ“';btn.className='join-btn joined';showUXToast('Joined!','success');}
+      if(d.ok){btn.textContent='Joined ✓';btn.className='join-btn joined';showUXToast('Joined!','success');}
       else showUXToast(d.error||'Error','error');
     }).catch(()=>{btn.disabled=false;});
 }
