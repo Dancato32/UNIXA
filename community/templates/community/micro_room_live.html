@@ -6,8 +6,6 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body,html{background:#0e0e10;overflow:hidden;}
-
-/* Pull out of base padding */
 .rm-page{
   position:fixed;inset:0;background:#0e0e10;
   display:flex;flex-direction:column;
@@ -16,193 +14,135 @@ body,html{background:#0e0e10;overflow:hidden;}
 @media(max-width:900px){.rm-page{margin:-.875rem -.875rem;}}
 @media(max-width:480px){.rm-page{margin:-.625rem -.625rem;}}
 
-/* ── Top chrome ── */
+/* topbar */
 .rm-topbar{
-  display:flex;align-items:center;gap:.75rem;
-  padding:.5rem .875rem;background:#18181b;
-  border-bottom:1px solid #26262c;flex-shrink:0;
-  height:48px;
-}
-.rm-back{
-  display:flex;align-items:center;gap:.3rem;
-  color:#adadb8;font-size:.8125rem;background:none;border:none;cursor:pointer;padding:0;
-  flex-shrink:0;
-}
-.rm-back:hover{color:#fff;}
-.rm-live-badge{
-  display:inline-flex;align-items:center;gap:.3rem;
-  background:#9147ff;color:#fff;font-size:.6875rem;font-weight:800;
-  letter-spacing:.05em;padding:.2rem .6rem;border-radius:4px;flex-shrink:0;
-}
-.rm-live-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.2s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
-.rm-title{
-  flex:1;font-size:.875rem;font-weight:600;color:#efeff1;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.rm-viewer-pill{
-  display:flex;align-items:center;gap:.3rem;
-  color:#adadb8;font-size:.8125rem;font-weight:600;flex-shrink:0;
-}
-.rm-viewer-pill svg{width:14px;height:14px;}
-
-/* ── Main layout: video + chat side by side on desktop ── */
-.rm-body{
-  flex:1;display:flex;overflow:hidden;min-height:0;
-}
-
-/* ── Video column ── */
-.rm-video-col{
-  flex:1;display:flex;flex-direction:column;min-width:0;background:#000;
-  position:relative;
-}
-.rm-video-wrap{
-  flex:1;position:relative;background:#000;
-  display:flex;align-items:center;justify-content:center;min-height:0;
-}
-#rm-video-host,#rm-video-viewer{
-  width:100%;height:100%;object-fit:contain;display:block;background:#000;
-}
-.rm-no-cam{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:.75rem;
-  color:#3f3f46;background:#0e0e10;
-}
-.rm-no-cam svg{width:52px;height:52px;opacity:.3;}
-.rm-no-cam span{font-size:.875rem;color:#52525b;}
-.rm-waiting{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:.875rem;
-  background:#0e0e10;color:#52525b;font-size:.875rem;
-}
-.rm-spinner{
-  width:38px;height:38px;border-radius:50%;
-  border:3px solid #27272a;border-top-color:#9147ff;
-  animation:spin .8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* Host info bar below video */
-.rm-host-bar{
   display:flex;align-items:center;gap:.625rem;
   padding:.5rem .875rem;background:#18181b;
-  border-top:1px solid #26262c;flex-shrink:0;
+  border-bottom:1px solid #26262c;flex-shrink:0;height:48px;
 }
-.rm-host-avatar{
-  width:30px;height:30px;border-radius:50%;
-  background:#27272a;border:2px solid #9147ff;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.7rem;font-weight:700;color:#efeff1;overflow:hidden;flex-shrink:0;
+.rm-back{display:flex;align-items:center;gap:.3rem;color:#adadb8;font-size:.8125rem;background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;}
+.rm-back:hover{color:#fff;}
+.rm-live-badge{display:inline-flex;align-items:center;gap:.3rem;background:#9147ff;color:#fff;font-size:.6875rem;font-weight:800;letter-spacing:.05em;padding:.2rem .6rem;border-radius:4px;flex-shrink:0;}
+.rm-live-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.2s infinite;}
+.rm-ended-badge{display:inline-flex;align-items:center;gap:.3rem;background:#3f3f46;color:#adadb8;font-size:.6875rem;font-weight:800;letter-spacing:.05em;padding:.2rem .6rem;border-radius:4px;flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.rm-title{flex:1;font-size:.875rem;font-weight:600;color:#efeff1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rm-viewer-pill{display:flex;align-items:center;gap:.3rem;color:#adadb8;font-size:.8125rem;font-weight:600;flex-shrink:0;}
+.rm-viewer-pill svg{width:14px;height:14px;}
+
+/* body */
+.rm-body{flex:1;display:flex;overflow:hidden;min-height:0;}
+
+/* video col */
+.rm-video-col{flex:1;display:flex;flex-direction:column;min-width:0;background:#000;position:relative;}
+.rm-video-wrap{flex:1;position:relative;background:#000;display:flex;align-items:center;justify-content:center;min-height:0;}
+#rm-video-host,#rm-video-viewer{width:100%;height:100%;object-fit:contain;display:block;background:#000;}
+.rm-no-cam,.rm-waiting,.rm-ended-screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.875rem;
+  background:#0e0e10;color:#52525b;font-size:.875rem;text-align:center;padding:2rem;
 }
+.rm-no-cam svg{width:52px;height:52px;opacity:.3;}
+.rm-spinner{width:38px;height:38px;border-radius:50%;border:3px solid #27272a;border-top-color:#9147ff;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.rm-ended-screen svg{width:56px;height:56px;opacity:.25;}
+.rm-ended-screen h3{color:#adadb8;font-size:1.125rem;font-weight:700;}
+.rm-ended-screen p{color:#52525b;font-size:.875rem;}
+
+/* tap-to-play */
+.rm-tap-play{
+  position:absolute;inset:0;background:rgba(0,0,0,.6);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:.75rem;cursor:pointer;z-index:10;
+}
+.rm-tap-play-btn{width:72px;height:72px;border-radius:50%;background:#9147ff;display:flex;align-items:center;justify-content:center;}
+.rm-tap-play span{color:#fff;font-size:.9rem;font-weight:600;}
+
+/* host bar */
+.rm-host-bar{display:flex;align-items:center;gap:.625rem;padding:.5rem .875rem;background:#18181b;border-top:1px solid #26262c;flex-shrink:0;}
+.rm-host-avatar{width:30px;height:30px;border-radius:50%;background:#27272a;border:2px solid #9147ff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#efeff1;overflow:hidden;flex-shrink:0;}
 .rm-host-avatar img{width:100%;height:100%;object-fit:cover;}
 .rm-host-name{font-size:.875rem;font-weight:700;color:#efeff1;}
 .rm-host-topic{font-size:.75rem;color:#adadb8;margin-top:.1rem;}
 
-/* Host controls bar */
-.rm-controls{
-  display:flex;align-items:center;gap:.5rem;
-  padding:.5rem .875rem;background:#18181b;
-  border-top:1px solid #26262c;flex-shrink:0;
-}
-.rm-ctrl-btn{
-  display:flex;align-items:center;gap:.375rem;
-  background:#27272a;border:none;border-radius:6px;
-  color:#efeff1;font-size:.8125rem;font-weight:600;
-  padding:.4rem .75rem;cursor:pointer;transition:background .15s;
-}
+/* controls */
+.rm-controls{display:flex;align-items:center;gap:.5rem;padding:.5rem .875rem;background:#18181b;border-top:1px solid #26262c;flex-shrink:0;}
+.rm-ctrl-btn{display:flex;align-items:center;gap:.375rem;background:#27272a;border:none;border-radius:6px;color:#efeff1;font-size:.8125rem;font-weight:600;padding:.4rem .75rem;cursor:pointer;transition:background .15s;}
 .rm-ctrl-btn:hover{background:#3f3f46;}
-.rm-ctrl-btn.off{background:#27272a;color:#52525b;}
-.rm-ctrl-btn svg{width:16px;height:16px;flex-shrink:0;}
+.rm-ctrl-btn.off{color:#52525b;}
+.rm-ctrl-btn.off svg{opacity:.4;}
 .rm-ctrl-btn.danger{background:#9147ff;}
 .rm-ctrl-btn.danger:hover{background:#772ce8;}
+.rm-ctrl-btn svg{width:16px;height:16px;flex-shrink:0;}
 .rm-ctrl-spacer{flex:1;}
 
-/* ── Chat column ── */
-.rm-chat-col{
-  width:340px;flex-shrink:0;display:flex;flex-direction:column;
-  background:#18181b;border-left:1px solid #26262c;
-}
-.rm-chat-header{
-  padding:.625rem .875rem;border-bottom:1px solid #26262c;flex-shrink:0;
-  font-size:.8125rem;font-weight:700;color:#efeff1;
-}
-.rm-chat-messages{
-  flex:1;overflow-y:auto;padding:.5rem .625rem;
-  display:flex;flex-direction:column;gap:.25rem;
-  scrollbar-width:thin;scrollbar-color:#3f3f46 transparent;
-}
+/* chat col */
+.rm-chat-col{width:340px;flex-shrink:0;display:flex;flex-direction:column;background:#18181b;border-left:1px solid #26262c;}
+.rm-chat-header{display:flex;align-items:center;justify-content:space-between;padding:.625rem .875rem;border-bottom:1px solid #26262c;flex-shrink:0;}
+.rm-chat-header-title{font-size:.8125rem;font-weight:700;color:#efeff1;}
+.rm-chat-tabs{display:flex;gap:.25rem;}
+.rm-chat-tab{background:none;border:none;color:#adadb8;font-size:.75rem;font-weight:600;padding:.25rem .5rem;border-radius:4px;cursor:pointer;}
+.rm-chat-tab.active{background:#27272a;color:#efeff1;}
+.rm-chat-messages{flex:1;overflow-y:auto;padding:.5rem .625rem;display:flex;flex-direction:column;gap:.2rem;scrollbar-width:thin;scrollbar-color:#3f3f46 transparent;}
 .rm-chat-messages::-webkit-scrollbar{width:4px;}
 .rm-chat-messages::-webkit-scrollbar-thumb{background:#3f3f46;border-radius:2px;}
-.rm-chat-msg{
-  font-size:.8125rem;line-height:1.4;color:#efeff1;
-  padding:.2rem .25rem;border-radius:4px;word-break:break-word;
-  animation:fadeIn .15s ease;
-}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-.rm-chat-msg .rm-msg-user{font-weight:700;color:#9147ff;margin-right:.3rem;}
-.rm-chat-msg .rm-msg-user.host-color{color:#f59e0b;}
-.rm-chat-input-wrap{
-  display:flex;align-items:center;gap:.5rem;
-  padding:.625rem .75rem;border-top:1px solid #26262c;flex-shrink:0;
-}
-.rm-chat-input{
-  flex:1;background:#27272a;border:1.5px solid #3f3f46;
-  border-radius:6px;padding:.5rem .75rem;
-  font-size:.8125rem;color:#efeff1;outline:none;
-  transition:border-color .15s;
-}
+.rm-chat-msg{font-size:.8125rem;line-height:1.45;color:#efeff1;padding:.2rem .25rem;word-break:break-word;animation:fadeIn .15s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+.rm-msg-user{font-weight:700;color:#9147ff;margin-right:.3rem;}
+.rm-msg-user.host-color{color:#f59e0b;}
+.rm-msg-user.mod-color{color:#22d3ee;}
+.rm-msg-system{font-size:.75rem;color:#52525b;font-style:italic;padding:.15rem .25rem;}
+
+/* likes floating */
+.rm-likes-area{position:relative;height:48px;flex-shrink:0;overflow:hidden;pointer-events:none;}
+.rm-like-float{position:absolute;bottom:0;font-size:1.25rem;animation:floatUp 1.8s ease forwards;pointer-events:none;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-48px) scale(1.4);}}
+
+/* chat input */
+.rm-chat-input-wrap{display:flex;align-items:center;gap:.5rem;padding:.625rem .75rem;border-top:1px solid #26262c;flex-shrink:0;}
+.rm-chat-input{flex:1;background:#27272a;border:1.5px solid #3f3f46;border-radius:6px;padding:.5rem .75rem;font-size:.8125rem;color:#efeff1;outline:none;transition:border-color .15s;}
 .rm-chat-input::placeholder{color:#52525b;}
 .rm-chat-input:focus{border-color:#9147ff;}
-.rm-chat-send{
-  width:34px;height:34px;border-radius:6px;flex-shrink:0;
-  background:#9147ff;border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s;
-}
+.rm-chat-send{width:34px;height:34px;border-radius:6px;flex-shrink:0;background:#9147ff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
 .rm-chat-send:hover{background:#772ce8;}
 .rm-chat-send svg{width:15px;height:15px;color:#fff;}
+.rm-like-btn{width:34px;height:34px;border-radius:6px;flex-shrink:0;background:#27272a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:transform .1s;}
+.rm-like-btn:active{transform:scale(1.3);}
 
-/* ── Viewers panel (inside chat col, toggled) ── */
-.rm-viewers-panel{
-  border-top:1px solid #26262c;padding:.625rem .75rem;flex-shrink:0;
-  max-height:160px;overflow-y:auto;display:none;
-}
+/* viewers panel */
+.rm-viewers-panel{border-top:1px solid #26262c;padding:.625rem .75rem;flex-shrink:0;max-height:160px;overflow-y:auto;display:none;}
 .rm-viewers-panel.open{display:block;}
 .rm-viewers-title{font-size:.75rem;font-weight:700;color:#adadb8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;}
 .rm-part-list{display:flex;flex-wrap:wrap;gap:.3rem;}
-.rm-part-chip{
-  display:inline-flex;align-items:center;gap:.3rem;
-  background:#27272a;border-radius:4px;padding:.25rem .6rem;
-  font-size:.75rem;color:#adadb8;
-}
-.rm-part-avatar{
-  width:18px;height:18px;border-radius:50%;background:#3f3f46;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.6rem;font-weight:700;color:#adadb8;overflow:hidden;flex-shrink:0;
-}
+.rm-part-chip{display:inline-flex;align-items:center;gap:.3rem;background:#27272a;border-radius:4px;padding:.25rem .6rem;font-size:.75rem;color:#adadb8;}
+.rm-part-avatar{width:18px;height:18px;border-radius:50%;background:#3f3f46;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#adadb8;overflow:hidden;flex-shrink:0;}
 .rm-part-avatar img{width:100%;height:100%;object-fit:cover;}
 .rm-host-crown{color:#f59e0b;}
 
-/* ── Mobile: stack video on top, chat below ── */
+/* mobile */
 @media(max-width:768px){
   .rm-body{flex-direction:column;}
-  .rm-chat-col{width:100%;flex:1;border-left:none;border-top:1px solid #26262c;}
+  .rm-chat-col{width:100%;flex:1;border-left:none;border-top:1px solid #26262c;min-height:0;}
   .rm-video-wrap{aspect-ratio:16/9;flex:none;}
   .rm-video-col{flex:none;}
 }
+
+/* toast */
+.rm-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#18181b;color:#efeff1;padding:.5rem 1.25rem;border-radius:6px;font-size:.875rem;z-index:9999;pointer-events:none;border:1px solid #3f3f46;white-space:nowrap;}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="rm-page">
 
-  <!-- Top chrome -->
+  <!-- Topbar -->
   <div class="rm-topbar">
     <button class="rm-back" onclick="rmLeaveAndGo()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
       Back
     </button>
-    <div class="rm-live-badge"><span class="rm-live-dot"></span>LIVE</div>
+    <div class="rm-live-badge" id="rm-live-badge"><span class="rm-live-dot"></span>LIVE</div>
+    <div class="rm-ended-badge" id="rm-ended-badge" style="display:none;">ENDED</div>
     <div class="rm-title">{{ room.topic }}</div>
     <div class="rm-viewer-pill">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -210,12 +150,13 @@ body,html{background:#0e0e10;overflow:hidden;}
     </div>
   </div>
 
-  <!-- Body: video + chat -->
+  <!-- Body -->
   <div class="rm-body">
 
     <!-- Video column -->
     <div class="rm-video-col">
-      <div class="rm-video-wrap">
+      <div class="rm-video-wrap" id="rm-video-wrap">
+
         {% if is_host %}
           <video id="rm-video-host" autoplay muted playsinline></video>
           <div class="rm-no-cam" id="rm-no-cam" style="display:none;">
@@ -225,17 +166,23 @@ body,html{background:#0e0e10;overflow:hidden;}
         {% else %}
           <div class="rm-waiting" id="rm-waiting">
             <div class="rm-spinner"></div>
-            <span>Connecting to stream…</span>
+            <span id="rm-waiting-text">Connecting to stream…</span>
           </div>
           <video id="rm-video-viewer" autoplay playsinline webkit-playsinline style="display:none;"></video>
-          <div id="rm-tap-play" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);flex-direction:column;align-items:center;justify-content:center;gap:.75rem;cursor:pointer;z-index:10;"
-            onclick="var v=document.getElementById('rm-video-viewer');v.muted=false;v.play();this.style.display='none';">
-            <div style="width:64px;height:64px;border-radius:50%;background:#9147ff;display:flex;align-items:center;justify-content:center;">
+          <div class="rm-tap-play" id="rm-tap-play" onclick="rmTapPlay()">
+            <div class="rm-tap-play-btn">
               <svg viewBox="0 0 24 24" fill="white" width="28" height="28"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
-            <span style="color:#fff;font-size:.9rem;font-weight:600;">Tap to watch</span>
+            <span>Tap to watch</span>
+          </div>
+          <div class="rm-ended-screen" id="rm-ended-screen" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+            <h3>Stream Ended</h3>
+            <p>{{ room.host.username }} has ended the live stream.</p>
+            <button onclick="window.location.href='/community/live/'" style="margin-top:.5rem;background:#9147ff;color:#fff;border:none;border-radius:6px;padding:.5rem 1.25rem;font-size:.875rem;font-weight:600;cursor:pointer;">Back to Live</button>
           </div>
         {% endif %}
+
       </div>
 
       <!-- Host info -->
@@ -245,13 +192,16 @@ body,html{background:#0e0e10;overflow:hidden;}
             <img src="{{ room.host.community_profile.avatar.url }}" alt="">
           {% else %}{{ room.host.username|slice:":1"|upper }}{% endif %}
         </div>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="rm-host-name">{{ room.host.username }}</div>
           <div class="rm-host-topic">{{ room.topic }}</div>
         </div>
+        {% if not is_host %}
+        <div style="font-size:.75rem;color:#52525b;" id="rm-like-count">❤️ <span id="rm-like-num">0</span></div>
+        {% endif %}
       </div>
 
-      <!-- Controls (host only) -->
+      <!-- Host controls -->
       {% if is_host %}
       <div class="rm-controls">
         <button class="rm-ctrl-btn" id="rm-btn-mic" onclick="rmToggleMic()">
@@ -263,8 +213,9 @@ body,html{background:#0e0e10;overflow:hidden;}
           Camera
         </button>
         <div class="rm-ctrl-spacer"></div>
-        <button class="rm-ctrl-btn danger" onclick="rmLeaveAndGo()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <div style="font-size:.75rem;color:#52525b;">❤️ <span id="rm-like-num">0</span></div>
+        <button class="rm-ctrl-btn danger" onclick="rmEndStream()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
           End Stream
         </button>
       </div>
@@ -274,19 +225,21 @@ body,html{background:#0e0e10;overflow:hidden;}
     <!-- Chat column -->
     <div class="rm-chat-col">
       <div class="rm-chat-header">
-        Stream Chat
-        <button onclick="rmToggleViewers()" style="float:right;background:none;border:none;color:#adadb8;font-size:.75rem;cursor:pointer;">Viewers</button>
+        <span class="rm-chat-header-title">Stream Chat</span>
+        <div class="rm-chat-tabs">
+          <button class="rm-chat-tab active" onclick="rmShowTab('chat',this)">Chat</button>
+          <button class="rm-chat-tab" onclick="rmShowTab('viewers',this)">Viewers</button>
+        </div>
       </div>
 
-      <!-- Viewers panel (toggled) -->
+      <!-- Viewers panel -->
       <div class="rm-viewers-panel" id="rm-viewers-panel">
         <div class="rm-viewers-title">Watching</div>
         <div class="rm-part-list" id="rm-part-list">
           {% for p in participants %}
           <div class="rm-part-chip" id="rm-chip-{{ p.user.username }}">
             <div class="rm-part-avatar">
-              {% if p.user.community_profile.avatar %}
-                <img src="{{ p.user.community_profile.avatar.url }}" alt="">
+              {% if p.user.community_profile.avatar %}<img src="{{ p.user.community_profile.avatar.url }}" alt="">
               {% else %}{{ p.user.username|slice:":1"|upper }}{% endif %}
             </div>
             {{ p.user.username }}
@@ -296,13 +249,16 @@ body,html{background:#0e0e10;overflow:hidden;}
         </div>
       </div>
 
+      <!-- Likes float area -->
+      <div class="rm-likes-area" id="rm-likes-area"></div>
+
+      <!-- Messages -->
       <div class="rm-chat-messages" id="rm-chat-messages"></div>
 
+      <!-- Input -->
       <div class="rm-chat-input-wrap">
         {% if not is_host %}
-        <button class="rm-ctrl-btn danger" onclick="rmLeaveAndGo()" style="padding:.4rem .6rem;border-radius:6px;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </button>
+        <button class="rm-like-btn" onclick="rmSendLike()" title="Like">❤️</button>
         {% endif %}
         <input id="rm-comment-input" class="rm-chat-input" type="text"
           placeholder="Send a message…" maxlength="280" autocomplete="off"
@@ -310,6 +266,11 @@ body,html{background:#0e0e10;overflow:hidden;}
         <button class="rm-chat-send" onclick="rmSendComment()" aria-label="Send">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
+        {% if not is_host %}
+        <button class="rm-ctrl-btn danger" onclick="rmLeaveAndGo()" style="padding:.4rem .6rem;border-radius:6px;flex-shrink:0;" title="Leave">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+        {% endif %}
       </div>
     </div>
 
@@ -319,250 +280,427 @@ body,html{background:#0e0e10;overflow:hidden;}
 
 {% block extra_js %}
 <script>
-const RM_IS_HOST    = {{ is_host|yesno:"true,false" }};
-const RM_ROOM_ID    = '{{ room.id }}';
-const RM_USERNAME   = '{{ request.user.username }}';
-const RM_HOST_NAME  = '{{ room.host.username }}';
-const RM_CSRF       = '{{ csrf_token }}';
-const RM_SIGNAL_URL = '/community/rooms/' + RM_ROOM_ID + '/signal/';
-const RM_POLL_URL   = '/community/rooms/' + RM_ROOM_ID + '/poll/';
-const RM_LEAVE_URL  = '/community/rooms/' + RM_ROOM_ID + '/leave/';
-const RM_CMT_URL    = '/community/rooms/' + RM_ROOM_ID + '/comment/';
+(function(){
+'use strict';
+
+// ── Config ────────────────────────────────────────────────────────────────────
+const ROOM_ID   = '{{ room.id }}';
+const IS_HOST   = {{ is_host|yesno:"true,false" }};
+const MY_USER   = '{{ request.user.username }}';
+const HOST_USER = '{{ room.host.username }}';
+const CSRF      = '{{ csrf_token }}';
 
 const ICE_SERVERS = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'turn:openrelay.metered.ca:80',  username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443', username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turns:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
 ];
 
-let localStream = null, peerConns = {}, viewerPc = null, viewerConnecting = false;
-let micEnabled = true, camEnabled = true, pollTimer = null, leftRoom = false;
-let seenCmtIds = new Set(), hostReBroadcastTimer = null;
+// ── State ─────────────────────────────────────────────────────────────────────
+let localStream    = null;
+let peerConns      = {};   // host: {username -> RTCPeerConnection}
+let viewerPc       = null; // viewer: single RTCPeerConnection
+let viewerConnecting = false;
+let micOn          = true;
+let camOn          = true;
+let pollTimer      = null;
+let seenComments   = new Set();
+let lastCommentId  = 0;
+let likeCount      = 0;
+let streamEnded    = false;
 
-function rmPost(url, body) {
-  return fetch(url, { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':RM_CSRF}, body:JSON.stringify(body) }).then(r=>r.json());
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function rmPost(url, body){
+  return fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},body:JSON.stringify(body)});
 }
-function rmSendSignal(type, payload, target) {
-  return rmPost(RM_SIGNAL_URL, { type, payload, target: target||'all' });
+function rmSendSignal(type, payload, target='all'){
+  return rmPost(`/community/rooms/${ROOM_ID}/signal/`,{type,payload,target});
 }
-function escHtml(s) {
+function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-function rmRenderComment(cmt) {
-  if (seenCmtIds.has(cmt.id)) return;
-  seenCmtIds.add(cmt.id);
-  const box = document.getElementById('rm-chat-messages');
-  if (!box) return;
-  const el = document.createElement('div');
-  el.className = 'rm-chat-msg';
-  const isHost = cmt.username === RM_HOST_NAME;
-  el.innerHTML = `<span class="rm-msg-user${isHost?' host-color':''}">${escHtml(cmt.username)}</span>${escHtml(cmt.text)}`;
-  box.appendChild(el);
-  // Keep max 200 messages
-  const msgs = box.querySelectorAll('.rm-chat-msg');
-  if (msgs.length > 200) msgs[0].remove();
-  box.scrollTop = box.scrollHeight;
-}
-
-async function rmSendComment() {
-  const input = document.getElementById('rm-comment-input');
-  const text = (input.value||'').trim(); if (!text) return;
-  input.value = '';
-  rmRenderComment({ id:'local_'+Date.now(), username:RM_USERNAME, text });
-  try { const d = await rmPost(RM_CMT_URL,{text}); if(d.ok&&d.comment) seenCmtIds.add(d.comment.id); } catch(e){}
-}
-
-function rmToggleViewers() {
-  document.getElementById('rm-viewers-panel').classList.toggle('open');
-}
-
-// ── HOST ──────────────────────────────────────────────────────────────────
-async function rmHostStart() {
-  try { localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true}); }
-  catch(e) { try { localStream = await navigator.mediaDevices.getUserMedia({video:false,audio:true}); } catch(e2){} }
-  const vid = document.getElementById('rm-video-host');
-  const noCam = document.getElementById('rm-no-cam');
-  if (localStream && vid) { vid.srcObject=localStream; vid.style.display='block'; if(noCam) noCam.style.display='none'; }
-  else { if(vid) vid.style.display='none'; if(noCam) noCam.style.display='flex'; }
-  await rmSendSignal('host_ready',{host:RM_USERNAME},'all');
-  rmStartPoll();
-  hostReBroadcastTimer = setInterval(()=>rmSendSignal('host_ready',{host:RM_USERNAME},'all'), 8000);
-}
-async function rmHostMakeOffer(viewerUsername) {
-  const ex = peerConns[viewerUsername];
-  if (ex && ['connected','connecting'].includes(ex.connectionState)) return;
-  if (ex) { ex.close(); delete peerConns[viewerUsername]; }
-  const pc = new RTCPeerConnection({iceServers:ICE_SERVERS});
-  peerConns[viewerUsername] = pc;
-  if (localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-  pc.onicecandidate = e => { if(e.candidate) rmSendSignal('ice',{candidate:e.candidate},viewerUsername); };
-  pc.onconnectionstatechange = () => { if(['disconnected','failed','closed'].includes(pc.connectionState)){pc.close();delete peerConns[viewerUsername];} };
-  try {
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    await rmSendSignal('offer',{sdp:pc.localDescription},viewerUsername);
-  } catch(e) { console.warn('offer err',e); pc.close(); delete peerConns[viewerUsername]; }
-}
-
-async function rmHostHandleAnswer(viewerUsername, answerSdp) {
-  const pc = peerConns[viewerUsername];
-  if (!pc || pc.signalingState !== 'have-local-offer') return;
-  try { await pc.setRemoteDescription(new RTCSessionDescription(answerSdp)); } catch(e){}
-}
-
-function rmToggleMic() {
-  if (!localStream) return;
-  micEnabled = !micEnabled;
-  localStream.getAudioTracks().forEach(t=>t.enabled=micEnabled);
-  const btn = document.getElementById('rm-btn-mic');
-  if (btn) btn.classList.toggle('off', !micEnabled);
-}
-function rmToggleCam() {
-  if (!localStream) return;
-  camEnabled = !camEnabled;
-  localStream.getVideoTracks().forEach(t=>t.enabled=camEnabled);
-  const btn = document.getElementById('rm-btn-cam');
-  if (btn) btn.classList.toggle('off', !camEnabled);
-  const vid = document.getElementById('rm-video-host');
-  const noCam = document.getElementById('rm-no-cam');
-  if (vid) vid.style.display = camEnabled ? 'block' : 'none';
-  if (noCam) noCam.style.display = camEnabled ? 'none' : 'flex';
-}
-
-// ── VIEWER ────────────────────────────────────────────────────────────────
-function rmViewerRequestOffer() {
-  if (viewerPc && ['connected','connecting'].includes(viewerPc.connectionState)) return;
-  rmSendSignal('viewer_request',{viewer:RM_USERNAME},RM_HOST_NAME);
-}
-
-async function rmViewerHandleOffer(offerSdp) {
-  if (viewerConnecting) return;
-  viewerConnecting = true;
-  if (viewerPc) { viewerPc.close(); viewerPc = null; }
-  try {
-    const pc = new RTCPeerConnection({iceServers:ICE_SERVERS});
-    viewerPc = pc;
-    pc.ontrack = e => {
-      const vid = document.getElementById('rm-video-viewer');
-      const w = document.getElementById('rm-waiting');
-      if (!vid) return;
-      const stream = (e.streams && e.streams[0]) ? e.streams[0] : new MediaStream([e.track]);
-      vid.srcObject = stream;
-      vid.style.display = 'block';
-      // Try unmuted first, fall back to muted autoplay + tap-to-unmute
-      vid.muted = false;
-      vid.play().catch(() => {
-        vid.muted = true;
-        vid.play().catch(() => {});
-        const overlay = document.getElementById('rm-tap-play');
-        if (overlay) overlay.style.display = 'flex';
-      });
-      if (w) w.style.display = 'none';
-    };
-    pc.onicecandidate = e => { if(e.candidate) rmSendSignal('ice',{candidate:e.candidate},RM_HOST_NAME); };
-    pc.onconnectionstatechange = () => {
-      if (pc.connectionState==='connected') {
-        viewerConnecting=false;
-        const w=document.getElementById('rm-waiting'); if(w) w.style.display='none';
-      }
-      if (['disconnected','failed'].includes(pc.connectionState)) {
-        viewerConnecting=false;
-        const w=document.getElementById('rm-waiting');
-        if(w){w.style.display='flex';w.innerHTML='<div class="rm-spinner"></div><span>Reconnecting…</span>';}
-        const vid=document.getElementById('rm-video-viewer'); if(vid) vid.style.display='none';
-        if(viewerPc===pc) viewerPc=null;
-        setTimeout(rmViewerRequestOffer,2000);
-      }
-    };
-    await pc.setRemoteDescription(new RTCSessionDescription(offerSdp));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    await rmSendSignal('answer',{sdp:answer},RM_HOST_NAME);
-    setTimeout(()=>{ if(viewerPc===pc&&pc.connectionState!=='connected'){viewerConnecting=false;viewerPc=null;rmViewerRequestOffer();} },8000);
-  } catch(e) {
-    console.warn('viewer err',e); viewerConnecting=false;
-    if(viewerPc){viewerPc.close();viewerPc=null;}
-    setTimeout(rmViewerRequestOffer,2000);
-  }
-}
-
-// ── POLL ──────────────────────────────────────────────────────────────────
-async function rmPoll() {
-  if (leftRoom) return;
-  try {
-    const data = await fetch(RM_POLL_URL).then(r=>r.json());
-    if (data.room) {
-      const el=document.getElementById('rm-count-num');
-      if(el) el.textContent=data.room.viewer_count??(data.participants||[]).length;
-      if(data.room.status==='closed'&&!RM_IS_HOST){rmShowToast('Stream ended');setTimeout(()=>window.location.href='/community/live/',1500);return;}
-    }
-    if (data.participants) rmUpdateParticipants(data.participants);
-    for (const cmt of (data.comments||[])) rmRenderComment(cmt);
-    if (RM_IS_HOST) {
-      for (const sig of (data.signals||[])) {
-        const {type,payload,from}=sig;
-        if(type==='viewer_request') await rmHostMakeOffer(from);
-        else if(type==='answer') await rmHostHandleAnswer(from,payload.sdp);
-        else if(type==='ice'){const pc=peerConns[from];if(pc&&payload.candidate)try{await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));}catch(e){}}
-      }
-    } else {
-      if(data.host_offer&&data.host_offer.sdp&&!viewerPc&&!viewerConnecting) rmViewerRequestOffer();
-      for (const sig of (data.signals||[])) {
-        const {type,payload}=sig;
-        if(type==='host_ready'&&!viewerPc&&!viewerConnecting) rmViewerRequestOffer();
-        else if(type==='offer') await rmViewerHandleOffer(payload.sdp);
-        else if(type==='ice'&&viewerPc&&payload.candidate)try{await viewerPc.addIceCandidate(new RTCIceCandidate(payload.candidate));}catch(e){}
-      }
-    }
-  } catch(e){}
-  if (!leftRoom) pollTimer=setTimeout(rmPoll,2000);
-}
-function rmStartPoll(){if(pollTimer)clearTimeout(pollTimer);pollTimer=setTimeout(rmPoll,500);}
-
-function rmUpdateParticipants(usernames) {
-  const list=document.getElementById('rm-part-list'); if(!list) return;
-  usernames.forEach(u=>{
-    if(!document.getElementById('rm-chip-'+u)){
-      const chip=document.createElement('div');chip.className='rm-part-chip';chip.id='rm-chip-'+u;
-      chip.innerHTML=`<div class="rm-part-avatar">${escHtml(u.slice(0,1).toUpperCase())}</div>${escHtml(u)}${u===RM_HOST_NAME?' <span class="rm-host-crown">♛</span>':''}`;
-      list.appendChild(chip);
-    }
-  });
-  list.querySelectorAll('.rm-part-chip').forEach(chip=>{
-    const u=chip.id.replace('rm-chip-','');
-    if(!usernames.includes(u)) chip.remove();
-  });
-}
-
-async function rmLeaveAndGo() {
-  leftRoom=true;
-  if(pollTimer)clearTimeout(pollTimer);
-  if(hostReBroadcastTimer)clearInterval(hostReBroadcastTimer);
-  if(localStream)localStream.getTracks().forEach(t=>t.stop());
-  Object.values(peerConns).forEach(pc=>pc.close());
-  if(viewerPc)viewerPc.close();
-  try{await rmPost(RM_LEAVE_URL,{});}catch(e){}
-  window.location.href='/community/live/';
-}
-
 function rmShowToast(msg){
-  const t=document.createElement('div');t.textContent=msg;
-  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#18181b;color:#efeff1;padding:.5rem 1.25rem;border-radius:6px;font-size:.875rem;z-index:9999;pointer-events:none;border:1px solid #3f3f46;';
-  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+  let t=document.getElementById('rm-toast');
+  if(!t){t=document.createElement('div');t.id='rm-toast';t.className='rm-toast';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>{t.style.opacity='0';},2500);
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  if(RM_IS_HOST){rmHostStart();}
-  else{rmStartPoll();setTimeout(rmViewerRequestOffer,1000);}
-});
-window.addEventListener('beforeunload',()=>{
-  if(!leftRoom){
-    if(localStream)localStream.getTracks().forEach(t=>t.stop());
-    navigator.sendBeacon(RM_LEAVE_URL,JSON.stringify({csrfmiddlewaretoken:RM_CSRF}));
+// ── Chat ──────────────────────────────────────────────────────────────────────
+function rmRenderComment(c){
+  const box=document.getElementById('rm-chat-messages');
+  if(!box||seenComments.has(c.id))return;
+  seenComments.add(c.id);
+  const div=document.createElement('div');
+  div.className='rm-chat-msg';
+  const isHost=(c.username===HOST_USER);
+  const isMe=(c.username===MY_USER);
+  const colorClass=isHost?'host-color':(isMe?'mod-color':'');
+  div.innerHTML=`<span class="rm-msg-user ${colorClass}">${escHtml(c.username)}</span>${escHtml(c.text)}`;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+function rmRenderSystem(msg){
+  const box=document.getElementById('rm-chat-messages');
+  if(!box)return;
+  const div=document.createElement('div');
+  div.className='rm-chat-msg rm-msg-system';
+  div.textContent=msg;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+function rmSendComment(){
+  const inp=document.getElementById('rm-comment-input');
+  const text=(inp.value||'').trim();
+  if(!text)return;
+  inp.value='';
+  rmPost(`/community/rooms/${ROOM_ID}/comment/`,{text})
+    .then(r=>r.json()).then(d=>{if(d.comment)rmRenderComment(d.comment);});
+}
+
+// ── Likes ─────────────────────────────────────────────────────────────────────
+function rmSendLike(){
+  rmSendSignal('like',{username:MY_USER},'all');
+  rmFloatLike();
+}
+function rmFloatLike(){
+  const area=document.getElementById('rm-likes-area');
+  if(!area)return;
+  const el=document.createElement('span');
+  el.className='rm-like-float';
+  el.textContent='❤️';
+  el.style.left=Math.random()*80+'%';
+  area.appendChild(el);
+  setTimeout(()=>el.remove(),1900);
+  likeCount++;
+  document.querySelectorAll('#rm-like-num').forEach(e=>e.textContent=likeCount);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function rmShowTab(tab, btn){
+  document.querySelectorAll('.rm-chat-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const vp=document.getElementById('rm-viewers-panel');
+  if(tab==='viewers'){vp&&vp.classList.add('open');}
+  else{vp&&vp.classList.remove('open');}
+}
+
+// ── Tap to play (mobile autoplay) ─────────────────────────────────────────────
+function rmTapPlay(){
+  const v=document.getElementById('rm-video-viewer');
+  const overlay=document.getElementById('rm-tap-play');
+  if(!v)return;
+  v.muted=false;
+  v.play().catch(()=>{v.muted=true;v.play();});
+  if(overlay)overlay.style.display='none';
+}
+
+// ── Participants ──────────────────────────────────────────────────────────────
+function rmUpdateParticipants(list){
+  document.getElementById('rm-count-num').textContent=list.length;
+  const pl=document.getElementById('rm-part-list');
+  if(!pl)return;
+  // Add new chips
+  list.forEach(u=>{
+    if(!document.getElementById('rm-chip-'+u)){
+      const chip=document.createElement('div');
+      chip.className='rm-part-chip';
+      chip.id='rm-chip-'+u;
+      chip.innerHTML=`<div class="rm-part-avatar">${escHtml(u.slice(0,1).toUpperCase())}</div>${escHtml(u)}${u===HOST_USER?'<span class="rm-host-crown">♛</span>':''}`;
+      pl.appendChild(chip);
+    }
+  });
+  // Remove gone chips
+  pl.querySelectorAll('.rm-part-chip').forEach(chip=>{
+    const u=chip.id.replace('rm-chip-','');
+    if(!list.includes(u))chip.remove();
+  });
+}
+
+// ── Leave / End ───────────────────────────────────────────────────────────────
+function rmLeaveAndGo(){
+  rmPost(`/community/rooms/${ROOM_ID}/leave/`,{}).finally(()=>{
+    window.location.href='/community/live/';
+  });
+}
+function rmEndStream(){
+  if(!confirm('End the live stream for everyone?'))return;
+  rmPost(`/community/rooms/${ROOM_ID}/close/`,{}).then(()=>{
+    window.location.href='/community/live/';
+  });
+}
+
+// ── Ended screen ──────────────────────────────────────────────────────────────
+function rmShowEnded(){
+  if(streamEnded)return;
+  streamEnded=true;
+  clearInterval(pollTimer);
+  document.getElementById('rm-live-badge').style.display='none';
+  document.getElementById('rm-ended-badge').style.display='';
+  if(!IS_HOST){
+    const ws=document.getElementById('rm-waiting');
+    if(ws)ws.style.display='none';
+    const vv=document.getElementById('rm-video-viewer');
+    if(vv)vv.style.display='none';
+    const es=document.getElementById('rm-ended-screen');
+    if(es)es.style.display='';
   }
+  rmRenderSystem('Stream has ended.');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HOST FLOW
+// ═══════════════════════════════════════════════════════════════════════════════
+async function rmHostStart(){
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  }catch(e){
+    try{localStream=await navigator.mediaDevices.getUserMedia({video:false,audio:true});}
+    catch(e2){rmShowToast('Camera/mic access denied');return;}
+  }
+  const vid=document.getElementById('rm-video-host');
+  if(vid){vid.srcObject=localStream;vid.play().catch(()=>{});}
+  // Signal to all viewers that host is ready
+  await rmSendSignal('host_ready',{host:MY_USER},'all');
+  rmShowToast('You are live!');
+}
+
+async function rmHostMakeOffer(viewerUsername){
+  if(peerConns[viewerUsername])return; // already connected
+  const pc=new RTCPeerConnection({iceServers:ICE_SERVERS});
+  peerConns[viewerUsername]=pc;
+
+  // Add all local tracks
+  if(localStream){
+    localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  }
+
+  pc.onicecandidate=e=>{
+    if(e.candidate){
+      rmSendSignal('ice_host',{candidate:e.candidate},viewerUsername);
+    }
+  };
+  pc.onconnectionstatechange=()=>{
+    if(pc.connectionState==='failed'||pc.connectionState==='disconnected'){
+      delete peerConns[viewerUsername];
+    }
+  };
+
+  const offer=await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  await rmSendSignal('offer',{sdp:pc.localDescription},viewerUsername);
+}
+
+async function rmHostHandleAnswer(fromUser, sdp){
+  const pc=peerConns[fromUser];
+  if(!pc)return;
+  if(pc.signalingState==='have-local-offer'){
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  }
+}
+
+async function rmHostHandleIce(fromUser, candidate){
+  const pc=peerConns[fromUser];
+  if(!pc)return;
+  try{await pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}
+}
+
+function rmToggleMic(){
+  if(!localStream)return;
+  micOn=!micOn;
+  localStream.getAudioTracks().forEach(t=>t.enabled=micOn);
+  const btn=document.getElementById('rm-btn-mic');
+  if(btn)btn.classList.toggle('off',!micOn);
+  rmShowToast(micOn?'Mic on':'Mic muted');
+}
+function rmToggleCam(){
+  if(!localStream)return;
+  camOn=!camOn;
+  localStream.getVideoTracks().forEach(t=>t.enabled=camOn);
+  const btn=document.getElementById('rm-btn-cam');
+  if(btn)btn.classList.toggle('off',!camOn);
+  const noCam=document.getElementById('rm-no-cam');
+  if(noCam)noCam.style.display=camOn?'none':'';
+  rmShowToast(camOn?'Camera on':'Camera off');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VIEWER FLOW
+// ═══════════════════════════════════════════════════════════════════════════════
+async function rmViewerRequestOffer(){
+  if(viewerConnecting||viewerPc)return;
+  viewerConnecting=true;
+  const wt=document.getElementById('rm-waiting-text');
+  if(wt)wt.textContent='Requesting stream…';
+  // Tell host we want an offer
+  await rmSendSignal('viewer_ready',{viewer:MY_USER},HOST_USER);
+}
+
+async function rmViewerHandleOffer(sdp){
+  // Clean up any old connection
+  if(viewerPc){viewerPc.close();viewerPc=null;}
+
+  const pc=new RTCPeerConnection({iceServers:ICE_SERVERS});
+  viewerPc=pc;
+
+  pc.ontrack=e=>{
+    const vid=document.getElementById('rm-video-viewer');
+    const waiting=document.getElementById('rm-waiting');
+    const tapPlay=document.getElementById('rm-tap-play');
+    if(!vid)return;
+
+    // Build stream from track
+    let stream=e.streams&&e.streams[0];
+    if(!stream){stream=new MediaStream([e.track]);}
+
+    vid.srcObject=stream;
+    vid.muted=true; // must start muted for autoplay
+    vid.style.display='block';
+    if(waiting)waiting.style.display='none';
+
+    vid.play().then(()=>{
+      // Try to unmute after play succeeds
+      vid.muted=false;
+    }).catch(()=>{
+      // Autoplay blocked — show tap overlay
+      if(tapPlay)tapPlay.style.display='flex';
+    });
+  };
+
+  pc.onicecandidate=e=>{
+    if(e.candidate){
+      rmSendSignal('ice_viewer',{candidate:e.candidate},HOST_USER);
+    }
+  };
+  pc.onconnectionstatechange=()=>{
+    if(pc.connectionState==='connected'){
+      viewerConnecting=false;
+      rmShowToast('Connected to stream');
+    }
+    if(pc.connectionState==='failed'||pc.connectionState==='disconnected'){
+      viewerPc=null;viewerConnecting=false;
+      // Retry after 3s
+      setTimeout(()=>{if(!streamEnded)rmViewerRequestOffer();},3000);
+    }
+  };
+
+  await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  const answer=await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  await rmSendSignal('answer',{sdp:pc.localDescription},HOST_USER);
+}
+
+async function rmViewerHandleIce(candidate){
+  if(!viewerPc)return;
+  try{await viewerPc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// POLL LOOP
+// ═══════════════════════════════════════════════════════════════════════════════
+async function rmPoll(){
+  let data;
+  try{
+    const r=await fetch(`/community/rooms/${ROOM_ID}/poll/?last_comment_id=${lastCommentId}`);
+    if(!r.ok)return;
+    data=await r.json();
+  }catch(e){return;}
+
+  // Room status
+  if(data.room){
+    if(data.room.status==='closed'&&!streamEnded){rmShowEnded();return;}
+  }
+
+  // Participants
+  if(data.participants)rmUpdateParticipants(data.participants);
+
+  // Comments
+  if(data.comments){
+    data.comments.forEach(c=>{
+      rmRenderComment(c);
+      const cid=parseInt(c.id,10);
+      if(cid>lastCommentId)lastCommentId=cid;
+    });
+  }
+
+  // Signals
+  if(data.signals){
+    for(const sig of data.signals){
+      await rmHandleSignal(sig);
+    }
+  }
+}
+
+async function rmHandleSignal(sig){
+  const {type,payload,from}=sig;
+
+  if(IS_HOST){
+    // Host receives: viewer_ready → make offer; answer → set remote; ice_viewer → add ice
+    if(type==='viewer_ready'&&from!==MY_USER){
+      await rmHostMakeOffer(from);
+    }
+    else if(type==='answer'&&from!==MY_USER){
+      await rmHostHandleAnswer(from,payload.sdp);
+    }
+    else if(type==='ice_viewer'&&from!==MY_USER){
+      await rmHostHandleIce(from,payload.candidate);
+    }
+  } else {
+    // Viewer receives: host_ready → request offer; offer → handle; ice_host → add ice; like → float
+    if(type==='host_ready'){
+      await rmViewerRequestOffer();
+    }
+    else if(type==='offer'){
+      await rmViewerHandleOffer(payload.sdp);
+    }
+    else if(type==='ice_host'){
+      await rmViewerHandleIce(payload.candidate);
+    }
+    else if(type==='like'){
+      rmFloatLike();
+    }
+    else if(type==='stream_ended'){
+      rmShowEnded();
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',async()=>{
+  // Expose tab function globally
+  window.rmShowTab=rmShowTab;
+  window.rmTapPlay=rmTapPlay;
+  window.rmSendComment=rmSendComment;
+  window.rmSendLike=rmSendLike;
+  window.rmToggleMic=rmToggleMic;
+  window.rmToggleCam=rmToggleCam;
+  window.rmEndStream=rmEndStream;
+  window.rmLeaveAndGo=rmLeaveAndGo;
+
+  if(IS_HOST){
+    await rmHostStart();
+  } else {
+    // Viewer: request offer immediately (host may already be live)
+    await rmViewerRequestOffer();
+  }
+
+  // Start poll loop at 1s
+  pollTimer=setInterval(rmPoll,1000);
+  // Also poll immediately
+  rmPoll();
+
+  // Leave on page unload
+  window.addEventListener('beforeunload',()=>{
+    navigator.sendBeacon(`/community/rooms/${ROOM_ID}/leave/`,
+      new Blob([JSON.stringify({})],{type:'application/json'}));
+  });
 });
+
+})();
 </script>
 {% endblock %}

@@ -198,6 +198,7 @@ urlpatterns = [
     path('rooms/<uuid:room_id>/signal/', views.micro_room_signal, name='micro_room_signal'),
     path('rooms/<uuid:room_id>/poll/', views.micro_room_poll, name='micro_room_poll'),
     path('rooms/<uuid:room_id>/comment/', views.micro_room_comment, name='micro_room_comment'),
+    path('rooms/<uuid:room_id>/close/', views.micro_room_close, name='micro_room_close'),
 
     # Help Beacons
     path('help/', views.help_beacon_list, name='help_beacon_list'),

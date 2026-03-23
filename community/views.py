@@ -3662,6 +3662,7 @@ def micro_room_poll(request, room_id):
         except Exception:
             payload = {}
         signals.append({'type': sig.signal_type, 'payload': payload, 'from': sig.sender.username})
+        # Consume targeted signals; broadcast signals stay for others to read
         if sig.target == username:
             ids_to_consume.append(sig.pk)
 
@@ -3678,13 +3679,29 @@ def micro_room_poll(request, room_id):
     if room_data:
         room_data['viewer_count'] = viewer_count
 
-    # Comments (cache is fine for comments — single-worker read is ok)
-    from django.core.cache import cache
-    comments = cache.get(f'room_comments_{room_id}', [])
+    # Comments — use DB-backed RoomComment for multi-worker support
+    from community.models import RoomComment
+    last_id = request.GET.get('last_comment_id', 0)
+    try:
+        last_id = int(last_id)
+    except (ValueError, TypeError):
+        last_id = 0
+    comment_qs = RoomComment.objects.filter(room_id=room_id)
+    if last_id:
+        comment_qs = comment_qs.filter(pk__gt=last_id)
+    comment_qs = comment_qs.select_related('user').order_by('created_at')[:50]
+    comments = [
+        {
+            'id': str(c.pk),
+            'username': c.user.username,
+            'text': c.text,
+            'ts': c.created_at.strftime('%H:%M'),
+        }
+        for c in comment_qs
+    ]
 
     return JsonResponse({
         'signals': signals,
-        'host_offer': None,
         'participants': participants,
         'room': room_data,
         'comments': comments,
@@ -3694,9 +3711,9 @@ def micro_room_poll(request, room_id):
 @login_required
 @require_POST
 def micro_room_comment(request, room_id):
-    """Post a live comment to a room — stored in cache, returned via poll."""
+    """Post a live comment — stored in DB for multi-worker support."""
     import json as _json
-    from django.core.cache import cache
+    from community.models import RoomComment
     room = get_object_or_404(MicroRoom, id=room_id)
     try:
         data = _json.loads(request.body)
@@ -3705,17 +3722,13 @@ def micro_room_comment(request, room_id):
     text = (data.get('text') or '').strip()[:280]
     if not text:
         return JsonResponse({'error': 'empty'}, status=400)
+    c = RoomComment.objects.create(room=room, user=request.user, text=text)
     comment = {
-        'id': str(timezone.now().timestamp()),
+        'id': str(c.pk),
         'username': request.user.username,
         'text': text,
-        'ts': timezone.now().strftime('%H:%M'),
+        'ts': c.created_at.strftime('%H:%M'),
     }
-    key = f'room_comments_{room_id}'
-    comments = cache.get(key, [])
-    comments.append(comment)
-    # Keep last 100 comments, expire in 2 hours
-    cache.set(key, comments[-100:], 7200)
     return JsonResponse({'ok': True, 'comment': comment})
 
 
@@ -3743,6 +3756,27 @@ def micro_room_leave(request, room_id):
     MicroRoom.objects.filter(pk=room.pk).update(participant_count=max(0, active))
     if active == 0:
         MicroRoom.objects.filter(pk=room.pk).update(status=MicroRoom.STATUS_CLOSED, closed_at=timezone.now())
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def micro_room_close(request, room_id):
+    """Host ends the stream — marks room closed, signals all viewers."""
+    room = get_object_or_404(MicroRoom, id=room_id, host=request.user)
+    MicroRoom.objects.filter(pk=room.pk).update(
+        status=MicroRoom.STATUS_CLOSED, closed_at=timezone.now()
+    )
+    MicroRoomParticipant.objects.filter(room=room, left_at__isnull=True).update(left_at=timezone.now())
+    # Broadcast stream_ended signal to all viewers
+    import json as _json
+    RoomSignal.objects.create(
+        room=room,
+        sender=request.user,
+        target='all',
+        signal_type='stream_ended',
+        payload=_json.dumps({'host': request.user.username}),
+    )
     return JsonResponse({'ok': True})
 
 
