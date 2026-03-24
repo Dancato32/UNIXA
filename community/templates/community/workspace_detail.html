@@ -383,6 +383,21 @@ window.toggleSidebar = function() {
   if (sb) sb.classList.toggle('open');
   if (ov) ov.classList.toggle('open');
 };
+window.autoResize = function(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+};
+window.updateActionBtn = function() {
+  var input = document.getElementById('chatInput');
+  var fileInput = document.getElementById('chatFileInput');
+  var hasText = input ? input.value.trim().length > 0 : false;
+  var hasFile = fileInput ? fileInput.files.length > 0 : false;
+  var showSend = hasText || hasFile;
+  var mic = document.getElementById('btnMic');
+  var send = document.getElementById('btnSend');
+  if (mic) mic.style.display = showSend ? 'none' : 'flex';
+  if (send) send.style.display = showSend ? 'flex' : 'none';
+};
 </script>
 
 {% block content %}
@@ -971,6 +986,7 @@ function toast(msg,color='#22c55e',dur=3000){
   setTimeout(()=>t.classList.remove('show'),dur);
 }
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+window.autoResize = autoResize;
 
 // ── Panel navigation ─────────────────────────────────────────────────────────
 window.showPanel = function showPanel(name, navEl){
@@ -1112,6 +1128,7 @@ function updateActionBtn(){
   document.getElementById('btnMic').style.display=showSend?'none':'flex';
   document.getElementById('btnSend').style.display=showSend?'flex':'none';
 }
+window.updateActionBtn = updateActionBtn;
 
 // Mic button: start/stop voice recording
 function onMicBtn(){
