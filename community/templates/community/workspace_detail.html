@@ -937,6 +937,7 @@ const PEERJS_KEY = '{{ PEERJS_API_KEY }}';
 function esc(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
 function toast(msg,color='#22c55e',dur=3000){
   const t=document.getElementById('wsToast');
+  if(!t) return;
   t.textContent=msg;t.style.borderColor=color;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),dur);
 }
@@ -1101,20 +1102,30 @@ function onActionBtn(){
 
 function sendChatMsg(){
   const input=document.getElementById('chatInput');
-  const content=input.value.trim();
+  const content=input ? input.value.trim() : '';
   const fileInput=document.getElementById('chatFileInput');
-  if(!content && !fileInput.files.length) return;
+  if(!content && (!fileInput || !fileInput.files.length)){
+    toast('Type a message first','#ef4444',2000);
+    return;
+  }
   const fd=new FormData();
   if(content) fd.append('content',content);
-  if(fileInput.files.length) fd.append('file',fileInput.files[0]);
+  if(fileInput && fileInput.files.length) fd.append('file',fileInput.files[0]);
   if(replyToId) fd.append('reply_to_id',replyToId);
   fd.append('csrfmiddlewaretoken',CSRF);
-  input.value=''; input.style.height='auto';
-  clearReply(); clearMedia(); fileInput.value='';
-  updateActionBtn();
+  if(input){ input.value=''; input.style.height='auto'; }
+  clearReply(); clearMedia();
+  if(fileInput) fileInput.value='';
   fetch('/community/workspaces/'+WS_ID+'/chat/',{method:'POST',body:fd})
-    .then(r=>r.json()).then(data=>{if(!data.error) appendMsg(data,true);})
-    .catch(()=>{});
+    .then(r=>{
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .then(data=>{
+      if(data.error){ toast(data.error,'#ef4444'); return; }
+      appendMsg(data,true);
+    })
+    .catch(err=>toast('Send failed: '+err.message,'#ef4444'));
 }
 
 function buildVoiceBubble(src, mine){
