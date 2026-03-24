@@ -122,10 +122,9 @@ body{background:var(--ws-bg);}
 .chat-attach-btn,.chat-emoji-btn{color:#8696a0;cursor:pointer;padding:.1rem;flex-shrink:0;display:flex;align-items:center;}
 .chat-attach-btn:hover,.chat-emoji-btn:hover{color:#54656f;}
 .chat-action-btn{width:46px;height:46px;border-radius:50%;background:#25d366;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
-.chat-action-btn:hover{background:#22c55e;}
-.chat-action-btn svg{stroke:#fff;fill:none;}
-.chat-action-btn #iconSend{stroke:none;fill:#fff;}
-.chat-action-btn.recording{background:#dc2626;animation:voice-pulse 1s ease-in-out infinite;}
+.chat-action-btn:hover{filter:brightness(0.9);}
+.chat-action-btn svg{display:block;}
+.chat-action-btn.recording{background:#dc2626 !important;animation:voice-pulse 1s ease-in-out infinite;}
 @keyframes voice-pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
 .voice-recording-bar{background:#fee2e2;border-radius:24px;padding:.4rem 1rem;margin-bottom:.4rem;display:none;align-items:center;justify-content:space-between;font-size:.8rem;color:#dc2626;font-weight:600;}
 .voice-recording-bar.active{display:flex;}
@@ -565,12 +564,13 @@ body{background:var(--ws-bg);}
             </label>
             <input type="file" id="chatFileInput" style="display:none" onchange="onChatFileSelect(this);updateActionBtn()">
           </div>
-          <!-- send button (always visible when typing, else mic) -->
-          <button class="chat-action-btn" id="chatActionBtn" onclick="onActionBtn()">
-            <!-- mic icon (default) -->
-            <svg id="iconMic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            <!-- send icon (shown when typing) -->
-            <svg id="iconSend" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          <!-- mic button (shown when nothing typed) -->
+          <button class="chat-action-btn" id="btnMic" onclick="onMicBtn()" style="background:#25d366;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <!-- send button (shown when typing/file selected) -->
+          <button class="chat-action-btn" id="btnSend" onclick="sendChatMsg()" style="display:none;background:#6366f1;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
       </div>
@@ -983,10 +983,9 @@ async function startVoice(){
       showVoicePreview();
     };
     _mediaRec.start(100); // timeslice=100ms ensures chunks arrive before onstop
-    const btn=document.getElementById('chatActionBtn');
+    const btn=document.getElementById('btnMic');
     btn.classList.add('recording');
-    document.getElementById('iconMic').style.display='none';
-    document.getElementById('iconSend').style.display='block';
+    btn.style.background='#dc2626';
     document.getElementById('voiceBar').classList.add('active');
     _voiceSeconds=0;
     _voiceTimerInterval=setInterval(()=>{
@@ -1002,8 +1001,9 @@ function stopVoice(){
   clearInterval(_voiceTimerInterval);
   _mediaRec.stop();
   _mediaRec.stream.getTracks().forEach(t=>t.stop());
-  const btn=document.getElementById('chatActionBtn');
+  const btn=document.getElementById('btnMic');
   btn.classList.remove('recording');
+  btn.style.background='#25d366';
   document.getElementById('voiceBar').classList.remove('active');
 }
 
@@ -1033,8 +1033,9 @@ function cancelVoice(){
   _mediaRec.stop();
   _mediaRec.stream.getTracks().forEach(t=>t.stop());
   _mediaRec=null; _audioChunks=[];
-  const btn=document.getElementById('chatActionBtn');
+  const btn=document.getElementById('btnMic');
   btn.classList.remove('recording');
+  btn.style.background='#25d366';
   document.getElementById('voiceBar').classList.remove('active');
   updateActionBtn();
 }
@@ -1065,30 +1066,29 @@ let replyToId=null, replyToText='', chatPollTimer=null, lastMsgTime='';
 
 function chatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();onActionBtn();}}
 
-// Switch button icon: mic when empty, send arrow when typing
+// Switch button: mic when empty, send when has content
 function updateActionBtn(){
   const hasText=document.getElementById('chatInput').value.trim().length>0;
   const hasFile=document.getElementById('chatFileInput').files.length>0;
   const showSend=hasText||hasFile||!!_voiceBlob;
-  document.getElementById('iconMic').style.display=showSend?'none':'block';
-  document.getElementById('iconSend').style.display=showSend?'block':'none';
-  const btn=document.getElementById('chatActionBtn');
-  btn.style.background=showSend?'#6366f1':'#25d366';
-  btn.onmouseover=()=>btn.style.background=showSend?'#4f46e5':'#22c55e';
-  btn.onmouseout=()=>btn.style.background=showSend?'#6366f1':'#25d366';
+  document.getElementById('btnMic').style.display=showSend?'none':'flex';
+  document.getElementById('btnSend').style.display=showSend?'flex':'none';
 }
 
-// Single button: mic when empty, send when has content
-function onActionBtn(){
-  const btn=document.getElementById('chatActionBtn');
-  // If voice blob ready → send it
+// Mic button: start/stop voice recording
+function onMicBtn(){
   if(_voiceBlob){ sendVoiceMsg(); updateActionBtn(); return; }
-  // If recording → stop
+  if(_mediaRec && _mediaRec.state==='recording'){ stopVoice(); return; }
+  startVoice();
+}
+
+// Single button: mic when empty, send when has content (kept for Enter key compat)
+function onActionBtn(){
+  if(_voiceBlob){ sendVoiceMsg(); updateActionBtn(); return; }
   if(_mediaRec && _mediaRec.state==='recording'){ stopVoice(); return; }
   const hasText=document.getElementById('chatInput').value.trim().length>0;
   const hasFile=document.getElementById('chatFileInput').files.length>0;
   if(hasText||hasFile){ sendChatMsg(); return; }
-  // Nothing typed → start voice
   startVoice();
 }
 
