@@ -564,12 +564,12 @@ body{background:var(--ws-bg);}
             </label>
             <input type="file" id="chatFileInput" style="display:none" onchange="onChatFileSelect(this);updateActionBtn()">
           </div>
-          <!-- mic button (shown when nothing typed) -->
+          <!-- mic button — always visible for voice notes -->
           <button class="chat-action-btn" id="btnMic" onclick="onMicBtn()" style="background:#25d366;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
-          <!-- send button (shown when typing/file selected) -->
-          <button class="chat-action-btn" id="btnSend" onclick="sendChatMsg()" style="display:none;background:#6366f1;">
+          <!-- send button — always visible for text/file -->
+          <button class="chat-action-btn" id="btnSend" onclick="sendChatMsg()" style="background:#6366f1;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
@@ -943,23 +943,6 @@ function toast(msg,color='#22c55e',dur=3000){
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 window.autoResize = autoResize;
 
-// ── DOMContentLoaded: wire up chat input imperatively as bulletproof fallback
-document.addEventListener('DOMContentLoaded', function() {
-  var input = document.getElementById('chatInput');
-  var mic = document.getElementById('btnMic');
-  var send = document.getElementById('btnSend');
-  if (!input || !mic || !send) return;
-  function syncBtn() {
-    var hasContent = input.value.trim().length > 0 ||
-      (document.getElementById('chatFileInput') && document.getElementById('chatFileInput').files.length > 0);
-    mic.style.display = hasContent ? 'none' : 'flex';
-    send.style.display = hasContent ? 'flex' : 'none';
-  }
-  input.addEventListener('input', syncBtn);
-  input.addEventListener('keyup', syncBtn);
-  input.addEventListener('change', syncBtn);
-});
-
 // ── Panel navigation ─────────────────────────────────────────────────────────
 window.showPanel = function showPanel(name, navEl){
   document.querySelectorAll('.ws-panel').forEach(p=>p.classList.remove('active'));
@@ -1094,11 +1077,8 @@ function chatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();onAc
 
 // Switch button: mic when empty, send when has content
 function updateActionBtn(){
-  const hasText=document.getElementById('chatInput').value.trim().length>0;
-  const hasFile=document.getElementById('chatFileInput').files.length>0;
-  const showSend=hasText||hasFile||!!_voiceBlob;
-  document.getElementById('btnMic').style.display=showSend?'none':'flex';
-  document.getElementById('btnSend').style.display=showSend?'flex':'none';
+  // Both buttons always visible — nothing to toggle
+  // Keep for backward compat with callers (voice recording state handled by recording class)
 }
 window.updateActionBtn = updateActionBtn;
 
