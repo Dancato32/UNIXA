@@ -353,11 +353,10 @@ body{background:var(--ws-bg);}
   .progress-grid{grid-template-columns:repeat(2,1fr);}
 }
 </style>
-{% endblock %}
 
-{# ── Early script: expose showPanel/toggleSidebar globally BEFORE the HTML
-   body renders, so inline onclick handlers never get a ReferenceError.
-   The full implementation is re-assigned in extra_js below. #}
+{# Early global functions — defined here (inside extra_css = <head>) so they
+   exist before any inline onclick in <body> fires. Full implementations are
+   re-assigned in extra_js at the bottom of the page. #}
 <script>
 window.showPanel = function(name, navEl) {
   document.querySelectorAll('.ws-panel').forEach(function(p){ p.classList.remove('active'); });
@@ -399,6 +398,7 @@ window.updateActionBtn = function() {
   if (send) send.style.display = showSend ? 'flex' : 'none';
 };
 </script>
+{% endblock %}
 
 {% block content %}
 <div class="ws-shell">
