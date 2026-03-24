@@ -919,6 +919,14 @@ body{background:var(--ws-bg);}
 
 {% block extra_js %}
 <script>
+// Global error catcher — shows error in a banner so we can debug on Render
+window.onerror = function(msg, src, line, col, err) {
+  var b = document.getElementById('js-err-banner');
+  if(!b){ b=document.createElement('div'); b.id='js-err-banner';
+    b.style.cssText='position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;font-size:12px;padding:6px 12px;z-index:99999;word-break:break-all;';
+    document.body.appendChild(b); }
+  b.textContent = 'JS ERROR: ' + msg + ' @ ' + src + ':' + line + ':' + col;
+};
 const WS_ID = '{{ ws.id }}';
 const CSRF = '{{ csrf_token }}';
 const MY_USERNAME = '{{ request.user.username }}';
