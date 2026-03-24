@@ -930,9 +930,9 @@ window.onerror = function(msg, src, line, col, err) {
 // NOTE: All JS is in ONE script block to prevent cross-block scope issues in production.
 var WS_ID = '{{ ws.id }}';
 var CSRF = '{{ csrf_token }}';
-var MY_USERNAME = '{{ request.user.username }}';
+var MY_USERNAME = '{{ request.user.username|escapejs }}';
 var IS_ADMIN = {{ is_admin|yesno:"true,false" }};
-var PEERJS_KEY = '{{ PEERJS_API_KEY }}';
+var PEERJS_KEY = '{{ PEERJS_API_KEY|escapejs }}';
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 function esc(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }

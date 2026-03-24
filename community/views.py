@@ -1605,7 +1605,7 @@ def workspace_detail(request, ws_id):
         'tasks': tasks,
         'is_owner': membership.role == WorkspaceMember.ROLE_OWNER,
         'is_admin': membership.role in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN),
-        'PEERJS_API_KEY': __import__('django.conf', fromlist=['settings']).settings.PEERJS_API_KEY,
+        'PEERJS_API_KEY': getattr(django_settings, 'PEERJS_API_KEY', ''),
         'is_linked_to_nexa': is_linked_to_nexa,
         'linked_workspaces': linked_workspaces,
         'my_tasks': my_tasks,
