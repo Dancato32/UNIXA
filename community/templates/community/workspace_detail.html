@@ -558,18 +558,18 @@ body{background:var(--ws-bg);}
             <span class="chat-emoji-btn" title="Emoji">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
             </span>
-            <textarea class="chat-input" id="chatInput" placeholder="Message" rows="1" onkeydown="chatKeydown(event)" oninput="autoResize(this);updateActionBtn()"></textarea>
+            <textarea class="chat-input" id="chatInput" placeholder="Message" rows="1"></textarea>
             <label class="chat-attach-btn" for="chatFileInput" title="Attach">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </label>
-            <input type="file" id="chatFileInput" style="display:none" onchange="onChatFileSelect(this);updateActionBtn()">
+            <input type="file" id="chatFileInput" style="display:none">
           </div>
           <!-- mic button — always visible for voice notes -->
-          <button class="chat-action-btn" id="btnMic" onclick="onMicBtn()" style="background:#25d366;">
+          <button class="chat-action-btn" id="btnMic" style="background:#25d366;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
           <!-- send button — always visible for text/file -->
-          <button class="chat-action-btn" id="btnSend" onclick="sendChatMsg()" style="background:#6366f1;">
+          <button class="chat-action-btn" id="btnSend" style="background:#6366f1;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
@@ -1906,6 +1906,62 @@ document.addEventListener('DOMContentLoaded',()=>{
 // Close worksheet on Escape
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape') closeWorksheet();
+});
+
+// ── Expose all onclick-called functions to window (production safety) ────────
+window.showPanel       = showPanel;
+window.toggleSidebar   = toggleSidebar;
+window.sendChatMsg     = sendChatMsg;
+window.onMicBtn        = onMicBtn;
+window.onActionBtn     = onActionBtn;
+window.chatKeydown     = chatKeydown;
+window.clearReply      = clearReply;
+window.clearMedia      = clearMedia;
+window.cancelVoice     = cancelVoice;
+window.discardVoice    = discardVoice;
+window.vnToggle        = vnToggle;
+window.vnSeek          = vnSeek;
+window.copyInvite      = copyInvite;
+window.deleteMsg       = deleteMsg;
+window.deleteFile      = deleteFile;
+window.uploadFile      = uploadFile;
+window.onFileDrop      = onFileDrop;
+window.toggleTaskForm  = toggleTaskForm;
+window.addTask         = addTask;
+window.toggleAddMember = toggleAddMember;
+window.searchUsers     = searchUsers;
+window.addMember       = addMember;
+window.removeMember    = removeMember;
+window.runFinalAssembly= runFinalAssembly;
+window.openTaskDetail  = openTaskDetail;
+window.closeTaskModal  = closeTaskModal;
+window.closeWorksheet  = closeWorksheet;
+window.addSuggestedTask    = addSuggestedTask;
+window.addAllSuggestedTasks= addAllSuggestedTasks;
+window.onChatFileSelect    = onChatFileSelect;
+window.autoResize          = autoResize;
+window.updateActionBtn     = updateActionBtn;
+
+// ── Wire chat input via addEventListener (no inline handlers) ────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var input    = document.getElementById('chatInput');
+  var fileInput= document.getElementById('chatFileInput');
+  var btnSend  = document.getElementById('btnSend');
+  var btnMic   = document.getElementById('btnMic');
+
+  if(input){
+    input.addEventListener('keydown', function(e){ chatKeydown(e); });
+    input.addEventListener('input',   function(){ autoResize(input); });
+  }
+  if(fileInput){
+    fileInput.addEventListener('change', function(){ onChatFileSelect(fileInput); });
+  }
+  if(btnSend){
+    btnSend.addEventListener('click', function(){ sendChatMsg(); });
+  }
+  if(btnMic){
+    btnMic.addEventListener('click', function(){ onMicBtn(); });
+  }
 });
 </script>
 {% endblock %}
