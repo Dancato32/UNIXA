@@ -124,6 +124,7 @@ body{background:var(--ws-bg);}
 .chat-action-btn{width:46px;height:46px;border-radius:50%;background:#25d366;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
 .chat-action-btn:hover{background:#22c55e;}
 .chat-action-btn svg{stroke:#fff;fill:none;}
+.chat-action-btn #iconSend{stroke:none;fill:#fff;}
 .chat-action-btn.recording{background:#dc2626;animation:voice-pulse 1s ease-in-out infinite;}
 @keyframes voice-pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
 .voice-recording-bar{background:#fee2e2;border-radius:24px;padding:.4rem 1rem;margin-bottom:.4rem;display:none;align-items:center;justify-content:space-between;font-size:.8rem;color:#dc2626;font-weight:600;}
@@ -1073,6 +1074,8 @@ function updateActionBtn(){
   document.getElementById('iconSend').style.display=showSend?'block':'none';
   const btn=document.getElementById('chatActionBtn');
   btn.style.background=showSend?'#6366f1':'#25d366';
+  btn.onmouseover=()=>btn.style.background=showSend?'#4f46e5':'#22c55e';
+  btn.onmouseout=()=>btn.style.background=showSend?'#6366f1':'#25d366';
 }
 
 // Single button: mic when empty, send when has content
