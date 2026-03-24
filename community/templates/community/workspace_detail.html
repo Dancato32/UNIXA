@@ -1871,6 +1871,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   setInterval(pollChat, 3000);
   // Init action button state
   updateActionBtn();
+  // Attach robust input listeners to textarea (belt-and-suspenders for mobile)
+  const _ci=document.getElementById('chatInput');
+  if(_ci){
+    ['input','keyup','keydown','paste','compositionend'].forEach(ev=>{
+      _ci.addEventListener(ev,()=>{ autoResize(_ci); setTimeout(updateActionBtn,0); });
+    });
+  }
   // Mobile sidebar button
   if(window.innerWidth<=768){
     const btn=document.getElementById('mobileSidebarBtn');
