@@ -928,11 +928,11 @@ window.onerror = function(msg, src, line, col, err) {
   b.textContent = 'JS ERROR: ' + msg + ' @ ' + src + ':' + line + ':' + col;
 };
 // NOTE: All JS is in ONE script block to prevent cross-block scope issues in production.
-const WS_ID = '{{ ws.id }}';
-const CSRF = '{{ csrf_token }}';
-const MY_USERNAME = '{{ request.user.username }}';
-const IS_ADMIN = {{ is_admin|yesno:"true,false" }};
-const PEERJS_KEY = '{{ PEERJS_API_KEY }}';
+var WS_ID = '{{ ws.id }}';
+var CSRF = '{{ csrf_token }}';
+var MY_USERNAME = '{{ request.user.username }}';
+var IS_ADMIN = {{ is_admin|yesno:"true,false" }};
+var PEERJS_KEY = '{{ PEERJS_API_KEY }}';
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 function esc(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
