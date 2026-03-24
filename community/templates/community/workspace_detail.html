@@ -353,51 +353,6 @@ body{background:var(--ws-bg);}
   .progress-grid{grid-template-columns:repeat(2,1fr);}
 }
 </style>
-
-{# Early global functions — defined here (inside extra_css = <head>) so they
-   exist before any inline onclick in <body> fires. Full implementations are
-   re-assigned in extra_js at the bottom of the page. #}
-<script>
-window.showPanel = function(name, navEl) {
-  document.querySelectorAll('.ws-panel').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.ws-nav-item').forEach(function(n){ n.classList.remove('active'); });
-  document.querySelectorAll('.ws-mob-tab').forEach(function(n){ n.classList.remove('active'); });
-  var panel = document.getElementById('panel-' + name);
-  if (panel) panel.classList.add('active');
-  if (navEl && navEl.classList.contains('ws-nav-item')) navEl.classList.add('active');
-  else { var n = document.getElementById('nav-' + name); if (n) n.classList.add('active'); }
-  if (navEl && navEl.classList.contains('ws-mob-tab')) navEl.classList.add('active');
-  else { var m = document.getElementById('mob-nav-' + name); if (m) m.classList.add('active'); }
-  if (name === 'dashboard' && typeof loadDashboard === 'function') loadDashboard();
-  if (panel) {
-    panel.scrollTop = 0;
-    panel.querySelectorAll('*').forEach(function(el){ if (el.scrollTop > 0) el.scrollTop = 0; });
-  }
-  var main = document.querySelector('.ws-main');
-  if (main) main.scrollTop = 0;
-};
-window.toggleSidebar = function() {
-  var sb = document.getElementById('wsSidebar');
-  var ov = document.getElementById('sidebarOverlay');
-  if (sb) sb.classList.toggle('open');
-  if (ov) ov.classList.toggle('open');
-};
-window.autoResize = function(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-};
-window.updateActionBtn = function() {
-  var input = document.getElementById('chatInput');
-  var fileInput = document.getElementById('chatFileInput');
-  var hasText = input ? input.value.trim().length > 0 : false;
-  var hasFile = fileInput ? fileInput.files.length > 0 : false;
-  var showSend = hasText || hasFile;
-  var mic = document.getElementById('btnMic');
-  var send = document.getElementById('btnSend');
-  if (mic) mic.style.display = showSend ? 'none' : 'flex';
-  if (send) send.style.display = showSend ? 'flex' : 'none';
-};
-</script>
 {% endblock %}
 
 {% block content %}
@@ -987,6 +942,23 @@ function toast(msg,color='#22c55e',dur=3000){
 }
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 window.autoResize = autoResize;
+
+// ── DOMContentLoaded: wire up chat input imperatively as bulletproof fallback
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('chatInput');
+  var mic = document.getElementById('btnMic');
+  var send = document.getElementById('btnSend');
+  if (!input || !mic || !send) return;
+  function syncBtn() {
+    var hasContent = input.value.trim().length > 0 ||
+      (document.getElementById('chatFileInput') && document.getElementById('chatFileInput').files.length > 0);
+    mic.style.display = hasContent ? 'none' : 'flex';
+    send.style.display = hasContent ? 'flex' : 'none';
+  }
+  input.addEventListener('input', syncBtn);
+  input.addEventListener('keyup', syncBtn);
+  input.addEventListener('change', syncBtn);
+});
 
 // ── Panel navigation ─────────────────────────────────────────────────────────
 window.showPanel = function showPanel(name, navEl){
