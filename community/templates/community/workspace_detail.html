@@ -927,6 +927,7 @@ window.onerror = function(msg, src, line, col, err) {
     document.body.appendChild(b); }
   b.textContent = 'JS ERROR: ' + msg + ' @ ' + src + ':' + line + ':' + col;
 };
+// NOTE: All JS is in ONE script block to prevent cross-block scope issues in production.
 const WS_ID = '{{ ws.id }}';
 const CSRF = '{{ csrf_token }}';
 const MY_USERNAME = '{{ request.user.username }}';
@@ -1374,9 +1375,7 @@ function addAllSuggestedTasks(){
     window._aiSuggestedTasks=[];
   });
 }
-</script>
 
-<script>
 // ── Tasks ────────────────────────────────────────────────────────────────────
 function toggleTaskForm(){
   const f=document.getElementById('taskAddForm');
@@ -1539,9 +1538,7 @@ function runFinalAssembly(){
       toast('Project compiled successfully!','#22c55e',4000);
     }).catch(()=>{btn.disabled=false;btn.textContent='Compile Final Output';content.innerHTML='<div style="color:var(--ws-red);font-size:.8rem;">Assembly failed. Try again.</div>';});
 }
-</script>
 
-<script>
 // ── Worksheet / Task Detail ───────────────────────────────────────────────────
 let currentTaskId=null, currentTaskTitle='', worksheetItems=[], taskStarted=false;
 
@@ -1796,9 +1793,7 @@ function sendAI(){
     msgs.scrollTop=msgs.scrollHeight;
   }).catch(()=>{const t=document.getElementById('ai-typing');if(t)t.remove();});
 }
-</script>
 
-<script>
 // ── Call (PeerJS) ─────────────────────────────────────────────────────────────
 let peer=null, localStream=null, activeCalls={}, isMuted=false, isCamOff=false;
 
@@ -1873,35 +1868,51 @@ function leaveCall(){
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
+// Script is at bottom of body — DOM is already ready, no DOMContentLoaded needed
+(function(){
   // Scroll chat to bottom
-  const msgs=document.getElementById('chatMessages');
+  var msgs=document.getElementById('chatMessages');
   if(msgs) msgs.scrollTop=msgs.scrollHeight;
   // Set last message time for polling
-  const allMsgs=msgs?msgs.querySelectorAll('.chat-msg'):[];
+  var allMsgs=msgs?msgs.querySelectorAll('.chat-msg'):[];
   if(allMsgs.length){
-    // Use current time as baseline
     lastMsgTime=new Date().toISOString();
   }
   // Update task counts
   updateTaskCounts();
   // Start chat polling
   setInterval(pollChat, 3000);
-  // Init action button state
-  updateActionBtn();
-  // Attach robust input listeners to textarea (belt-and-suspenders for mobile)
-  const _ci=document.getElementById('chatInput');
+  // Attach input listeners to textarea
+  var _ci=document.getElementById('chatInput');
   if(_ci){
-    ['input','keyup','keydown','paste','compositionend'].forEach(ev=>{
-      _ci.addEventListener(ev,()=>{ autoResize(_ci); setTimeout(updateActionBtn,0); });
+    ['input','keyup','keydown','paste','compositionend'].forEach(function(ev){
+      _ci.addEventListener(ev,function(){ autoResize(_ci); });
     });
   }
   // Mobile sidebar button
   if(window.innerWidth<=768){
-    const btn=document.getElementById('mobileSidebarBtn');
+    var btn=document.getElementById('mobileSidebarBtn');
     if(btn) btn.style.display='';
   }
-});
+  // Wire chat buttons directly
+  var input    = document.getElementById('chatInput');
+  var fileInput= document.getElementById('chatFileInput');
+  var btnSend  = document.getElementById('btnSend');
+  var btnMic   = document.getElementById('btnMic');
+  if(input){
+    input.addEventListener('keydown', function(e){ chatKeydown(e); });
+    input.addEventListener('input',   function(){ autoResize(input); });
+  }
+  if(fileInput){
+    fileInput.addEventListener('change', function(){ onChatFileSelect(fileInput); });
+  }
+  if(btnSend){
+    btnSend.addEventListener('click', function(){ sendChatMsg(); });
+  }
+  if(btnMic){
+    btnMic.addEventListener('click', function(){ onMicBtn(); });
+  }
+})();
 
 // Close worksheet on Escape
 document.addEventListener('keydown',e=>{
@@ -1942,26 +1953,5 @@ window.onChatFileSelect    = onChatFileSelect;
 window.autoResize          = autoResize;
 window.updateActionBtn     = updateActionBtn;
 
-// ── Wire chat input via addEventListener (no inline handlers) ────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  var input    = document.getElementById('chatInput');
-  var fileInput= document.getElementById('chatFileInput');
-  var btnSend  = document.getElementById('btnSend');
-  var btnMic   = document.getElementById('btnMic');
-
-  if(input){
-    input.addEventListener('keydown', function(e){ chatKeydown(e); });
-    input.addEventListener('input',   function(){ autoResize(input); });
-  }
-  if(fileInput){
-    fileInput.addEventListener('change', function(){ onChatFileSelect(fileInput); });
-  }
-  if(btnSend){
-    btnSend.addEventListener('click', function(){ sendChatMsg(); });
-  }
-  if(btnMic){
-    btnMic.addEventListener('click', function(){ onMicBtn(); });
-  }
-});
 </script>
 {% endblock %}
