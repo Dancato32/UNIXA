@@ -1,0 +1,171 @@
+[33md937921[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m feat: consolidate study features into Nexa home, dark theme all study pages, fix back nav links
+[33m8bce765[m feat: dark theme + new welcome screen + onboarding flow for nexa_home
+[33m1412cc7[m feat: full dark modern theme across base, feed, and workspace
+[33m5f17269[m feat: replace Ask button with AI Hub link in feed composer
+[33mcc3f134[m feat: add composer card to feed top (avatar, prompt, Ask/Answer/Post)
+[33m0170eb4[m feat: theme-matched typing indicator (purple/lavender for Nexa, white for peers)
+[33mc72715d[m feat: add typing indicator animation for group chat
+[33mae6229f[m fix: trigger AI response after sending group chat message
+[33m707414f[m fix: move all workspace JS to static file, template only sets Django vars
+[33m93e1e78[m fix: escapejs on username/peerjs key, fix PEERJS_API_KEY context lookup
+[33maed9827[m fix: change const to var for Django-interpolated JS variables to prevent redeclaration SyntaxError
+[33mbb42f10[m fix: consolidate JS into single script block, remove DOMContentLoaded wrappers for production
+[33m3dec44f[m fix: remove all inline onclick handlers from chat input, wire via DOMContentLoaded + expose all functions to window
+[33me3529d9[m fix: harden sendChatMsg with error feedback, fix toast null guard
+[33mdb57818[m feat: show send and mic buttons simultaneously - no more toggling
+[33me9d6688[m fix: wire up chat input send button via DOMContentLoaded as bulletproof fallback
+[33m3e31fa3[m fix: move early global scripts inside extra_css block so Django actually renders them in <head>
+[33m738ed6a[m fix: expose autoResize and updateActionBtn globally so send button appears when typing in production
+[33mb1bec5f[m fix: expose showPanel/toggleSidebar globally before body renders to fix production ReferenceError
+[33mdc19262[m debug: add global JS error banner to diagnose Render-only crash
+[33m1e5238f[m fix: add robust multi-event listeners for send button toggle on mobile
+[33m8dc265d[m fix: replace single toggle btn with two separate mic/send buttons in group chat
+[33m6e06114[m fix: send icon visible  override fill:none CSS on chat action button
+[33m30ebec7[m fix: add missing ai_community migration for render deploy
+[33m1d59ec6[m fix: workspace chat send button  filled send icon + indigo color when typing
+[33m9c7c3f2[m feat: opportunity posts, icebreaker DM nav, find people school filter, UI improvements
+[33mf02a108[m feat: auto-link all workspaces to MyNexa on create/join/add-member via signal
+[33m4e84e9e[m feat: unified MyNexa local-first workspace system with drafts and push-to-workspace
+[33m3d7e708[m feat: nexa workspace now renders full AI tools interface (nexa_home.html)
+[33ma5fcc50[m fix: complete live room WebRTC JS, DB-backed comments, close endpoint
+[33maee5c01[m fix: video autoplay on mobile Safari - muted fallback + tap-to-play overlay
+[33m6bee9a6[m fix: DB-backed WebRTC signals via RoomSignal model - works across all workers
+[33m5318f4d[m fix: db cache for multi-worker signal sharing + Twitch/Kick style live UI
+[33m1a5c28a[m redesign: full-screen live room UI - floating controls, TikTok-style layout
+[33m68d945f[m fix: proper per-viewer WebRTC offer flow - viewer_request pattern with real tracks
+[33m789852e[m fix: remove duplicate block extra_js causing 500 on live room page
+[33m7b065a9[m fix: wrap live notification in try/except to prevent 500 on room create
+[33m4ae9cf3[m fix: live stream viewer connection - broadcast offer pattern + TURN servers
+[33m0dd082d[m feat: live streaming rooms, camera events, live notifications, full-screen more menu, library link
+[33m9572913[m feat: add profile edit step to onboarding wizard with interests matching
+[33m88997c2[m feat: first-login onboarding wizard  school join + follow friends
+[33mecda2a0[m feat: voice interrupt-to-speak and web search routing in voice mode
+[33m37fda28[m feat: nexa bird avatar in voice panel with talk animations, fix board display
+[33mfc6ee5f[m fix: render chat history math/markdown via template tag on page load
+[33mb4cd637[m feat: avatar widget, workspace member invite, nexa auto-link, connect-to-nexa fix
+[33ma5be4fc[m fix: remove horizontal scrollbar, constrain all chat elements to viewport width
+[33m61edebb[m fix: send original content to backend so is_direct check sees nexa in message
+[33m53a767f[m feat: remember last scroll position per workspace, no flash on reload, fade in after position set
+[33md2e3873[m fix: use |escape not |escapejs for data-raw to preserve LaTeX backslashes on page reload
+[33me3889d7[m fix: nexa trigger works anywhere in sentence, clean strip from any position
+[33m6045282[m fix: sanitizeAI protects all LaTeX delimiters before HTML escape, ban \\( \\) in prompt, use only \$ and \$\$
+[33m5ce78b3[m fix: textbook math rendering - data-raw pipeline, KaTeX CSS, ban markdown in AI, concrete LaTeX examples in prompt
+[33mb9faebb[m fix: ban markdown in AI replies, proper LaTeX-only math, sanitizeAI converts markdown to HTML
+[33m139728d[m fix: math rendering (stop escaping LaTeX in AI bubbles), improve Nexa length calibration and math instructions
+[33m08d9e83[m fix: kill proactive AI, strict name-only trigger, no hallucination, no multi-reply
+[33m41b5014[m feat: KaTeX math rendering, Nexa auto web search, LaTeX output in AI responses
+[33m8cebacc[m feat: delete own workspace messages
+[33m5770b8c[m fix: no more double Nexa replies - let polling render, bump chat history to 60 msgs
+[33m003cd7f[m feat: Nexa persona - real group member, human voice, selective participation
+[33mf8130bb[m fix: Nexa trigger - save message to DB, fix AI reply dedup with polling
+[33me221544[m fix: syntax error in workspace_ai_chat - clean_message and system on separate lines
+[33m0d741a7[m feat: Nexa AI upgrade - trigger by name, professional persona, polished chat UI, reply-to for all members
+[33mdede97f[m feat: NexaAI Omni Agent, reply-to messages, research workspace app
+[33mc17824e[m fix: pin httpx==0.27.2 to fix openai proxies kwarg error
+[33m1d05202[m fix: AI tutor chat - fallback to AJAX when SSE streaming fails (Render proxy buffering)
+[33mec2c0f7[m feat: premium mobile UX - 5-item bottom nav, More sheet, polished topbar, sidebar close btn
+[33m866181c[m fix: stop horizontal overflow on home page - wrap qa-grid scroll, clip feed cards, constrain viewport
+[33m30d7f72[m feat: redirect to dashboard after login/signup
+[33me11e4e0[m fix: comprehensive responsive layout - no overflow on any screen size
+[33m3ea8f73[m fix: commit missing migration 0020 and related model/signal/url changes
+[33m8889646[m fix: pin all dependencies to exact versions to prevent pip resolution hang on Render
+[33m5a6a03a[m fix: mobile workspace panels no longer clipped by bottom tab bar
+[33m4a71274[m fix: backfill is_personal for existing workspaces, fix personal_ws query
+[33m26d4565[m feat: scrollable mobile tab bar shows all workspace features directly
+[33mfdaabe6[m feat: complete Nexa workspace - JS functions, mobile tabs, home card + quick action
+[33mfd3c7a3[m Mobile UX overhaul: breadcrumb, labels, search overlay, swipe gestures, toast system, ws hub sheet, collapsible panels, sticky composer
+[33meee786e[m feat: restrict posting to joined communities only
+[33m3e69f3c[m feat: member added confirmation - green chip + toast + count label
+[33m7d9125d[m fix: workspace member search - blur fires before click, inline onclick breaks on special chars
+[33m3352967[m fix: community_home 500 - feed returns dict not list, guard community_profile
+[33m61d7280[m fix: community_home 500 - guard against missing migration column
+[33mf7dd9e9[m Community-first home + meeting notes + workspace types + login redirect
+[33m15990aa[m Replace AI Tools panel with workspace-scoped tools only  no personal dashboard links
+[33m0344d57[m Fix joinCall scope: dynamic PeerJS loader, expose to window, stub before load
+[33m9b01abd[m Fix joinCall ReferenceError: wire call buttons via addEventListener after PeerJS loads
+[33m3687766[m Fix group call: switch to 0.peerjs.com free server, remove deprecated key, add error handling
+[33m1db986b[m Nexa deep web search  Perplexity Sonar via OpenRouter, rich results card with sources
+[33me2bb1ca[m Nexa meeting scheduler: DMs members, countdown timer, auto-starts call
+[33m556a864[m Add Nexa bird 3D animation banner to group chat
+[33m4b379e2[m AI acts as real team member in group chat  reads full thread, replies contextually, saves to DB
+[33mcf95d8d[m AI responds to all group chat messages
+[33m70c7c72[m Fix proactive AI chat  broken function override pattern replaced with direct poll hook
+[33m2392cd3[m Build GitHub-style contribution system, AI review, final assembly, proactive AI chat
+[33m341e050[m Add workspace type (Startup/Study/Project/General) with adaptive AI personas
+[33m3fa840f[m Fix AI Manager bugs + add Meeting Support and Auto-Complete features
+[33mc6c1f66[m fix: standardize all AI calls to OpenRouter, fix TTS fallback
+[33m4fb11dd[m feat: AI Manager panel in workspaces (chat, brief, health, contributions)
+[33m5f7ac9f[m feat: add group call panel to workspaces (PeerJS WebRTC)
+[33mb020b85[m feat: study group feed announcement + AI join briefing
+[33mb35a725[m feat: AI Community Hub - all 12 AI features + Start My Startup
+[33mcdb140a[m Fix community pages: full-bleed banner, working likes/comments/replies, pre_content block
+[33m368b592[m Force redeploy: Reddit-style community pages already in place
+[33m11bddb8[m Apply Reddit-style UI to both custom_detail and school_detail community pages
+[33mb79e3bb[m Reddit-style community page: circle icon, pill buttons, Feed/About tabs, sort controls
+[33mbfc175b[m Redesign school_detail page: responsive header, stats strip, square logo, mobile-first layout
+[33m1ab1c14[m Fix universities page mobile layout - compact 2-col cards that fit screen
+[33mf72383c[m Following tab: include posts from joined communities
+[33m55cdb24[m Show post images/videos on profile page
+[33m1f49704[m Fix follow 400 - rename follow-toggle URL to avoid DRF router conflict
+[33m1932e16[m Fix drawer follow/friend buttons - use data attributes to avoid string escaping issues
+[33md24611a[m Follow button ripple + pop animation
+[33m2598063[m Fix follow button - clean up JS, fix CSRF token source, remove login_required from stats endpoint
+[33md44c813[m Live follower/following count on profile - poll every 15s
+[33mb6f984b[m Fix schools.html TemplateSyntaxError - remove invalid with tag
+[33m5d58ca3[m Fix school_detail 500 error - broken onerror Django template tag in HTML attribute
+[33m844f510[m Add Following tab to feed, follow pills on posts, following sidebar, follow system complete
+[33ma69524e[m Fix friend search card visibility in feed sidebar
+[33m41e9dbf[m Add friend search drawer, friends in DM list, fix school logos onerror
+[33ma8f5a42[m Fix university logos: use ui-avatars for all + real Wikipedia URLs for major unis
+[33m6c0aad3[m Redesign universities page: responsive card grid, logo support, live search, filter tabs
+[33m6a3410c[m Fix PeerJS calls: random peer IDs, server-side exchange via cache, proper TURN
+[33m7da5efb[m Switch calls from PeerJS to Jitsi Meet iFrame API - reliable free WebRTC
+[33ma581888[m Add TURN servers to PeerJS config to fix NAT traversal connection errors
+[33mc0af9fb[m Fix PeerJS calls: use default cloud server, deterministic peer IDs, listener peer on page load
+[33m2754a01[m Replace Daily.co with PeerJS WebRTC for voice/video calls
+[33m8df01f3[m fix: DM message notifications - fix signal robustness, mark read on convo open, restore missing render call
+[33m47a6b4d[m fix: add conversation to select_related in notifications view so DM notifications render correctly
+[33m37b94d2[m feat: DM message notifications - show sender name, link to conversation, deduplicate unread
+[33mf711bc3[m feat: complete notification system - DM, friend request/accept, community join, follow all routed to notifications page; inline accept/decline for friend requests; remove duplicate notification calls
+[33m797be15[m chore: push all pending changes
+[33m1a3eb40[m feat: Reddit-style mobile-first create post composer UI
+[33m08d0690[m feat: complete profile page - stats, follow toggle, edit form with new fields
+[33mc89494f[m Fix NoneType username error in messages template - guard other_participant and community_profile
+[33mcd56b9a[m Add join community btn, share post via DM, and friend request system
+[33mf542015[m Add all Ghana universities to school communities (38 total)
+[33m898d833[m feat: delete community (creator only)  confirm modal + AJAX, fix wizard redirect URL
+[33m274ad6e[m fix: wizard loading spinner + done checkmark, fix CSS outside style tags, wire all events properly
+[33mbe1ecbf[m feat: Reddit-style multi-step community creation wizard (topic, privacy, details, success)
+[33m45783a8[m fix: mobile scroll  override overflow:hidden on html/body at 900px
+[33mb6a3b58[m Reddit-style mobile UI: new topbar, bottom nav icons, sort tabs, post card headers
+[33medc0746[m feat: Group Workspace  models, views, URLs, templates, nav integration
+[33maa68386[m feat: live message polling  new messages appear every 2.5s without refresh
+[33m482889b[m feat: Reddit-style bottom nav with center post button and active pill indicator
+[33md0cf258[m fix: mobile keyboard hides chat input - use dvh, hide bottom nav on messages, fix overflow
+[33m7bca889[m fix: SmartCloudinaryStorage routes images/video/raw correctly, fix 500 on profile save, add context processor
+[33m9f47c6b[m fix: voice notes MIME type, video message type, profile pic formats, context processor, Cloudinary docs
+[33m0ee1c01[m feat: mobile responsiveness for all community templates + voice/video calls + media sharing + voice notes
+[33m17b887a[m feat: voice notes, file sharing, voice/video calls (Daily.co), community app full build
+[33m6c4daa6[m Fix learn feature: remove Gemma models (no system prompt support), always retry on error
+[33m6832988[m TTS mobile fix: base64 data URLs for all voice features
+[33m4c3fef7[m Fix TTS mobile: return base64 data URLs from materials TTS, no file system
+[33mebd137f[m Fix mobile TTS: save audio to file URL instead of blob, add range support
+[33m2f6d9df[m Fix Resemble TTS audio playback on iOS and Android
+[33m5163a76[m Integrate Resemble.ai TTS with custom NEXA voice across all audio features
+[33mee63ae4[m feat: separate OPENROUTER_API_KEY_MATERIALS env var for learn mode
+[33m5b04469[m fix: clean learn mode system prompt - no syntax errors, proper MC quiz flow
+[33mb9f9e0f[m feat: learn mode - full topic teaching + structured MC quiz + wrong answer explanations + ABCD chips
+[33m992ff8c[m fix: learn_ajax use openai/gpt-4o-mini via OpenRouter (matches rest of app)
+[33m6ee9ae8[m fix: rename history->chatHistory (window.history conflict), switch to gemini-2.0-flash-exp free model
+[33mb75c651[m fix: learn_ajax - correct import path for get_openai_client
+[33m1302347[m fix: learn_ajax - validate history is list, safe role/content access
+[33mcd6ae6a[m fix: rewrite learn.html - robust error display, scripts at bottom, cleaner flow
+[33m935913c[m fix: learn mode - trigger AI on start, fix empty message blocking
+[33m74b4b3d[m feat: Learn Mode - Duolingo-style interactive tutor for study materials
+[33m12d16f0[m fix: proper KaTeX math rendering - marked.js + 2>&1 display math + system prompt fix
+[33m57eaba4[m fix: materials page crash on Cloudinary storage (file.size + file.path)
+[33m7e569e9[m Redesign landing page: dark theme, hero mockup, features grid, testimonials, stats, CTA
+[33m3c739b0[m Fix signup: move email notification to background thread to prevent timeout
+[33md20cac6[m Add CSRF_TRUSTED_ORIGINS for Render production domain
+[33m3b3314a[m Fix registration login: authenticate after create_user to set backend
+[33ma562985[m Add manual essay editor with copilot, autocomplete, and Write tab

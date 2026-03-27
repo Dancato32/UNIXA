@@ -6,9 +6,8 @@ from ai_tutor.models import Conversation, EssayRequest
 
 
 @login_required
-def dashboard_home(request):
-    """Dashboard home — always redirects authenticated users to community home."""
-    return redirect('/community/home/')
+def index(request):
+    return render(request, 'dashboard/index.html')
 
 
 @login_required

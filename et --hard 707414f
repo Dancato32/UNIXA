@@ -1,0 +1,86 @@
+[33md937921[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m feat: consolidate study features into Nexa home, dark theme all study pages, fix back nav links
+[33m8bce765[m feat: dark theme + new welcome screen + onboarding flow for nexa_home
+[33m1412cc7[m feat: full dark modern theme across base, feed, and workspace
+[33m5f17269[m feat: replace Ask button with AI Hub link in feed composer
+[33mcc3f134[m feat: add composer card to feed top (avatar, prompt, Ask/Answer/Post)
+[33m0170eb4[m feat: theme-matched typing indicator (purple/lavender for Nexa, white for peers)
+[33mc72715d[m feat: add typing indicator animation for group chat
+[33mae6229f[m fix: trigger AI response after sending group chat message
+[33m707414f[m fix: move all workspace JS to static file, template only sets Django vars
+[33m93e1e78[m fix: escapejs on username/peerjs key, fix PEERJS_API_KEY context lookup
+[33maed9827[m fix: change const to var for Django-interpolated JS variables to prevent redeclaration SyntaxError
+[33mbb42f10[m fix: consolidate JS into single script block, remove DOMContentLoaded wrappers for production
+[33m3dec44f[m fix: remove all inline onclick handlers from chat input, wire via DOMContentLoaded + expose all functions to window
+[33me3529d9[m fix: harden sendChatMsg with error feedback, fix toast null guard
+[33mdb57818[m feat: show send and mic buttons simultaneously - no more toggling
+[33me9d6688[m fix: wire up chat input send button via DOMContentLoaded as bulletproof fallback
+[33m3e31fa3[m fix: move early global scripts inside extra_css block so Django actually renders them in <head>
+[33m738ed6a[m fix: expose autoResize and updateActionBtn globally so send button appears when typing in production
+[33mb1bec5f[m fix: expose showPanel/toggleSidebar globally before body renders to fix production ReferenceError
+[33mdc19262[m debug: add global JS error banner to diagnose Render-only crash
+[33m1e5238f[m fix: add robust multi-event listeners for send button toggle on mobile
+[33m8dc265d[m fix: replace single toggle btn with two separate mic/send buttons in group chat
+[33m6e06114[m fix: send icon visible  override fill:none CSS on chat action button
+[33m30ebec7[m fix: add missing ai_community migration for render deploy
+[33m1d59ec6[m fix: workspace chat send button  filled send icon + indigo color when typing
+[33m9c7c3f2[m feat: opportunity posts, icebreaker DM nav, find people school filter, UI improvements
+[33mf02a108[m feat: auto-link all workspaces to MyNexa on create/join/add-member via signal
+[33m4e84e9e[m feat: unified MyNexa local-first workspace system with drafts and push-to-workspace
+[33m3d7e708[m feat: nexa workspace now renders full AI tools interface (nexa_home.html)
+[33ma5fcc50[m fix: complete live room WebRTC JS, DB-backed comments, close endpoint
+[33maee5c01[m fix: video autoplay on mobile Safari - muted fallback + tap-to-play overlay
+[33m6bee9a6[m fix: DB-backed WebRTC signals via RoomSignal model - works across all workers
+[33m5318f4d[m fix: db cache for multi-worker signal sharing + Twitch/Kick style live UI
+[33m1a5c28a[m redesign: full-screen live room UI - floating controls, TikTok-style layout
+[33m68d945f[m fix: proper per-viewer WebRTC offer flow - viewer_request pattern with real tracks
+[33m789852e[m fix: remove duplicate block extra_js causing 500 on live room page
+[33m7b065a9[m fix: wrap live notification in try/except to prevent 500 on room create
+[33m4ae9cf3[m fix: live stream viewer connection - broadcast offer pattern + TURN servers
+[33m0dd082d[m feat: live streaming rooms, camera events, live notifications, full-screen more menu, library link
+[33m9572913[m feat: add profile edit step to onboarding wizard with interests matching
+[33m88997c2[m feat: first-login onboarding wizard  school join + follow friends
+[33mecda2a0[m feat: voice interrupt-to-speak and web search routing in voice mode
+[33m37fda28[m feat: nexa bird avatar in voice panel with talk animations, fix board display
+[33mfc6ee5f[m fix: render chat history math/markdown via template tag on page load
+[33mb4cd637[m feat: avatar widget, workspace member invite, nexa auto-link, connect-to-nexa fix
+[33ma5be4fc[m fix: remove horizontal scrollbar, constrain all chat elements to viewport width
+[33m61edebb[m fix: send original content to backend so is_direct check sees nexa in message
+[33m53a767f[m feat: remember last scroll position per workspace, no flash on reload, fade in after position set
+[33md2e3873[m fix: use |escape not |escapejs for data-raw to preserve LaTeX backslashes on page reload
+[33me3889d7[m fix: nexa trigger works anywhere in sentence, clean strip from any position
+[33m6045282[m fix: sanitizeAI protects all LaTeX delimiters before HTML escape, ban \\( \\) in prompt, use only \$ and \$\$
+[33m5ce78b3[m fix: textbook math rendering - data-raw pipeline, KaTeX CSS, ban markdown in AI, concrete LaTeX examples in prompt
+[33mb9faebb[m fix: ban markdown in AI replies, proper LaTeX-only math, sanitizeAI converts markdown to HTML
+[33m139728d[m fix: math rendering (stop escaping LaTeX in AI bubbles), improve Nexa length calibration and math instructions
+[33m08d9e83[m fix: kill proactive AI, strict name-only trigger, no hallucination, no multi-reply
+[33m41b5014[m feat: KaTeX math rendering, Nexa auto web search, LaTeX output in AI responses
+[33m8cebacc[m feat: delete own workspace messages
+[33m5770b8c[m fix: no more double Nexa replies - let polling render, bump chat history to 60 msgs
+[33m003cd7f[m feat: Nexa persona - real group member, human voice, selective participation
+[33mf8130bb[m fix: Nexa trigger - save message to DB, fix AI reply dedup with polling
+[33me221544[m fix: syntax error in workspace_ai_chat - clean_message and system on separate lines
+[33m0d741a7[m feat: Nexa AI upgrade - trigger by name, professional persona, polished chat UI, reply-to for all members
+[33mdede97f[m feat: NexaAI Omni Agent, reply-to messages, research workspace app
+[33mc17824e[m fix: pin httpx==0.27.2 to fix openai proxies kwarg error
+[33m1d05202[m fix: AI tutor chat - fallback to AJAX when SSE streaming fails (Render proxy buffering)
+[33mec2c0f7[m feat: premium mobile UX - 5-item bottom nav, More sheet, polished topbar, sidebar close btn
+[33m866181c[m fix: stop horizontal overflow on home page - wrap qa-grid scroll, clip feed cards, constrain viewport
+[33m30d7f72[m feat: redirect to dashboard after login/signup
+[33me11e4e0[m fix: comprehensive responsive layout - no overflow on any screen size
+[33m3ea8f73[m fix: commit missing migration 0020 and related model/signal/url changes
+[33m8889646[m fix: pin all dependencies to exact versions to prevent pip resolution hang on Render
+[33m5a6a03a[m fix: mobile workspace panels no longer clipped by bottom tab bar
+[33m4a71274[m fix: backfill is_personal for existing workspaces, fix personal_ws query
+[33m26d4565[m feat: scrollable mobile tab bar shows all workspace features directly
+[33mfdaabe6[m feat: complete Nexa workspace - JS functions, mobile tabs, home card + quick action
+[33mfd3c7a3[m Mobile UX overhaul: breadcrumb, labels, search overlay, swipe gestures, toast system, ws hub sheet, collapsible panels, sticky composer
+[33meee786e[m feat: restrict posting to joined communities only
+[33m3e69f3c[m feat: member added confirmation - green chip + toast + count label
+[33m7d9125d[m fix: workspace member search - blur fires before click, inline onclick breaks on special chars
+[33m3352967[m fix: community_home 500 - feed returns dict not list, guard community_profile
+[33m61d7280[m fix: community_home 500 - guard against missing migration column
+[33mf7dd9e9[m Community-first home + meeting notes + workspace types + login redirect
+[33m15990aa[m Replace AI Tools panel with workspace-scoped tools only  no personal dashboard links
+[33m0344d57[m Fix joinCall scope: dynamic PeerJS loader, expose to window, stub before load
+[33m9b01abd[m Fix joinCall ReferenceError: wire call buttons via addEventListener after PeerJS loads
+[33m3687766[m Fix group
