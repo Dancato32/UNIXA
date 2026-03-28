@@ -1,3 +1,4 @@
+from nexa.rate_limit import ai_rate_limit, upload_rate_limit
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -85,7 +86,7 @@ def upload_material(request):
         form = StudyMaterialForm(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES.get('file')
-            MAX_SIZE = 200 * 1024 * 1024  # 200 MB — local filesystem, no Cloudinary limit
+            MAX_SIZE = 200 * 1024 * 1024  # 200 MB â€” local filesystem, no Cloudinary limit
             if uploaded_file and uploaded_file.size > MAX_SIZE:
                 form.add_error('file', f'File too large ({uploaded_file.size // (1024*1024)} MB). Maximum allowed size is 200 MB.')
                 return render(request, 'materials/upload.html', {'form': form, 'title': 'Upload Study Material'})
@@ -120,13 +121,13 @@ def upload_material(request):
 
 @login_required
 def upload_material_ajax(request):
-    """AJAX upload endpoint — returns JSON so the frontend can show a progress bar."""
+    """AJAX upload endpoint â€” returns JSON so the frontend can show a progress bar."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
     form = StudyMaterialForm(request.POST, request.FILES)
     if form.is_valid():
         uploaded_file = request.FILES.get('file')
-        MAX_SIZE = 200 * 1024 * 1024  # 200 MB — local filesystem
+        MAX_SIZE = 200 * 1024 * 1024  # 200 MB â€” local filesystem
         if uploaded_file and uploaded_file.size > MAX_SIZE:
             return JsonResponse({'success': False, 'errors': {'file': [f'File too large ({uploaded_file.size // (1024*1024)} MB). Maximum allowed size is 200 MB.']}}, status=400)
         material = form.save(commit=False)
@@ -139,7 +140,7 @@ def upload_material_ajax(request):
                 return JsonResponse({'success': False, 'errors': {'file': ['File too large. Maximum allowed size is 200 MB.']}}, status=400)
             return JsonResponse({'success': False, 'errors': {'__all__': [f'Upload failed: {err}']}}, status=500)
 
-        # Extract text — works with both local disk and Cloudinary storage
+        # Extract text â€” works with both local disk and Cloudinary storage
         file_extension = os.path.splitext(uploaded_file.name)[1].lower() if uploaded_file else ''
 
         try:
@@ -147,7 +148,7 @@ def upload_material_ajax(request):
             file_path = material.file.path
             extracted_text = extract_text_from_file(file_path, file_extension)
         except (NotImplementedError, ValueError, AttributeError):
-            # Cloudinary storage — read from the uploaded file in memory
+            # Cloudinary storage â€” read from the uploaded file in memory
             extracted_text = extract_text_from_memory(uploaded_file, file_extension)
 
         material.extracted_text = extracted_text
@@ -234,7 +235,7 @@ def generate_podcast_ajax(request):
         word_count = len(podcast_script.split())
         duration_mins = round(word_count / 130)
 
-        # Generate Resemble.ai audio — returns base64 data URL directly
+        # Generate Resemble.ai audio â€” returns base64 data URL directly
         audio_url = None
         print(f"[PODCAST] Generating Resemble audio for material {material_id}, script length: {len(podcast_script)}")
         audio_data_url = generate_podcast_audio_elevenlabs(podcast_script, material_id)
@@ -356,7 +357,7 @@ def generate_podcast_audio_elevenlabs(script_text, material_id):
             audio_b64 = response.json().get("audio_content")
             print(f"[RESEMBLE] audio_content present: {bool(audio_b64)}")
             if audio_b64:
-                # Return as base64 data URL — no file system, works on iOS/Android
+                # Return as base64 data URL â€” no file system, works on iOS/Android
                 data_url = f"data:audio/mpeg;base64,{audio_b64}"
                 print(f"[RESEMBLE] returning data URL (length: {len(data_url)})")
                 return data_url
@@ -376,10 +377,10 @@ def generate_podcast_audio_streaming(request, script_text, material_id):
         from openai import OpenAI
         import os
 
-        # TTS requires a direct OpenAI key — OpenRouter does NOT support TTS
+        # TTS requires a direct OpenAI key â€” OpenRouter does NOT support TTS
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            print("No OPENAI_API_KEY for TTS — skipping streaming audio")
+            print("No OPENAI_API_KEY for TTS â€” skipping streaming audio")
             return None, None
 
         client = OpenAI(api_key=api_key)
@@ -870,7 +871,7 @@ def flashcards_ajax(request, pk):
     prompt = f"""Create 15 flashcards from the study material titled "{material.title}".
 
 Format each flashcard EXACTLY like this, separated by a blank line:
-FRONT: [term or concept — keep it short]
+FRONT: [term or concept â€” keep it short]
 BACK: [clear definition or explanation]
 
 FRONT: [next term]
@@ -955,7 +956,7 @@ def select_material_for_action(request, action):
     """Page to select a material before performing an action (summarize/quiz/flashcards/podcast)."""
     materials = StudyMaterial.objects.filter(owner=request.user)
     return render(request, 'materials/select_material.html', {
-        'materials': materials, 'action': action, 'title': f'Select Material — {action.title()}'
+        'materials': materials, 'action': action, 'title': f'Select Material â€” {action.title()}'
     })
 
 
@@ -1009,7 +1010,7 @@ def wiki_image_ajax(request):
         return JsonResponse({'image_url': image_url, 'title': title})
 
     except Exception as e:
-        # Silently fail — image is optional
+        # Silently fail â€” image is optional
         return JsonResponse({'image_url': None})
 
 
@@ -1055,47 +1056,47 @@ def learn_ajax(request, pk):
                             topic_context = "\n".join(relevant[:20])
                     break
 
-        # Lean system prompt — material injected as a context message instead
+        # Lean system prompt â€” material injected as a context message instead
         system_prompt = """You are NEXA Learn Mode, an expert AI tutor. You will be given study material and must teach it interactively.
 
 TEACHING RULES:
-- Always teach from the provided study material — quote and paraphrase it directly
+- Always teach from the provided study material â€” quote and paraphrase it directly
 - Use your own knowledge only to add examples, analogies, and fill gaps
 - Never contradict the material
 - Math: use $expression$ for inline, $$expression$$ for display (own line, centred)
 - Bold key terms with **term**
 
-PHASE 1 — TOPIC LIST (first message only):
+PHASE 1 â€” TOPIC LIST (first message only):
 Read the material. List ALL topics found:
-📚 Topics you can learn:
+ðŸ“š Topics you can learn:
 1. [Topic]
 2. [Topic]
 Say: "Pick a topic number to start learning." Then STOP.
 
-PHASE 2 — TEACH (when user picks a number):
+PHASE 2 â€” TEACH (when user picks a number):
 Say: "Great choice! Let's learn about [Topic]."
 Teach in numbered steps pulled from the material:
 - **Step title** + 3-5 sentence explanation + formulas
 - Quote key definitions from the material
 - Add real-world examples from your knowledge
 - Cover EVERY detail in the material for this topic
-End with: "✅ Lesson complete! Ready for the quiz? Type yes to start."
+End with: "âœ… Lesson complete! Ready for the quiz? Type yes to start."
 
-PHASE 3 — QUIZ (when user says yes):
+PHASE 3 â€” QUIZ (when user says yes):
 5 questions from the material, ONE at a time:
 **Question X of 5**
 [question]
 A) [option]  B) [option]  C) [option]  D) [option]
 Reply A, B, C, or D. STOP and wait.
 
-PHASE 4 — FEEDBACK:
-Correct: "✅ Correct! [why]" then next question.
-Wrong: "❌ Not quite. Answer is [X]. [explanation from material]" then next question.
+PHASE 4 â€” FEEDBACK:
+Correct: "âœ… Correct! [why]" then next question.
+Wrong: "âŒ Not quite. Answer is [X]. [explanation from material]" then next question.
 
-PHASE 5 — DONE:
+PHASE 5 â€” DONE:
 Score X/5, what to review, ask if they want another topic."""
 
-        # Build messages — material as a separate context message (proper RAG pattern)
+        # Build messages â€” material as a separate context message (proper RAG pattern)
         material_context = f"STUDY MATERIAL: {material.title}\n\n{full_text}"
         if topic_context:
             material_context += f"\n\n--- MOST RELEVANT SECTION FOR THIS TOPIC ---\n{topic_context}"
@@ -1116,7 +1117,7 @@ Score X/5, what to review, ask if they want another topic."""
         if user_message:
             messages_payload.append({"role": "user", "content": user_message})
         else:
-            messages_payload.append({"role": "user", "content": "Start — show me the topics I can learn from this material."})
+            messages_payload.append({"role": "user", "content": "Start â€” show me the topics I can learn from this material."})
 
         from openai import OpenAI
         materials_key = os.getenv('OPENROUTER_API_KEY_MATERIALS') or os.getenv('OPENROUTER_API_KEY')
@@ -1154,7 +1155,7 @@ Score X/5, what to review, ask if they want another topic."""
 
 @login_required
 def learn_view(request, pk):
-    """Full material viewer with side-panel AI tools — shows text + images per slide/page."""
+    """Full material viewer with side-panel AI tools â€” shows text + images per slide/page."""
     material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
 
     ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
@@ -1243,7 +1244,7 @@ def _extract_pdf_pages(file_path):
     """Extract each PDF page as text + images (base64) using PyMuPDF (fitz) if available, else PyPDF2."""
     import base64
     pages = []
-    # Try PyMuPDF first — best image extraction
+    # Try PyMuPDF first â€” best image extraction
     try:
         import fitz  # PyMuPDF
         doc = fitz.open(file_path)
@@ -1287,7 +1288,7 @@ def _extract_pdf_pages(file_path):
 
 
 def _extract_docx_pages(file_path):
-    """Extract Word doc — split into ~800 char pages, extract inline images."""
+    """Extract Word doc â€” split into ~800 char pages, extract inline images."""
     import base64, io
     pages = []
     try:
@@ -1342,7 +1343,7 @@ def learn_ajax(request, pk):
             return JsonResponse({'error': 'No text provided.'}, status=400)
 
         if action == 'summarise':
-            prompt = f'Summarise this section titled "{page_label}" in 4-6 clear bullet points. Start each bullet with "• ". Plain text only, no markdown bold.\n\n{page_text}'
+            prompt = f'Summarise this section titled "{page_label}" in 4-6 clear bullet points. Start each bullet with "â€¢ ". Plain text only, no markdown bold.\n\n{page_text}'
             raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
             return JsonResponse({'success': True, 'action': action, 'result': raw})
 

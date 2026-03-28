@@ -49,14 +49,14 @@ from community.services.feed import get_personalized_feed
 User = get_user_model()
 
 
-# ── Community Home ───────────────────────────────────────────────────────────
+# â”€â”€ Community Home â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def community_home(request):
     """
     Community-First Home page.
     Shows feed preview, communities, quick actions, and user's workspaces.
-    This is the new post-login landing page — the old dashboard remains at /dashboard/.
+    This is the new post-login landing page â€” the old dashboard remains at /dashboard/.
     """
     from community.services.feed import get_personalized_feed
 
@@ -97,7 +97,7 @@ def community_home(request):
     except Exception:
         suggested_communities = []
 
-    # User's workspaces — guard against missing is_personal column before migration runs
+    # User's workspaces â€” guard against missing is_personal column before migration runs
     workspace_memberships = []
     personal_ws = None
     last_workspace = None
@@ -110,7 +110,7 @@ def community_home(request):
             ).select_related('workspace', 'workspace__owner')
             .order_by('-workspace__updated_at')[:6]
         )
-        # Personal workspace — any is_personal=True workspace
+        # Personal workspace â€” any is_personal=True workspace
         personal_ws = GroupWorkspace.objects.filter(
             owner=request.user, is_personal=True, is_active=True,
         ).first()
@@ -123,7 +123,7 @@ def community_home(request):
         )
         last_workspace = last_ws_member.workspace if last_ws_member else None
     except Exception:
-        # Migration hasn't run yet — fall back to queries without is_personal
+        # Migration hasn't run yet â€” fall back to queries without is_personal
         try:
             workspace_memberships = list(
                 WorkspaceMember.objects.filter(
@@ -172,7 +172,7 @@ def community_home(request):
     })
 
 
-# ── Onboarding ────────────────────────────────────────────────────────────────
+# â”€â”€ Onboarding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -299,7 +299,7 @@ def onboarding_suggested_users(request):
     return JsonResponse({'users': users_data})
 
 
-# ── Feed ──────────────────────────────────────────────────────────────────────
+# â”€â”€ Feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def feed(request):
@@ -314,7 +314,7 @@ def feed(request):
     )
 
     if tab == 'following':
-        # "Following" tab — only posts from people you follow + communities you're in
+        # "Following" tab â€” only posts from people you follow + communities you're in
         from django.db.models import Q
         following_ids = Follow.objects.filter(follower=request.user).values_list('following_id', flat=True)
         joined_school_ids = CommunityMembership.objects.filter(user=request.user).values_list('community_id', flat=True)
@@ -326,10 +326,10 @@ def feed(request):
             Q(custom_community_id__in=joined_custom_ids)
         ).distinct()
     elif tab == 'liked':
-        # "Liked" tab — only posts this user has liked
+        # "Liked" tab â€” only posts this user has liked
         liked_post_ids = PostLike.objects.filter(user=request.user).values_list('post_id', flat=True)
         qs = qs.filter(id__in=liked_post_ids)
-    # "For You" (tab == 'all') — all posts, no filter
+    # "For You" (tab == 'all') â€” all posts, no filter
 
     qs = qs.order_by('-created_at')
 
@@ -384,7 +384,7 @@ def feed(request):
     })
 
 
-# ── School Communities ────────────────────────────────────────────────────────
+# â”€â”€ School Communities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def schools(request):
@@ -481,7 +481,7 @@ def school_leave(request, slug):
     return redirect('community:school_detail', slug=slug)
 
 
-# ── Custom Communities ────────────────────────────────────────────────────────
+# â”€â”€ Custom Communities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def custom_list(request):
@@ -563,7 +563,7 @@ def custom_delete(request, slug):
     return JsonResponse({'error': 'POST required.'}, status=405)
 
 
-# ── Posts ─────────────────────────────────────────────────────────────────────
+# â”€â”€ Posts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def post_create(request):
@@ -755,7 +755,7 @@ def post_delete(request, pk):
     return render(request, 'community/post_delete.html', {'post': post})
 
 
-# ── Messages / Conversations ──────────────────────────────────────────────────
+# â”€â”€ Messages / Conversations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def messages_view(request, convo_id=None):
@@ -775,7 +775,7 @@ def messages_view(request, convo_id=None):
         except Exception:
             pass
         last = convo.messages.order_by('-created_at').first()
-        convo.last_message_preview = (last.content[:40] + '…') if last and len(last.content) > 40 else (last.content if last else '')
+        convo.last_message_preview = (last.content[:40] + 'â€¦') if last and len(last.content) > 40 else (last.content if last else '')
 
     active_convo = None
     messages_list = []
@@ -804,7 +804,7 @@ def messages_view(request, convo_id=None):
                 Conversation.objects.filter(pk=active_convo.pk).update(
                     updated_at=timezone.now()
                 )
-                # AJAX request — return JSON
+                # AJAX request â€” return JSON
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
                    request.content_type == 'application/json' or \
                    request.headers.get('Accept') == 'application/json':
@@ -1009,7 +1009,7 @@ def conversation_create(request):
     return render(request, 'community/conversation_create.html')
 
 
-# ── Notifications ─────────────────────────────────────────────────────────────
+# â”€â”€ Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def notifications(request):
@@ -1032,7 +1032,7 @@ def notifications_mark_read(request):
     return redirect('community:notifications')
 
 
-# ── Comment Like API ──────────────────────────────────────────────────────────
+# â”€â”€ Comment Like API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -1049,7 +1049,7 @@ def comment_like(request, comment_id):
     return JsonResponse({'liked': True, 'like_count': comment.like_count})
 
 
-# ── Community Profile ─────────────────────────────────────────────────────────
+# â”€â”€ Community Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def community_profile(request, username):
@@ -1118,7 +1118,7 @@ def upload_avatar(request):
     return JsonResponse({'ok': True, 'url': profile.avatar.url})
 
 
-# ── Voice / Video Calls (PeerJS WebRTC) ──────────────────────────────────────
+# â”€â”€ Voice / Video Calls (PeerJS WebRTC) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -1149,7 +1149,7 @@ def get_peer_id(request, convo_id):
     return JsonResponse({'peer_id': peer_id})
 
 
-# ── Group Workspaces ──────────────────────────────────────────────────────────
+# â”€â”€ Group Workspaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def workspace_list(request):
@@ -1170,7 +1170,7 @@ def workspace_list(request):
 
 @login_required
 def nexa_workspace(request):
-    """Canonical MyNexa entry point — ensures workspace exists then redirects."""
+    """Canonical MyNexa entry point â€” ensures workspace exists then redirects."""
     ws = _get_or_create_mynexa(request.user)
     return redirect('community:workspace_detail', ws_id=ws.id)
 
@@ -1405,7 +1405,7 @@ def nexa_my_tasks(request):
 @login_required
 @require_POST
 def nexa_submit_task(request, task_id):
-    """Submit task content from Nexa workspace — pushes to group workspace files."""
+    """Submit task content from Nexa workspace â€” pushes to group workspace files."""
     import json as _json
     from django.utils import timezone
 
@@ -1744,7 +1744,7 @@ def workspace_poll_messages(request, ws_id):
     return JsonResponse({'messages': data})
 
 
-# ── Peer Chat ─────────────────────────────────────────────────────────────────
+# â”€â”€ Peer Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def workspace_peer_chat(request, ws_id, peer_username):
@@ -2030,7 +2030,7 @@ def workspace_search_users(request):
     return JsonResponse({'users': [{'username': u.username, 'display': u.get_full_name() or u.username} for u in users]})
 
 
-# ── Quick Join Community (from feed) ─────────────────────────────────────────
+# â”€â”€ Quick Join Community (from feed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -2063,7 +2063,7 @@ def quick_join_school(request, slug):
     return JsonResponse({'joined': True})
 
 
-# ── Share Post via DM ─────────────────────────────────────────────────────────
+# â”€â”€ Share Post via DM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def share_post_dm_list(request):
@@ -2108,8 +2108,8 @@ def share_post_send(request, post_id):
         return JsonResponse({'error': 'No conversations selected.'}, status=400)
 
     post_url = request.build_absolute_uri(f'/community/posts/{post.id}/')
-    preview = post.content[:80] + ('…' if len(post.content) > 80 else '')
-    message_text = f'📎 Shared a post: {preview}\n{post_url}'
+    preview = post.content[:80] + ('â€¦' if len(post.content) > 80 else '')
+    message_text = f'ðŸ“Ž Shared a post: {preview}\n{post_url}'
 
     sent = 0
     for cid in convo_ids[:10]:  # cap at 10
@@ -2131,7 +2131,7 @@ def share_post_send(request, post_id):
     return JsonResponse({'sent': sent})
 
 
-# ── Friend Requests ───────────────────────────────────────────────────────────
+# â”€â”€ Friend Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -2152,7 +2152,7 @@ def friend_request_send(request, username):
             return JsonResponse({'status': 'already_friends'})
         if existing.status == Friendship.STATUS_PENDING:
             return JsonResponse({'status': 'pending'})
-        # Rejected — allow re-request
+        # Rejected â€” allow re-request
         existing.delete()
 
     friendship = Friendship.objects.create(requester=request.user, recipient=recipient)
@@ -2229,7 +2229,7 @@ def follow_toggle(request):
         following = False
     else:
         following = True
-        # Notification is created by signal (community/signals.py → on_follow)
+        # Notification is created by signal (community/signals.py â†’ on_follow)
     follower_count = Follow.objects.filter(following=other).count()
     return JsonResponse({'following': following, 'follower_count': follower_count})
 
@@ -2358,9 +2358,9 @@ def api_communities_list(request):
     return JsonResponse({'communities': schools + customs})
 
 
-# ── Group Call Presence ───────────────────────────────────────────────────────
+# â”€â”€ Group Call Presence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Uses Django's cache to track who is in a call. TTL = 30s, refreshed every 10s.
-# No new DB model needed — presence is ephemeral.
+# No new DB model needed â€” presence is ephemeral.
 
 def _call_cache_key(ws_id):
     return f'ws_call_{ws_id}'
@@ -2402,7 +2402,7 @@ def workspace_call_join(request, ws_id):
         WorkspaceMessage.objects.create(
             workspace=ws,
             sender=request.user,
-            content=f'📞 {request.user.username} joined the group call',
+            content=f'ðŸ“ž {request.user.username} joined the group call',
         )
 
     return JsonResponse({'ok': True, 'count': len(participants)})
@@ -2422,7 +2422,7 @@ def workspace_call_leave(request, ws_id):
         cache.set(key, participants, timeout=30)
     else:
         cache.delete(key)
-        # Last person left — capture meeting record
+        # Last person left â€” capture meeting record
         start_key = f'ws_call_start_{ws_id}'
         started_at_str = cache.get(start_key)
         cache.delete(start_key)
@@ -2446,7 +2446,7 @@ def workspace_call_leave(request, ws_id):
                     'time': m['created_at'].strftime('%H:%M'),
                 }
                 for m in msgs_qs
-                if not m['content'].startswith('📞') and not m['content'].startswith('📴')
+                if not m['content'].startswith('ðŸ“ž') and not m['content'].startswith('ðŸ“´')
             ]
 
             # Collect participant usernames from all who joined
@@ -2486,16 +2486,16 @@ def workspace_call_leave(request, ws_id):
             # Post Nexa summary to group chat
             if summary:
                 duration_mins = max(1, int((ended_at - started_at).total_seconds() / 60))
-                nexa_msg = f"[AI] 📋 Meeting ended ({duration_mins} min). Here's what was covered:\n\n{summary}"
+                nexa_msg = f"[AI] ðŸ“‹ Meeting ended ({duration_mins} min). Here's what was covered:\n\n{summary}"
                 if decisions:
-                    nexa_msg += '\n\n✅ Decisions: ' + ' | '.join(decisions[:3])
+                    nexa_msg += '\n\nâœ… Decisions: ' + ' | '.join(decisions[:3])
                 if action_items:
                     items_text = ', '.join(
                         a.get('task', str(a)) if isinstance(a, dict) else str(a)
                         for a in action_items[:3]
                     )
-                    nexa_msg += f'\n\n📌 Action items: {items_text}'
-                nexa_msg += f'\n\n📁 Full transcript saved in Meeting Notes.'
+                    nexa_msg += f'\n\nðŸ“Œ Action items: {items_text}'
+                nexa_msg += f'\n\nðŸ“ Full transcript saved in Meeting Notes.'
                 WorkspaceMessage.objects.create(
                     workspace=ws,
                     sender=request.user,
@@ -2505,7 +2505,7 @@ def workspace_call_leave(request, ws_id):
     WorkspaceMessage.objects.create(
         workspace=ws,
         sender=request.user,
-        content=f'📴 {request.user.username} left the group call',
+        content=f'ðŸ“´ {request.user.username} left the group call',
     )
     return JsonResponse({'ok': True})
 
@@ -2533,12 +2533,12 @@ def workspace_call_participants(request, ws_id):
     })
 
 
-# ── Workspace AI Manager ──────────────────────────────────────────────────────
+# â”€â”€ Workspace AI Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
 def workspace_ai_chat(request, ws_id):
-    """Conversational AI manager endpoint — AI acts as a real team member."""
+    """Conversational AI manager endpoint â€” AI acts as a real team member."""
     import json as _json
     from ai_community.ai_engine import workspace_ai_chat as _ai_chat
     ws, _ = _ws_member_or_404(request, ws_id)
@@ -2601,9 +2601,9 @@ def workspace_ai_chat(request, ws_id):
         search_result = result['deep_search']
         search_query = result.get('search_query', '')
         summary_msg = (
-            f"[AI]🔍 **{search_query}**\n\n"
+            f"[AI]ðŸ” **{search_query}**\n\n"
             f"{search_result.get('summary', '')}\n\n"
-            + '\n'.join(f"• {f}" for f in search_result.get('key_findings', [])[:5])
+            + '\n'.join(f"â€¢ {f}" for f in search_result.get('key_findings', [])[:5])
         )
         WorkspaceMessage.objects.create(
             workspace=ws,
@@ -2751,7 +2751,7 @@ def workspace_ai_autocomplete(request, ws_id):
     return JsonResponse(result)
 
 
-# ── GitHub-style contribution system ─────────────────────────────────────────
+# â”€â”€ GitHub-style contribution system â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -2950,7 +2950,7 @@ def workspace_task_autopilot(request, ws_id, task_id):
 
     regen_section = f'\nUser feedback on previous attempt: "{regenerate_note}"\nAddress this feedback in your new execution.\n' if regenerate_note else ''
 
-    prompt = f"""You are Nexa AI Autopilot — a full task execution engine inside a collaborative workspace.
+    prompt = f"""You are Nexa AI Autopilot â€” a full task execution engine inside a collaborative workspace.
 
 TASK: {task.title}
 DESCRIPTION: {task.description or 'No description provided.'}
@@ -2964,9 +2964,9 @@ WORKSPACE FILES CONTEXT:
 Your job is to FULLY EXECUTE this task. Produce a complete, high-quality output.
 
 Determine the best output format:
-- If the task involves writing, reports, essays, research → produce a DOCUMENT
-- If the task involves data, tables, calculations → produce a SPREADSHEET outline
-- If the task involves presentations, pitches, summaries → produce SLIDES
+- If the task involves writing, reports, essays, research â†’ produce a DOCUMENT
+- If the task involves data, tables, calculations â†’ produce a SPREADSHEET outline
+- If the task involves presentations, pitches, summaries â†’ produce SLIDES
 
 Return ONLY valid JSON in this exact format:
 {{
@@ -2985,7 +2985,7 @@ Return ONLY valid JSON in this exact format:
   "changes_made": ["change 1", "change 2", "change 3"]
 }}
 
-Be thorough. Produce real, usable content — not placeholders."""
+Be thorough. Produce real, usable content â€” not placeholders."""
 
     try:
         from ai_community.ai_engine import _chat as _ai
@@ -3062,8 +3062,8 @@ def workspace_task_review(request, ws_id, task_id):
     task.save(update_fields=['review_status', 'review_feedback', 'status'])
 
     # Post AI feedback as a system message in the workspace chat
-    ai_msg = f"🤖 AI Review — *{task.title}*\n"
-    ai_msg += f"Status: {'✅ Approved' if result['status'] == 'approved' else '🔄 Revision Requested'}\n"
+    ai_msg = f"ðŸ¤– AI Review â€” *{task.title}*\n"
+    ai_msg += f"Status: {'âœ… Approved' if result['status'] == 'approved' else 'ðŸ”„ Revision Requested'}\n"
     ai_msg += result['feedback']
     WorkspaceMessage.objects.create(
         workspace=ws,
@@ -3110,7 +3110,7 @@ def workspace_ai_proactive(request, ws_id):
     """
     Called by the frontend after N new messages.
     AI reads recent chat and optionally returns a suggestion to post.
-    Returns {should_post, message} — frontend decides whether to show it.
+    Returns {should_post, message} â€” frontend decides whether to show it.
     """
     from ai_community.ai_engine import proactive_chat_suggestion as _proactive
     ws, _ = _ws_member_or_404(request, ws_id)
@@ -3173,10 +3173,10 @@ def workspace_ai_schedule_meeting(request, ws_id):
 
     # DM every member privately as Nexa (using the requester as sender proxy)
     dm_text = (
-        f"👋 Hey! Nexa here.\n\n"
-        f"📅 **{meeting_title}** has been scheduled for **{time_label}** "
+        f"ðŸ‘‹ Hey! Nexa here.\n\n"
+        f"ðŸ“… **{meeting_title}** has been scheduled for **{time_label}** "
         f"in the *{ws.name}* workspace.\n\n"
-        f"The call will start automatically — just head to the workspace when it's time. See you there! 🚀"
+        f"The call will start automatically â€” just head to the workspace when it's time. See you there! ðŸš€"
     )
 
     for member_user in member_users:
@@ -3214,9 +3214,9 @@ def workspace_ai_schedule_meeting(request, ws_id):
 
     # Post group chat announcement from Nexa
     announce = (
-        f"[AI]📅 **{meeting_title}** scheduled {time_label}.\n"
-        f"I've DM'd everyone with the details. The call will start automatically — "
-        f"I'll ping you here when it's time! ⏰"
+        f"[AI]ðŸ“… **{meeting_title}** scheduled {time_label}.\n"
+        f"I've DM'd everyone with the details. The call will start automatically â€” "
+        f"I'll ping you here when it's time! â°"
     )
     WorkspaceMessage.objects.create(
         workspace=ws,
@@ -3260,10 +3260,10 @@ def workspace_ai_deep_search(request, ws_id):
 
     # Save a compact version to group chat so all members see it
     summary_msg = (
-        f"[AI]🔍 **Deep Search: {query}**\n\n"
+        f"[AI]ðŸ” **Deep Search: {query}**\n\n"
         f"{result.get('summary', '')}\n\n"
         f"**Key Findings:**\n" +
-        '\n'.join(f"• {f}" for f in result.get('key_findings', [])[:5])
+        '\n'.join(f"â€¢ {f}" for f in result.get('key_findings', [])[:5])
     )
     WorkspaceMessage.objects.create(
         workspace=ws,
@@ -3326,7 +3326,7 @@ def workspace_meeting_summarize(request, ws_id, record_id):
     return JsonResponse({'error': 'Could not generate summary'}, status=500)
 
 
-# ── Paraphraser ───────────────────────────────────────────────────────────────
+# â”€â”€ Paraphraser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -3375,7 +3375,7 @@ def paraphrase_ajax(request):
         subject_block = f'\n\nSUBJECT CONTEXT: This text is about "{subject}". Align vocabulary and framing to this subject area.'
 
     system_prompt = (
-        "You are Nexa Smart Paraphraser — an advanced AI writing assistant for students.\n"
+        "You are Nexa Smart Paraphraser â€” an advanced AI writing assistant for students.\n"
         "Your job is to paraphrase text intelligently while teaching the user what changed and why.\n\n"
         "RULES:\n"
         "- Preserve the original meaning 100%\n"
@@ -3393,7 +3393,7 @@ def paraphrase_ajax(request):
     )
 
     user_prompt = (
-        f"MODE: {mode.upper()} — {mode_instruction}"
+        f"MODE: {mode.upper()} â€” {mode_instruction}"
         f"{style_block}{subject_block}\n\n"
         f"TEXT TO PARAPHRASE:\n\"\"\"\n{text}\n\"\"\""
     )
@@ -3422,7 +3422,7 @@ def paraphrase_ajax(request):
         return JsonResponse({'error': f'AI error: {str(e)}'}, status=500)
 
 
-# ── Citation Intelligence Engine ──────────────────────────────────────────────
+# â”€â”€ Citation Intelligence Engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 @require_POST
@@ -3447,7 +3447,7 @@ def citation_ajax(request):
     except Exception as e:
         return JsonResponse({'error': f'AI unavailable: {e}'}, status=500)
 
-    # ── ACTION: detect metadata from URL/DOI ──────────────────────────────────
+    # â”€â”€ ACTION: detect metadata from URL/DOI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if action == 'detect':
         url = (body.get('url') or '').strip()
         source_type = (body.get('source_type') or 'website').strip()
@@ -3510,7 +3510,7 @@ def citation_ajax(request):
 
         return JsonResponse({'metadata': metadata})
 
-    # ── ACTION: generate citation ─────────────────────────────────────────────
+    # â”€â”€ ACTION: generate citation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     elif action == 'generate':
         style = (body.get('style') or 'APA').strip()
         source_type = (body.get('source_type') or 'website').strip()
@@ -3532,12 +3532,12 @@ def citation_ajax(request):
             'MLA': 'MLA 9th edition. Author Last, First. "Title." Publisher, Year, URL.',
             'Harvard': 'Harvard referencing. Author (Year) Title. Publisher.',
             'Chicago': 'Chicago 17th edition author-date or notes-bibliography.',
-            'IEEE': 'IEEE style. [1] A. Author, "Title," Journal, vol. x, no. x, pp. xx–xx, Year.',
+            'IEEE': 'IEEE style. [1] A. Author, "Title," Journal, vol. x, no. x, pp. xxâ€“xx, Year.',
             'WAEC': 'Simplified WAEC/SHS style. Easy format for secondary school students. Author (Year). Title. Publisher.',
         }
 
         system_prompt = (
-            "You are Nexa Citation Intelligence Engine — an expert academic citation assistant.\n"
+            "You are Nexa Citation Intelligence Engine â€” an expert academic citation assistant.\n"
             "Generate a perfectly formatted citation AND teach the user what each part means.\n\n"
             "RESPONSE FORMAT (strict JSON, no markdown):\n"
             "{\n"
@@ -3576,7 +3576,7 @@ def citation_ajax(request):
         except Exception as e:
             return JsonResponse({'error': f'Generation failed: {e}'}, status=500)
 
-    # ── ACTION: fix/reformat citation ─────────────────────────────────────────
+    # â”€â”€ ACTION: fix/reformat citation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     elif action == 'fix':
         raw = (body.get('raw_citation') or '').strip()
         style = (body.get('style') or 'APA').strip()
@@ -3618,9 +3618,9 @@ def citation_ajax(request):
     return JsonResponse({'error': 'Unknown action'}, status=400)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # LIVE CAMPUS VIEWS
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 from community.models import (
     SkillOffer, SkillDeal, Confession, ConfessionUpvote, ConfessionReply,
@@ -3629,11 +3629,11 @@ from community.models import (
 )
 
 
-# ── Live Campus Hub ───────────────────────────────────────────────────────────
+# â”€â”€ Live Campus Hub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def live_campus(request):
-    """The unified Live Campus tab — Pulse + Help + Voice Rooms + Startups + Skills + Feed."""
+    """The unified Live Campus tab â€” Pulse + Help + Voice Rooms + Startups + Skills + Feed."""
     from django.utils.dateparse import parse_datetime
     from community.models import Follow
     now = timezone.now()
@@ -3699,7 +3699,7 @@ def live_campus(request):
     })
 
 
-# ── Skill Marketplace ─────────────────────────────────────────────────────────
+# â”€â”€ Skill Marketplace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def skill_marketplace(request):
@@ -3791,12 +3791,12 @@ def skill_deal_initiate(request, offer_id):
         Message.objects.create(
             conversation=convo,
             sender=request.user,
-            content=f"👋 Hey! I'd like to trade skills with you.\n\nYour offer: *{offer.title}*\n\n{deal.message or 'Let me know if you are interested!'}",
+            content=f"ðŸ‘‹ Hey! I'd like to trade skills with you.\n\nYour offer: *{offer.title}*\n\n{deal.message or 'Let me know if you are interested!'}",
         )
     return JsonResponse({'ok': True, 'convo_id': str(convo.id), 'deal_id': str(deal.id)})
 
 
-# ── Confession Feed ───────────────────────────────────────────────────────────
+# â”€â”€ Confession Feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def confession_feed(request):
@@ -3885,7 +3885,7 @@ def confession_reply(request, confession_id):
     return JsonResponse({'ok': True, 'id': str(reply.id), 'author': author_display})
 
 
-# ── Startup Command Center ────────────────────────────────────────────────────
+# â”€â”€ Startup Command Center â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def startup_list(request):
@@ -3994,7 +3994,7 @@ def startup_post_update(request, slug):
     return JsonResponse({'ok': True, 'id': str(update.id)})
 
 
-# ── Campus Pulse ─────────────────────────────────────────────────────────────
+# â”€â”€ Campus Pulse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def pulse_map(request):
@@ -4021,7 +4021,7 @@ def pulse_map(request):
 
 @login_required
 def pulse_event_create(request):
-    """Create a pulse event — supports multipart (photo/video) or JSON."""
+    """Create a pulse event â€” supports multipart (photo/video) or JSON."""
     if request.method == 'GET':
         return render(request, 'community/pulse_event_create.html', {'event_types': PulseEvent.TYPE_CHOICES})
 
@@ -4092,7 +4092,7 @@ def pulse_events_api(request):
     return JsonResponse({'events': list(events), 'now': now.isoformat()})
 
 
-# ── Micro Rooms ───────────────────────────────────────────────────────────────
+# â”€â”€ Micro Rooms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def micro_rooms_list(request):
@@ -4105,7 +4105,7 @@ def micro_rooms_list(request):
 
 @login_required
 def micro_room_create(request):
-    """Create a micro room instantly — returns JSON with redirect URL."""
+    """Create a micro room instantly â€” returns JSON with redirect URL."""
     import json as _json, secrets
     if request.method == 'GET':
         return render(request, 'community/micro_rooms.html', {
@@ -4124,7 +4124,7 @@ def micro_room_create(request):
     )
     MicroRoomParticipant.objects.create(room=room, user=request.user)
 
-    # ── Notify followers + accepted friends ──────────────────────────────────
+    # â”€â”€ Notify followers + accepted friends â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         from community.models import Follow, Friendship, Notification as Notif
         follower_ids = set(
@@ -4159,7 +4159,7 @@ def micro_room_create(request):
 
 @login_required
 def micro_room_detail(request, room_id):
-    """The live room page — host streams, viewers watch."""
+    """The live room page â€” host streams, viewers watch."""
     room = get_object_or_404(MicroRoom, id=room_id)
     is_host = room.host == request.user
     # Auto-join as participant if not already
@@ -4250,7 +4250,7 @@ def micro_room_poll(request, room_id):
     if room_data:
         room_data['viewer_count'] = viewer_count
 
-    # Comments — use DB-backed RoomComment for multi-worker support
+    # Comments â€” use DB-backed RoomComment for multi-worker support
     from community.models import RoomComment
     last_id = request.GET.get('last_comment_id', 0)
     try:
@@ -4282,7 +4282,7 @@ def micro_room_poll(request, room_id):
 @login_required
 @require_POST
 def micro_room_comment(request, room_id):
-    """Post a live comment — stored in DB for multi-worker support."""
+    """Post a live comment â€” stored in DB for multi-worker support."""
     import json as _json
     from community.models import RoomComment
     room = get_object_or_404(MicroRoom, id=room_id)
@@ -4333,7 +4333,7 @@ def micro_room_leave(request, room_id):
 @login_required
 @require_POST
 def micro_room_close(request, room_id):
-    """Host ends the stream — marks room closed, signals all viewers."""
+    """Host ends the stream â€” marks room closed, signals all viewers."""
     room = get_object_or_404(MicroRoom, id=room_id, host=request.user)
     MicroRoom.objects.filter(pk=room.pk).update(
         status=MicroRoom.STATUS_CLOSED, closed_at=timezone.now()
@@ -4351,7 +4351,7 @@ def micro_room_close(request, room_id):
     return JsonResponse({'ok': True})
 
 
-# ── Help Beacon ───────────────────────────────────────────────────────────────
+# â”€â”€ Help Beacon â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
 def help_beacon_list(request):
@@ -4418,7 +4418,7 @@ def help_beacon_claim(request, beacon_id):
     Message.objects.create(
         conversation=convo,
         sender=request.user,
-        content=f"👋 Hey! I saw your help request: *{beacon.title}*\n\nI can help you with this. Let's talk!",
+        content=f"ðŸ‘‹ Hey! I saw your help request: *{beacon.title}*\n\nI can help you with this. Let's talk!",
     )
     return JsonResponse({'ok': True, 'convo_id': str(convo.id)})
 

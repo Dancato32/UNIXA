@@ -8,6 +8,7 @@ from django.utils import timezone
 from .models import Conversation, EssayRequest
 from .forms import ChatForm, EssayForm
 from .ai_utils import ask_ai, deep_web_essay, generate_essay_with_sources, text_to_speech
+from nexa.rate_limit import ai_rate_limit, chat_rate_limit, essay_rate_limit, upload_rate_limit
 import json
 import os
 
@@ -89,7 +90,7 @@ def chat_ajax(request):
 
 @login_required
 def text_to_speech_view(request):
-    """Convert text to speech using Resemble.ai, return base64 data URL — works on all platforms including mobile."""
+    """Convert text to speech using Resemble.ai, return base64 data URL â€” works on all platforms including mobile."""
     if request.method == 'POST':
         try:
             import base64 as _b64
@@ -102,7 +103,7 @@ def text_to_speech_view(request):
             audio_content = text_to_speech(text)
 
             if audio_content:
-                # Return as base64 data URL — no file system, no media serving needed
+                # Return as base64 data URL â€” no file system, no media serving needed
                 # Works on iOS Safari, Android Chrome, all mobile browsers
                 b64 = _b64.b64encode(audio_content).decode('utf-8')
                 audio_url = f'data:audio/mpeg;base64,{b64}'
@@ -360,7 +361,7 @@ def essay_web_search(request):
 
         results = []
 
-        # ── DuckDuckGo Instant Answer API ──────────────────────────────
+        # â”€â”€ DuckDuckGo Instant Answer API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         ddg_url = f"https://api.duckduckgo.com/?q={urllib.parse.quote(query)}&format=json&no_html=1&skip_disambig=1"
         req = urllib.request.Request(ddg_url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=6) as resp:
@@ -495,7 +496,7 @@ Format your answer in clear steps or paragraphs as appropriate. Use LaTeX for an
 
 @login_required
 def chat_stream(request):
-    """SSE streaming endpoint — streams AI response token by token."""
+    """SSE streaming endpoint â€” streams AI response token by token."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
 
@@ -574,7 +575,7 @@ def clear_conversations(request):
 
 @login_required
 def essay_guidance(request):
-    """Smart Essay Guidance — topic breakdown, thesis, outline before writing."""
+    """Smart Essay Guidance â€” topic breakdown, thesis, outline before writing."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     try:
@@ -659,7 +660,7 @@ def essay_guidance(request):
 
 @login_required
 def essay_improve(request):
-    """Essay Improver — grammar, vocabulary, clarity, tone adjustment."""
+    """Essay Improver â€” grammar, vocabulary, clarity, tone adjustment."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     try:
@@ -677,7 +678,7 @@ def essay_improve(request):
         if 'vocabulary' in improvements:
             improvement_instructions.append("Upgrade vocabulary with more precise and varied word choices")
         if 'clarity' in improvements:
-            improvement_instructions.append("Improve sentence clarity and flow — break up run-ons, vary sentence length")
+            improvement_instructions.append("Improve sentence clarity and flow â€” break up run-ons, vary sentence length")
         if 'structure' in improvements:
             improvement_instructions.append("Improve paragraph structure and logical flow between ideas")
         if tone:
@@ -699,7 +700,7 @@ def essay_improve(request):
                         "You are an expert essay editor and writing coach. "
                         "Improve the student's essay according to the instructions. "
                         "Preserve their voice and all their ideas. "
-                        "Output ONLY the improved essay — no commentary, no labels, no markdown."
+                        "Output ONLY the improved essay â€” no commentary, no labels, no markdown."
                     )
                 },
                 {
@@ -756,7 +757,7 @@ def essay_restyle(request, essay_id):
                     "content": (
                         "You are an expert essay editor. The user will give you an essay and styling instructions. "
                         "Rewrite the essay following those instructions exactly. "
-                        "Output ONLY the rewritten essay — no commentary, no headings, no markdown. "
+                        "Output ONLY the rewritten essay â€” no commentary, no headings, no markdown. "
                         "Preserve all facts and arguments. Only change style, tone, structure, or format as instructed."
                     )
                 },
@@ -861,7 +862,7 @@ def export_essay(request):
                 import urllib.parse
                 import re as _re
 
-                # ── AI: generate structured slide outline ──────────────────
+                # â”€â”€ AI: generate structured slide outline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 from .ai_utils import get_openai_client
                 ai_client = get_openai_client()
                 outline_resp = ai_client.chat.completions.create(
@@ -901,7 +902,7 @@ def export_essay(request):
                             "image_query": topic
                         })
 
-                # ── Helper: fetch image bytes from Unsplash source ─────────
+                # â”€â”€ Helper: fetch image bytes from Unsplash source â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 def fetch_image(query):
                     try:
                         safe = urllib.parse.quote(query)
@@ -912,7 +913,7 @@ def export_essay(request):
                     except Exception:
                         return None
 
-                # ── Design constants ───────────────────────────────────────
+                # â”€â”€ Design constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 DARK_BG   = RGBColor(0x0D, 0x0D, 0x0D)
                 ACCENT    = RGBColor(0x6C, 0x63, 0xFF)   # purple
                 WHITE     = RGBColor(0xFF, 0xFF, 0xFF)
@@ -955,7 +956,7 @@ def export_essay(request):
                     bar.fill.fore_color.rgb = ACCENT
                     bar.line.fill.background()
 
-                # ── Slide 1: Title slide ───────────────────────────────────
+                # â”€â”€ Slide 1: Title slide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 title_data = slides_data[0] if slides_data else {"title": topic, "image_query": topic}
                 img_bytes = fetch_image(title_data.get("image_query", topic))
 
@@ -992,7 +993,7 @@ def export_essay(request):
                 add_textbox(slide, "Generated by Nexa AI", Inches(0.8), Inches(3.3),
                             Inches(6), Inches(0.5), font_size=16, color=LIGHT_TXT)
 
-                # ── Content slides ─────────────────────────────────────────
+                # â”€â”€ Content slides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 for sd in slides_data[1:]:
                     slide = prs.slides.add_slide(blank_layout)
                     add_bg(slide)
@@ -1028,7 +1029,7 @@ def export_essay(request):
                         tf.word_wrap = True
                         p   = tf.paragraphs[0]
                         run = p.add_run()
-                        run.text = f"• {bullet}"
+                        run.text = f"â€¢ {bullet}"
                         run.font.size = Pt(17)
                         run.font.color.rgb = LIGHT_TXT
                         y += Inches(0.75)
@@ -1117,7 +1118,7 @@ def essay_autocomplete(request):
                         "You are an essay writing assistant. "
                         "Continue the text the user has written with 1-2 natural sentences. "
                         "Match their tone and style exactly. "
-                        "Output ONLY the continuation — no quotes, no commentary."
+                        "Output ONLY the continuation â€” no quotes, no commentary."
                     )
                 },
                 {"role": "user", "content": context}
@@ -1179,7 +1180,7 @@ def essay_copilot(request):
             ),
             'custom': (
                 f"You are an expert essay writing assistant. {custom_prompt}. "
-                "Output ONLY the result — no commentary.",
+                "Output ONLY the result â€” no commentary.",
                 selected_text or context
             ),
         }

@@ -169,7 +169,7 @@ else:
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 AUTH_USER_MODEL = 'users.CustomUser'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/community/home/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
 
@@ -220,6 +220,16 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    # ── Rate limiting ──────────────────────────────────────────────────────────
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '200/day',       # general API calls per user per day
+        'ai': '30/hour',         # AI endpoints (chat, essay, quiz, etc.)
+        'upload': '20/hour',     # file uploads
+        'anon': '20/day',        # unauthenticated requests
+    },
 }
 
 # ── Logging ───────────────────────────────────────────────────────────────────

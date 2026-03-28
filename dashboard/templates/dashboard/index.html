@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 :root{--bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--surface3:#222;--border:#222;--border2:#2e2e2e;--text:#f0f0f0;--text2:#888;--text3:#444;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* ── Desktop top navbar ── */
+/* -- Desktop top navbar -- */
 .topnav{display:flex;align-items:center;justify-content:space-between;height:56px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:200;}
 .topnav-logo{font-size:1rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.02em;flex-shrink:0;}
 .topnav-links{display:flex;align-items:center;gap:.25rem;}
@@ -21,13 +21,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .topnav-right{display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
 .avatar{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--text2);}
 
-/* ── Mobile topbar (hamburger) ── */
+/* -- Mobile topbar (hamburger) -- */
 .mobile-topbar{display:none;height:52px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200;}
 .menu-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text2);cursor:pointer;border-radius:6px;}
 .menu-btn svg{width:20px;height:20px;}
 .mobile-topbar-title{font-size:.875rem;font-weight:600;color:var(--text2);}
 
-/* ── Mobile sidebar (drawer) ── */
+/* -- Mobile sidebar (drawer) -- */
 .sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:300;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .25s;}
 .sidebar.open{transform:translateX(0);}
 .sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);}
@@ -99,9 +99,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <!-- Desktop top navbar -->
   <nav class="topnav">
-    <a href="{% url 'dashboard' %}" class="topnav-logo">NEXA</a>
+    <a href="{% url 'dashboard_index' %}" class="topnav-logo">NEXA</a>
     <div class="topnav-links">
-      <a href="{% url 'dashboard' %}" class="topnav-link active">
+      <a href="{% url 'dashboard_index' %}" class="topnav-link active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
       <a href="{% url 'explore' %}" class="topnav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explore</a>
@@ -136,9 +136,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <!-- Mobile sidebar drawer -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><a href="{% url 'dashboard' %}">NEXA</a></div>
+    <div class="sidebar-logo"><a href="{% url 'dashboard_index' %}">NEXA</a></div>
     <nav class="sidebar-nav">
-      <a href="{% url 'dashboard' %}" class="nav-link active">
+      <a href="{% url 'dashboard_index' %}" class="nav-link active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
       <a href="{% url 'explore' %}" class="nav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explore</a>
@@ -253,7 +253,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   </main>
 </div>
 <nav class="bottom-nav">
-  <a href="{% url 'dashboard' %}" class="bn-item active">
+  <a href="{% url 'dashboard_index' %}" class="bn-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
   <a href="{% url 'list_materials' %}" class="bn-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Materials</a>

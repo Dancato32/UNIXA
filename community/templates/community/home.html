@@ -9,631 +9,227 @@
 
 {% block extra_css %}
 <style>
-/* neutralise base .page padding so home controls its own spacing */
-.page { padding: 0 !important; max-width: 100% !important; }
+.page{padding:0!important;max-width:100%!important;}
+/* ── Layout ── */
+.ch-shell{display:flex;height:100%;overflow:hidden;background:var(--bg);}
+.ch-main{flex:1;overflow-y:auto;padding:1.5rem 1.75rem;min-width:0;}
+.ch-right{width:260px;flex-shrink:0;border-left:1px solid var(--border);padding:1.25rem 1rem;overflow-y:auto;}
 
-/* ── Page shell ── */
-.home-page { max-width: 600px; margin: 0 auto; padding: 0; }
+/* ── Welcome banner ── */
+.ch-banner{display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:1.5rem;box-shadow:var(--shadow-sm);}
+.ch-banner-av{width:52px;height:52px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;color:var(--accent);flex-shrink:0;overflow:hidden;}
+.ch-banner-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.ch-banner-text h2{font-size:1.125rem;font-weight:800;color:var(--text);letter-spacing:-.02em;}
+.ch-banner-text p{font-size:.8125rem;color:var(--text3);margin-top:.2rem;}
+.ch-banner-actions{margin-left:auto;display:flex;gap:.5rem;}
+.ch-banner-btn{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:all .15s;}
+.ch-banner-btn:hover{background:var(--surface3);color:var(--text);}
+.ch-banner-btn svg{width:16px;height:16px;}
 
-/* ── Header ── */
-.home-header {
-  display: flex; align-items: center; gap: .875rem;
-  padding: 1.25rem 1rem .875rem;
-}
-.home-av {
-  position: relative; flex-shrink: 0; cursor: pointer;
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--surface4); overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.125rem; font-weight: 700;
-  border: 2px solid var(--border2);
-}
-.home-av img { width: 100%; height: 100%; object-fit: cover; }
-.home-av-cam {
-  position: absolute; inset: 0; border-radius: 50%;
-  background: rgba(0,0,0,.5); display: flex; align-items: center;
-  justify-content: center; opacity: 0; transition: opacity .15s;
-}
-.home-av:hover .home-av-cam { opacity: 1; }
-.home-header-text { flex: 1; min-width: 0; }
-.home-header-text h2 {
-  font-size: 1.125rem; font-weight: 800;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.home-header-text p { font-size: .8125rem; color: var(--text3); margin-top: .1rem; }
-.home-header-actions { display: flex; gap: .25rem; flex-shrink: 0; }
-.home-hbtn {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--surface3); border: none; color: var(--text2);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; position: relative; transition: background .15s;
-}
-.home-hbtn:hover { background: var(--surface4); }
-.home-hbtn svg { width: 18px; height: 18px; }
-.home-hbtn .hbtn-dot {
-  position: absolute; top: 6px; right: 6px;
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--red); border: 2px solid var(--bg);
-}
+/* ── Search ── */
+.ch-search{display:flex;align-items:center;gap:.625rem;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:.625rem 1rem;margin-bottom:1.5rem;transition:all .2s;cursor:text;}
+.ch-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-subtle);}
+.ch-search svg{width:16px;height:16px;color:var(--text3);flex-shrink:0;}
+.ch-search input{flex:1;border:none;background:none;outline:none;font-size:.9375rem;color:var(--text);font-family:inherit;}
+.ch-search input::placeholder{color:var(--text3);}
+.ch-search-mic{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);flex-shrink:0;}
 
-/* ── Search bar ── */
-.home-search {
-  display: flex; align-items: center; gap: .625rem;
-  margin: 0 1rem .875rem;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: .625rem 1rem;
-  transition: border-color .15s;
-}
-.home-search:focus-within { border-color: var(--border3); }
-.home-search svg { width: 16px; height: 16px; color: var(--text3); flex-shrink: 0; }
-.home-search input {
-  flex: 1; background: none; border: none; outline: none;
-  color: var(--text); font-size: .9375rem;
-}
-.home-search input::placeholder { color: var(--text3); }
-.home-search-mic {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--surface3); border: none; color: var(--text3);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; flex-shrink: 0;
-}
-.home-search-mic svg { width: 14px; height: 14px; }
-
-/* ── Quick action grid ── */
-.home-actions {
-  display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr;
-  gap: .5rem; padding: 0 1rem .875rem;
-}
-.ha-btn {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: .375rem;
-  padding: .875rem .5rem; border-radius: var(--radius);
-  background: var(--surface2); border: 1px solid var(--border);
-  color: var(--text2); font-size: .75rem; font-weight: 600;
-  cursor: pointer; text-decoration: none; transition: all .15s;
-  min-height: 72px; text-align: center; line-height: 1.3;
-}
-.ha-btn:hover { background: var(--surface3); border-color: var(--border2); color: var(--text); }
-.ha-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-.ha-btn.ha-primary {
-  background: var(--accent); border-color: transparent; color: #fff;
-  font-size: .8125rem; font-weight: 700;
-}
-.ha-btn.ha-primary:hover { background: var(--accent-hover); }
-.ha-btn.ha-primary svg { color: rgba(255,255,255,.9); }
+/* ── Quick actions ── */
+.ch-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.75rem;}
+.ch-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:1.125rem .75rem;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit;}
+.ch-action:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
+.ch-action.primary{background:linear-gradient(135deg,var(--accent),#818cf8);border-color:transparent;color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.3);}
+.ch-action.primary:hover{box-shadow:0 6px 20px rgba(99,102,241,.4);transform:translateY(-2px);}
+.ch-action-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.ch-action.primary .ch-action-icon{background:rgba(255,255,255,.2);}
+.ch-action:not(.primary) .ch-action-icon{background:var(--surface2);}
+.ch-action-icon svg{width:18px;height:18px;}
+.ch-action-label{font-size:.8125rem;font-weight:700;text-align:center;line-height:1.3;}
+.ch-action.primary .ch-action-label{color:#fff;}
+.ch-action:not(.primary) .ch-action-label{color:var(--text);}
+.ch-action-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;position:absolute;top:.625rem;right:.625rem;}
 
 /* ── Section ── */
-.home-section { padding: 0 1rem; margin-bottom: 1.25rem; }
-.home-sec-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: .625rem;
-}
-.home-sec-title {
-  font-size: .75rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--text3);
-  display: flex; align-items: center; gap: .375rem;
-}
-.home-sec-title svg { width: 14px; height: 14px; }
-.home-sec-link {
-  display: flex; align-items: center; gap: .2rem;
-  font-size: .8125rem; color: var(--text3); transition: color .15s;
-}
-.home-sec-link:hover { color: var(--text2); }
-.home-sec-link svg { width: 14px; height: 14px; }
+.ch-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;}
+.ch-section-title{font-size:.875rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;}
+.ch-see-all{font-size:.8125rem;font-weight:600;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:.25rem;}
+.ch-see-all:hover{text-decoration:underline;}
+.ch-see-all svg{width:14px;height:14px;}
 
-/* ── Workspace rows ── */
-.ws-list { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.ws-row {
-  display: flex; align-items: center; gap: .75rem;
-  padding: .75rem 1rem; border-bottom: 1px solid var(--border);
-  text-decoration: none; color: var(--text); transition: background .12s;
-}
-.ws-row:last-child { border-bottom: none; }
-.ws-row:hover { background: var(--surface3); }
-.ws-row-icon {
-  width: 36px; height: 36px; border-radius: var(--radius-sm);
-  background: var(--surface4); display: flex; align-items: center;
-  justify-content: center; font-size: .875rem; font-weight: 800;
-  flex-shrink: 0; color: var(--text2);
-}
-.ws-row-info { flex: 1; min-width: 0; }
-.ws-row-name { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ws-row-meta { font-size: .75rem; color: var(--text3); margin-top: .1rem; }
-.ws-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-.ws-create-btn {
-  display: flex; align-items: center; justify-content: center; gap: .5rem;
-  width: 100%; padding: .75rem; background: none; border: none;
-  border-top: 1px solid var(--border); color: var(--text3);
-  font-size: .875rem; font-weight: 600; cursor: pointer;
-  transition: all .15s; text-decoration: none;
-}
-.ws-create-btn:hover { background: var(--surface3); color: var(--text2); }
-.ws-create-btn svg { width: 15px; height: 15px; }
+/* ── Workspace list ── */
+.ch-ws-list{display:flex;flex-direction:column;gap:.375rem;}
+.ch-ws-row{display:flex;align-items:center;gap:.875rem;padding:.75rem .875rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s;text-decoration:none;}
+.ch-ws-row:hover{box-shadow:var(--shadow-sm);border-color:var(--border2);}
+.ch-ws-av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:800;color:#fff;flex-shrink:0;}
+.ch-ws-info{flex:1;min-width:0;}
+.ch-ws-name{font-size:.9375rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ch-ws-type{font-size:.75rem;color:var(--text3);margin-top:.1rem;}
+.ch-ws-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0;}
 
-/* ── Discover rows ── */
-.discover-list { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.disc-row {
-  display: flex; align-items: center; gap: .75rem;
-  padding: .75rem 1rem; border-bottom: 1px solid var(--border);
-  transition: background .12s;
-}
-.disc-row:last-child { border-bottom: none; }
-.disc-row:hover { background: var(--surface3); }
-.disc-icon {
-  width: 36px; height: 36px; border-radius: var(--radius-sm);
-  background: var(--surface4); display: flex; align-items: center;
-  justify-content: center; font-size: .875rem; font-weight: 800;
-  flex-shrink: 0; color: var(--text2); overflow: hidden;
-}
-.disc-icon img { width: 100%; height: 100%; object-fit: cover; }
-.disc-info { flex: 1; min-width: 0; }
-.disc-name { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.disc-meta { font-size: .75rem; color: var(--text3); margin-top: .1rem; }
-.disc-join-btn {
-  padding: .35rem .875rem; border-radius: var(--radius-sm);
-  background: var(--surface3); border: 1px solid var(--border2);
-  color: var(--text2); font-size: .8125rem; font-weight: 700;
-  cursor: pointer; transition: all .15s; white-space: nowrap; flex-shrink: 0;
-}
-.disc-join-btn:hover { background: var(--surface4); color: var(--text); }
-.disc-join-btn.joined { color: var(--green); border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.08); }
-.disc-show-more {
-  display: flex; align-items: center; justify-content: center;
-  padding: .625rem; color: var(--text3); font-size: .8125rem;
-  font-weight: 600; cursor: pointer; background: none; border: none;
-  width: 100%; transition: color .15s; text-decoration: none;
-}
-.disc-show-more:hover { color: var(--text2); }
+/* ── Right panel ── */
+.ch-right-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.875rem;}
+.ch-community-row{display:flex;align-items:center;gap:.75rem;padding:.5rem .25rem;cursor:pointer;transition:background .15s;border-radius:8px;text-decoration:none;}
+.ch-community-row:hover{background:var(--surface2);}
+.ch-community-av{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
+.ch-community-av img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.ch-community-name{font-size:.875rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ch-community-type{font-size:.75rem;color:var(--text3);}
 
-/* ── Recent activity ── */
-.fp-card {
-  display: block; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: .875rem 1rem; margin-bottom: .5rem;
-  text-decoration: none; color: var(--text); transition: border-color .15s;
-}
-.fp-card:hover { border-color: var(--border2); }
-.fp-meta { display: flex; align-items: center; gap: .375rem; margin-bottom: .5rem; flex-wrap: wrap; }
-.fp-av {
-  width: 22px; height: 22px; border-radius: 50%; background: var(--surface4);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .5625rem; font-weight: 700; flex-shrink: 0; overflow: hidden;
-}
-.fp-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.fp-author { font-size: .75rem; font-weight: 600; color: var(--text2); }
-.fp-community { font-size: .75rem; color: var(--text3); }
-.fp-time { font-size: .75rem; color: var(--text3); margin-left: auto; }
-.fp-title { font-size: .875rem; font-weight: 600; margin-bottom: .25rem; line-height: 1.4; }
-.fp-body { font-size: .8125rem; color: var(--text2); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.fp-stats { display: flex; gap: .875rem; margin-top: .625rem; }
-.fp-stat { display: flex; align-items: center; gap: .25rem; font-size: .75rem; color: var(--text3); }
-.fp-stat svg { width: 12px; height: 12px; }
-
-/* ── Empty state ── */
-.home-empty {
-  text-align: center; padding: 2.5rem 1rem;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.home-empty h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
-.home-empty p { font-size: .875rem; color: var(--text3); margin-bottom: 1.25rem; line-height: 1.6; }
-
-/* ── Workspace modal ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 4000; display: none; align-items: flex-end; justify-content: center; }
-@media(min-width:600px){ .modal-overlay { align-items: center; } }
-.modal-overlay.open { display: flex; }
-.modal-box {
-  background: var(--surface2); border: 1px solid var(--border2);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto;
-}
-@media(min-width:600px){ .modal-box { border-radius: var(--radius-lg); } }
-.modal-handle { width: 36px; height: 4px; background: var(--border3); border-radius: 2px; margin: .75rem auto .25rem; }
-@media(min-width:600px){ .modal-handle { display: none; } }
-.modal-head { padding: .875rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.modal-title { font-size: .9375rem; font-weight: 700; }
-.modal-close { background: none; border: none; color: var(--text3); cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all .15s; }
-.modal-close:hover { background: var(--surface3); color: var(--text); }
-.modal-body { padding: 1.25rem; }
-.type-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; margin-top: .375rem; }
-.type-opt { padding: .625rem .75rem; background: var(--surface3); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all .15s; text-align: left; }
-.type-opt:hover { border-color: var(--border2); }
-.type-opt.selected { border-color: var(--accent); background: var(--accent-subtle); }
-.type-opt-name { font-size: .8125rem; font-weight: 600; color: var(--text); }
-.type-opt-desc { font-size: .6875rem; color: var(--text3); margin-top: .1rem; }
-
-/* ── Desktop override: show 2-col layout ── */
-@media(min-width:860px){
-  .home-page { max-width: 900px; display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; padding: 0; }
-  .home-main { min-width: 0; }
-  .home-sidebar { padding-top: 0; }
-  .home-header { padding: 0 0 1rem; }
-  .home-search { margin: 0 0 .875rem; }
-  .home-actions { padding: 0 0 .875rem; }
-  .home-section { padding: 0 0 0; }
+/* ── Responsive ── */
+@media(max-width:900px){.ch-right{display:none;}}
+@media(max-width:600px){
+  .ch-actions{grid-template-columns:repeat(2,1fr);}
+  .ch-main{padding:1rem;}
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="home-page">
+<div class="ch-shell">
+  <!-- ── Main ── -->
+  <div class="ch-main">
 
-  <!-- ── Main column ── -->
-  <div class="home-main">
-
-    <!-- Header -->
-    <div class="home-header">
-      <div class="home-av" onclick="document.getElementById('home-avatar-input').click()" title="Change photo">
+    <!-- Welcome banner -->
+    <div class="ch-banner">
+      <div class="ch-banner-av">
         {% if user.community_profile.avatar %}
-          <img src="{{ user.community_profile.avatar.url }}" alt="avatar">
-        {% else %}
-          {{ user.username|slice:":1"|upper }}
-        {% endif %}
-        <div class="home-av-cam">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="14" height="14"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </div>
-        <input type="file" id="home-avatar-input" accept="image/*" style="display:none;" onchange="homeUploadAvatar(this)">
+          <img src="{{ user.community_profile.avatar.url }}" alt="">
+        {% else %}{{ user.username|slice:":1"|upper }}{% endif %}
       </div>
-      <div class="home-header-text">
-        <h2>Welcome back, {{ user.username }}</h2>
+      <div class="ch-banner-text">
+        <h2>Welcome back, {{ user.get_full_name|default:user.username }}</h2>
         <p>Here's what's happening in your community</p>
       </div>
-      <div class="home-header-actions">
-        <button class="home-hbtn" onclick="openMobSearch()" aria-label="Search">
+      <div class="ch-banner-actions">
+        <a href="{% url 'community:feed' %}" class="ch-banner-btn" title="Search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </button>
-        <a href="{% url 'community:notifications' %}" class="home-hbtn" aria-label="Notifications">
+        </a>
+        <a href="{% url 'community:notifications' %}" class="ch-banner-btn" title="Notifications" style="position:relative;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          {% if unread_notif_count %}<span class="hbtn-dot"></span>{% endif %}
+          {% if unread_notif_count %}<span style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#ef4444;border:2px solid var(--surface);"></span>{% endif %}
         </a>
       </div>
     </div>
 
-    <!-- Search bar -->
-    <div class="home-search">
+    <!-- Search -->
+    <div class="ch-search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Search" id="home-search-input" autocomplete="off" oninput="homeSearch(this.value)">
-      <button class="home-search-mic" aria-label="Voice search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <input type="text" placeholder="Search..." id="home-search" oninput="homeSearch(this.value)">
+      <button class="ch-search-mic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </button>
     </div>
 
     <!-- Quick actions -->
-    <div class="home-actions">
-      <button class="ha-btn ha-primary" onclick="openCreateWs()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        New<br>Workspace<br>+
-      </button>
-      <a href="{% url 'community:post_create' %}" class="ha-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        New Post
+    <div class="ch-actions">
+      <a href="{% url 'community:workspace_create' %}" class="ch-action primary" style="position:relative;">
+        <div class="ch-action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <span class="ch-action-label">New<br>Workspace +</span>
       </a>
-      <a href="{% url 'community:messages' %}" class="ha-btn" style="position:relative;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Messages
-        {% if unread_msgs %}<span style="position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--bg);"></span>{% endif %}
+      <a href="{% url 'community:post_create' %}" class="ch-action">
+        <div class="ch-action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <span class="ch-action-label">New Post</span>
       </a>
-      <a href="{% url 'community:nexa_workspace' %}" class="ha-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Open Nexa
+      <a href="{% url 'community:messages' %}" class="ch-action" style="position:relative;">
+        <div class="ch-action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="ch-action-label">Messages</span>
+        {% if unread_msgs %}<span class="ch-action-dot"></span>{% endif %}
+      </a>
+      <a href="{% url 'community:nexa_workspace' %}" class="ch-action">
+        <div class="ch-action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
+        </div>
+        <span class="ch-action-label">Open Nexa</span>
       </a>
     </div>
 
     <!-- My Workspaces -->
-    <div class="home-section">
-      <div class="home-sec-head">
-        <span class="home-sec-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          My Workspaces
-        </span>
-        <a href="{% url 'community:workspace_list' %}" class="home-sec-link">
-          See All
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </a>
-      </div>
-
-      <div class="ws-list">
-        {% if personal_ws %}
-        <a href="{% url 'community:workspace_detail' ws_id=personal_ws.id %}" class="ws-row">
-          <div class="ws-row-icon" style="background:var(--accent-subtle);color:var(--accent-text);">N</div>
-          <div class="ws-row-info">
-            <div class="ws-row-name">{{ personal_ws.name }}</div>
-            <div class="ws-row-meta">Private</div>
-          </div>
-          <div class="ws-pulse"></div>
-        </a>
-        {% endif %}
-        {% for m in workspace_memberships %}{% with ws=m.workspace %}
-        <a href="{% url 'community:workspace_detail' ws_id=ws.id %}" class="ws-row">
-          <div class="ws-row-icon">{{ ws.name|slice:":1"|upper }}</div>
-          <div class="ws-row-info">
-            <div class="ws-row-name">{{ ws.name|truncatechars:28 }}</div>
-            <div class="ws-row-meta">{{ ws.get_workspace_type_display }}</div>
-          </div>
-          <div class="ws-pulse"></div>
-        </a>
-        {% endwith %}{% endfor %}
-        {% if not personal_ws and not workspace_memberships %}
-        <div style="padding:1.25rem 1rem;text-align:center;color:var(--text3);font-size:.875rem;">No workspaces yet</div>
-        {% endif %}
-        <button class="ws-create-btn" onclick="openCreateWs()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Create Workspace
-        </button>
-      </div>
+    <div class="ch-section-head">
+      <span class="ch-section-title">My Workspaces</span>
+      <a href="{% url 'community:workspace_list' %}" class="ch-see-all">
+        See All
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
     </div>
-
-    <!-- Discover -->
-    <div class="home-section">
-      <div class="home-sec-head">
-        <span class="home-sec-title">Discover</span>
-        <a href="{% url 'community:custom_list' %}" class="home-sec-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </a>
-      </div>
-      <div class="discover-list">
-        {% if suggested_communities %}
-          {% for c in suggested_communities %}
-          <div class="disc-row">
-            <div class="disc-icon">{{ c.name|slice:":1"|upper }}</div>
-            <div class="disc-info">
-              <div class="disc-name">{{ c.name|truncatechars:24 }}</div>
-              <div class="disc-meta">Community</div>
-            </div>
-            <button class="disc-join-btn" onclick="quickJoin('{{ c.slug }}', this)">Join</button>
-          </div>
-          {% endfor %}
-        {% endif %}
-        <!-- AI Hub always shown -->
-        <a href="{% url 'ai_community:hub' %}" class="disc-row" style="text-decoration:none;color:var(--text);">
-          <div class="disc-icon" style="background:var(--accent-subtle);color:var(--accent-text);">N</div>
-          <div class="disc-info">
-            <div class="disc-name" style="color:var(--accent-text);">Nexa AI Hub</div>
-            <div class="disc-meta">AI tools, study groups, matching</div>
-          </div>
-          <span style="font-size:.8125rem;color:var(--text3);white-space:nowrap;">Show More</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="home-section">
-      <div class="home-sec-head">
-        <span class="home-sec-title">Recent Activity</span>
-        <a href="{% url 'community:feed' %}" class="home-sec-link">See all</a>
-      </div>
-
-      {% if feed_posts %}
-        {% for post in feed_posts %}
-        <a href="{% url 'community:post_detail' pk=post.id %}" class="fp-card">
-          <div class="fp-meta">
-            <div class="fp-av">
-              {% with profile=post.author.community_profile %}
-              {% if profile and profile.avatar %}<img src="{{ profile.avatar.url }}" alt="">
-              {% else %}{{ post.author.username|slice:":1"|upper }}{% endif %}
-              {% endwith %}
-            </div>
-            <span class="fp-author">{{ post.author.username }}</span>
-            {% if post.school_community %}<span class="fp-community">in {{ post.school_community.name|truncatechars:18 }}</span>{% endif %}
-            {% if post.custom_community %}<span class="fp-community">in {{ post.custom_community.name|truncatechars:18 }}</span>{% endif %}
-            <span class="fp-time">{{ post.created_at|timesince }} ago</span>
-          </div>
-          {% if post.title %}<div class="fp-title">{{ post.title|truncatechars:80 }}</div>{% endif %}
-          <div class="fp-body">{{ post.content|truncatechars:140 }}</div>
-          <div class="fp-stats">
-            <span class="fp-stat">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg>
-              {{ post.like_count }}
-            </span>
-            <span class="fp-stat">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              {{ post.comment_count }}
-            </span>
-          </div>
-        </a>
-        {% endfor %}
-      {% else %}
-        <div class="home-empty">
-          <h3>No posts yet</h3>
-          <p>Be the first to share something with your community.</p>
-          <a href="{% url 'community:post_create' %}" class="btn btn-primary" style="padding:.75rem 2rem;font-size:.9375rem;">Create a post</a>
+    <div class="ch-ws-list">
+      {% if personal_ws %}
+      <a href="{% url 'community:workspace_detail' ws_id=personal_ws.id %}" class="ch-ws-row">
+        <div class="ch-ws-av" style="background:linear-gradient(135deg,#6366f1,#818cf8);">{{ personal_ws.name|slice:":1"|upper }}</div>
+        <div class="ch-ws-info">
+          <div class="ch-ws-name">{{ personal_ws.name }}</div>
+          <div class="ch-ws-type">Private</div>
         </div>
+        <div class="ch-ws-dot"></div>
+      </a>
       {% endif %}
-    </div>
-
-  </div><!-- /home-main -->
-
-  <!-- ── Desktop sidebar (hidden on mobile) ── -->
-  <div class="home-sidebar" style="display:none;" id="home-desktop-sidebar">
-    {% if school_memberships or custom_memberships %}
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:.875rem;">
-      <div style="padding:.625rem 1rem;border-bottom:1px solid var(--border);font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);">My Communities</div>
-      {% for m in school_memberships %}
-      <a href="{% url 'community:school_detail' slug=m.community.slug %}" class="ws-row">
-        <div class="ws-row-icon">{% if m.community.logo_url %}<img src="{{ m.community.logo_url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);">{% else %}{{ m.community.name|slice:":1"|upper }}{% endif %}</div>
-        <div class="ws-row-info"><div class="ws-row-name">{{ m.community.name|truncatechars:22 }}</div><div class="ws-row-meta">School</div></div>
+      {% for wm in workspace_memberships %}
+      <a href="{% url 'community:workspace_detail' ws_id=wm.workspace.id %}" class="ch-ws-row">
+        <div class="ch-ws-av" style="background:{% cycle '#6366f1' '#0ea5e9' '#10b981' '#f59e0b' '#ef4444' '#8b5cf6' %};">{{ wm.workspace.name|slice:":1"|upper }}</div>
+        <div class="ch-ws-info">
+          <div class="ch-ws-name">{{ wm.workspace.name }}</div>
+          <div class="ch-ws-type">{{ wm.workspace.get_workspace_type_display|default:"Workspace" }}</div>
+        </div>
+        <div class="ch-ws-dot"></div>
       </a>
-      {% endfor %}
-      {% for m in custom_memberships %}
-      <a href="{% url 'community:custom_detail' slug=m.community.slug %}" class="ws-row">
-        <div class="ws-row-icon">{{ m.community.name|slice:":1"|upper }}</div>
-        <div class="ws-row-info"><div class="ws-row-name">{{ m.community.name|truncatechars:22 }}</div><div class="ws-row-meta">Community</div></div>
-      </a>
+      {% empty %}
+      {% if not personal_ws %}
+      <div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:.875rem;">
+        No workspaces yet. <a href="{% url 'community:workspace_create' %}" style="color:var(--accent);font-weight:600;">Create one →</a>
+      </div>
+      {% endif %}
       {% endfor %}
     </div>
-    {% endif %}
+
   </div>
 
-</div><!-- /home-page -->
-
-<!-- Create Workspace Modal -->
-<div class="modal-overlay" id="create-ws-modal">
-  <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <span class="modal-title">New Workspace</span>
-      <button class="modal-close" onclick="closeCreateWs()" aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+  <!-- ── Right panel ── -->
+  <div class="ch-right">
+    <div class="ch-right-title">My Communities</div>
+    {% for membership in school_memberships %}
+    <a href="{% url 'community:school_detail' slug=membership.community.slug %}" class="ch-community-row">
+      <div class="ch-community-av" style="background:{% cycle '#6366f1' '#0ea5e9' '#10b981' '#f59e0b' '#8b5cf6' %};">
+        {% if membership.community.logo_url %}<img src="{{ membership.community.logo_url }}" alt="">{% else %}{{ membership.community.name|slice:":2"|upper }}{% endif %}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="ch-community-name">{{ membership.community.name|truncatechars:22 }}</div>
+        <div class="ch-community-type">School</div>
+      </div>
+    </a>
+    {% endfor %}
+    {% for membership in custom_memberships %}
+    <a href="{% url 'community:custom_detail' slug=membership.community.slug %}" class="ch-community-row">
+      <div class="ch-community-av" style="background:{% cycle '#ef4444' '#f59e0b' '#10b981' '#6366f1' %};">{{ membership.community.name|slice:":2"|upper }}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="ch-community-name">{{ membership.community.name|truncatechars:22 }}</div>
+        <div class="ch-community-type">Community</div>
+      </div>
+    </a>
+    {% endfor %}
+    {% if not school_memberships and not custom_memberships %}
+    <div style="font-size:.8125rem;color:var(--text3);line-height:1.6;">
+      Join schools and communities to see them here.
+      <a href="{% url 'community:schools' %}" style="color:var(--accent);font-weight:600;display:block;margin-top:.5rem;">Browse Schools →</a>
     </div>
-    <div class="modal-body">
-      <form method="POST" action="{% url 'community:workspace_create' %}">
-        {% csrf_token %}
-        <div class="form-group">
-          <label class="form-label">Name</label>
-          <input class="form-input" name="name" placeholder="e.g. CS301 Study Group" required maxlength="255">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Type</label>
-          <div class="type-grid">
-            <div class="type-opt selected" data-val="general" onclick="selectType(this)"><div class="type-opt-name">General</div><div class="type-opt-desc">Collaboration</div></div>
-            <div class="type-opt" data-val="study_group" onclick="selectType(this)"><div class="type-opt-name">Study Group</div><div class="type-opt-desc">Exam prep</div></div>
-            <div class="type-opt" data-val="group_project" onclick="selectType(this)"><div class="type-opt-name">Team Project</div><div class="type-opt-desc">Academic project</div></div>
-            <div class="type-opt" data-val="startup" onclick="selectType(this)"><div class="type-opt-name">Startup</div><div class="type-opt-desc">Build a product</div></div>
-            <div class="type-opt" data-val="ai_tutor" onclick="selectType(this)"><div class="type-opt-name">AI Tutor</div><div class="type-opt-desc">AI-guided learning</div></div>
-            <div class="type-opt" data-val="research" onclick="selectType(this)"><div class="type-opt-name">Research</div><div class="type-opt-desc">Deep investigation</div></div>
-          </div>
-          <input type="hidden" name="workspace_type" id="ws-type-input" value="general">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Privacy</label>
-          <select class="form-select" name="privacy">
-            <option value="private">Private (invite only)</option>
-            <option value="request">Visible, join by request</option>
-            <option value="public">Public (anyone can join)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Description (optional)</label>
-          <textarea class="form-input form-textarea" name="description" rows="2" placeholder="What is this workspace for?"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Add Members (optional)</label>
-          <div style="position:relative;">
-            <input class="form-input" id="ws-member-search" autocomplete="off" placeholder="Search by username..." oninput="wsMemberSearch(this.value)">
-            <div id="ws-member-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-sm);z-index:100;max-height:180px;overflow-y:auto;margin-top:3px;"></div>
-          </div>
-          <div id="ws-member-chips" style="display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.5rem;"></div>
-          <div id="ws-member-inputs"></div>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;font-size:.9375rem;">Create Workspace</button>
-      </form>
-    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Show desktop sidebar on wide screens
-(function(){
-  function checkWidth(){
-    const sb = document.getElementById('home-desktop-sidebar');
-    if(sb) sb.style.display = window.innerWidth >= 860 ? '' : 'none';
-  }
-  checkWidth();
-  window.addEventListener('resize', checkWidth);
-})();
-
-async function homeUploadAvatar(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const av = document.querySelector('.home-av');
-    av.innerHTML = '<img src="' + e.target.result + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-  };
-  reader.readAsDataURL(file);
-  const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
-  const fd = new FormData();
-  fd.append('avatar', file);
-  fd.append('csrfmiddlewaretoken', csrf);
-  try {
-    const r = await fetch('{% url "community:upload_avatar" %}', {method:'POST',body:fd});
-    const d = await r.json();
-    if (!d.ok) showUXToast('Upload failed', 'error');
-    else showUXToast('Photo updated', 'success');
-  } catch(e) { showUXToast('Upload error', 'error'); }
-}
-
 function homeSearch(q) {
-  // Delegate to mobile search overlay for now
-  if (q.length > 1) openMobSearch();
+  if (q.trim().length > 1) {
+    window.location.href = '{% url "community:feed" %}?q=' + encodeURIComponent(q.trim());
+  }
 }
-
-function openCreateWs() {
-  document.getElementById('create-ws-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeCreateWs() {
-  document.getElementById('create-ws-modal').classList.remove('open');
-  document.body.style.overflow = '';
-  Object.keys(wsMemberMap).forEach(k => delete wsMemberMap[k]);
-  document.getElementById('ws-member-chips').innerHTML = '';
-  document.getElementById('ws-member-inputs').innerHTML = '';
-  document.getElementById('ws-member-search').value = '';
-  document.getElementById('ws-member-dropdown').style.display = 'none';
-}
-document.getElementById('create-ws-modal').addEventListener('click', function(e){ if(e.target===this) closeCreateWs(); });
-
-function selectType(el) {
-  document.querySelectorAll('.type-opt').forEach(o=>o.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('ws-type-input').value = el.dataset.val;
-}
-
-const wsMemberMap = {};
-let wsMemberTimer = null;
-function wsMemberSearch(q) {
-  clearTimeout(wsMemberTimer);
-  const dd = document.getElementById('ws-member-dropdown');
-  if (!q.trim()) { dd.style.display='none'; return; }
-  wsMemberTimer = setTimeout(async () => {
-    try {
-      const r = await fetch('{% url "community:workspace_search_users" %}?q=' + encodeURIComponent(q));
-      const d = await r.json();
-      const users = d.users||[];
-      if (!users.length) { dd.innerHTML='<div style="padding:.6rem .875rem;font-size:.775rem;color:var(--text3);">No users found</div>'; dd.style.display='block'; return; }
-      dd.innerHTML = users.map(u=>'<div onclick="addWsMember(\''+u.username+'\',\''+(u.display_name||u.username)+'\')" style="padding:.5rem .875rem;font-size:.8125rem;cursor:pointer;" onmouseover="this.style.background=\'var(--surface4)\'" onmouseout="this.style.background=\'\'">'+(u.display_name||u.username)+' <span style="color:var(--text3);">@'+u.username+'</span></div>').join('');
-      dd.style.display='block';
-    } catch(e) { dd.style.display='none'; }
-  }, 300);
-}
-function addWsMember(username, name) {
-  if (wsMemberMap[username]) return;
-  wsMemberMap[username] = name;
-  const chips = document.getElementById('ws-member-chips');
-  const inputs = document.getElementById('ws-member-inputs');
-  const chip = document.createElement('div');
-  chip.style.cssText = 'display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .5rem;background:var(--surface4);border:1px solid var(--border2);border-radius:4px;font-size:.75rem;';
-  chip.innerHTML = name + ' <button type="button" onclick="removeWsMember(\''+username+'\',this.parentElement)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.875rem;line-height:1;">x</button>';
-  chip.dataset.username = username;
-  chips.appendChild(chip);
-  const inp = document.createElement('input');
-  inp.type='hidden'; inp.name='members'; inp.value=username; inp.id='wm-'+username;
-  inputs.appendChild(inp);
-  document.getElementById('ws-member-search').value='';
-  document.getElementById('ws-member-dropdown').style.display='none';
-}
-function removeWsMember(username, chip) {
-  delete wsMemberMap[username];
-  chip.remove();
-  const inp = document.getElementById('wm-'+username);
-  if (inp) inp.remove();
-}
-
-async function quickJoin(slug, btn) {
-  btn.disabled = true;
-  const csrf = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
-  try {
-    const r = await fetch('/community/c/'+slug+'/join/', {method:'POST',headers:{'X-CSRFToken':csrf}});
-    const d = await r.json();
-    if (d.joined) {
-      btn.textContent = 'Joined';
-      btn.classList.add('joined');
-      btn.disabled = true;
-      showUXToast('Joined community', 'success');
-    } else { btn.disabled = false; }
-  } catch(e) { btn.disabled = false; }
-}
+document.getElementById('home-search').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') homeSearch(this.value);
+});
 </script>
 {% endblock %}
