@@ -175,9 +175,17 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#F8FAFC;color:#1118
 .br-step-body { color: #334155; line-height: 1.75; font-size: 0.95rem; }
 .br-code { background: #0f172a; color: #f8fafc; border-radius: 10px; padding: 1.25rem; font-family: monospace; font-size: 0.85rem; margin: 1rem 0; overflow-x: auto; }
 .podcast-wrap { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
-.send-btn { width: 40px; height: 40px; min-width: 40px; background: #000; color: #fff; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
-.send-btn svg { width: 18px; height: 18px; }
 .submit-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+
+/* Notes / Board Render Styles */
+.br-text { color: #1e293b; line-height: 1.8; font-size: 0.95rem; margin-bottom: 0.5rem; }
+.br-intro { margin-bottom: 1rem; color: #334155; line-height: 1.8; }
+.br-math-display { margin: 1.25rem 0; text-align: center; overflow-x: auto; padding: 0.75rem; background: #f8fafc; border-radius: 10px; border: 1px solid #f1f5f9; font-size: 1.05rem; }
+.br-bullets { padding-left: 1.5rem; margin: 0.75rem 0; }
+.br-bullets li { margin-bottom: 0.4rem; color: #334155; line-height: 1.7; font-size: 0.95rem; }
+.br-numbered { padding-left: 1.5rem; margin: 0.75rem 0; }
+.br-numbered li { margin-bottom: 0.5rem; color: #334155; line-height: 1.7; font-size: 0.95rem; }
+.br-final-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
 
 /* Mobile Overrides */
 @media (max-width: 1024px) {
@@ -248,12 +256,16 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#F8FAFC;color:#1118
     <h1 class="topic-title">{{ topic_name }}</h1>
     <div class="mode-cards">
       <div class="mode-card selected" id="card-notes" onclick="clickSound(); selectMode('notes')">
-        <div class="mode-card-icon" style="background:#fefce8;color:#facc15">📝</div>
+        <div class="mode-card-icon" style="background:#fefce8;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
         <div class="mode-card-title">Step-by-Step Notes</div>
         <div class="mode-card-desc">AI generates detailed, printable notes for this topic.</div>
       </div>
       <div class="mode-card" id="card-ai" onclick="clickSound(); selectMode('ai')">
-        <div class="mode-card-icon" style="background:#f1f5f9;color:#64748b">🤖</div>
+        <div class="mode-card-icon" style="background:#f0fdf4;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
         <div class="mode-card-title">AI Teach</div>
         <div class="mode-card-desc">AI teaches this topic conversationally in the chat.</div>
       </div>
@@ -457,7 +469,26 @@ async function startLearn() {
     await generateNotes();
   } else {
     appendMsg("user","Teach me: "+TOPIC);
-    let data = await callAPI("{% url 'api_ai_teach' %}",{subject:SUBJECT,topic:TOPIC,question:"Teach me this topic thoroughly"});
+    let data = await callAPI("{% url 'api_ai_teach' %}",{subject:SUBJECT,topic:TOPIC,prompt:`Create clear study notes for "${TOPIC}" in ${SUBJECT}. Return exactly 5 slides as a JSON array.
+
+IMPORTANT MATH FORMATTING RULES — follow exactly:
+- Wrap ALL math expressions in LaTeX delimiters so they render like a textbook.
+- Inline math (within a sentence): use single dollar signs, e.g. $f(x) = 5x^3$
+- Display/block equations (on their own line): use double dollar signs, e.g. $$f'(x) = 15x^2 - 8x$$
+- Write derivatives as $f'(x)$, fractions as $\\frac{a}{b}$, powers as $x^{2}$
+- NEVER write math as plain text like "f'(x) = 15x^2" — always wrap in $...$
+
+Each slide: "title" + "content" (clear explanation using proper LaTeX math).
+Slide 5 must show a fully worked example with each step on its own line using $$...$$.
+
+Return ONLY the JSON array, no extra text:
+[
+  {"title": "...", "content": "..."},
+  {"title": "...", "content": "..."},
+  {"title": "...", "content": "..."},
+  {"title": "...", "content": "..."},
+  {"title": "Solved Example", "content": "..."}
+]`});
     const stream = appendMsgStream("ai"); stream(data.response||data.error||"Something went wrong.");
   }
 }
@@ -587,26 +618,39 @@ const BoardRender = {
         html+='<pre class="br-code">'+this.escHtml(code.replace(/^\n/,"").replace(/\n$/,""))+'</pre>';
         continue;
       }
+      // Display math block: lines that are purely $$...$$
+      if (/^\$\$[\s\S]*\$\$$/.test(t) || /^\\\[/.test(t)) {
+        if(inBullets){html+="</ul>";inBullets=false;}
+        if(inNumbered){html+="</ol>";inNumbered=false;}
+        html+='<div class="br-math-display">'+line+'</div>';
+        continue;
+      }
       if (/^[\u2022\-\*]\s/.test(t)) {
         if(inNumbered){html+="</ol>";inNumbered=false;}
-        if(!inBullets){html+='<ul class="br-bullets">';inBullets=true;}
-        html+="<li>"+t.replace(/^[\u2022\-\*]\s*/,"")+"</li>";
+        if(!inBullets){html+='<ul class="br-bullets">'; inBullets=true;}
+        html+="<li>"+this.inlineFormat(t.replace(/^[\u2022\-\*]\s*/,""))+"</li>";
         continue;
       }
       if (/^\d+\.\s/.test(t)) {
         if(inBullets){html+="</ul>";inBullets=false;}
-        if(!inNumbered){html+='<ol class="br-numbered">';inNumbered=true;}
-        html+="<li>"+t.replace(/^\d+\.\s*/,"")+"</li>";
+        if(!inNumbered){html+='<ol class="br-numbered">'; inNumbered=true;}
+        html+="<li>"+this.inlineFormat(t.replace(/^\d+\.\s*/,""))+"</li>";
         continue;
       }
       if(inBullets){html+="</ul>";inBullets=false;}
       if(inNumbered){html+="</ol>";inNumbered=false;}
-      const isMath=/^\$/.test(t)||/^\\./.test(t);
-      html+=isMath?'<div class="br-math">'+line+'</div>':'<div class="br-text">'+line+'</div>';
+      html+='<div class="br-text">'+this.inlineFormat(line)+'</div>';
     }
     if(inBullets) html+="</ul>";
     if(inNumbered) html+="</ol>";
     return html;
+  },
+  // Apply inline formatting: **bold**, $math$
+  inlineFormat(text) {
+    // Bold
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Inline math $...$ — leave as-is for KaTeX to process
+    return text;
   },
   escHtml(str) {
     return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");

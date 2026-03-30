@@ -227,49 +227,125 @@ def generate_topic_notes(subject, topic):
     Generate detailed step-by-step notes for a topic, structured as 'slides'.
     Returns a list of dicts: [{'title': '...', 'content': '...'}]
     """
-    prompt = f"""You are a master teacher. Create a comprehensive, deep-dive set of step-by-step learning notes for the topic "{topic}" in {subject}.
-Break the topic down into at least 8-12 logical steps or slides.
+    prompt = f"""Create clear, detailed study notes for "{topic}" in {subject}. Return exactly 10 slides as a JSON array.
 
-STRICT CONTENT RULES:
-1. Provide a depth of explanation suitable for a high-performing SHS student.
-2. Include at least 2 steps specifically dedicated to "Worked Examples" or "Solved Problems".
-3. For math/science, explicitly walk through each calculation step by step using LaTeX ($expression$).
-4. For non-math, use real-world case studies or detailed analogies.
+IMPORTANT MATH FORMATTING RULES — follow exactly:
+- Wrap ALL math in LaTeX delimiters: $...$ for inline, $$...$$ for display equations.
+- Write derivatives as $f'(x)$, fractions as $\\frac{{a}}{{b}}$, powers as $x^{{2}}$.
+- NEVER write math as plain text.
 
-Each step MUST have:
-1. A clear, punchy title.
-2. 4-6 sentences of deep, clear explanation.
-3. Relevant LaTeX math, code blocks, or text-based diagrams.
+Slide structure (use these as titles/themes):
+1. Introduction & Overview
+2. Core Definition / Key Concept
+3. Important Properties or Rules
+4. Step-by-Step Method
+5. Common Mistakes & How to Avoid Them
+6. Real-World Application
+7. Intermediate Example
+8. Advanced Concepts / Extensions
+9. Solved Example 1 — full working
+10. Solved Example 2 — full working
 
-Respond with ONLY a valid JSON array of objects, no markdown fences:
+Each slide: "title" + "content" (3-5 sentences + math where relevant).
+Slides 9 and 10 must show complete step-by-step solutions using $$...$$ for each working line.
+
+Return ONLY the JSON array, no extra text:
 [
-  {{
-    "title": "...",
-    "content": "..."
-  }},
-  ...
+  {{"title": "...", "content": "..."}},
+  ... (10 total)
 ]"""
     client = get_openai_client()
     response = client.chat.completions.create(
         model="openai/gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a professional educational content creator. Respond only with a raw JSON array of objects."},
+            {"role": "system", "content": (
+                "You are a concise educational content creator writing for a LaTeX-rendering viewer. "
+                "ALL math MUST be wrapped in LaTeX delimiters: $...$ for inline, $$...$$ for display. "
+                "CRITICAL: This is JSON output. Every LaTeX backslash MUST be written as TWO backslashes. "
+                "Write \\\\frac, \\\\lim, \\\\sqrt, \\\\int, \\\\to, \\\\alpha, \\\\theta, \\\\sum, \\\\infty, \\\\cdot. "
+                "NEVER single-backslash LaTeX in JSON. Respond with raw JSON array only. No markdown fences."
+            )},
             {"role": "user", "content": prompt},
         ],
-        max_tokens=3500,
-        temperature=0.7,
+        max_tokens=3000,
+        temperature=0.4,
     )
     import json as _json
+    import re as _re
+
     raw = response.choices[0].message.content.strip()
-    # Robust JSON extraction
+
+    # Step 1: Strip markdown code fences
+    if raw.startswith("```"):
+        raw = _re.sub(r'^```[a-z]*\n?', '', raw).rstrip('`').strip()
+
+    # Step 2: Extract the JSON array by bracket matching
+    start = raw.find("[")
+    end = raw.rfind("]")
+    if start != -1 and end != -1:
+        raw = raw[start:end+1]
+
+    # Step 3: Fix invalid JSON escape sequences using a proper state-machine.
+    # Root cause of the bug: \f, \t, \n, \r, \b are valid JSON escapes but also
+    # start LaTeX commands (\frac, \to, \beta, \nabla, \rho). The old fixer kept
+    # them, causing json.loads to turn \frac → formfeed+"rac", \to → tab+"o".
+    # Fix: only keep \", \\, \/, \uXXXX. Double everything else.
+    def fix_escapes(s):
+        truly_safe = {'"', '\\', '/'}
+        result = []
+        i = 0
+        in_string = False
+        while i < len(s):
+            c = s[i]
+            if not in_string:
+                result.append(c)
+                if c == '"':
+                    in_string = True
+                i += 1
+            else:
+                if c == '\\' and i + 1 < len(s):
+                    nxt = s[i + 1]
+                    if nxt in truly_safe:
+                        result.append(c)
+                        result.append(nxt)
+                        if nxt == '"':
+                            pass  # escaped quote — stay in string
+                        i += 2
+                    elif nxt == 'u' and i + 5 < len(s):
+                        result.append(c)   # keep \uXXXX unicode escapes
+                        result.append(nxt)
+                        i += 2
+                    else:
+                        # \f, \t, \n, \r, \b, \l, \a, \s etc.
+                        # Double the backslash so \frac → \\frac → KaTeX gets \frac
+                        result.append('\\\\')
+                        i += 1  # process next char on its own
+                elif c == '"':
+                    result.append(c)
+                    in_string = False
+                    i += 1
+                elif c == '\n':
+                    result.append('\\n')  # escape raw newlines inside strings
+                    i += 1
+                elif c == '\r':
+                    result.append('\\r')
+                    i += 1
+                else:
+                    result.append(c)
+                    i += 1
+        return ''.join(result)
+
+    fixed = fix_escapes(raw)
+
     try:
-        if "[" in raw and "]" in raw:
-            json_str = raw[raw.find("["):raw.rfind("]")+1]
-            return _json.loads(json_str)
-        return _json.loads(raw)
-    except Exception as e:
-        print(f"Notes Generation Error: {e}")
-        return [{"title": "Error", "content": f"Could not generate structured notes correctly: {str(e)}. Please click Start Learning again."}]
+        return _json.loads(fixed)
+    except Exception as e1:
+        # Last resort: decode with unicode-escape error handler
+        try:
+            return _json.loads(raw.encode('utf-8').decode('unicode-escape', errors='replace'))
+        except Exception as e2:
+            print(f"Notes Generation Error (both attempts failed): {e1} | {e2}")
+            return [{"title": "Generation Error", "content": f"There was a problem formatting the notes ({str(e1)}). Please click **Start Learning** again — it usually succeeds on the second attempt."}]
 
 
 def generate_podcast_script(subject, topic, level=None, context=None):
