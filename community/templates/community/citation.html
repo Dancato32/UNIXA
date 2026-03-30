@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Citation Writer — Paw</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#F8FAFC;--surface:#fff;--surface2:#F1F5F9;--surface3:#E2E8F0;
+  --border:#E5E7EB;--text:#111827;--text2:#374151;--text3:#6B7280;--text4:#9CA3AF;
+  --primary:#0F172A;--accent:#F59E0B;--accent-h:#D97706;
+  --accent-s:rgba(245,158,11,.1);--accent-g:rgba(245,158,11,.25);
+  --green:#10B981;--red:#EF4444;
+  --r:12px;--r-sm:8px;--r-lg:16px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.08);--sh:0 4px 12px rgba(0,0,0,.08);
+  --sidebar-w:256px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+</style>
+
+<style>
+/* ── Layout ── */
+.layout{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--sidebar-w);background:var(--primary);
+  position:fixed;top:0;left:0;bottom:0;z-index:200;
+  display:flex;flex-direction:column;transition:transform .25s;
+}
+.sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.75rem;}
+.sidebar-logo-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(245,158,11,.3);flex-shrink:0;}
+.sidebar-logo-icon svg{width:16px;height:16px;color:#fff;}
+.sidebar-logo-text{font-family:'Poppins',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:-.02em;}
+.sidebar-nav{flex:1;padding:.75rem;overflow-y:auto;scrollbar-width:none;}
+.sidebar-nav::-webkit-scrollbar{display:none;}
+.nav-link{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;color:#94A3B8;font-size:.875rem;font-weight:500;border-radius:var(--r-sm);transition:all .2s;margin-bottom:2px;}
+.nav-link:hover{background:rgba(255,255,255,.06);color:#F1F5F9;}
+.nav-link.active{background:rgba(245,158,11,.12);color:#F59E0B;font-weight:600;}
+.nav-link svg{width:16px;height:16px;flex-shrink:0;}
+.nav-divider{height:1px;background:rgba(255,255,255,.06);margin:.5rem 0;}
+.sidebar-footer{padding:.875rem .75rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.75rem;}
+.sidebar-av{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;color:#fff;flex-shrink:0;}
+.sidebar-av-name{font-size:.8125rem;font-weight:600;color:#F1F5F9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── Main ── */
+.main{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh;}
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:50;box-shadow:var(--sh-sm);}
+.topbar-left{display:flex;align-items:center;gap:.75rem;}
+.menu-btn{display:none;width:36px;height:36px;align-items:center;justify-content:center;background:none;border:none;color:var(--text3);cursor:pointer;border-radius:var(--r-sm);transition:background .15s;}
+.menu-btn:hover{background:var(--surface2);}
+.menu-btn svg{width:20px;height:20px;}
+.topbar-title{font-size:.9375rem;font-weight:700;color:var(--text);}
+.topbar-av{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;color:#fff;}
+
+/* ── Page ── */
+.page{padding:2rem;max-width:1100px;padding-bottom:6rem;}
+.page-head{margin-bottom:2rem;}
+.page-title{font-family:'Poppins',sans-serif;font-size:1.75rem;font-weight:700;color:var(--text);letter-spacing:-.03em;margin-bottom:.375rem;}
+.page-sub{font-size:.9375rem;color:var(--text3);}
+
+/* ── Mode Tabs ── */
+.mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;margin-bottom:2rem;}
+.mode-tab{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-lg);padding:1.25rem 1rem;cursor:pointer;transition:all .2s;text-align:center;user-select:none;box-shadow:var(--sh-sm);}
+.mode-tab:hover{border-color:var(--accent);box-shadow:var(--sh);}
+.mode-tab.active{border-color:var(--accent);background:var(--accent-s);box-shadow:0 4px 16px var(--accent-g);}
+.mode-tab-icon{width:48px;height:48px;border-radius:12px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;transition:all .2s;}
+.mode-tab.active .mode-tab-icon{background:var(--accent-s);border-color:rgba(245,158,11,.3);}
+.mode-tab-icon svg{width:22px;height:22px;color:var(--text3);transition:color .2s;}
+.mode-tab.active .mode-tab-icon svg{color:var(--accent);}
+.mode-tab-title{font-size:.875rem;font-weight:700;color:var(--text);margin-bottom:.2rem;}
+.mode-tab-desc{font-size:.75rem;color:var(--text3);}
+
+/* ── Shell ── */
+.cite-shell{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+
+/* ── Card ── */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;box-shadow:var(--sh-sm);}
+.card-title{font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.card-title svg{width:14px;height:14px;}
+
+/* ── Style Pills ── */
+.pill-row{display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1rem;}
+.pill{padding:.3rem .875rem;border-radius:20px;font-size:.8125rem;font-weight:600;border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .2s;}
+.pill:hover{border-color:var(--accent);color:var(--accent-h);}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* ── Input Tabs ── */
+.itabs{display:flex;gap:.25rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;}
+.itab{padding:.375rem .875rem;border-radius:var(--r-sm);font-size:.8125rem;font-weight:600;border:none;background:transparent;color:var(--text3);cursor:pointer;transition:all .2s;}
+.itab:hover{background:var(--surface2);color:var(--text);}
+.itab.active{background:var(--accent);color:#fff;}
+
+/* ── Form ── */
+.form-group{display:flex;flex-direction:column;gap:.375rem;margin-bottom:.875rem;}
+.form-group:last-child{margin-bottom:0;}
+.form-label{font-size:.8125rem;font-weight:600;color:var(--text2);}
+.form-input,.form-textarea{width:100%;padding:.625rem .875rem;font-size:.9375rem;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:inherit;transition:border-color .2s,box-shadow .2s;}
+.form-input:focus,.form-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text4);}
+.form-textarea{resize:vertical;min-height:90px;line-height:1.6;}
+.url-row{display:flex;gap:.5rem;}
+.url-row .form-input{flex:1;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;font-size:.875rem;font-weight:600;border-radius:var(--r-sm);cursor:pointer;border:none;transition:all .2s;font-family:inherit;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-g);}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px);}
+.btn-dark{background:var(--primary);color:#fff;}
+.btn-dark:hover{background:#1E293B;}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border);}
+.btn-ghost:hover{background:var(--surface3);color:var(--text);}
+.btn-sm{padding:.375rem .75rem;font-size:.8125rem;}
+.btn-full{width:100%;justify-content:center;margin-top:.75rem;padding:.75rem;}
+
+/* ── Output ── */
+.output-tabs{display:flex;gap:.25rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;}
+.otab{padding:.375rem .875rem;border-radius:var(--r-sm);font-size:.8125rem;font-weight:600;border:none;background:transparent;color:var(--text3);cursor:pointer;transition:all .2s;}
+.otab:hover{background:var(--surface2);color:var(--text);}
+.otab.active{background:var(--primary);color:#fff;}
+.output-area{min-height:200px;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;color:var(--text4);text-align:center;gap:.75rem;}
+.empty-state svg{width:40px;height:40px;opacity:.4;}
+.empty-state p{font-size:.875rem;}
+
+/* ── Citation Card ── */
+.cite-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:.75rem;}
+.cite-card-style{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent-h);margin-bottom:.5rem;}
+.cite-card-text{font-size:.9375rem;line-height:1.75;color:var(--text);font-style:italic;padding:.875rem 1rem;background:#FFFBEB;border-radius:var(--r-sm);border-left:3px solid var(--accent);margin-bottom:.875rem;}
+.cite-intext{font-size:.8125rem;color:var(--text3);margin-bottom:.875rem;}
+.cite-intext strong{color:var(--text2);}
+.cite-actions{display:flex;gap:.5rem;flex-wrap:wrap;}
+.cite-btn{padding:.375rem .875rem;border-radius:var(--r-sm);font-size:.8125rem;font-weight:600;border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .2s;}
+.cite-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+.cite-btn.add-bib{background:var(--primary);border-color:var(--primary);color:#fff;}
+.cite-btn.add-bib:hover{background:#1E293B;}
+
+/* ── Teach Block ── */
+.teach-block{margin-top:1rem;padding:1rem;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border);}
+.teach-title{font-size:.8125rem;font-weight:700;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:.375rem;}
+.teach-part{padding:.5rem 0;border-bottom:1px solid var(--border);}
+.teach-part:last-child{border-bottom:none;padding-bottom:0;}
+.teach-part-label{font-size:.75rem;font-weight:700;color:var(--accent-h);margin-bottom:.2rem;}
+.teach-part-value{font-size:.8125rem;color:var(--text);margin-bottom:.2rem;}
+.teach-part-why{font-size:.75rem;color:var(--text3);font-style:italic;}
+
+/* ── Credibility ── */
+.cred-score{font-size:2.5rem;font-weight:800;margin:.5rem 0;}
+.cred-bar{height:10px;background:var(--surface3);border-radius:5px;overflow:hidden;margin:.5rem 0 1rem;}
+.cred-fill{height:100%;border-radius:5px;transition:width .6s ease;}
+
+/* ── Bibliography ── */
+.bib-item{display:flex;align-items:flex-start;gap:.75rem;padding:.75rem 0;border-bottom:1px solid var(--border);}
+.bib-item:last-child{border-bottom:none;}
+.bib-num{font-size:.8125rem;font-weight:700;color:var(--accent-h);flex-shrink:0;min-width:20px;}
+.bib-text{font-size:.875rem;line-height:1.6;color:var(--text);flex:1;}
+.bib-del{width:24px;height:24px;border-radius:6px;border:none;background:none;color:var(--text4);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.bib-del:hover{background:#FEE2E2;color:var(--red);}
+.bib-del svg{width:12px;height:12px;}
+.bib-export-row{display:flex;gap:.5rem;padding-top:.75rem;border-top:1px solid var(--border);margin-top:.5rem;align-items:center;}
+.bib-count{font-size:.8125rem;color:var(--text3);margin-left:auto;}
+
+/* ── Loading ── */
+.loading-dots{display:flex;align-items:center;justify-content:center;gap:5px;padding:2rem;}
+.loading-dots span{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:ldot 1.2s infinite;}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes ldot{0%,80%,100%{transform:scale(0);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+
+/* ── Detected Fields ── */
+.detected-badge{font-size:.75rem;font-weight:600;color:var(--green);margin-bottom:.625rem;display:flex;align-items:center;gap:.375rem;}
+.detected-badge svg{width:14px;height:14px;}
+
+/* ── Overlay ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;backdrop-filter:blur(4px);}
+.overlay.open{display:block;}
+
+/* ── Bottom Nav ── */
+.bottom-nav-unified{display:flex!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;background:#fff!important;border-top:1px solid var(--border)!important;padding:0 .5rem!important;padding-bottom:env(safe-area-inset-bottom,0)!important;z-index:2000!important;justify-content:space-around!important;align-items:center!important;height:60px!important;box-shadow:0 -4px 16px rgba(0,0,0,.06)!important;}
+.bn-unified-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:.375rem .5rem;color:var(--text3);text-decoration:none;flex:1;transition:color .2s;min-width:0;background:none;border:none;cursor:pointer;}
+.bn-unified-item svg{width:22px;height:22px;stroke-width:2px;}
+.bn-unified-label{font-size:.625rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+.bn-unified-item.active,.bn-unified-item:hover{color:#D97706;}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .menu-btn{display:flex;}
+  .page{padding:1.25rem;padding-bottom:5.5rem;}
+  .cite-shell{grid-template-columns:1fr;}
+  .mode-tabs{grid-template-columns:1fr 1fr 1fr;}
+}
+@media(max-width:600px){
+  .mode-tabs{grid-template-columns:1fr;}
+  .page-title{font-size:1.375rem;}
+}
+@media(min-width:900px){.bottom-nav-unified{display:none!important;}}
+</style>
+
+</head>
+<body>
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      </div>
+      <span class="sidebar-logo-text">Paw</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'community:community_home' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+      </a>
+      <a href="{% url 'ai_chat' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>AI Tutor
+      </a>
+      <a href="{% url 'essay_request' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Essay Writer
+      </a>
+      <a href="{% url 'assignment_create' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Assignments
+      </a>
+      <a href="{% url 'community:citation_page' %}" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>Citation Writer
+      </a>
+      <div class="nav-divider"></div>
+      <a href="{% url 'community:ai_tools' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>All Tools
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-av">{{ user.username|slice:":1"|upper }}</div>
+      <span class="sidebar-av-name">{{ user.username }}</span>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleMenu()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="topbar-title">Citation Writer</span>
+      </div>
+      <div class="topbar-av">{{ user.username|slice:":1"|upper }}</div>
+    </div>
+
+    <div class="page">
+      <div class="page-head">
+        <h1 class="page-title">Citation Writer</h1>
+        <p class="page-sub">Generate perfect citations in APA, MLA, Harvard, Chicago and more — instantly.</p>
+      </div>
+
+      <!-- Mode Tabs -->
+      <div class="mode-tabs">
+        <div class="mode-tab active" id="tab-url" onclick="switchMode('url')">
+          <div class="mode-tab-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <div class="mode-tab-title">URL / DOI</div>
+          <div class="mode-tab-desc">Paste a link — AI detects everything</div>
+        </div>
+        <div class="mode-tab" id="tab-manual" onclick="switchMode('manual')">
+          <div class="mode-tab-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <div class="mode-tab-title">Manual Entry</div>
+          <div class="mode-tab-desc">Fill in the details yourself</div>
+        </div>
+        <div class="mode-tab" id="tab-fixer" onclick="switchMode('fixer')">
+          <div class="mode-tab-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </div>
+          <div class="mode-tab-title">Fix a Citation</div>
+          <div class="mode-tab-desc">Paste a messy one — AI fixes it</div>
+        </div>
+      </div>
+
+      <div class="cite-shell">
+        <!-- ── LEFT: Input ── -->
+        <div>
+          <div class="card">
+            <!-- Citation Style -->
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Citation Style
+            </div>
+            <div class="pill-row" id="stylePills">
+              <button class="pill active" data-style="APA" onclick="setStyle(this)">APA</button>
+              <button class="pill" data-style="MLA" onclick="setStyle(this)">MLA</button>
+              <button class="pill" data-style="Harvard" onclick="setStyle(this)">Harvard</button>
+              <button class="pill" data-style="Chicago" onclick="setStyle(this)">Chicago</button>
+              <button class="pill" data-style="IEEE" onclick="setStyle(this)">IEEE</button>
+              <button class="pill" data-style="WAEC" onclick="setStyle(this)">WAEC/SHS</button>
+            </div>
+
+            <!-- Source Type -->
+            <div class="card-title" style="margin-top:1.25rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              Source Type
+            </div>
+            <div class="pill-row" id="typePills">
+              <button class="pill active" data-type="website" onclick="setType(this)">🌐 Website</button>
+              <button class="pill" data-type="book" onclick="setType(this)">📚 Book</button>
+              <button class="pill" data-type="journal" onclick="setType(this)">📄 Journal</button>
+              <button class="pill" data-type="video" onclick="setType(this)">🎥 Video</button>
+              <button class="pill" data-type="pdf" onclick="setType(this)">📋 PDF/Report</button>
+            </div>
+
+            <!-- Input Tabs -->
+            <div class="itabs" style="margin-top:1.25rem;">
+              <button class="itab active" id="itab-url" onclick="showInputTab('url')">URL / DOI</button>
+              <button class="itab" id="itab-manual" onclick="showInputTab('manual')">Manual</button>
+              <button class="itab" id="itab-fixer" onclick="showInputTab('fixer')">Fix Citation</button>
+            </div>
+
+            <!-- URL Tab -->
+            <div id="ibody-url">
+              <div class="form-group">
+                <label class="form-label">Paste URL or DOI</label>
+                <div class="url-row">
+                  <input type="text" id="urlInput" class="form-input" placeholder="https://… or 10.xxxx/…">
+                  <button class="btn btn-dark" onclick="fetchMeta()" id="fetchBtn">Detect →</button>
+                </div>
+              </div>
+              <div id="detectedFields" style="display:none;">
+                <div class="detected-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Metadata detected — review below
+                </div>
+                <div class="form-group"><label class="form-label">Author(s)</label><input type="text" id="d-author" class="form-input" placeholder="Last, First"></div>
+                <div class="form-group"><label class="form-label">Title</label><input type="text" id="d-title" class="form-input"></div>
+                <div class="form-group"><label class="form-label">Year</label><input type="text" id="d-year" class="form-input" style="max-width:120px;"></div>
+                <div class="form-group"><label class="form-label">Publisher / Website</label><input type="text" id="d-publisher" class="form-input"></div>
+                <div class="form-group"><label class="form-label">Access Date</label><input type="date" id="d-accessed" class="form-input" style="max-width:180px;"></div>
+              </div>
+              <button class="btn btn-primary btn-full" onclick="generate('url')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Generate Citation
+              </button>
+            </div>
+
+            <!-- Manual Tab -->
+            <div id="ibody-manual" style="display:none;">
+              <div class="form-group"><label class="form-label">Author(s)</label><input type="text" id="m-author" class="form-input" placeholder="Last, First M."></div>
+              <div class="form-group"><label class="form-label">Title</label><input type="text" id="m-title" class="form-input" placeholder="Title of the work"></div>
+              <div class="form-group"><label class="form-label">Year</label><input type="text" id="m-year" class="form-input" placeholder="2024" style="max-width:120px;"></div>
+              <div class="form-group"><label class="form-label">Publisher / Journal</label><input type="text" id="m-publisher" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Volume / Issue</label><input type="text" id="m-volume" class="form-input" placeholder="Vol. 12, No. 3"></div>
+              <div class="form-group"><label class="form-label">Pages</label><input type="text" id="m-pages" class="form-input" placeholder="pp. 45–67"></div>
+              <div class="form-group"><label class="form-label">URL (optional)</label><input type="text" id="m-url" class="form-input"></div>
+              <div class="form-group"><label class="form-label">DOI (optional)</label><input type="text" id="m-doi" class="form-input"></div>
+              <button class="btn btn-primary btn-full" onclick="generate('manual')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Generate Citation
+              </button>
+            </div>
+
+            <!-- Fixer Tab -->
+            <div id="ibody-fixer" style="display:none;">
+              <div class="form-group">
+                <label class="form-label">Paste your messy or incorrect citation</label>
+                <textarea id="fixerInput" class="form-textarea" placeholder="Smith J (2020) Climate change. Nature. 12:45-67."></textarea>
+              </div>
+              <button class="btn btn-primary btn-full" onclick="fixCitation()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                Fix & Reformat
+              </button>
+            </div>
+
+            <!-- Teach me toggle -->
+            <div style="display:flex;align-items:center;gap:.625rem;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+              <label style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;font-weight:600;color:var(--text2);cursor:pointer;">
+                <input type="checkbox" id="teachToggle" checked style="accent-color:var(--accent);width:16px;height:16px;">
+                Explain each part of the citation
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── RIGHT: Output ── -->
+        <div>
+          <div class="card" style="min-height:400px;display:flex;flex-direction:column;">
+            <div class="output-tabs">
+              <button class="otab active" id="otab-result" onclick="showOutputTab('result')">Result</button>
+              <button class="otab" id="otab-credibility" onclick="showOutputTab('credibility')">Credibility</button>
+              <button class="otab" id="otab-bib" onclick="showOutputTab('bib')">
+                Bibliography
+                <span id="bibBadge" style="display:none;background:var(--accent);color:#fff;border-radius:10px;padding:0 6px;font-size:.6875rem;margin-left:.25rem;"></span>
+              </button>
+            </div>
+
+            <!-- Result tab -->
+            <div id="otab-result-body" class="output-area" style="flex:1;">
+              <div class="empty-state" id="emptyState">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                <p>Your citation will appear here.<br>Choose a style and enter your source.</p>
+              </div>
+              <div id="resultContent" style="display:none;"></div>
+            </div>
+
+            <!-- Credibility tab -->
+            <div id="otab-credibility-body" class="output-area" style="display:none;flex:1;">
+              <div class="empty-state" id="credEmpty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <p>Generate a citation first to see its credibility score.</p>
+              </div>
+              <div id="credContent" style="display:none;"></div>
+            </div>
+
+            <!-- Bibliography tab -->
+            <div id="otab-bib-body" class="output-area" style="display:none;flex:1;">
+              <div class="empty-state" id="bibEmpty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <p>Add citations to your bibliography using the "+ Bibliography" button.</p>
+              </div>
+              <div id="bibContent" style="display:none;">
+                <div id="bibList"></div>
+                <div class="bib-export-row">
+                  <button class="btn btn-ghost btn-sm" onclick="copyBib()">Copy All</button>
+                  <button class="btn btn-ghost btn-sm" onclick="clearBib()">Clear</button>
+                  <span class="bib-count" id="bibCount"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav-unified">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
+  </a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
+  </a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
+</nav>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+let citeStyle = 'APA', citeType = 'website';
+let bibList = [], bibIdCounter = 0;
+
+// ── Sidebar ──
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+// ── Mode switch (top tabs) ──
+function switchMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + mode).classList.add('active');
+  showInputTab(mode);
+}
+
+// ── Style / Type pills ──
+function setStyle(btn) {
+  document.querySelectorAll('#stylePills .pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  citeStyle = btn.dataset.style;
+}
+function setType(btn) {
+  document.querySelectorAll('#typePills .pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  citeType = btn.dataset.type;
+}
+
+// ── Input tabs ──
+function showInputTab(tab) {
+  ['url','manual','fixer'].forEach(t => {
+    document.getElementById('ibody-' + t).style.display = t === tab ? '' : 'none';
+    document.getElementById('itab-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+// ── Output tabs ──
+function showOutputTab(tab) {
+  ['result','credibility','bib'].forEach(t => {
+    document.getElementById('otab-' + t + '-body').style.display = t === tab ? '' : 'none';
+    document.getElementById('otab-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+// ── Fetch metadata ──
+async function fetchMeta() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { alert('Please enter a URL or DOI.'); return; }
+  const btn = document.getElementById('fetchBtn');
+  btn.textContent = 'Detecting…'; btn.disabled = true;
+  try {
+    const r = await fetch('/community/api/cite/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({action:'detect', url})
+    });
+    const d = await r.json();
+    if (d.error) { alert(d.error); return; }
+    const m = d.metadata || {};
+    document.getElementById('d-author').value = m.author || '';
+    document.getElementById('d-title').value = m.title || '';
+    document.getElementById('d-year').value = m.year || '';
+    document.getElementById('d-publisher').value = m.publisher || '';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('d-accessed').value = m.accessed || today;
+    document.getElementById('detectedFields').style.display = 'block';
+  } catch(e) { alert('Detection failed. Try manual entry.'); }
+  finally { btn.textContent = 'Detect →'; btn.disabled = false; }
+}
+
+// ── Generate ──
+async function generate(mode) {
+  let payload = { action: 'generate', style: citeStyle, source_type: citeType };
+  if (mode === 'url') {
+    const detected = document.getElementById('detectedFields').style.display !== 'none';
+    payload.url = document.getElementById('urlInput').value.trim();
+    if (detected) {
+      payload.author = document.getElementById('d-author').value;
+      payload.title = document.getElementById('d-title').value;
+      payload.year = document.getElementById('d-year').value;
+      payload.publisher = document.getElementById('d-publisher').value;
+      payload.accessed = document.getElementById('d-accessed').value;
+    }
+  } else {
+    payload.author = document.getElementById('m-author').value;
+    payload.title = document.getElementById('m-title').value;
+    payload.year = document.getElementById('m-year').value;
+    payload.publisher = document.getElementById('m-publisher').value;
+    payload.volume = document.getElementById('m-volume').value;
+    payload.pages = document.getElementById('m-pages').value;
+    payload.url = document.getElementById('m-url').value;
+    payload.doi = document.getElementById('m-doi').value;
+  }
+  showOutputTab('result');
+  showLoading();
+  try {
+    const r = await fetch('/community/api/cite/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (d.error) { showError(d.error); return; }
+    renderResult(d);
+    renderCredibility(d);
+  } catch(e) { showError('Something went wrong. Please try again.'); }
+}
+
+// ── Fix citation ──
+async function fixCitation() {
+  const raw = document.getElementById('fixerInput').value.trim();
+  if (!raw) { alert('Please paste a citation to fix.'); return; }
+  showOutputTab('result');
+  showLoading();
+  try {
+    const r = await fetch('/community/api/cite/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({action:'fix', raw_citation: raw, style: citeStyle})
+    });
+    const d = await r.json();
+    if (d.error) { showError(d.error); return; }
+    renderResult(d);
+    renderCredibility(d);
+  } catch(e) { showError('Something went wrong. Please try again.'); }
+}
+
+// ── Render helpers ──
+function showLoading() {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultContent').style.display = 'block';
+  document.getElementById('resultContent').innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+}
+function showError(msg) {
+  document.getElementById('resultContent').innerHTML = '<div class="empty-state"><p style="color:var(--red);">' + _e(msg) + '</p></div>';
+}
+function _e(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderResult(d) {
+  const teachOn = document.getElementById('teachToggle').checked;
+  let html = '<div class="cite-card">';
+  html += '<div class="cite-card-style">' + _e(d.style || citeStyle) + '</div>';
+  html += '<div class="cite-card-text">' + _e(d.citation) + '</div>';
+  if (d.in_text) html += '<div class="cite-intext"><strong>In-text:</strong> ' + _e(d.in_text) + '</div>';
+  html += '<div class="cite-actions">';
+  html += '<button class="cite-btn" onclick="copyCitation()">📋 Copy</button>';
+  html += '<button class="cite-btn" onclick="speakCitation()">🔊 Read</button>';
+  html += '<button class="cite-btn add-bib" onclick="addToBib()">+ Bibliography</button>';
+  html += '</div>';
+  if (teachOn && d.parts && d.parts.length) {
+    html += '<div class="teach-block"><div class="teach-title">📖 What each part means</div>';
+    d.parts.forEach(p => {
+      html += '<div class="teach-part">';
+      html += '<div class="teach-part-label">' + _e(p.label) + '</div>';
+      html += '<div class="teach-part-value">' + _e(p.value) + '</div>';
+      if (p.why) html += '<div class="teach-part-why">' + _e(p.why) + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  document.getElementById('resultContent').innerHTML = html;
+  window._lastCitation = d.citation;
+  window._lastInText = d.in_text;
+}
+
+function renderCredibility(d) {
+  if (!d.credibility) return;
+  const c = d.credibility;
+  const score = c.score || 0;
+  const color = score >= 70 ? '#10B981' : score >= 40 ? '#F59E0B' : '#EF4444';
+  let html = '<div style="padding:.5rem 0;">';
+  html += '<div style="font-size:.875rem;font-weight:600;color:var(--text2);margin-bottom:.5rem;">Source Credibility</div>';
+  html += '<div class="cred-score" style="color:' + color + ';">' + score + '<span style="font-size:1rem;font-weight:400;color:var(--text3);">/100</span></div>';
+  html += '<div class="cred-bar"><div class="cred-fill" style="width:' + score + '%;background:' + color + ';"></div></div>';
+  if (c.verdict) html += '<div style="font-size:.875rem;font-weight:600;color:var(--text2);margin-bottom:.5rem;">' + _e(c.verdict) + '</div>';
+  if (c.notes && c.notes.length) {
+    c.notes.forEach(n => { html += '<div style="font-size:.8125rem;color:var(--text3);margin-bottom:.25rem;">• ' + _e(n) + '</div>'; });
+  }
+  html += '</div>';
+  document.getElementById('credContent').innerHTML = html;
+  document.getElementById('credContent').style.display = 'block';
+  document.getElementById('credEmpty').style.display = 'none';
+}
+
+// ── Copy / Speak ──
+function copyCitation() {
+  if (window._lastCitation) {
+    navigator.clipboard.writeText(window._lastCitation).then(() => showToast('Copied!'));
+  }
+}
+function speakCitation() {
+  if (window._lastCitation && 'speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(window._lastCitation);
+    speechSynthesis.speak(u);
+  }
+}
+
+// ── Bibliography ──
+function addToBib() {
+  if (!window._lastCitation) return;
+  const id = ++bibIdCounter;
+  bibList.push({ id, text: window._lastCitation });
+  renderBib();
+  updateBibBadge();
+  showToast('Added to bibliography!');
+}
+function renderBib() {
+  if (!bibList.length) {
+    document.getElementById('bibContent').style.display = 'none';
+    document.getElementById('bibEmpty').style.display = 'flex';
+    return;
+  }
+  document.getElementById('bibEmpty').style.display = 'none';
+  document.getElementById('bibContent').style.display = 'block';
+  let html = '';
+  bibList.forEach((item, i) => {
+    html += '<div class="bib-item">';
+    html += '<div class="bib-num">' + (i+1) + '.</div>';
+    html += '<div class="bib-text">' + _e(item.text) + '</div>';
+    html += '<button class="bib-del" onclick="removeBib(' + item.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+    html += '</div>';
+  });
+  document.getElementById('bibList').innerHTML = html;
+  document.getElementById('bibCount').textContent = bibList.length + ' source' + (bibList.length !== 1 ? 's' : '');
+}
+function removeBib(id) {
+  bibList = bibList.filter(b => b.id !== id);
+  renderBib(); updateBibBadge();
+}
+function copyBib() {
+  const text = bibList.map((b,i) => (i+1) + '. ' + b.text).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => showToast('Bibliography copied!'));
+}
+function clearBib() {
+  bibList = []; renderBib(); updateBibBadge();
+}
+function updateBibBadge() {
+  const badge = document.getElementById('bibBadge');
+  if (bibList.length) { badge.textContent = bibList.length; badge.style.display = ''; }
+  else badge.style.display = 'none';
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0F172A;color:#fff;padding:.5rem 1.25rem;border-radius:20px;font-size:.875rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.style.opacity = '1'; }); });
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 220); }, 2200);
+}
+</script>
+</body>
+</html>

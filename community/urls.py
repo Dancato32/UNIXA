@@ -168,6 +168,7 @@ urlpatterns = [
 
     # Citation Intelligence Engine
     path('api/cite/', views.citation_ajax, name='citation_ajax'),
+    path('citation/', views.citation_page, name='citation_page'),
 
     # Nexa workspace linking
     path('workspaces/<uuid:ws_id>/nexa-link/', views.nexa_link_workspace, name='nexa_link_workspace'),

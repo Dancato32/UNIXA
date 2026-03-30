@@ -3630,6 +3630,11 @@ def paraphrase_ajax(request):
 # â”€â”€ Citation Intelligence Engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
+def citation_page(request):
+    return render(request, 'community/citation.html')
+
+
+@login_required
 @require_POST
 def citation_ajax(request):
     """
