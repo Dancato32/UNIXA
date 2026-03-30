@@ -6,16 +6,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0d0d14">
-<title>Feed — NEXA</title>
+<title>Feed — Paw</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#fafaf8;--sb:#ffffff;--card:#ffffff;--card2:#f5f5f3;
-  --bdr:#d0d0cc;--t1:#111111;--t2:#444440;--t3:#888884;
-  --acc:#111111;--acc2:#333333;--cyan:#111111;--pink:#111111;--green:#22c55e;
-  --radius:6px;
+  --bg:#F8FAFC;--sb:#ffffff;--card:#ffffff;--card2:#F1F5F9;
+  --bdr:#E5E7EB;--t1:#111827;--t2:#374151;--t3:#6B7280;
+  --acc:#F59E0B;--acc2:#FBBF24;--cyan:#3B82F6;--pink:#F59E0B;--green:#10B981;
+  --radius:12px;
 }
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
 a{color:inherit;text-decoration:none;}
@@ -38,25 +38,25 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   margin-bottom:.5rem;
 }
 .sb-logo-icon{
-  width:32px;height:32px;border-radius:8px;flex-shrink:0;
-  background:#6366f1;
+  width:32px;height:32px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,#F59E0B,#FBBF24);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 20px rgba(99,102,241,.3);
+  box-shadow:0 4px 12px rgba(245,158,11,.3);
 }
 .sb-logo-icon svg{width:18px;height:18px;color:#fff;}
-.sb-logo-text{font-size:1.125rem;font-weight:900;letter-spacing:.08em;color:var(--t1);text-transform:uppercase;}
+.sb-logo-text{font-size:1.125rem;font-weight:700;letter-spacing:-.02em;color:var(--t1);font-family:'Poppins',sans-serif;}
 .sb-nav{flex:1;padding:0 .75rem;display:flex;flex-direction:column;gap:.125rem;}
 .sb-item{
   display:flex;align-items:center;gap:.75rem;
-  padding:.6875rem .875rem;border-radius:10px;
-  font-size:.875rem;font-weight:500;color:var(--t2);
-  cursor:pointer;transition:all .15s;text-decoration:none;
+  padding:.625rem .875rem;border-radius:10px;
+  font-size:.875rem;font-weight:500;color:var(--t3);
+  cursor:pointer;transition:all .2s;text-decoration:none;
   border:none;background:none;width:100%;text-align:left;
   min-height:44px;
 }
-.sb-item:hover{background:rgba(255,255,255,.05);color:var(--t1);}
-.sb-item.active{background:var(--acc);color:#fff;font-weight:600;}
-.sb-item.active .sb-item-icon{color:#fff;}
+.sb-item:hover{background:var(--card2);color:var(--t1);}
+.sb-item.active{background:rgba(245,158,11,.1);color:#D97706;font-weight:600;}
+.sb-item.active .sb-item-icon{color:#D97706;}
 .sb-item-icon{width:20px;height:20px;flex-shrink:0;transition:all .15s;}
 .sb-footer{
   padding:.875rem .75rem;border-top:1px solid var(--bdr);
@@ -141,11 +141,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
 
 /* ── Post card ── */
 .post-card{
-  background:var(--card);border:1px solid var(--bdr);border-radius:var(--radius);
-  padding:1.25rem;margin-bottom:1.125rem;
-  transition:border-color .2s,box-shadow .2s;
+  background:var(--card);border:1px solid var(--bdr);border-radius:16px;
+  padding:1.25rem;margin-bottom:1rem;
+  transition:box-shadow .2s,transform .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
 }
-.post-card:hover{border-color:#2e2e45;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.post-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-1px);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .post-card:nth-child(1){animation-delay:.04s;}
 .post-card:nth-child(2){animation-delay:.08s;}
@@ -158,8 +159,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   background:linear-gradient(135deg,var(--acc),var(--acc2));overflow:hidden;
   display:flex;align-items:center;justify-content:center;
   font-size:.875rem;font-weight:700;color:#fff;
-}
-.post-av img{width:100%;height:100%;object-fit:cover;}
+}.post-av img{width:100%;height:100%;object-fit:cover;}
 .post-meta{flex:1;min-width:0;}
 .post-name{font-size:.9375rem;font-weight:700;color:var(--t1);}
 .post-time{font-size:.75rem;color:var(--t3);margin-top:1px;}
@@ -180,8 +180,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   padding:.25rem 0;
 }
 .post-act:hover{color:var(--t1);}
-.post-act.liked{color:var(--pink);}
-.post-act.liked:hover{color:var(--pink);}
+.post-act.liked{color:var(--acc);}
+.post-act.liked:hover{color:var(--acc);}
 .post-act svg{width:20px;height:20px;transition:transform .15s;}
 .post-act:hover svg{transform:scale(1.1);}
 .post-act-spacer{flex:1;}
@@ -199,8 +199,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
 .feed-empty-icon svg{width:28px;height:28px;color:var(--acc2);}
 .feed-empty h3{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:.5rem;}
 .feed-empty p{font-size:.875rem;color:var(--t3);margin-bottom:1.5rem;line-height:1.6;}
-.btn-primary{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:var(--acc);color:#fff;border-radius:10px;font-size:.875rem;font-weight:700;transition:all .15s;box-shadow:0 4px 16px rgba(124,106,247,.3);}
-.btn-primary:hover{background:#6b58f0;transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,247,.4);}
+.btn-primary{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:var(--acc);color:#fff;border-radius:10px;font-size:.875rem;font-weight:700;transition:all .2s;box-shadow:0 4px 12px rgba(245,158,11,.3);}
+.btn-primary:hover{background:#D97706;transform:translateY(-1px);box-shadow:0 6px 16px rgba(245,158,11,.4);}
 
 /* ── Comments UI ── */
 .post-comments-sec {
@@ -353,14 +353,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   position: fixed; 
   bottom: 85px; 
   right: 20px;
-  width: 56px; height: 56px; border-radius: 50%;
-  background: var(--green); color: #fff; border: none;
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--acc); color: #fff; border: none;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 20px rgba(34,197,94,.4); cursor: pointer;
-  transition: transform .15s, box-shadow .15s; z-index: 4000; text-decoration: none;
+  box-shadow: 0 4px 16px rgba(245,158,11,.4); cursor: pointer;
+  transition: transform .2s, box-shadow .2s; z-index: 4000; text-decoration: none;
 }
-.feed-fab:active { transform: scale(.92); }
-.feed-fab svg { width: 24px; height: 24px; }
+.feed-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,.5); }
+.feed-fab:active { transform: scale(.94); }
+.feed-fab svg { width: 22px; height: 22px; }
 </style>
 </head>
 <body>
@@ -370,9 +371,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   <nav class="sb">
     <div class="sb-logo">
       <div class="sb-logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
       </div>
-      <span class="sb-logo-text">NEXA</span>
+      <span class="sb-logo-text">Paw</span>
     </div>
     <div class="sb-nav">
       <a href="{% url 'community:community_home' %}" class="sb-item active">
@@ -600,7 +601,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
 }
 .bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
 .bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: #D97706; }
 .bn-unified-item:active svg { transform: scale(0.9); }
 
 @media (min-width: 900px) {

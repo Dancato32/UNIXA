@@ -1,119 +1,115 @@
 {% extends "community/base.html" %}
 {% load static %}
 
-{% block title %}Study Materials — NEXA{% endblock %}
+{% block title %}Study Materials — Paw{% endblock %}
 
 {% block content_scroll_class %}bg-light{% endblock %}
 {% block nav_upload %}active{% endblock %}
 
 {% block extra_css %}
 <style>
-/* ── Refined Hand-Drawn Variables ── */
+/* ── Paw Materials Variables ── */
 :root {
   --mat-bg: var(--bg);
   --mat-surface: var(--surface);
   --mat-bdr: var(--border);
   --mat-text: var(--text);
   --mat-sub: var(--text3);
-  --mat-shadow: var(--shadow);
-  --mat-shadow-hover: 4px 4px 0 rgba(0,0,0,0.05);
+  --mat-shadow: var(--shadow-sm);
+  --mat-shadow-hover: var(--shadow);
 }
 
-
-.materials-page { padding: 1.5rem; max-width: 640px; margin: 0 auto; min-height: 100vh; background: var(--mat-bg); }
+.materials-page { padding: 1.5rem; max-width: 680px; margin: 0 auto; min-height: 100vh; background: var(--mat-bg); }
 
 /* Page Header */
 .mat-header {
   display: flex; align-items: center; gap: 1rem;
-  margin-bottom: 2.5rem; position: sticky; top: 0;
+  margin-bottom: 2rem; position: sticky; top: 0;
   background: var(--mat-bg); padding: 1rem 0; z-index: 10;
   border-bottom: 1px solid var(--mat-bdr);
 }
 .mat-title-main {
-  font-family: var(--font-display);
-  font-size: 1.875rem; font-weight: 400; color: var(--mat-text);
-  margin-right: .5rem; white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.375rem; font-weight: 700; color: var(--mat-text);
+  margin-right: .5rem; white-space: nowrap; letter-spacing: -0.02em;
 }
 .mat-search-wrap { flex: 1; position: relative; }
 .mat-search-wrap svg { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--mat-sub); }
 .mat-search-input {
   width: 100%; padding: .625rem 1rem .625rem 2.25rem;
-  border: 1px solid var(--mat-bdr); border-radius: 8px;
+  border: 1.5px solid var(--mat-bdr); border-radius: var(--radius);
   font-size: .875rem; background: var(--mat-surface);
-  font-family: var(--font-hand); outline: none; box-shadow: var(--mat-shadow);
+  outline: none; transition: border-color .2s, box-shadow .2s;
 }
-.mat-search-input:focus { box-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
+.mat-search-input:focus { border-color: #F59E0B; box-shadow: 0 0 0 3px rgba(245,158,11,.1); }
 .mat-upload-btn {
-  background: var(--mat-text); color: #fff;
-  font-weight: 800; font-size: .8125rem;
-  text-transform: uppercase; letter-spacing: 0.05em;
-  padding: .625rem 1rem; border-radius: 4px; border: 2px solid var(--mat-bdr);
+  background: #F59E0B; color: #fff;
+  font-weight: 600; font-size: .875rem;
+  padding: .625rem 1.125rem; border-radius: var(--radius); border: none;
   display: flex; align-items: center; gap: .5rem; flex-shrink: 0;
-  box-shadow: var(--mat-shadow); transition: transform .12s, box-shadow .12s;
+  box-shadow: 0 4px 12px rgba(245,158,11,.3); transition: all .2s; cursor: pointer;
 }
-.mat-upload-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--mat-shadow-hover); }
+.mat-upload-btn:hover { background: #D97706; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(245,158,11,.4); }
 
 .section-title {
-  font-family: var(--font-display);
-  font-size: 2.25rem; font-weight: 400; color: var(--mat-text);
-  margin-bottom: .25rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.25rem; font-weight: 700; color: var(--mat-text);
+  margin-bottom: .25rem; letter-spacing: -0.02em;
 }
-.section-count { font-family: var(--font-hand); font-size: 1rem; color: var(--mat-sub); margin-bottom: 2rem; }
+.section-count { font-size: .875rem; color: var(--mat-sub); margin-bottom: 1.5rem; }
 
 /* Material Card */
 .mat-card {
-  background: var(--mat-surface); border: 1px solid var(--mat-bdr); border-radius: 12px;
-  padding: 1.5rem; margin-bottom: 1.25rem; position: relative;
+  background: var(--mat-surface); border: 1px solid var(--mat-bdr); border-radius: var(--radius-lg);
+  padding: 1.375rem; margin-bottom: 1rem; position: relative;
   box-shadow: var(--mat-shadow);
-  transition: transform .12s, box-shadow .12s;
-  background-image: radial-gradient(var(--mat-bdr) 0.5px, transparent 0.5px);
-  background-size: 20px 20px; background-attachment: local;
+  transition: transform .2s, box-shadow .2s;
 }
-.mat-card:hover { transform: translateY(-2px); box-shadow: 4px 4px 10px rgba(0,0,0,0.05); }
+.mat-card:hover { transform: translateY(-2px); box-shadow: var(--mat-shadow-hover); }
 
 .mat-card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
 .mat-icon-box {
-  width: 52px; height: 52px; border-radius: 10px;
+  width: 48px; height: 48px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; flex-shrink: 0;
-  border: 1px solid var(--mat-bdr); background: var(--surface2);
+  font-size: 1.375rem; flex-shrink: 0;
+  background: rgba(245,158,11,.1);
 }
 .mat-info { flex: 1; min-width: 0; }
-.mat-name { font-size: 1rem; font-weight: 800; color: var(--mat-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-name { font-size: .9375rem; font-weight: 700; color: var(--mat-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mat-tags { display: flex; align-items: center; gap: .5rem; margin-top: .25rem; }
 .mat-tag {
-  font-size: .6875rem; font-weight: 900; padding: .125rem .5rem;
-  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
-  border: 1.5px solid var(--mat-bdr); background: #fff; color: var(--mat-text);
+  font-size: .6875rem; font-weight: 600; padding: .2rem .625rem;
+  border-radius: 20px;
+  border: 1px solid var(--mat-bdr); background: var(--surface2); color: var(--mat-text);
 }
-.mat-tag-user { color: var(--mat-sub); font-weight: 600; text-transform: lowercase; font-style: italic; font-size: .75rem; border: none; }
-.mat-date { font-size: .8125rem; color: var(--mat-sub); margin-top: .5rem; font-style: italic; }
+.mat-tag-user { color: var(--mat-sub); font-weight: 500; font-size: .75rem; border: none; background: none; }
+.mat-date { font-size: .8125rem; color: var(--mat-sub); margin-top: .375rem; }
 
 .mat-card-actions {
   position: absolute; top: 1rem; right: 1rem;
-  display: flex; gap: 4px; background: #f9f9f7;
-  padding: 4px; border-radius: 12px; border: 1px solid var(--mat-bdr);
+  display: flex; gap: 4px; background: var(--surface2);
+  padding: 4px; border-radius: 10px; border: 1px solid var(--mat-bdr);
 }
 .mat-action-btn {
-  width: 34px; height: 34px; border-radius: 8px; border: none; box-shadow: none;
+  width: 32px; height: 32px; border-radius: 8px; border: none;
   display: flex; align-items: center; justify-content: center;
-  color: var(--mat-sub); background: transparent; transition: all .2s;
+  color: var(--mat-sub); background: transparent; transition: all .2s; cursor: pointer;
 }
 .mat-action-btn:hover {
-  background: #fff; color: var(--mat-text); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+  background: var(--surface); color: var(--mat-text); box-shadow: var(--shadow-sm);
 }
-.mat-action-btn.del { color: #d32f2f; }
-.mat-action-btn.del:hover { background: #fee2e2; color: #b91c1c; box-shadow: 0 3px 6px rgba(220,38,38,0.1); }
+.mat-action-btn.del { color: #EF4444; }
+.mat-action-btn.del:hover { background: rgba(239,68,68,.1); color: #DC2626; }
 
 /* Study Tools Row */
-.mat-study-tools { display: flex; flex-wrap: wrap; gap: .75rem; padding-top: 1.25rem; border-top: 1px solid var(--surface2); }
+.mat-study-tools { display: flex; flex-wrap: wrap; gap: .625rem; padding-top: 1rem; border-top: 1px solid var(--surface2); }
 .study-btn {
-  background: var(--surface2); border: none; border-radius: 8px;
-  padding: .5rem 1rem; font-size: .8125rem; font-weight: 600;
-  display: flex; align-items: center; gap: .5rem; color: var(--mat-text2);
-  transition: .15s; font-family: var(--font-hand);
+  background: var(--surface2); border: 1px solid var(--mat-bdr); border-radius: 8px;
+  padding: .4375rem .875rem; font-size: .8125rem; font-weight: 600;
+  display: flex; align-items: center; gap: .375rem; color: var(--text2);
+  transition: all .2s; cursor: pointer;
 }
-.study-btn:hover { background: var(--mat-text); color: #fff; transform: translateY(-1px); }
+.study-btn:hover { background: #F59E0B; color: #fff; border-color: #F59E0B; transform: translateY(-1px); }
 </style>
 {% endblock %}
 
