@@ -3,169 +3,409 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>New Assignment â€” NEXA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>New Assignment — Paw</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #0a0a0a; --surface: #111; --surface2: #1a1a1a;
-  --border: #222; --border2: #2e2e2e;
-  --text: #f0f0f0; --text2: #888; --text3: #555;
-  --accent: #6366f1; --sidebar: 220px;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#F8FAFC;--surface:#ffffff;--surface2:#F1F5F9;--surface3:#E2E8F0;
+  --border:#E5E7EB;--border2:#CBD5E1;
+  --text:#111827;--text2:#374151;--text3:#6B7280;--text4:#9CA3AF;
+  --primary:#0F172A;--accent:#F59E0B;--accent-hover:#D97706;
+  --accent-subtle:rgba(245,158,11,.1);--accent-glow:rgba(245,158,11,.25);
+  --green:#10B981;--red:#EF4444;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 12px rgba(0,0,0,.08);
+  --sidebar-w:256px;
 }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.layout { display: flex; min-height: 100vh; }
-.sidebar { width: var(--sidebar); background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; display: flex; flex-direction: column; transition: transform 0.25s; }
-.sidebar-logo { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
-.sidebar-logo a { font-size: 1rem; font-weight: 800; color: var(--text); text-decoration: none; }
-.sidebar-nav { flex: 1; padding: 0.625rem; overflow-y: auto; }
-.nav-link { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.75rem; color: var(--text2); text-decoration: none; font-size: 0.8125rem; border-radius: 7px; transition: all 0.15s; margin-bottom: 1px; }
-.nav-link:hover { background: var(--surface2); color: var(--text); }
-.nav-link.active { background: rgba(99,102,241,0.12); color: #a5b4fc; }
-.nav-link svg { width: 15px; height: 15px; flex-shrink: 0; }
-.nav-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
-.main { flex: 1; margin-left: var(--sidebar); display: flex; flex-direction: column; }
-.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; flex-shrink: 0; }
-.topbar-left { display: flex; align-items: center; gap: 0.75rem; }
-.menu-btn { display: none; width: 36px; height: 36px; align-items: center; justify-content: center; background: none; border: none; color: var(--text2); cursor: pointer; border-radius: 6px; }
-.menu-btn svg { width: 20px; height: 20px; }
-.topbar-title { font-size: 0.875rem; font-weight: 600; color: var(--text2); }
-.avatar { width: 30px; height: 30px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text2); }
-.page { padding: 1.75rem 2rem; max-width: 760px; }
-.page-head { margin-bottom: 1.75rem; }
-.page-title { font-size: 1.375rem; font-weight: 700; margin-bottom: 0.25rem; }
-.page-sub { font-size: 0.875rem; color: var(--text2); }
-.mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.75rem; }
-.mode-tab { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.15s; text-align: center; user-select: none; }
-.mode-tab:hover { border-color: #444; }
-.mode-tab.active { border-color: var(--accent); background: rgba(99,102,241,0.07); }
-.mode-tab-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--surface2); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; transition: background 0.15s; }
-.mode-tab.active .mode-tab-icon { background: rgba(99,102,241,0.2); }
-.mode-tab-icon svg { width: 22px; height: 22px; color: var(--text3); transition: color 0.15s; }
-.mode-tab.active .mode-tab-icon svg { color: #a5b4fc; }
-.mode-tab-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.2rem; }
-.mode-tab-desc { font-size: 0.75rem; color: var(--text2); }
-.panel { display: none; }
-.panel.active { display: block; }
-.voice-wrap { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 2.5rem 2rem; text-align: center; }
-.voice-orb { width: 120px; height: 120px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; transition: all 0.3s; cursor: pointer; }
-.voice-orb.listening { border-color: var(--accent); background: rgba(99,102,241,0.12); animation: orb-pulse 1.5s ease-in-out infinite; }
-@keyframes orb-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.3)} 50%{box-shadow:0 0 0 16px rgba(99,102,241,0)} }
-.voice-orb svg { width: 44px; height: 44px; color: var(--text3); }
-.voice-orb.listening svg { color: #a5b4fc; }
-.voice-status { font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem; }
-.voice-transcript { min-height: 80px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 1rem; font-size: 0.875rem; color: var(--text3); line-height: 1.6; margin-bottom: 1.5rem; text-align: left; }
-.voice-transcript.has-text { color: var(--text); }
-.voice-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: all 0.15s; }
-.voice-btn:hover { background: #4f52d9; }
-.voice-btn svg { width: 22px; height: 22px; }
-.form-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-.form-group.span2 { grid-column: 1 / -1; }
-.form-label { font-size: 0.8125rem; font-weight: 600; color: var(--text2); }
-.form-input, .form-select, .form-textarea { width: 100%; padding: 0.625rem 0.875rem; font-size: 0.875rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: inherit; transition: border-color 0.15s; }
-.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
-.form-textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
-.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M2 4l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; padding-right: 2.25rem; }
-.form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
-.file-drop { border: 1.5px dashed var(--border2); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.15s; }
-.file-drop:hover { border-color: var(--accent); background: rgba(99,102,241,0.04); }
-.file-drop svg { width: 28px; height: 28px; color: var(--text3); margin-bottom: 0.5rem; }
-.file-drop-text { font-size: 0.8125rem; color: var(--text2); }
-.file-drop-hint { font-size: 0.75rem; color: var(--text3); margin-top: 0.25rem; }
-.file-name-tag { margin-top: 0.625rem; padding: 0.5rem 0.875rem; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); border-radius: 7px; font-size: 0.8125rem; color: #a5b4fc; display: none; }
-
-/* â”€â”€ Upload tabs â”€â”€ */
-.upload-tabs { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-.upload-tab { display: flex; align-items: center; gap: 0.375rem; padding: 0.4rem 0.875rem; font-size: 0.8rem; font-weight: 600; border-radius: 7px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; font-family: inherit; transition: all 0.15s; }
-.upload-tab.active { background: rgba(99,102,241,0.12); border-color: var(--accent); color: #a5b4fc; }
-
-/* â”€â”€ Camera â”€â”€ */
-.camera-wrap { background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; overflow: hidden; min-height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; position: relative; }
-.camera-idle { text-align: center; padding: 2rem; color: var(--text3); }
-.camera-idle svg { color: var(--text3); }
-#cameraFeed { width: 100%; max-height: 280px; object-fit: cover; display: block; }
-.camera-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
-/* â”€â”€ Materials section â”€â”€ */
-.mat-section { background: rgba(99,102,241,0.04); border: 1px solid rgba(99,102,241,0.15); border-radius: 12px; padding: 1.25rem; }
-.mat-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
-.rag-info-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.2rem; }
-.rag-info-sub { font-size: 0.75rem; color: var(--text2); }
-.mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.625rem; margin-bottom: 0.625rem; }
-.mat-card { cursor: pointer; }
-.mat-card input { display: none; }
-.mat-card-inner { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 9px; transition: all 0.15s; }
-.mat-card:hover .mat-card-inner { border-color: #444; }
-.mat-card input:checked + .mat-card-inner { border-color: var(--accent); background: rgba(99,102,241,0.1); }
-.mat-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.mat-icon svg { width: 16px; height: 16px; color: var(--text3); }
-.mat-card input:checked + .mat-card-inner .mat-icon { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); }
-.mat-card input:checked + .mat-card-inner .mat-icon svg { color: #a5b4fc; }
-.mat-info { flex: 1; min-width: 0; }
-.mat-title { font-size: 0.8rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mat-meta { font-size: 0.7rem; color: var(--text3); margin-top: 0.1rem; }
-.mat-tick { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
-.mat-tick svg { width: 10px; height: 10px; color: transparent; }
-.mat-card input:checked + .mat-card-inner .mat-tick { background: var(--accent); border-color: var(--accent); }
-.mat-card input:checked + .mat-card-inner .mat-tick svg { color: #fff; }
-.mat-hint { font-size: 0.75rem; color: var(--text3); }
-.mat-empty { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--text2); padding: 0.75rem; background: var(--surface2); border-radius: 8px; }
-.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-track { position: absolute; inset: 0; background: var(--surface2); border-radius: 12px; cursor: pointer; transition: background 0.2s; border: 1px solid var(--border2); }
-.toggle input:checked + .toggle-track { background: var(--accent); border-color: var(--accent); }
-.toggle-track::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
-.toggle input:checked + .toggle-track::after { transform: translateX(20px); }
-.section-sep { height: 1px; background: var(--border); margin: 1.25rem 0; }
-.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 600; border-radius: 7px; text-decoration: none; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: #4f52d9; }
-.btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
-.btn-ghost:hover { color: var(--text); border-color: #444; }
-.btn-lg { padding: 0.75rem 1.5rem; font-size: 0.9375rem; }
-.form-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 199; }
-.overlay.open { display: block; }
-.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.5rem; z-index: 100; justify-content: space-around; }
-.bn-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.4rem 0.75rem; color: var(--text3); text-decoration: none; font-size: 0.6rem; border-radius: 6px; }
-.bn-item svg { width: 20px; height: 20px; }
-.bn-item.active { color: var(--accent); }
-@media (max-width: 900px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .main { margin-left: 0; }
-  .menu-btn { display: flex; }
-  .bottom-nav { display: flex; }
-  .page { padding-bottom: 5rem; }
-}
-@media (max-width: 700px) {
-  .page { padding: 1rem; padding-bottom: 5rem; }
-  .topbar { padding: 0 1rem; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-group.span2 { grid-column: 1; }
-  .form-footer { flex-direction: column-reverse; }
-  .form-footer .btn { width: 100%; justify-content: center; }
-  .mode-tabs { grid-template-columns: 1fr 1fr; }
-}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
 </style>
+
+<style>
+/* ── Layout ── */
+.layout{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--sidebar-w);background:var(--primary);
+  position:fixed;top:0;left:0;bottom:0;z-index:200;
+  display:flex;flex-direction:column;transition:transform .25s;
+}
+.sidebar-logo{
+  padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:.75rem;
+}
+.sidebar-logo-icon{
+  width:32px;height:32px;border-radius:10px;
+  background:linear-gradient(135deg,#F59E0B,#FBBF24);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(245,158,11,.3);flex-shrink:0;
+}
+.sidebar-logo-icon svg{width:16px;height:16px;color:#fff;}
+.sidebar-logo-text{font-family:'Poppins',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:-.02em;}
+.sidebar-nav{flex:1;padding:.75rem;overflow-y:auto;scrollbar-width:none;}
+.sidebar-nav::-webkit-scrollbar{display:none;}
+.nav-link{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.625rem .875rem;color:#94A3B8;
+  font-size:.875rem;font-weight:500;border-radius:var(--radius-sm);
+  transition:all .2s;margin-bottom:2px;
+}
+.nav-link:hover{background:rgba(255,255,255,.06);color:#F1F5F9;}
+.nav-link.active{background:rgba(245,158,11,.12);color:#F59E0B;font-weight:600;}
+.nav-link svg{width:16px;height:16px;flex-shrink:0;}
+.nav-divider{height:1px;background:rgba(255,255,255,.06);margin:.5rem 0;}
+.sidebar-footer{
+  padding:.875rem .75rem;border-top:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:.75rem;
+}
+.sidebar-av{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,#F59E0B,#FBBF24);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8125rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+.sidebar-av-name{font-size:.8125rem;font-weight:600;color:#F1F5F9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── Main ── */
+.main{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh;}
+.topbar{
+  height:56px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;position:sticky;top:0;z-index:50;
+  box-shadow:var(--shadow-sm);
+}
+.topbar-left{display:flex;align-items:center;gap:.75rem;}
+.menu-btn{
+  display:none;width:36px;height:36px;align-items:center;justify-content:center;
+  background:none;border:none;color:var(--text3);cursor:pointer;border-radius:var(--radius-sm);
+  transition:background .15s;
+}
+.menu-btn:hover{background:var(--surface2);}
+.menu-btn svg{width:20px;height:20px;}
+.topbar-title{font-size:.9375rem;font-weight:700;color:var(--text);}
+.topbar-av{
+  width:32px;height:32px;border-radius:10px;
+  background:linear-gradient(135deg,#F59E0B,#FBBF24);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8125rem;font-weight:700;color:#fff;
+}
+
+/* ── Page ── */
+.page{padding:2rem;max-width:800px;padding-bottom:6rem;}
+.page-head{margin-bottom:2rem;}
+.page-title{font-family:'Poppins',sans-serif;font-size:1.75rem;font-weight:700;color:var(--text);letter-spacing:-.03em;margin-bottom:.375rem;}
+.page-sub{font-size:.9375rem;color:var(--text3);}
+
+/* ── Mode Tabs ── */
+.mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:2rem;}
+.mode-tab{
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--radius-lg);padding:1.5rem 1.25rem;
+  cursor:pointer;transition:all .2s;text-align:center;user-select:none;
+  box-shadow:var(--shadow-sm);
+}
+.mode-tab:hover{border-color:var(--accent);box-shadow:var(--shadow);}
+.mode-tab.active{border-color:var(--accent);background:var(--accent-subtle);box-shadow:0 4px 16px var(--accent-glow);}
+.mode-tab-icon{
+  width:52px;height:52px;border-radius:14px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto .875rem;transition:all .2s;
+}
+.mode-tab.active .mode-tab-icon{background:var(--accent-subtle);border-color:rgba(245,158,11,.3);}
+.mode-tab-icon svg{width:24px;height:24px;color:var(--text3);transition:color .2s;}
+.mode-tab.active .mode-tab-icon svg{color:var(--accent);}
+.mode-tab-title{font-size:.9375rem;font-weight:700;color:var(--text);margin-bottom:.25rem;}
+.mode-tab-desc{font-size:.8125rem;color:var(--text3);}
+
+/* ── Panels ── */
+.panel{display:none;}
+.panel.active{display:block;animation:fadeUp .2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── Voice Panel ── */
+.voice-wrap{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-lg);padding:2.5rem 2rem;
+  text-align:center;box-shadow:var(--shadow-sm);
+}
+.voice-orb{
+  width:120px;height:120px;border-radius:50%;
+  background:var(--surface2);border:2.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.5rem;transition:all .3s;cursor:pointer;
+}
+.voice-orb:hover{border-color:var(--accent);background:var(--accent-subtle);}
+.voice-orb.listening{
+  border-color:var(--accent);background:var(--accent-subtle);
+  animation:orb-pulse 1.5s ease-in-out infinite;
+}
+@keyframes orb-pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-glow);}50%{box-shadow:0 0 0 20px rgba(245,158,11,0);}}
+.voice-orb svg{width:44px;height:44px;color:var(--text3);transition:color .2s;}
+.voice-orb.listening svg{color:var(--accent);}
+.voice-status{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:1rem;}
+.voice-hint{font-size:.875rem;color:var(--text3);margin-bottom:1.25rem;}
+.voice-transcript{
+  min-height:90px;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:1rem;font-size:.9375rem;
+  color:var(--text4);line-height:1.7;margin-bottom:1.5rem;text-align:left;
+  transition:border-color .2s;
+}
+.voice-transcript.has-text{color:var(--text);border-color:var(--accent);}
+.voice-btn{
+  width:60px;height:60px;border-radius:50%;
+  background:var(--accent);border:none;color:#fff;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  margin:0 auto;transition:all .2s;
+  box-shadow:0 4px 16px var(--accent-glow);
+}
+.voice-btn:hover{background:var(--accent-hover);transform:scale(1.05);}
+.voice-btn.recording{background:var(--red);box-shadow:0 4px 16px rgba(239,68,68,.3);}
+.voice-btn svg{width:24px;height:24px;}
+
+/* ── Form Card ── */
+.form-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-lg);padding:1.75rem;
+  box-shadow:var(--shadow-sm);
+}
+.form-section{margin-bottom:1.75rem;}
+.form-section:last-child{margin-bottom:0;}
+.form-section-title{
+  font-size:.8125rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--text3);margin-bottom:1rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.form-section-title svg{width:14px;height:14px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.125rem;}
+.form-group{display:flex;flex-direction:column;gap:.4rem;}
+.form-group.span2{grid-column:1/-1;}
+.form-label{font-size:.8125rem;font-weight:600;color:var(--text2);}
+.form-label span{font-weight:400;color:var(--text4);margin-left:.25rem;}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:.625rem .875rem;font-size:.9375rem;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-family:inherit;
+  transition:border-color .2s,box-shadow .2s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(245,158,11,.1);
+}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text4);}
+.form-textarea{resize:vertical;min-height:110px;line-height:1.7;}
+.form-select{
+  appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .875rem center;padding-right:2.25rem;
+}
+.form-hint{font-size:.75rem;color:var(--text4);margin-top:.25rem;}
+
+/* ── Quick Type Buttons ── */
+.quick-types{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem;}
+.quick-type{
+  padding:.375rem .875rem;border-radius:20px;font-size:.8125rem;font-weight:600;
+  border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);
+  cursor:pointer;transition:all .2s;
+}
+.quick-type:hover,.quick-type.active{
+  background:var(--accent-subtle);border-color:rgba(245,158,11,.4);color:#D97706;
+}
+
+/* ── File Upload ── */
+.upload-tabs{display:flex;gap:.375rem;margin-bottom:.75rem;}
+.upload-tab{
+  display:flex;align-items:center;gap:.375rem;
+  padding:.4rem .875rem;font-size:.8125rem;font-weight:600;
+  border-radius:var(--radius-sm);border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text3);cursor:pointer;
+  font-family:inherit;transition:all .2s;
+}
+.upload-tab.active{background:var(--accent-subtle);border-color:rgba(245,158,11,.4);color:#D97706;}
+.file-drop{
+  border:2px dashed var(--border);border-radius:var(--radius);
+  padding:2rem;text-align:center;cursor:pointer;transition:all .2s;
+}
+.file-drop:hover{border-color:var(--accent);background:var(--accent-subtle);}
+.file-drop svg{width:28px;height:28px;color:var(--text4);margin-bottom:.625rem;}
+.file-drop-text{font-size:.875rem;font-weight:600;color:var(--text2);}
+.file-drop-hint{font-size:.75rem;color:var(--text4);margin-top:.25rem;}
+.file-name-tag{
+  margin-top:.625rem;padding:.5rem .875rem;
+  background:var(--accent-subtle);border:1px solid rgba(245,158,11,.3);
+  border-radius:var(--radius-sm);font-size:.8125rem;color:#D97706;display:none;
+  display:flex;align-items:center;gap:.5rem;
+}
+.file-name-tag svg{width:14px;height:14px;flex-shrink:0;}
+
+/* ── Camera ── */
+.camera-wrap{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;min-height:180px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:.75rem;position:relative;
+}
+.camera-idle{text-align:center;padding:2rem;color:var(--text4);}
+.camera-idle svg{color:var(--text4);}
+#cameraFeed{width:100%;max-height:280px;object-fit:cover;display:block;}
+.camera-btns{display:flex;gap:.5rem;flex-wrap:wrap;}
+
+/* ── Materials ── */
+.mat-section{
+  background:var(--accent-subtle);border:1.5px solid rgba(245,158,11,.2);
+  border-radius:var(--radius);padding:1.25rem;
+}
+.mat-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
+.mat-header-text{}
+.mat-header-title{font-size:.9375rem;font-weight:700;color:var(--text);}
+.mat-header-sub{font-size:.8125rem;color:var(--text3);margin-top:.125rem;}
+.mat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.625rem;margin-bottom:.625rem;}
+.mat-card{cursor:pointer;}
+.mat-card input{display:none;}
+.mat-card-inner{
+  display:flex;align-items:center;gap:.75rem;padding:.75rem;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);transition:all .2s;
+}
+.mat-card:hover .mat-card-inner{border-color:rgba(245,158,11,.3);}
+.mat-card input:checked + .mat-card-inner{border-color:var(--accent);background:var(--accent-subtle);}
+.mat-icon{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mat-icon svg{width:16px;height:16px;color:var(--text3);}
+.mat-card input:checked + .mat-card-inner .mat-icon{background:var(--accent-subtle);border-color:rgba(245,158,11,.3);}
+.mat-card input:checked + .mat-card-inner .mat-icon svg{color:var(--accent);}
+.mat-info{flex:1;min-width:0;}
+.mat-title{font-size:.8125rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mat-meta{font-size:.6875rem;color:var(--text4);margin-top:.1rem;}
+.mat-tick{
+  width:18px;height:18px;border-radius:50%;
+  border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;
+}
+.mat-tick svg{width:10px;height:10px;color:transparent;}
+.mat-card input:checked + .mat-card-inner .mat-tick{background:var(--accent);border-color:var(--accent);}
+.mat-card input:checked + .mat-card-inner .mat-tick svg{color:#fff;}
+.mat-hint{font-size:.75rem;color:var(--text3);}
+.mat-empty{
+  display:flex;align-items:center;gap:.625rem;
+  font-size:.875rem;color:var(--text2);padding:.875rem;
+  background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);
+}
+.mat-empty a{color:var(--accent);font-weight:600;}
+
+/* ── Toggle ── */
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{
+  position:absolute;inset:0;background:var(--surface3);
+  border-radius:12px;cursor:pointer;transition:background .2s;
+  border:1px solid var(--border);
+}
+.toggle input:checked + .toggle-track{background:var(--accent);border-color:var(--accent);}
+.toggle-track::after{
+  content:'';position:absolute;width:18px;height:18px;
+  background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s;
+}
+.toggle input:checked + .toggle-track::after{transform:translateX(20px);}
+
+/* ── Format Preview ── */
+.format-preview-wrap{margin-top:.875rem;}
+.format-preview-label{font-size:.75rem;color:var(--text4);margin-bottom:.375rem;font-weight:600;}
+.format-preview{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:1rem;
+  font-size:14px;line-height:1.6;color:var(--text2);transition:all .2s;
+}
+
+/* ── Divider ── */
+.section-sep{height:1px;background:var(--border);margin:1.5rem 0;}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.5rem 1rem;font-size:.875rem;font-weight:600;
+  border-radius:var(--radius-sm);cursor:pointer;border:none;
+  transition:all .2s;font-family:inherit;text-decoration:none;
+}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-glow);}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow);}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border);}
+.btn-ghost:hover{background:var(--surface3);color:var(--text);}
+.btn-lg{padding:.875rem 2rem;font-size:1rem;border-radius:var(--radius);}
+.form-footer{
+  display:flex;gap:.75rem;justify-content:flex-end;
+  margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);
+}
+
+/* ── Overlay ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;backdrop-filter:blur(4px);}
+.overlay.open{display:block;}
+
+/* ── Bottom Nav ── */
+.bottom-nav-unified{
+  display:flex!important;position:fixed!important;
+  bottom:0!important;left:0!important;right:0!important;
+  background:#fff!important;border-top:1px solid var(--border)!important;
+  padding:0 .5rem!important;padding-bottom:env(safe-area-inset-bottom,0)!important;
+  z-index:2000!important;justify-content:space-around!important;
+  align-items:center!important;height:60px!important;
+  box-shadow:0 -4px 16px rgba(0,0,0,.06)!important;
+}
+.bn-unified-item{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;padding:.375rem .5rem;
+  color:var(--text3);text-decoration:none;flex:1;
+  transition:color .2s;min-width:0;background:none;border:none;cursor:pointer;
+}
+.bn-unified-item svg{width:22px;height:22px;stroke-width:2px;}
+.bn-unified-label{font-size:.625rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+.bn-unified-item.active,.bn-unified-item:hover{color:#D97706;}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .menu-btn{display:flex;}
+  .page{padding:1.25rem;padding-bottom:5.5rem;}
+}
+@media(max-width:600px){
+  .form-grid{grid-template-columns:1fr;}
+  .form-group.span2{grid-column:1;}
+  .form-footer{flex-direction:column-reverse;}
+  .form-footer .btn{width:100%;justify-content:center;}
+  .page-title{font-size:1.375rem;}
+}
+@media(min-width:900px){.bottom-nav-unified{display:none!important;}}
+</style>
+
 </head>
 <body>
 <div class="layout">
+  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><a href="{% url 'community:community_home' %}">NEXA</a></div>
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      </div>
+      <span class="sidebar-logo-text">Paw</span>
+    </div>
     <nav class="sidebar-nav">
       <a href="{% url 'community:community_home' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Dashboard
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
       </a>
       <a href="{% url 'list_materials' %}" class="nav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         My Materials
       </a>
       <a href="{% url 'ai_chat' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
         AI Tutor
       </a>
       <div class="nav-divider"></div>
@@ -177,23 +417,24 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Assignments
       </a>
-      <a href="{% url 'library_home' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Library
-      </a>
-      <a href="{% url 'community:feed' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Community
+      <a href="{% url 'community:ai_tools' %}" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        All Tools
       </a>
       <div class="nav-divider"></div>
-      <a href="{% url 'logout' %}" class="nav-link" style="color:var(--text3)">
+      <a href="{% url 'logout' %}" class="nav-link" style="color:#64748B;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Log out
       </a>
     </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-av">{{ user.username|slice:":1"|upper }}</div>
+      <span class="sidebar-av-name">{{ user.username }}</span>
+    </div>
   </aside>
   <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
+  <!-- Main -->
   <main class="main">
     <div class="topbar">
       <div class="topbar-left">
@@ -202,170 +443,185 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
         </button>
         <span class="topbar-title">New Assignment</span>
       </div>
-      <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+      <div class="topbar-av">{{ user.username|slice:":1"|upper }}</div>
     </div>
 
     <div class="page">
       <div class="page-head">
-        <h1 class="page-title">New Assignment</h1>
-        <p class="page-sub">Choose how you want to create your assignment</p>
+        <h1 class="page-title">Assignment Helper</h1>
+        <p class="page-sub">Describe your assignment — Paw will structure and complete it for you.</p>
       </div>
 
-      <!-- Mode tabs -->
+      <!-- Mode Tabs -->
       <div class="mode-tabs">
         <div class="mode-tab active" id="tab-voice" onclick="switchMode('voice')">
           <div class="mode-tab-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </div>
           <div class="mode-tab-title">Voice Input</div>
-          <div class="mode-tab-desc">Tell AI what you need</div>
+          <div class="mode-tab-desc">Just speak — AI handles the rest</div>
         </div>
         <div class="mode-tab" id="tab-manual" onclick="switchMode('manual')">
           <div class="mode-tab-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </div>
-          <div class="mode-tab-title">Manual Input</div>
-          <div class="mode-tab-desc">Structure it yourself</div>
+          <div class="mode-tab-title">Type It Out</div>
+          <div class="mode-tab-desc">Fill in the details yourself</div>
         </div>
       </div>
 
       <form method="post" enctype="multipart/form-data" id="assignmentForm">
         {% csrf_token %}
 
-        <!-- Voice panel -->
+        <!-- ── Voice Panel ── -->
         <div class="panel active" id="panel-voice">
           <div class="voice-wrap">
             <div class="voice-orb" id="voiceOrb" onclick="toggleVoice()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </div>
-            <div class="voice-status" id="voiceStatus">Click the mic to start speaking</div>
-            <div class="voice-transcript" id="voiceTranscript">Your speech will appear hereâ€¦</div>
-            <button type="button" class="voice-btn" onclick="toggleVoice()">
+            <div class="voice-status" id="voiceStatus">Tap the mic and describe your assignment</div>
+            <div class="voice-hint" id="voiceHint">e.g. "Write a 500-word essay on climate change for my Geography class"</div>
+            <div class="voice-transcript" id="voiceTranscript">Your words will appear here…</div>
+            <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
               <svg id="voiceBtnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
             </button>
             <input type="hidden" name="voice_content" id="voiceContent">
           </div>
         </div>
 
-        <!-- Manual panel -->
+        <!-- ── Manual Panel ── -->
         <div class="panel" id="panel-manual">
           <div class="form-card">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label" for="title">Assignment Title</label>
-                <input type="text" name="title" id="title" class="form-input" placeholder="e.g. Chapter 5 Essay" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="task_type">Task Type</label>
-                <select name="task_type" id="task_type" class="form-select">
-                  <option value="essay">Write an Essay</option>
-                  <option value="summarize">Summarize</option>
-                  <option value="answer">Answer Questions</option>
-                  <option value="slides">Generate Slides</option>
-                  <option value="structured">Structured Answers</option>
-                </select>
-              </div>
-              <div class="form-group span2">
-                <label class="form-label">Upload Assignment File (Optional)</label>
-                <div class="upload-tabs">
-                  <button type="button" class="upload-tab active" onclick="switchUpload('file')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Upload File
-                  </button>
-                  <button type="button" class="upload-tab" onclick="switchUpload('camera')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    Take Photo
-                  </button>
-                </div>
 
-                <!-- File upload -->
-                <div id="upload-file">
-                  <div class="file-drop" onclick="document.getElementById('fileInput').click()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <div class="file-drop-text">Click to upload or drag and drop</div>
-                    <div class="file-drop-hint">PDF, Word, PowerPoint supported</div>
-                  </div>
-                  <input type="file" name="file" id="fileInput" accept=".pdf,.docx,.pptx,.ppt,image/*" style="display:none" onchange="showFile(this)">
-                  <div class="file-name-tag" id="fileNameTag"></div>
+            <!-- Basic Info -->
+            <div class="form-section">
+              <div class="form-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Basic Info
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="title">Assignment Title</label>
+                  <input type="text" name="title" id="title" class="form-input" placeholder="e.g. Chapter 5 Essay">
                 </div>
-
-                <!-- Camera capture -->
-                <div id="upload-camera" style="display:none">
-                  <div class="camera-wrap">
-                    <video id="cameraFeed" autoplay playsinline style="display:none"></video>
-                    <canvas id="cameraCanvas" style="display:none"></canvas>
-                    <img id="capturedPhoto" style="display:none; width:100%; border-radius:8px; max-height:280px; object-fit:contain;" alt="Captured">
-                    <div class="camera-idle" id="cameraIdle">
-                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                      <div style="font-size:0.8125rem;color:var(--text2);margin-top:0.5rem;">Camera preview will appear here</div>
-                    </div>
-                  </div>
-                  <div class="camera-btns">
-                    <button type="button" class="btn btn-ghost" id="startCamBtn" onclick="startCamera()">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                      Open Camera
-                    </button>
-                    <button type="button" class="btn btn-primary" id="snapBtn" onclick="snapPhoto()" style="display:none">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                      Capture
-                    </button>
-                    <button type="button" class="btn btn-ghost" id="retakeBtn" onclick="retakePhoto()" style="display:none">Retake</button>
-                  </div>
-                  <input type="hidden" name="photo_data" id="photoData">
+                <div class="form-group">
+                  <label class="form-label" for="task_type">What do you need?</label>
+                  <select name="task_type" id="task_type" class="form-select">
+                    <option value="essay">✍️ Write an Essay</option>
+                    <option value="summarize">📋 Summarize</option>
+                    <option value="answer">❓ Answer Questions</option>
+                    <option value="slides">📊 Generate Slides</option>
+                    <option value="structured">📝 Structured Answers</option>
+                  </select>
                 </div>
-              </div>
-              <div class="form-group span2">
-                <label class="form-label" for="text_content">Or Paste Assignment Content</label>
-                <textarea name="text_content" id="text_content" class="form-textarea" placeholder="Paste assignment instructions or content hereâ€¦"></textarea>
-              </div>
-              <div class="form-group span2">
-                <label class="form-label" for="instructions">Additional Instructions</label>
-                <textarea name="instructions" id="instructions" class="form-textarea" style="min-height:80px" placeholder="Any specific requirements for the AIâ€¦"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="output_format">Output Format</label>
-                <select name="output_format" id="output_format" class="form-select">
-                  <option value="word">Microsoft Word (.docx)</option>
-                  <option value="powerpoint">PowerPoint (.pptx)</option>
-                  <option value="pdf">PDF Document (.pdf)</option>
-                  <option value="text">Plain Text</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="word_count">Target Word Count</label>
-                <input type="number" name="word_count" id="word_count" class="form-input" placeholder="e.g. 1000" min="100" max="10000">
+                <div class="form-group span2">
+                  <label class="form-label" for="text_content">Paste Assignment Content <span>(or describe what you need)</span></label>
+                  <textarea name="text_content" id="text_content" class="form-textarea" placeholder="Paste your assignment question, instructions, or topic here…"></textarea>
+                </div>
+                <div class="form-group span2">
+                  <label class="form-label" for="instructions">Extra Instructions <span>(optional)</span></label>
+                  <textarea name="instructions" id="instructions" class="form-textarea" style="min-height:80px" placeholder="Any specific requirements? e.g. 'Use simple language', 'Include examples', 'APA format'…"></textarea>
+                </div>
               </div>
             </div>
 
             <div class="section-sep"></div>
 
-            <!-- Display Options -->
-            <div style="margin-bottom:1.25rem;">
-              <div style="font-size:0.8125rem;font-weight:700;color:var(--text2);margin-bottom:0.875rem;display:flex;align-items:center;gap:0.5rem;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-                Display Options
+            <!-- Upload -->
+            <div class="form-section">
+              <div class="form-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Assignment File <span style="font-weight:400;color:var(--text4);font-size:.75rem;text-transform:none;letter-spacing:0;">(optional)</span>
               </div>
-              <div class="form-grid" style="gap:0.875rem;">
+              <div class="upload-tabs">
+                <button type="button" class="upload-tab active" onclick="switchUpload('file',this)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload File
+                </button>
+                <button type="button" class="upload-tab" onclick="switchUpload('camera',this)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Take Photo
+                </button>
+              </div>
+              <div id="upload-file">
+                <div class="file-drop" onclick="document.getElementById('fileInput').click()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <div class="file-drop-text">Click to upload or drag & drop</div>
+                  <div class="file-drop-hint">PDF, Word, PowerPoint, or image</div>
+                </div>
+                <input type="file" name="file" id="fileInput" accept=".pdf,.docx,.pptx,.ppt,image/*" style="display:none" onchange="showFile(this)">
+                <div class="file-name-tag" id="fileNameTag" style="display:none;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span id="fileNameText"></span>
+                </div>
+              </div>
+              <div id="upload-camera" style="display:none;">
+                <div class="camera-wrap">
+                  <video id="cameraFeed" autoplay playsinline style="display:none"></video>
+                  <canvas id="cameraCanvas" style="display:none"></canvas>
+                  <img id="capturedPhoto" style="display:none;width:100%;border-radius:8px;max-height:280px;object-fit:contain;" alt="Captured">
+                  <div class="camera-idle" id="cameraIdle">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    <div style="font-size:.875rem;color:var(--text3);margin-top:.5rem;">Camera preview appears here</div>
+                  </div>
+                </div>
+                <div class="camera-btns">
+                  <button type="button" class="btn btn-ghost" id="startCamBtn" onclick="startCamera()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Open Camera
+                  </button>
+                  <button type="button" class="btn btn-primary" id="snapBtn" onclick="snapPhoto()" style="display:none">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                    Capture
+                  </button>
+                  <button type="button" class="btn btn-ghost" id="retakeBtn" onclick="retakePhoto()" style="display:none">Retake</button>
+                </div>
+                <input type="hidden" name="photo_data" id="photoData">
+              </div>
+            </div>
+
+            <div class="section-sep"></div>
+
+            <!-- Output Settings -->
+            <div class="form-section">
+              <div class="form-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                Output Settings
+              </div>
+              <div class="form-grid">
                 <div class="form-group">
-                  <label class="form-label">Font Style</label>
+                  <label class="form-label" for="output_format">Output Format</label>
+                  <select name="output_format" id="output_format" class="form-select">
+                    <option value="word">📄 Microsoft Word (.docx)</option>
+                    <option value="powerpoint">📊 PowerPoint (.pptx)</option>
+                    <option value="pdf">📋 PDF Document</option>
+                    <option value="text">📝 Plain Text</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="word_count">Word Count <span>(optional)</span></label>
+                  <input type="number" name="word_count" id="word_count" class="form-input" placeholder="e.g. 500" min="100" max="10000">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="font_style">Font Style</label>
                   <select name="font_style" id="font_style" class="form-select">
                     <option value="inter">Inter (Modern)</option>
                     <option value="georgia">Georgia (Serif)</option>
-                    <option value="times">Times New Roman (Classic)</option>
-                    <option value="mono">Monospace (Code)</option>
+                    <option value="times">Times New Roman</option>
+                    <option value="mono">Monospace</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Font Size</label>
+                  <label class="form-label" for="font_size">Font Size</label>
                   <select name="font_size" id="font_size" class="form-select">
-                    <option value="12">12pt (Small)</option>
-                    <option value="14" selected>14pt (Normal)</option>
-                    <option value="16">16pt (Large)</option>
-                    <option value="18">18pt (Extra Large)</option>
+                    <option value="12">12pt — Small</option>
+                    <option value="14" selected>14pt — Normal</option>
+                    <option value="16">16pt — Large</option>
+                    <option value="18">18pt — Extra Large</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Line Spacing</label>
+                  <label class="form-label" for="line_spacing">Line Spacing</label>
                   <select name="line_spacing" id="line_spacing" class="form-select">
                     <option value="1.4">Compact (1.4)</option>
                     <option value="1.6" selected>Normal (1.6)</option>
@@ -374,7 +630,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Text Alignment</label>
+                  <label class="form-label" for="text_align">Text Alignment</label>
                   <select name="text_align" id="text_align" class="form-select">
                     <option value="left" selected>Left</option>
                     <option value="justify">Justified</option>
@@ -382,30 +638,26 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
                   </select>
                 </div>
               </div>
-              <!-- Live preview -->
-              <div style="margin-top:0.875rem;">
-                <div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.375rem;">Preview</div>
-                <div id="formatPreview" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;font-size:14px;line-height:1.6;text-align:left;color:#ccc;transition:all 0.2s;">
-                  The quick brown fox jumps over the lazy dog. This is how your generated text will appear when displayed.
-                </div>
+              <div class="format-preview-wrap">
+                <div class="format-preview-label">Live Preview</div>
+                <div id="formatPreview" class="format-preview">The quick brown fox jumps over the lazy dog. This is how your generated text will appear.</div>
               </div>
             </div>
 
             <div class="section-sep"></div>
 
-            <!-- Study Materials Picker -->
+            <!-- Study Materials -->
             <div class="mat-section">
               <div class="mat-header">
-                <div>
-                  <div class="rag-info-title">Study Materials</div>
-                  <div class="rag-info-sub">Choose which materials AI should reference â€” or enable all</div>
+                <div class="mat-header-text">
+                  <div class="mat-header-title">📚 Use My Study Materials</div>
+                  <div class="mat-header-sub">AI will reference your uploaded notes and slides</div>
                 </div>
                 <label class="toggle">
                   <input type="checkbox" name="use_rag" id="use_rag" checked onchange="toggleMaterials(this)">
                   <span class="toggle-track"></span>
                 </label>
               </div>
-
               <div id="materialsPanel">
                 {% if user_materials %}
                 <div class="mat-grid">
@@ -416,15 +668,13 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
                       <div class="mat-icon">
                         {% if m.material_type == 'PDF' %}
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        {% elif m.material_type == 'PowerPoint' or m.material_type == 'Slides' %}
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                         {% else %}
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                         {% endif %}
                       </div>
                       <div class="mat-info">
                         <div class="mat-title">{{ m.title }}</div>
-                        <div class="mat-meta">{{ m.material_type }} Â· {{ m.uploaded_at|date:"M d" }}</div>
+                        <div class="mat-meta">{{ m.material_type }} · {{ m.uploaded_at|date:"M d" }}</div>
                       </div>
                       <div class="mat-tick">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -433,22 +683,24 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
                   </label>
                   {% endfor %}
                 </div>
-                <div class="mat-hint">Leave all unchecked to use all materials, or select specific ones.</div>
+                <div class="mat-hint">Leave all unchecked to use all materials, or pick specific ones.</div>
                 {% else %}
                 <div class="mat-empty">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                  No study materials uploaded yet. <a href="{% url 'upload_material' %}" style="color:#a5b4fc">Upload materials</a> to use them here.
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  No materials yet. <a href="{% url 'upload_material' %}">Upload your notes</a> to use them here.
                 </div>
                 {% endif %}
               </div>
             </div>
+
           </div>
         </div>
 
+        <!-- Footer -->
         <div class="form-footer">
           <a href="{% url 'assignment_list' %}" class="btn btn-ghost">Cancel</a>
           <button type="submit" class="btn btn-primary btn-lg">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             Generate Assignment
           </button>
         </div>
@@ -457,121 +709,38 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   </main>
 </div>
 
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: #0b0b0f !important;
-  border-top: 1px solid #1e1e2c !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 100 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0.375rem 0.5rem;
-  color: #8a8a93;
-  border-radius: 12px;
-  text-decoration: none;
-  flex: 1;
-  transition: color 0.15s;
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
-.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
-.bn-unified-item:active svg { transform: scale(1.05); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #8a8a93);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
-.bn-unified-item:active svg { transform: scale(0.9); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+<!-- Bottom Nav -->
+<nav class="bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span class="bn-unified-label">Feed</span>
   </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
     <span class="bn-unified-label">Tutor</span>
   </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
     <span class="bn-unified-label">Workspace</span>
   </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
     <span class="bn-unified-label">Tools</span>
   </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+  <a href="{% url 'list_materials' %}" class="bn-unified-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     <span class="bn-unified-label">Upload</span>
   </a>
 </nav>
 
 <script>
+// ── Sidebar ──
 function toggleMenu() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('open');
 }
 
+// ── Mode switch ──
 function switchMode(mode) {
   document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -579,26 +748,26 @@ function switchMode(mode) {
   document.getElementById('panel-' + mode).classList.add('active');
 }
 
+// ── File upload ──
 function showFile(input) {
   const tag = document.getElementById('fileNameTag');
+  const txt = document.getElementById('fileNameText');
   if (input.files[0]) {
-    tag.textContent = input.files[0].name;
-    tag.style.display = 'block';
+    txt.textContent = input.files[0].name;
+    tag.style.display = 'flex';
   }
 }
 
-// â”€â”€ Upload tabs (file vs camera) â”€â”€
-function switchUpload(mode) {
+function switchUpload(mode, btn) {
   document.querySelectorAll('.upload-tab').forEach(t => t.classList.remove('active'));
-  event.target.closest('.upload-tab').classList.add('active');
+  btn.classList.add('active');
   document.getElementById('upload-file').style.display = mode === 'file' ? '' : 'none';
   document.getElementById('upload-camera').style.display = mode === 'camera' ? '' : 'none';
   if (mode !== 'camera') stopCamera();
 }
 
-// â”€â”€ Camera â”€â”€
+// ── Camera ──
 let cameraStream = null;
-
 async function startCamera() {
   try {
     cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
@@ -610,16 +779,12 @@ async function startCamera() {
     document.getElementById('startCamBtn').style.display = 'none';
     document.getElementById('snapBtn').style.display = '';
     document.getElementById('retakeBtn').style.display = 'none';
-  } catch (e) {
-    alert('Camera access denied or not available: ' + e.message);
-  }
+  } catch(e) { alert('Camera not available: ' + e.message); }
 }
-
 function snapPhoto() {
   const video = document.getElementById('cameraFeed');
   const canvas = document.getElementById('cameraCanvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
   const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
   document.getElementById('photoData').value = dataUrl;
@@ -630,7 +795,6 @@ function snapPhoto() {
   document.getElementById('retakeBtn').style.display = '';
   stopCamera();
 }
-
 function retakePhoto() {
   document.getElementById('capturedPhoto').style.display = 'none';
   document.getElementById('photoData').value = '';
@@ -638,48 +802,37 @@ function retakePhoto() {
   document.getElementById('startCamBtn').style.display = '';
   document.getElementById('cameraIdle').style.display = '';
 }
-
 function stopCamera() {
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
 }
 
-// â”€â”€ Format preview â”€â”€
-const fontMap = {
-  inter: "'Inter', sans-serif",
-  georgia: "Georgia, serif",
-  times: "'Times New Roman', Times, serif",
-  mono: "'Courier New', Courier, monospace"
-};
+// ── Format preview ──
+const fontMap = { inter:"'Inter',sans-serif", georgia:"Georgia,serif", times:"'Times New Roman',serif", mono:"'Courier New',monospace" };
 function updateFormatPreview() {
-  const preview = document.getElementById('formatPreview');
-  if (!preview) return;
-  const font = document.getElementById('font_style').value;
-  const size = document.getElementById('font_size').value;
-  const spacing = document.getElementById('line_spacing').value;
-  const align = document.getElementById('text_align').value;
-  preview.style.fontFamily = fontMap[font] || fontMap.inter;
-  preview.style.fontSize = size + 'px';
-  preview.style.lineHeight = spacing;
-  preview.style.textAlign = align;
+  const p = document.getElementById('formatPreview');
+  if (!p) return;
+  p.style.fontFamily = fontMap[document.getElementById('font_style').value] || fontMap.inter;
+  p.style.fontSize = document.getElementById('font_size').value + 'px';
+  p.style.lineHeight = document.getElementById('line_spacing').value;
+  p.style.textAlign = document.getElementById('text_align').value;
 }
 ['font_style','font_size','line_spacing','text_align'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('change', updateFormatPreview);
 });
 
-// â”€â”€ Materials toggle â”€â”€
+// ── Materials toggle ──
 function toggleMaterials(cb) {
-  document.getElementById('materialsPanel').style.opacity = cb.checked ? '1' : '0.4';
-  document.getElementById('materialsPanel').style.pointerEvents = cb.checked ? '' : 'none';
+  const panel = document.getElementById('materialsPanel');
+  panel.style.opacity = cb.checked ? '1' : '0.4';
+  panel.style.pointerEvents = cb.checked ? '' : 'none';
 }
 
-// â”€â”€ Voice input â”€â”€
-let recognition = null;
-let isListening = false;
-
+// ── Voice input ──
+let recognition = null, isListening = false;
 function toggleVoice() {
   if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    alert('Speech recognition is not supported in this browser. Please use Chrome.');
+    alert('Voice input requires Chrome or Edge browser.');
     return;
   }
   if (isListening) { recognition.stop(); return; }
@@ -691,7 +844,9 @@ function toggleVoice() {
   recognition.onstart = () => {
     isListening = true;
     document.getElementById('voiceOrb').classList.add('listening');
-    document.getElementById('voiceStatus').textContent = 'Listeningâ€¦';
+    document.getElementById('voiceBtn').classList.add('recording');
+    document.getElementById('voiceStatus').textContent = 'Listening… speak clearly';
+    document.getElementById('voiceHint').textContent = 'Tap the mic again to stop';
     document.getElementById('voiceTranscript').classList.add('has-text');
   };
   recognition.onresult = (e) => {
@@ -703,21 +858,25 @@ function toggleVoice() {
   recognition.onend = () => {
     isListening = false;
     document.getElementById('voiceOrb').classList.remove('listening');
-    document.getElementById('voiceStatus').textContent = 'Click the mic to start speaking';
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceStatus').textContent = 'Tap the mic and describe your assignment';
+    document.getElementById('voiceHint').textContent = 'e.g. "Write a 500-word essay on climate change for my Geography class"';
   };
   recognition.onerror = (e) => {
     isListening = false;
     document.getElementById('voiceOrb').classList.remove('listening');
-    document.getElementById('voiceStatus').textContent = 'Error: ' + e.error;
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceStatus').textContent = 'Error: ' + e.error + '. Try again.';
   };
   recognition.start();
 }
 
+// ── Form submit ──
 document.getElementById('assignmentForm').addEventListener('submit', function(e) {
   const activePanel = document.querySelector('.panel.active');
   if (activePanel && activePanel.id === 'panel-voice') {
     const transcript = document.getElementById('voiceContent').value.trim();
-    if (!transcript) { e.preventDefault(); alert('Please record your assignment first.'); return; }
+    if (!transcript) { e.preventDefault(); alert('Please record your assignment description first.'); return; }
     if (!document.getElementById('title').value) document.getElementById('title').value = transcript.slice(0, 80);
     document.getElementById('text_content').value = transcript;
   }
