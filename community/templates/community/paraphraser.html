@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Paraphraser — Paw</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#F8FAFC;--surface:#fff;--surface2:#F1F5F9;--surface3:#E2E8F0;
+  --border:#E5E7EB;--text:#111827;--text2:#374151;--text3:#6B7280;--text4:#9CA3AF;
+  --primary:#0F172A;--accent:#F59E0B;--accent-h:#D97706;
+  --accent-s:rgba(245,158,11,.1);--accent-g:rgba(245,158,11,.25);
+  --green:#10B981;--red:#EF4444;
+  --r:12px;--r-sm:8px;--r-lg:16px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.08);--sh:0 4px 12px rgba(0,0,0,.08);
+  --sidebar-w:256px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+</style>
+
+<style>
+/* ── Layout ── */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:var(--sidebar-w);background:var(--primary);position:fixed;top:0;left:0;bottom:0;z-index:200;display:flex;flex-direction:column;transition:transform .25s;}
+.sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.75rem;}
+.sidebar-logo-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(245,158,11,.3);flex-shrink:0;}
+.sidebar-logo-icon svg{width:16px;height:16px;color:#fff;}
+.sidebar-logo-text{font-family:'Poppins',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:-.02em;}
+.sidebar-nav{flex:1;padding:.75rem;overflow-y:auto;scrollbar-width:none;}
+.sidebar-nav::-webkit-scrollbar{display:none;}
+.nav-link{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;color:#94A3B8;font-size:.875rem;font-weight:500;border-radius:var(--r-sm);transition:all .2s;margin-bottom:2px;}
+.nav-link:hover{background:rgba(255,255,255,.06);color:#F1F5F9;}
+.nav-link.active{background:rgba(245,158,11,.12);color:#F59E0B;font-weight:600;}
+.nav-link svg{width:16px;height:16px;flex-shrink:0;}
+.nav-divider{height:1px;background:rgba(255,255,255,.06);margin:.5rem 0;}
+.sidebar-footer{padding:.875rem .75rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.75rem;}
+.sidebar-av{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;color:#fff;flex-shrink:0;}
+.sidebar-av-name{font-size:.8125rem;font-weight:600;color:#F1F5F9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── Main ── */
+.main{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh;}
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:50;box-shadow:var(--sh-sm);}
+.topbar-left{display:flex;align-items:center;gap:.75rem;}
+.menu-btn{display:none;width:36px;height:36px;align-items:center;justify-content:center;background:none;border:none;color:var(--text3);cursor:pointer;border-radius:var(--r-sm);transition:background .15s;}
+.menu-btn:hover{background:var(--surface2);}
+.menu-btn svg{width:20px;height:20px;}
+.topbar-title{font-size:.9375rem;font-weight:700;color:var(--text);}
+.topbar-av{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;color:#fff;}
+
+/* ── Page ── */
+.page{padding:2rem;max-width:1200px;padding-bottom:6rem;}
+.page-head{margin-bottom:1.75rem;}
+.page-title{font-family:'Poppins',sans-serif;font-size:1.75rem;font-weight:700;color:var(--text);letter-spacing:-.03em;margin-bottom:.375rem;}
+.page-sub{font-size:.9375rem;color:var(--text3);}
+
+/* ── Mode Pills (writing styles) ── */
+.mode-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem;}
+.mode-pill{
+  padding:.5rem 1.125rem;border-radius:20px;font-size:.875rem;font-weight:600;
+  border:1.5px solid var(--border);background:var(--surface);color:var(--text2);
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.375rem;
+}
+.mode-pill:hover{border-color:var(--accent);color:var(--accent-h);}
+.mode-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.mode-pill .mode-emoji{font-size:1rem;}
+
+/* ── Main Shell ── */
+.para-shell{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+
+/* ── Card ── */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;box-shadow:var(--sh-sm);display:flex;flex-direction:column;}
+.card-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;}
+
+/* ── Textarea ── */
+.para-textarea{
+  flex:1;width:100%;min-height:280px;padding:1rem;
+  font-size:.9375rem;line-height:1.75;font-family:inherit;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--r-sm);color:var(--text);resize:none;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.para-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.para-textarea::placeholder{color:var(--text4);}
+
+/* ── Input footer ── */
+.input-footer{display:flex;align-items:center;gap:.625rem;margin-top:.75rem;flex-wrap:wrap;}
+.char-count{font-size:.75rem;color:var(--text4);margin-right:auto;}
+.char-count.warn{color:var(--red);}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;font-size:.875rem;font-weight:600;border-radius:var(--r-sm);cursor:pointer;border:none;transition:all .2s;font-family:inherit;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-g);}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px);}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border);}
+.btn-ghost:hover{background:var(--surface3);color:var(--text);}
+.btn-sm{padding:.375rem .75rem;font-size:.8125rem;}
+.btn-icon{width:36px;height:36px;padding:0;justify-content:center;border-radius:var(--r-sm);}
+.btn-icon svg{width:16px;height:16px;}
+
+/* ── Output tabs ── */
+.otabs{display:flex;gap:.25rem;margin-bottom:.875rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;}
+.otab{padding:.375rem .875rem;border-radius:var(--r-sm);font-size:.8125rem;font-weight:600;border:none;background:transparent;color:var(--text3);cursor:pointer;transition:all .2s;}
+.otab:hover{background:var(--surface2);color:var(--text);}
+.otab.active{background:var(--primary);color:#fff;}
+
+/* ── Output area ── */
+.output-area{flex:1;min-height:280px;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;color:var(--text4);text-align:center;gap:.75rem;}
+.empty-state svg{width:40px;height:40px;opacity:.35;}
+.empty-state p{font-size:.875rem;line-height:1.6;}
+
+/* ── Output text ── */
+.output-text{font-size:.9375rem;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;}
+.output-actions{display:flex;gap:.5rem;margin-top:1rem;padding-top:.875rem;border-top:1px solid var(--border);flex-wrap:wrap;}
+
+/* ── Changes list ── */
+.change-item{padding:.75rem;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:.625rem;border-left:3px solid var(--accent);}
+.change-item:last-child{margin-bottom:0;}
+.change-original{font-size:.8125rem;color:var(--red);text-decoration:line-through;margin-bottom:.25rem;}
+.change-replacement{font-size:.8125rem;color:var(--green);font-weight:600;margin-bottom:.25rem;}
+.change-reason{font-size:.75rem;color:var(--text3);font-style:italic;}
+
+/* ── Explanation ── */
+.explanation-box{background:var(--accent-s);border:1.5px solid rgba(245,158,11,.2);border-radius:var(--r-sm);padding:1rem;font-size:.875rem;line-height:1.7;color:var(--text2);}
+.explanation-box strong{color:var(--accent-h);}
+
+/* ── Options row ── */
+.options-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;align-items:flex-end;}
+.opt-group{display:flex;flex-direction:column;gap:.375rem;}
+.opt-label{font-size:.75rem;font-weight:600;color:var(--text3);}
+.opt-select{padding:.4375rem .875rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.875rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;cursor:pointer;transition:border-color .2s;}
+.opt-select:focus{border-color:var(--accent);}
+
+/* ── Style clone ── */
+.style-clone-wrap{margin-bottom:1.5rem;}
+.style-clone-toggle{display:flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:600;color:var(--text2);cursor:pointer;margin-bottom:.625rem;}
+.style-clone-toggle input{accent-color:var(--accent);width:16px;height:16px;}
+.style-clone-textarea{width:100%;min-height:80px;padding:.75rem;font-size:.875rem;font-family:inherit;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);resize:vertical;outline:none;transition:border-color .2s;display:none;}
+.style-clone-textarea:focus{border-color:var(--accent);}
+.style-clone-textarea::placeholder{color:var(--text4);}
+
+/* ── Loading ── */
+.loading-dots{display:flex;align-items:center;justify-content:center;gap:5px;padding:3rem;}
+.loading-dots span{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:ldot 1.2s infinite;}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes ldot{0%,80%,100%{transform:scale(0);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+
+/* ── Voice btn ── */
+.voice-btn{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.voice-btn:hover{background:var(--accent-s);border-color:var(--accent);color:var(--accent-h);}
+.voice-btn.recording{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red);animation:pulse-red 1s infinite;}
+.voice-btn svg{width:16px;height:16px;}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3);}50%{box-shadow:0 0 0 8px rgba(239,68,68,0);}}
+
+/* ── Overlay ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;backdrop-filter:blur(4px);}
+.overlay.open{display:block;}
+
+/* ── Bottom Nav ── */
+.bottom-nav-unified{display:flex!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;background:#fff!important;border-top:1px solid var(--border)!important;padding:0 .5rem!important;padding-bottom:env(safe-area-inset-bottom,0)!important;z-index:2000!important;justify-content:space-around!important;align-items:center!important;height:60px!important;box-shadow:0 -4px 16px rgba(0,0,0,.06)!important;}
+.bn-unified-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:.375rem .5rem;color:var(--text3);text-decoration:none;flex:1;transition:color .2s;min-width:0;background:none;border:none;cursor:pointer;}
+.bn-unified-item svg{width:22px;height:22px;stroke-width:2px;}
+.bn-unified-label{font-size:.625rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+.bn-unified-item.active,.bn-unified-item:hover{color:#D97706;}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .menu-btn{display:flex;}
+  .page{padding:1.25rem;padding-bottom:5.5rem;}
+  .para-shell{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .mode-row{gap:.375rem;}
+  .mode-pill{font-size:.8125rem;padding:.4rem .875rem;}
+  .page-title{font-size:1.375rem;}
+}
+@media(min-width:900px){.bottom-nav-unified{display:none!important;}}
+</style>
+
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+      <span class="sidebar-logo-text">Paw</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'community:community_home' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
+      <a href="{% url 'ai_chat' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>AI Tutor</a>
+      <a href="{% url 'essay_request' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Essay Writer</a>
+      <a href="{% url 'assignment_create' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Assignments</a>
+      <a href="{% url 'community:citation_page' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>Citation Writer</a>
+      <a href="{% url 'community:paraphraser_page' %}" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Paraphraser</a>
+      <div class="nav-divider"></div>
+      <a href="{% url 'community:ai_tools' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>All Tools</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-av">{{ user.username|slice:":1"|upper }}</div>
+      <span class="sidebar-av-name">{{ user.username }}</span>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <span class="topbar-title">Smart Paraphraser</span>
+      </div>
+      <div class="topbar-av">{{ user.username|slice:":1"|upper }}</div>
+    </div>
+
+    <div class="page">
+      <div class="page-head">
+        <h1 class="page-title">Smart Paraphraser</h1>
+        <p class="page-sub">Rewrite any text in seconds — simple, academic, exam-ready, and more.</p>
+      </div>
+
+      <!-- Writing Mode Pills -->
+      <div class="mode-row">
+        <button class="mode-pill active" data-mode="simple" onclick="setMode(this)"><span class="mode-emoji">✏️</span> Simple</button>
+        <button class="mode-pill" data-mode="academic" onclick="setMode(this)"><span class="mode-emoji">🎓</span> Academic</button>
+        <button class="mode-pill" data-mode="exam" onclick="setMode(this)"><span class="mode-emoji">📝</span> Exam (WAEC)</button>
+        <button class="mode-pill" data-mode="short" onclick="setMode(this)"><span class="mode-emoji">⚡</span> Shorter</button>
+        <button class="mode-pill" data-mode="expanded" onclick="setMode(this)"><span class="mode-emoji">📖</span> Expanded</button>
+        <button class="mode-pill" data-mode="creative" onclick="setMode(this)"><span class="mode-emoji">🎨</span> Creative</button>
+        <button class="mode-pill" data-mode="bullet" onclick="setMode(this)"><span class="mode-emoji">•</span> Bullet Points</button>
+      </div>
+
+      <!-- Options row -->
+      <div class="options-row">
+        <div class="opt-group">
+          <div class="opt-label">Subject (optional)</div>
+          <select id="subjectSelect" class="opt-select">
+            <option value="">Auto-detect</option>
+            <option value="English">English</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+            <option value="History">History</option>
+            <option value="Geography">Geography</option>
+            <option value="Economics">Economics</option>
+            <option value="Government">Government</option>
+            <option value="Literature">Literature</option>
+            <option value="Computer Science">Computer Science</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <label class="opt-label" style="display:flex;align-items:center;gap:.375rem;">
+            <input type="checkbox" id="explainToggle" checked style="accent-color:var(--accent);width:15px;height:15px;">
+            Show what changed
+          </label>
+        </div>
+      </div>
+
+      <!-- Style Clone -->
+      <div class="style-clone-wrap">
+        <label class="style-clone-toggle">
+          <input type="checkbox" id="styleCloneToggle" onchange="toggleStyleClone(this)">
+          ✦ Style Clone — write in my voice
+        </label>
+        <textarea id="styleCloneText" class="style-clone-textarea" placeholder="Paste a paragraph you've written before — Paw will match your tone and style…" maxlength="600"></textarea>
+      </div>
+
+      <!-- Main Shell -->
+      <div class="para-shell">
+        <!-- Input -->
+        <div class="card">
+          <div class="card-label">
+            Your Text
+            <span id="charCount" class="char-count">0 / 8000</span>
+          </div>
+          <textarea id="inputText" class="para-textarea" placeholder="Paste or type the text you want to paraphrase…" maxlength="8000" oninput="updateCharCount()"></textarea>
+          <div class="input-footer">
+            <button class="btn btn-ghost btn-sm" onclick="clearInput()">Clear</button>
+            <button class="voice-btn" id="voiceBtn" title="Voice input" onclick="toggleVoice()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="btn btn-primary" onclick="runParaphrase()" id="goBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              Paraphrase
+            </button>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="card">
+          <div class="otabs">
+            <button class="otab active" id="otab-output" onclick="showTab('output')">Output</button>
+            <button class="otab" id="otab-changes" onclick="showTab('changes')">
+              Changes
+              <span id="changesBadge" style="display:none;background:var(--accent);color:#fff;border-radius:10px;padding:0 6px;font-size:.6875rem;margin-left:.25rem;"></span>
+            </button>
+            <button class="otab" id="otab-explain" onclick="showTab('explain')">Tutor Note</button>
+          </div>
+
+          <!-- Output tab -->
+          <div id="tab-output" class="output-area">
+            <div class="empty-state" id="emptyState">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <p>Your rewritten text appears here.<br>Choose a mode and click Paraphrase.</p>
+            </div>
+            <div id="outputText" style="display:none;" class="output-text"></div>
+            <div id="outputActions" class="output-actions" style="display:none;">
+              <button class="btn btn-ghost btn-sm" onclick="copyOutput()">📋 Copy</button>
+              <button class="btn btn-ghost btn-sm" onclick="speakOutput()">🔊 Read</button>
+              <button class="btn btn-ghost btn-sm" onclick="useAsInput()">↩ Use as Input</button>
+            </div>
+          </div>
+
+          <!-- Changes tab -->
+          <div id="tab-changes" class="output-area" style="display:none;">
+            <div class="empty-state" id="changesEmpty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <p>Changes will appear here after paraphrasing.</p>
+            </div>
+            <div id="changesList" style="display:none;overflow-y:auto;max-height:320px;"></div>
+          </div>
+
+          <!-- Explain tab -->
+          <div id="tab-explain" class="output-area" style="display:none;">
+            <div class="empty-state" id="explainEmpty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <p>A tutor note explaining the changes will appear here.</p>
+            </div>
+            <div id="explainText" style="display:none;" class="explanation-box"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav-unified">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bn-unified-label">Feed</span></a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><span class="bn-unified-label">Tutor</span></a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span class="bn-unified-label">Workspace</span></a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="bn-unified-label">Tools</span></a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="bn-unified-label">Upload</span></a>
+</nav>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+let currentMode = 'simple';
+let lastOutput = '';
+let recognition = null, isListening = false;
+
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+function setMode(btn) {
+  document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  currentMode = btn.dataset.mode;
+}
+
+function updateCharCount() {
+  const len = document.getElementById('inputText').value.length;
+  const el = document.getElementById('charCount');
+  el.textContent = len + ' / 8000';
+  el.classList.toggle('warn', len > 7500);
+}
+
+function clearInput() {
+  document.getElementById('inputText').value = '';
+  updateCharCount();
+}
+
+function toggleStyleClone(cb) {
+  document.getElementById('styleCloneText').style.display = cb.checked ? 'block' : 'none';
+}
+
+function showTab(tab) {
+  ['output','changes','explain'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+    document.getElementById('otab-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+async function runParaphrase() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) { alert('Please enter some text to paraphrase.'); return; }
+
+  const btn = document.getElementById('goBtn');
+  btn.textContent = 'Working…'; btn.disabled = true;
+
+  const styleSample = document.getElementById('styleCloneToggle').checked
+    ? document.getElementById('styleCloneText').value.trim() : '';
+  const subject = document.getElementById('subjectSelect').value;
+
+  showTab('output');
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('outputText').style.display = 'none';
+  document.getElementById('outputActions').style.display = 'none';
+  document.getElementById('outputText').innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  document.getElementById('outputText').style.display = 'block';
+
+  try {
+    const r = await fetch('/community/api/paraphrase/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({text, mode: currentMode, style_sample: styleSample, subject})
+    });
+    const d = await r.json();
+    if (d.error) {
+      document.getElementById('outputText').innerHTML = '<div style="color:var(--red);font-size:.875rem;">' + _e(d.error) + '</div>';
+      return;
+    }
+    lastOutput = d.paraphrased || '';
+    document.getElementById('outputText').textContent = lastOutput;
+    document.getElementById('outputActions').style.display = 'flex';
+
+    // Changes
+    const changes = d.changes || [];
+    const explainOn = document.getElementById('explainToggle').checked;
+    if (explainOn && changes.length) {
+      let html = '';
+      changes.forEach(c => {
+        html += '<div class="change-item">';
+        if (c.original) html += '<div class="change-original">' + _e(c.original) + '</div>';
+        if (c.replacement) html += '<div class="change-replacement">→ ' + _e(c.replacement) + '</div>';
+        if (c.reason) html += '<div class="change-reason">' + _e(c.reason) + '</div>';
+        html += '</div>';
+      });
+      document.getElementById('changesList').innerHTML = html;
+      document.getElementById('changesList').style.display = 'block';
+      document.getElementById('changesEmpty').style.display = 'none';
+      const badge = document.getElementById('changesBadge');
+      badge.textContent = changes.length; badge.style.display = '';
+    }
+
+    // Explanation
+    if (d.explanation) {
+      document.getElementById('explainText').innerHTML = '<strong>Tutor Note:</strong> ' + _e(d.explanation);
+      document.getElementById('explainText').style.display = 'block';
+      document.getElementById('explainEmpty').style.display = 'none';
+    }
+  } catch(e) {
+    document.getElementById('outputText').innerHTML = '<div style="color:var(--red);font-size:.875rem;">Something went wrong. Please try again.</div>';
+  } finally {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Paraphrase';
+    btn.disabled = false;
+  }
+}
+
+function copyOutput() {
+  if (lastOutput) navigator.clipboard.writeText(lastOutput).then(() => showToast('Copied!'));
+}
+function speakOutput() {
+  if (lastOutput && 'speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(lastOutput);
+    speechSynthesis.speak(u);
+  }
+}
+function useAsInput() {
+  if (lastOutput) {
+    document.getElementById('inputText').value = lastOutput;
+    updateCharCount();
+    showToast('Moved to input!');
+  }
+}
+
+function _e(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0F172A;color:#fff;padding:.5rem 1.25rem;border-radius:20px;font-size:.875rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;white-space:nowrap;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.style.opacity = '1'; }); });
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 220); }, 2200);
+}
+
+// ── Voice input ──
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Voice input requires Chrome or Edge.'); return;
+  }
+  if (isListening) { recognition.stop(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('voiceBtn').classList.add('recording');
+  };
+  recognition.onresult = (e) => {
+    let t = '';
+    for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+    document.getElementById('inputText').value = t;
+    updateCharCount();
+  };
+  recognition.onend = () => {
+    isListening = false;
+    document.getElementById('voiceBtn').classList.remove('recording');
+  };
+  recognition.onerror = () => {
+    isListening = false;
+    document.getElementById('voiceBtn').classList.remove('recording');
+  };
+  recognition.start();
+}
+</script>
+</body>
+</html>

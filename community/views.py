@@ -3635,6 +3635,11 @@ def citation_page(request):
 
 
 @login_required
+def paraphraser_page(request):
+    return render(request, 'community/paraphraser.html')
+
+
+@login_required
 @require_POST
 def citation_ajax(request):
     """

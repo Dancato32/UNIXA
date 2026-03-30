@@ -165,6 +165,7 @@ urlpatterns = [
 
     # Paraphraser
     path('api/paraphrase/', views.paraphrase_ajax, name='paraphrase_ajax'),
+    path('paraphraser/', views.paraphraser_page, name='paraphraser_page'),
 
     # Citation Intelligence Engine
     path('api/cite/', views.citation_ajax, name='citation_ajax'),
