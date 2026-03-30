@@ -59,3 +59,32 @@ class SavedFlashcardDeck(models.Model):
     def __str__(self):
         return f"{self.name} ({self.material.title})"
 
+class SavedPodcast(models.Model):
+    """Saved AI-generated podcast script with high-quality audio segments."""
+    material = models.ForeignKey(StudyMaterial, on_delete=models.CASCADE, related_name='podcasts')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='podcasts')
+    name = models.CharField(max_length=200)
+    script_json = models.JSONField()  # list of {speaker, text, audio_url}
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.material.title})"
+
+
+class SavedStudySong(models.Model):
+    """Saved AI-generated study song with genre and vocal segments."""
+    material = models.ForeignKey(StudyMaterial, on_delete=models.CASCADE, related_name='study_songs')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='study_songs')
+    name = models.CharField(max_length=200)
+    genre = models.CharField(max_length=50) # Pop, Lofi, Hip-Hop, Rock
+    lyrics_json = models.JSONField() # list of {text, audio_url}
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.genre})"

@@ -10,135 +10,192 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg: #f5f5f7;
-            --sidebar-bg: #ffffff;
-            --main-bg: #ffffff;
-            --border: #e5e5e7;
-            --border-light: #f0f0f2;
-            --text: #1a1a1a;
-            --text2: #6b6b6b;
-            --text3: #aaaaaa;
-            --accent: #1a1a1a;
-            --accent-hover: #333;
-            --sidebar-w: 220px;
-            --header-h: 56px;
-            --input-radius: 14px;
-            --card-bg: #f9f9fb;
-            --card-hover: #f0f0f4;
-            --msg-user-bg: #f0f0f4;
-            --msg-ai-bg: #ffffff;
-            --shadow: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
-        }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
-        .app { display: flex; height: 100vh; }
+            /* ── Black & White Hand-Drawn Professional ── */
+            --bg: #fafaf8;
+            --surface: #ffffff;
+            --surface2: #f5f5f3;
+            --sidebar-bg: #111111;
+            --main-bg: var(--bg);
+            --border: #d0d0cc;
+            --border-ink: #111111;
+            --border-light: rgba(0,0,0,0.05);
+            --text: #111111;
+            --text2: #444440;
+            --text3: #888884;
+            --accent: #111111;
+            --accent-hover: #333333;
+            --card: #ffffff;
+            --card2: #f5f5f3;
 
-        /* ── SIDEBAR ── */
-        .sidebar {
-            width: var(--sidebar-w); background: var(--sidebar-bg);
-            border-right: 1px solid var(--border); display: flex; flex-direction: column;
-            height: 100vh; position: fixed; left: 0; top: 0; z-index: 100;
-            transition: transform 0.25s ease;
+            /* Chat structure vars */
+            --sidebar-w: 200px;
+            --header-h: 60px;
+            --input-radius: 8px; /* sharp sketches */
+            --card-hover: #eeeeeb;
+            --msg-user-bg: #111111;
+            --msg-ai-bg: transparent;
+            --shadow: 3px 3px 0px rgba(0,0,0,0.1);
+            --shadow-md: 4px 4px 0px rgba(0,0,0,0.15);
+            
+            --font-display: 'Gochi Hand', cursive;
+            --font-hand: 'Handlee', cursive;
         }
-        .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 18px 16px 14px; border-bottom: 1px solid var(--border-light); }
-        .sidebar-logo-icon { width: 32px; height: 32px; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0; }
-        .sidebar-logo-name { font-size: 15px; font-weight: 700; color: var(--text); }
-        .sidebar-search { padding: 10px 12px; }
-        .sidebar-search-box { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 13px; color: var(--text2); cursor: pointer; }
-        .sidebar-search-box svg { flex-shrink: 0; opacity: 0.5; }
-        .sidebar-nav { flex: 1; overflow-y: auto; padding: 4px 8px; }
-        .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--text2); font-size: 13.5px; font-weight: 500; text-decoration: none; cursor: pointer; margin-bottom: 1px; transition: background 0.15s, color 0.15s; }
-        .nav-item:hover { background: var(--card-hover); color: var(--text); }
-        .nav-item.active { background: var(--card-hover); color: var(--text); font-weight: 600; }
-        .nav-item svg { flex-shrink: 0; opacity: 0.6; }
-        .nav-item.active svg { opacity: 1; }
-        .nav-badge { font-size: 10px; font-weight: 700; background: #3b82f6; color: #fff; border-radius: 4px; padding: 1px 5px; margin-left: auto; }
-        .nav-section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 10px 4px; }
-        .nav-divider { height: 1px; background: var(--border-light); margin: 6px 0; }
-        .sidebar-footer { padding: 12px; border-top: 1px solid var(--border-light); }
-        .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; }
-        .sidebar-user:hover { background: var(--card-hover); }
-        .sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; background: #1a1a1a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-        .sidebar-user-info { flex: 1; min-width: 0; }
-        .sidebar-user-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sidebar-user-email { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Dark Mode Support (Basic) */
+        [data-theme="dark"] {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface2: #1c1c1c;
+            --border: #333333;
+            --border-ink: #f0f0ee;
+            --border-light: rgba(255,255,255,0.05);
+            --text: #f0f0ee;
+            --text2: #c8c8c4;
+            --text3: #888884;
+            --accent: #f0f0ee;
+            --card: #141414;
+            --msg-user-bg: #222;
+        }
+
+        body { font-family: var(--font-hand), -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        .app { display: flex; height: 100vh; background: var(--bg); }
+
+        /* Sidebar (Standardized Redesign) */
+        .sidebar {
+          width: var(--sidebar-w); background: var(--sidebar-bg);
+          border-right: 1px solid var(--border-ink);
+          display: flex; flex-direction: column; flex-shrink: 0;
+          z-index: 1500; height: 100vh; position: relative;
+        }
+        .sidebar-header { padding: 1.5rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+        .sidebar-logo-icon { color: #fff; font-size: 1.25rem; line-height: 1; display:flex; align-items:center; justify-content:center;}
+        .sidebar-logo-text { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: 0; }
+        
+        .sidebar-section-label { font-size: .625rem; font-family: var(--font-hand); font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #888; padding: 1.5rem 1.25rem 0.75rem; }
+        
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.5rem 0; scrollbar-width: none; display:flex; flex-direction:column; }
+        .sidebar-nav::-webkit-scrollbar { display: none; }
+        
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: .75rem 1.25rem; margin: 0.125rem 0.75rem; border-radius: 6px; color: #aaa; font-size: .9375rem; font-family: var(--font-hand); font-weight: 600; transition: all 0.2s ease; text-decoration: none; border: none; background: none; width: calc(100% - 1.5rem); text-align: left; }
+        .nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.05); color: #fff; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); box-shadow: 2px 2px 0px rgba(255,255,255,0.1); }
+        .nav-item svg { width: 20px; height: 20px; stroke-width: 2px; flex-shrink: 0; }
+        .nav-item.active svg { color: #fff; stroke-width: 2.5px; }
+        
+        .sidebar-footer { padding: 1.25rem; display: flex; align-items: center; gap: .75rem; border-top: 1px dashed rgba(255,255,255,0.1); }
+        .sidebar-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #fff; display: flex; align-items: center; justify-content: center; font-size: .875rem; font-weight: 800; color: #fff; flex-shrink: 0; overflow: hidden; }
+        .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .sidebar-footer-info { flex: 1; min-width: 0; }
+        .sidebar-user-name { font-size: .9375rem; font-weight: 700; font-family: var(--font-hand); color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+        .sidebar-user-status { font-size: .75rem; color: #888; font-family: var(--font-hand); margin-top: 1px; }
 
         /* ── MAIN ── */
         .main { margin-left: var(--sidebar-w); flex: 1; width: calc(100% - var(--sidebar-w)); display: flex; flex-direction: column; height: 100vh; background: var(--main-bg); overflow: hidden; }
-        .topbar { height: var(--header-h); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; background: var(--main-bg); }
-        .topbar-left { display: flex; align-items: center; gap: 12px; }
-        .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
-        .topbar-right { display: flex; align-items: center; gap: 8px; }
-        .tb-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--main-bg); font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-        .tb-btn:hover { background: var(--card-hover); color: var(--text); border-color: #ccc; }
-        .tb-btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-        .tb-btn.primary:hover { background: #333; }
-        .tb-icon-btn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border); background: var(--main-bg); color: var(--text2); cursor: pointer; transition: all 0.15s; }
-        .tb-icon-btn:hover { background: var(--card-hover); color: var(--text); }
-        .tb-icon-btn.danger:hover { background: #fef2f2; color: #ef4444; border-color: #fca5a5; }
-        .mode-pills { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 2px; }
-        .mode-pill { padding: 5px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--text2); background: transparent; border: none; cursor: pointer; transition: all 0.15s; }
-        .mode-pill:hover { color: var(--text); }
-        .mode-pill.active { background: #fff; color: var(--text); font-weight: 600; box-shadow: var(--shadow); }
+        .topbar { height: var(--header-h); border-bottom: 2px solid var(--border-ink); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; background: var(--surface); z-index: 10; position: relative; }
+        .topbar-left { display: flex; align-items: center; }
+        .topbar-center { display: flex; flex: 1; justify-content: center; font-size: 16px; font-weight: 500; color: #fff; }
+        .topbar-right { display: flex; align-items: center; }
+        .tb-btn { display: none; }
+        .tb-icon-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: var(--text2); cursor: pointer; transition: all 0.15s; }
+        .tb-icon-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+        
+        .mode-pills { display: none; }
+        .mode-pill { display: none; }
 
         /* ── CHAT AREA ── */
-        .chat-area { flex: 1; overflow-y: auto; padding: 0; min-height: 0; }
-        .chat-inner { max-width: 860px; width: 100%; margin: 0 auto; padding: 24px 32px 8px; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 0; min-height: 0; z-index: 5; }
+        .chat-inner { max-width: 860px; width: 100%; margin: 0 auto; padding: 24px 32px 140px; }
 
         /* ── WELCOME ── */
         .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 160px); text-align: center; padding: 40px 24px; width: 100%; }
-        .welcome-title { font-size: 36px; font-weight: 700; color: var(--text); margin-bottom: 10px; letter-spacing: -0.5px; }
-        .welcome-sub { font-size: 15px; color: var(--text2); margin-bottom: 36px; }
-        .suggestion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; width: 100%; }
-        .sug-card { display: flex; align-items: center; gap: 12px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; text-align: left; transition: all 0.15s; }
-        .sug-card:hover { background: var(--card-hover); border-color: #ccc; transform: translateY(-1px); box-shadow: var(--shadow); }
-        .sug-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .sug-icon.orange { background: #fff3e0; }
-        .sug-icon.blue { background: #e3f2fd; }
-        .sug-icon.green { background: #e8f5e9; }
-        .sug-icon.pink { background: #fce4ec; }
-        .sug-text { font-size: 13.5px; font-weight: 600; color: var(--text); }
-        .sug-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
-        .sug-plus { margin-left: auto; color: var(--text3); font-size: 18px; flex-shrink: 0; }
+        .welcome-title { font-size: 20px; font-weight: 600; color: var(--text3); margin-bottom: 24px; font-family: var(--font-hand); }
+        .welcome-title strong { font-weight: 800; color: var(--text); border-bottom: 2px dashed var(--text); }
+        .welcome-hero { font-size: 42px; font-weight: 900; color: var(--text); text-transform: uppercase; font-family: var(--font-display); line-height: 1.1; margin-bottom: 40px; text-shadow: var(--shadow); letter-spacing: 0; }
+        
+        .suggestion-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 600px; width: 100%; }
+        .sug-card { display: flex; align-items: center; justify-content: center; background: var(--surface); border: 2px solid var(--border-ink); border-radius: 8px; padding: 12px 24px; cursor: pointer; text-align: center; transition: all 0.15s; box-shadow: 3px 3px 0 var(--border-ink); }
+        .sug-card:hover { background: var(--surface2); transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--border-ink); }
+        .sug-text { font-size: 14px; font-weight: 600; color: var(--text); font-family: var(--font-hand); }
+        .sug-icon, .sug-desc, .sug-plus { display: none; }
 
         /* ── MESSAGES ── */
-        .msg-wrap { padding: 16px 0; }
-        .msg { display: flex; gap: 12px; align-items: flex-start; }
-        .msg-avatar { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
-        .msg-user .msg-avatar { background: #1a1a1a; color: #fff; }
-        .msg-ai .msg-avatar { background: #f0f0f4; color: #1a1a1a; border: 1px solid var(--border); }
-        .msg-body { flex: 1; min-width: 0; }
-        .msg-user .msg-body { background: var(--msg-user-bg); border-radius: 12px; padding: 10px 14px; display: inline-block; max-width: 85%; }
-        .msg-user { justify-content: flex-end; }
-        .msg-user .msg-body { background: #1a1a1a; color: #fff; border-radius: 16px 16px 4px 16px; }
-        .msg-ai .msg-body { background: transparent; padding: 2px 0; }
-        .msg-text { font-size: 14.5px; line-height: 1.7; word-break: break-word; }
-        .msg-user .msg-text { color: #fff; }
-        .msg-ai .msg-text { color: var(--text); }
-        .msg-time { font-size: 11px; color: var(--text3); margin-top: 4px; }
-        .msg-actions { display: flex; gap: 6px; margin-top: 8px; }
-        .msg-action-btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
-        .msg-action-btn:hover { background: var(--card-hover); color: var(--text); }
+        .msg-wrap { padding: 18px 0; }
+        .msg { display: flex; gap: 16px; align-items: flex-start; }
+        .msg-avatar { display: none; }
+        .msg-body { min-width: 0; }
+        
+        .msg-user { justify-content: flex-end; width: 100%; }
+        .msg-user .msg-body { flex: 0 1 auto; background: var(--surface); color: var(--text); padding: 16px 20px; max-width: 85%; border-radius: 8px; border: 2px solid var(--border-ink); box-shadow: 3px 3px 0 var(--border-ink); }
+        .msg-user .msg-text { color: var(--text); font-family: var(--font-hand); font-size: 16px; font-weight: 600; }
+        
+        .msg-ai { justify-content: flex-start; width: 100%; }
+        .msg-ai .msg-body { flex: 1; min-width: 0; background: transparent; padding: 0; }
+        .msg-text { font-size: 15px; line-height: 1.75; font-family: 'Inter', sans-serif; word-break: break-word; font-weight: 400; color: var(--text); }
+        .msg-ai .msg-text { color: var(--text); position: relative; }
+        
+        /* Shimmer for streaming text */
+        .msg-ai.streaming .msg-text::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.1), transparent);
+            background-size: 200% 100%;
+            animation: streamingFlow 1.5s infinite linear;
+            pointer-events: none;
+        }
+        @keyframes streamingFlow {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .msg-time { display: none; }
+        .msg-actions { display: flex; gap: 16px; margin-top: 10px; }
+        .msg-action-btn { display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 4px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
+        .msg-action-btn:hover { color: #fff; transform: translateY(-1px); }
+        .msg-action-btn svg { width: 18px; height: 18px; }
 
         /* Board render (AI structured output) */
         .board-render { font-size: 14px; }
-        .stream-cursor { display: inline-block; width: 2px; height: 1em; background: #1a1a1a; margin-left: 1px; vertical-align: text-bottom; animation: blink .7s step-end infinite; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        .br-intro { color: var(--text2); margin-bottom: 10px; line-height: 1.7; }
-        .br-plain { white-space: pre-wrap; line-height: 1.7; color: var(--text); }
-        .br-section { padding: 12px 0; border-bottom: 1px solid var(--border-light); opacity: 0; animation: brFadeIn 0.35s ease forwards; }
-        .br-section:last-child { border-bottom: none; }
-        @keyframes brFadeIn { to { opacity: 1; } }
-        .br-step-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-        .br-text { color: var(--text2); line-height: 1.7; margin-bottom: 3px; font-size: 14px; }
-        .br-math { text-align: center; color: var(--text); padding: 4px 0; font-size: 15px; }
-        .br-math-block { text-align: center; color: var(--text); padding: 4px 0; font-size: 15px; }
-        .br-math-display { text-align: center; padding: 10px 0; overflow-x: auto; }
-        .br-bullets { list-style: disc; padding-left: 20px; color: var(--text2); line-height: 1.8; margin: 6px 0; font-size: 14px; }
-        .br-final-header { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .stream-cursor { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--text); margin-left: 4px; vertical-align: baseline; animation: blink 1s infinite; }
         .br-check { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: #22c55e; border-radius: 4px; font-size: 10px; color: #fff; flex-shrink: 0; }
+        
+        /* Smooth Typing & Content Reveal */
+        @keyframes revealText {
+            from { opacity: 0; transform: translateX(-6px); filter: blur(4px); }
+            to { opacity: 1; transform: translateX(0); filter: blur(0); }
+        }
+        .board-render > * { animation: revealText 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        
+        .stream-cursor { 
+            display: inline-block; 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            background: #60a5fa; 
+            margin-left: 6px; 
+            vertical-align: middle; 
+            box-shadow: 0 0 15px #60a5fa, 0 0 5px #fff;
+            animation: cursorPulse 1s infinite alternate cubic-bezier(0.4, 0, 0.6, 1);
+        }
+        @keyframes cursorPulse {
+            0% { transform: scale(0.8); opacity: 0.5; box-shadow: 0 0 5px #60a5fa; }
+            100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 20px #60a5fa, 0 0 8px #fff; }
+        }
+        
+        /* Message Entrance */
+        @keyframes msgInLeft {
+            from { opacity: 0; transform: translateX(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes msgInRight {
+            from { opacity: 0; transform: translateX(20px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .msg-ai { animation: msgInLeft 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; }
+        .msg-user { animation: msgInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; }
+        
         /* Markdown output styles */
         .msg-text p { margin: 0 0 8px; line-height: 1.7; color: var(--text2); font-size: 14px; }
         .msg-text p:last-child { margin-bottom: 0; }
@@ -168,34 +225,86 @@
         #nexa-bird-svg.speaking #wing-r { animation: wingFlapR 0.4s ease-in-out infinite; transform-origin: 74px 70px; }
         #nexa-bird-svg.thinking { animation: birdBob 2s ease-in-out infinite; }
         #nexa-bird-svg #pupil-l, #nexa-bird-svg #pupil-r { animation: eyeBlink 4s ease-in-out infinite; transform-origin: center; }
-        .loading-indicator { display: none; align-items: center; gap: 6px; padding: 16px 0; }
+        .loading-indicator { display: none; align-items: center; gap: 6px; padding: 4px 0; margin-left: 4px; }
         .loading-indicator.active { display: flex; }
-        .loading-dot { width: 7px; height: 7px; background: #ccc; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .loading-dot { width: 8px; height: 8px; background: var(--text3); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
         .loading-dot:nth-child(1) { animation-delay: -0.32s; }
         .loading-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
 
-        /* ── INPUT BAR ── */
-        .input-zone { padding: 12px 32px 16px; background: var(--main-bg); border-top: 1px solid var(--border); flex-shrink: 0; }
-        .input-box-wrap { max-width: 860px; margin: 0 auto; position: relative; }
-        .input-box { border: 1.5px solid var(--border); border-radius: var(--input-radius); background: #fff; box-shadow: var(--shadow); transition: border-color 0.2s, box-shadow 0.2s; }
-        .input-box:focus-within { border-color: #aaa; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
-        .input-textarea { width: 100%; border: none; background: transparent; padding: 13px 16px 6px; font-family: inherit; font-size: 14.5px; color: var(--text); resize: none; min-height: 48px; max-height: 180px; outline: none; }
-        .input-textarea::placeholder { color: var(--text3); }
-        .input-bar { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px 8px; }
-        .input-bar-left { display: flex; align-items: center; gap: 4px; }
-        .input-bar-right { display: flex; align-items: center; gap: 6px; }
-        .ibar-btn { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--main-bg); font-size: 12.5px; color: var(--text2); cursor: pointer; transition: all 0.15s; font-family: inherit; }
-        .ibar-btn:hover { background: var(--card-hover); color: var(--text); }
-        .ibar-btn svg { flex-shrink: 0; }
-        .char-count { font-size: 11.5px; color: var(--text3); }
-        .send-btn { width: 34px; height: 34px; border-radius: 8px; background: #1a1a1a; border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
-        .send-btn:hover { background: #333; transform: translateY(-1px); }
-        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        .input-footer-note { text-align: center; font-size: 11.5px; color: var(--text3); margin-top: 8px; }
+        /* ── INPUT PILL ── */
+        .input-zone { padding: 12px 24px 32px; background: transparent; position: relative; flex-shrink: 0; z-index: 10; width: 100%; max-width: 860px; margin: 0 auto; }
+        .input-box-wrap { position: relative; width: 100%; }
+        .input-box { 
+            display: flex; 
+            align-items: center; 
+            background: var(--surface); 
+            border: 2px solid var(--border-ink); 
+            border-radius: 12px; 
+            padding: 6px 6px 6px 20px;
+            box-shadow: 4px 4px 0 var(--border-ink);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-box:focus-within { 
+            background: var(--surface);
+            box-shadow: 6px 6px 0 var(--border-ink);
+            transform: translate(-2px, -2px);
+        }
+        .input-textarea { 
+            flex: 1; 
+            border: none; 
+            background: transparent; 
+            padding: 12px 4px; 
+            font-family: var(--font-hand); 
+            font-size: 16px; 
+            font-weight: 600;
+            color: var(--text); 
+            resize: none; 
+            min-height: 44px; 
+            max-height: 200px; 
+            outline: none; 
+            line-height: 1.4; 
+        }
+        .input-textarea::placeholder { color: var(--text3); font-weight: 500; }
+
+        .input-bar { display: flex; align-items: center; gap: 8px; }
+        .ibar-btn { 
+            width: 38px; 
+            height: 38px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 8px; 
+            border: none; 
+            background: transparent; 
+            color: var(--text3); 
+            cursor: pointer; 
+            transition: all 0.15s; 
+        }
+        .ibar-btn:hover { background: var(--surface2); color: var(--text); }
+        .ibar-btn svg { width: 18px; height: 18px; }
+
+        .send-btn { 
+            width: 42px; 
+            height: 42px; 
+            border-radius: 8px; 
+            background: var(--accent); 
+            border: 2px solid var(--border-ink); 
+            color: var(--surface); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 2px 2px 0 var(--border-ink);
+        }
+        .send-btn:hover { transform: translate(-2px, -2px); background: var(--accent-hover); box-shadow: 4px 4px 0 var(--border-ink); }
+        .send-btn svg { width: 20px; height: 20px; }
+
+        .input-footer-note { font-family: var(--font-hand); text-align: center; font-size: 12px; font-weight: 600; color: var(--text3); margin-top: 12px; }
 
         /* Attach menu */
-        .attach-menu { display: none; position: absolute; bottom: calc(100% + 8px); left: 0; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 6px; min-width: 190px; z-index: 500; box-shadow: var(--shadow-md); }
+        .attach-menu { display: none; position: absolute; bottom: calc(100% + 8px); left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 6px; min-width: 190px; z-index: 500; box-shadow: var(--shadow-md); }
         .attach-menu.open { display: block; }
         .attach-menu-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; background: none; border: none; border-radius: 7px; color: var(--text); font-size: 13.5px; cursor: pointer; text-align: left; font-family: inherit; }
         .attach-menu-item:hover { background: var(--card-hover); }
@@ -205,100 +314,170 @@
         .rag-toggle { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--text2); cursor: pointer; }
         .rag-toggle input { accent-color: #1a1a1a; width: 13px; height: 13px; }
 
-        /* Camera modal */
-        .camera-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
-        .camera-modal.open { display: flex; }
-        .camera-modal-inner { background: #fff; border-radius: 16px; overflow: hidden; width: min(480px, 96vw); max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-md); }
-        .camera-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
-        .camera-modal-title { font-size: 14px; font-weight: 600; }
-        .camera-close-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--card-bg); border: none; color: var(--text); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-        .camera-preview-wrap { position: relative; background: #f5f5f5; min-height: 240px; display: flex; align-items: center; justify-content: center; }
-        #camFeed { width: 100%; max-height: 320px; object-fit: cover; display: block; }
-        #camCanvas { display: none; }
-        #camCaptured { display: none; width: 100%; max-height: 320px; object-fit: contain; }
-        .camera-idle-msg { color: var(--text3); font-size: 13px; text-align: center; padding: 2rem; }
-        .camera-modal-footer { padding: 12px 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; border-top: 1px solid var(--border-light); }
-        .cam-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
-        .cam-btn-ghost { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
-        .cam-btn-ghost:hover { background: var(--card-hover); }
-        .cam-btn-primary { background: #1a1a1a; color: #fff; }
-        .cam-btn-primary:hover { background: #333; }
-        .cam-btn-send { background: #1a1a1a; color: #fff; }
-        .cam-btn-send:hover { background: #333; }
+        /* Image Preview Strip */
+        .image-preview-strip { display: none; align-items: center; gap: 12px; padding: 10px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; width: fit-content; animation: msgInLeft 0.3s ease-out; }
+        .preview-thumb-wrap { position: relative; width: 44px; height: 44px; border-radius: 8px; overflow: hidden; border: 1px solid var(--accent); }
+        #image-preview-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .remove-img-btn { position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; background: #ef4444; color: #fff; border: none; border-radius: 50%; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .preview-text { font-size: 12px; color: var(--text2); font-weight: 500; }
+        
+        #websearch-badge { display: none; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); border-radius: 50px; color: #60a5fa; font-size: 12px; font-weight: 600; margin-bottom: 12px; width: fit-content; }
 
-        /* ── VOICE OVERLAY ── */
-        .voice-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; }
-        .voice-overlay.active { display: flex; }
-        .voice-dual-panel { display: flex; width: 100%; height: 100%; }
-        .voice-panel { width: 35%; background: #0d0d1a; border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; position: relative; }
-        .board-panel { width: 65%; background: var(--bg); padding: 2.5rem 3rem; overflow-y: auto; }
-        .board-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
-        .board-title { font-size: 1.125rem; font-weight: 700; color: var(--text); }
-        .board-content { min-height: 400px; }
-        .board-step { padding: 1.5rem 0; border-bottom: 1px solid var(--border-light); opacity: 0; transform: translateY(12px); animation: stepFadeIn 0.4s ease forwards; }
-        .board-step:last-child { border-bottom: none; }
-        @keyframes stepFadeIn { to { opacity: 1; transform: translateY(0); } }
-        .board-step-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-        .board-step-subtitle { font-size: 13.5px; color: var(--text2); margin-bottom: 10px; line-height: 1.6; }
-        .board-step-math { text-align: center; font-size: 1.1rem; color: var(--text); line-height: 2; padding: 4px 0; }
-        .board-step-bullets { list-style: disc; padding-left: 20px; color: var(--text2); font-size: 13.5px; line-height: 1.8; }
-        .board-final { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-        .board-final-check { width: 20px; height: 20px; background: #22c55e; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .board-suggestions { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light); }
-        .board-suggestions-label { font-size: 13.5px; color: var(--text2); margin-bottom: 8px; }
-        .board-suggestions-list { list-style: disc; padding-left: 20px; color: var(--text2); font-size: 13.5px; line-height: 1.8; }
-        .voice-status { font-size: 12px; color: #a5b4fc; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; text-align: center; }
-        .voice-bubble { width: 140px; height: 140px; border-radius: 50%; background: #1a1a1a; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.15); margin-bottom: 1.5rem; }
-        .voice-bubble.speaking { animation: pulse-glow 1.5s ease-in-out infinite; }
-        .voice-bubble.listening { background: #333; }
-        .voice-bubble.thinking { background: #666; }
-        @keyframes pulse-glow { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-        .voice-bubble-icon { width: 56px; height: 56px; fill: #fff; }
-        .voice-text-container { width: 100%; text-align: center; margin-top: 10px; }
-        .voice-user-text { font-size: 13px; color: #818cf8; margin-bottom: 8px; min-height: 1.4rem; }
-        .voice-ai-text { font-size: 14px; color: #e0e7ff; line-height: 1.6; min-height: 1.8rem; font-weight: 500; }
-        .voice-waves { display: flex; gap: 4px; margin-top: 10px; justify-content: center; }
-        .voice-wave { width: 3px; height: 16px; background: #1a1a1a; border-radius: 3px; animation: wave 0.5s ease-in-out infinite; }
-        .voice-wave:nth-child(2){animation-delay:.1s} .voice-wave:nth-child(3){animation-delay:.2s} .voice-wave:nth-child(4){animation-delay:.3s} .voice-wave:nth-child(5){animation-delay:.4s}
-        @keyframes wave { 0%,100%{height:8px} 50%{height:24px} }
-        .voice-controls { position: absolute; bottom: 1.5rem; display: flex; gap: 8px; flex-direction: column; align-items: center; width: calc(100% - 3rem); }
-        .voice-control-btn { padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; color: var(--text); font-size: 13.5px; cursor: pointer; width: 100%; max-width: 240px; font-family: inherit; }
-        .voice-control-btn:hover { background: var(--card-hover); }
-        .voice-control-btn.primary { background: #1a1a1a; border: none; color: #fff; }
-        .voice-control-btn.primary:hover { background: #333; }
+        /* Camera modal - Premium Dark Theme */
+        .camera-modal { display: none; position: fixed; inset: 0; background: rgba(9, 9, 12, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .camera-modal.open { display: flex; animation: assistantIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .camera-modal-inner { background: rgba(26, 26, 38, 0.95); border: 1px solid rgba(255,185,129,0.1); border-radius: 28px; overflow: hidden; width: min(500px, 100%); max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
+        .camera-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .camera-modal-title { font-size: 16px; font-weight: 700; color: #fff; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
+        .camera-close-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .camera-close-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
+        .camera-preview-wrap { position: relative; background: #000; min-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #camFeed { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0; }
+        #camCanvas { display: none; }
+        #camCaptured { display: none; width: 100%; height: 100%; object-fit: contain; }
+        .camera-idle-msg { color: rgba(255,255,255,0.3); font-size: 14px; text-align: center; padding: 3rem; }
+        .camera-modal-footer { padding: 20px 24px; display: flex; gap: 12px; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); }
+        .cam-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .cam-btn-ghost { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+        .cam-btn-ghost:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+        .cam-btn-primary { background: #10b981; color: #fff; box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+        .cam-btn-primary:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
+        .cam-btn-send { background: linear-gradient(135deg, #10b981, #3b82f6); color: #fff; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+        .cam-btn-send:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+
+        /* ── VOICE ASSISTANT (NEXA ROBOT) ── */
+        .voice-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: var(--bg);
+            z-index: 2000; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start;
+            padding-top: 5vh;
+            color: var(--text);
+            overflow: hidden;
+        }
+        .voice-overlay.active { display: flex; animation: assistantIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes assistantIn { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
+        
+        .assistant-header { width: 100%; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; position: absolute; top: 0; }
+        .assistant-brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-family: var(--font-display); font-size: 20px; color: var(--text); }
+        .assistant-brand svg { width: 18px; height: 18px; color: var(--text); }
+        .v-close-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); border: 2px solid var(--border-ink); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--border-ink); transition: 0.15s; }
+        .v-close-btn:hover { background: var(--surface2); transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--border-ink); }
+
+        .assistant-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 450px; padding: 0 20px; }
+        
+        /* Nexa Robot Styling */
+        .nexa-robot-wrap { position: relative; width: 220px; height: 220px; margin-bottom: 40px; }
+        .robot-floating { animation: robotFloat 4s ease-in-out infinite; }
+        @keyframes robotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        
+        .robot-glow { display: none; } /* removed neon glow for hand-drawn aesthetic */
+
+        .think-bubble { position: absolute; top: -10px; right: 10px; background: var(--surface); border: 2px solid var(--border-ink); padding: 6px 14px; border-radius: 20px; display: flex; gap: 4px; box-shadow: 4px 4px 0 var(--border-ink); animation: bubbleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .think-dot { width: 5px; height: 5px; background: var(--text); border-radius: 50%; animation: thinkJump 1.4s infinite; }
+        .think-dot:nth-child(2) { animation-delay: 0.2s; }
+        .think-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes thinkJump { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+        @keyframes bubbleIn { from { opacity: 0; transform: scale(0.5) translate(20px, 20px); } to { opacity: 1; transform: scale(1) translate(0, 0); } }
+
+        .hero-text { text-align: center; margin-bottom: 50px; }
+        .hero-title { font-size: 28px; font-family: var(--font-display); font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .hero-title span { color: var(--text3); font-weight: 500; }
+        .hero-sub { font-family: var(--font-hand); font-size: 16px; color: var(--text2); font-weight: 600; letter-spacing: 0.01em; }
+
+        /* Mic Control System */
+        .assistant-controls { width: 100%; display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 30px; }
+        .mic-btn-main { width: 84px; height: 84px; border-radius: 50%; background: var(--surface); color: var(--text); border: 2px solid var(--border-ink); cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; transition: all 0.3s; box-shadow: 4px 4px 0 var(--border-ink); }
+        .mic-btn-main:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--border-ink); }
+        .mic-btn-main.listening { background: var(--accent); color: var(--surface); }
+        .mic-ripple { display: none; } /* Hand drawn ignores neon ripples */
+
+        .secondary-v-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--surface); border: 2px solid var(--border-ink); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--border-ink); transition: all 0.2s; }
+        .secondary-v-btn:hover { background: var(--surface2); transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--border-ink); }
+        .secondary-v-btn svg { width: 20px; height: 20px; }
+
+        /* Slide-up Solution Board */
+        .board-sheet { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 45vh; 
+            background: var(--surface); 
+            border-top: 2px solid var(--border-ink); 
+            border-radius: 20px 20px 0 0; 
+            transform: translateY(100%); 
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 20px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        }
+        .board-sheet.open { transform: translateY(0); }
+        .sheet-handle { width: 36px; height: 4px; background: var(--border-ink); border-radius: 10px; margin: 0 auto 20px; }
+        .sheet-title { font-family: var(--font-hand); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 20px; border-bottom: 2px dashed var(--border-ink); padding-bottom: 8px;}
+        .board-scroll { flex: 1; overflow-y: auto; padding-right: 4px; scrollbar-width: none; }
+        .board-scroll::-webkit-scrollbar { display: none; }
+
+        .listening-status { font-family: var(--font-hand); font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; margin-bottom: 20px; opacity: 0; transition: opacity 0.3s; text-transform: uppercase; }
+        .listening-status.active { opacity: 1; }
+
+        .v-text-display { text-align: center; width: 100%; margin-top: 20px; font-family: var(--font-hand); }
+        .v-u-text { font-size: 16px; color: var(--text2); font-style: italic; margin-bottom: 12px; }
+        .v-a-text { font-size: 18px; color: var(--text); font-weight: 600; line-height: 1.5; }
+        
+        .always-listen-opt { display: flex; align-items: center; gap: 8px; font-family: var(--font-hand); font-size: 14px; font-weight: 600; color: var(--text3); margin-top: 10px; cursor: pointer; }
+        .always-listen-opt input { accent-color: var(--accent); }
 
         /* ── MOBILE ── */
         .mobile-menu-btn { display: none; }
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; }
-        .mode-toggle-mobile { display: none; }
-
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 200; }
+            .sidebar { position: fixed; transform: translateX(-100%); z-index: 2000; width: 280px; left: 0; top: 0; bottom: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
             .sidebar.open { transform: translateX(0); }
             .sidebar-overlay.open { display: block; }
-            .main { margin-left: 0; }
-            .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--main-bg); color: var(--text2); cursor: pointer; }
-            .topbar { padding: 0 14px; }
-            .mode-pills { display: none; }
-            .mode-toggle-mobile { display: flex; gap: 6px; padding: 8px 14px; overflow-x: auto; border-bottom: 1px solid var(--border); scrollbar-width: none; flex-shrink: 0; background: var(--main-bg); }
-            .mode-toggle-mobile::-webkit-scrollbar { display: none; }
-            .mode-pill-m { padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 500; white-space: nowrap; background: var(--card-bg); color: var(--text2); border: 1px solid var(--border); cursor: pointer; font-family: inherit; }
-            .mode-pill-m.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-            .chat-inner { padding: 16px 14px 8px; }
-            .welcome-title { font-size: 24px; }
-            .suggestion-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .sug-card { padding: 10px 12px; }
-            .input-zone { padding: 8px 12px 12px; }
-            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--main-bg); border-top: 1px solid var(--border); justify-content: space-around; align-items: center; z-index: 100; }
-            .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text3); font-size: 10px; font-weight: 500; text-decoration: none; padding: 6px 10px; border-radius: 8px; }
-            .bnav-item.active { color: var(--text); }
-            .bnav-item svg { width: 20px; height: 20px; }
-            .chat-area { padding-bottom: 60px; }
-            .input-zone { padding-bottom: 70px; }
-            .voice-dual-panel { flex-direction: column; }
-            .voice-panel { width: 100%; height: 50%; border-right: none; border-bottom: 1px solid var(--border); }
-            .board-panel { width: 100%; height: 50%; padding: 1.5rem; }
+            .main { margin-left: 0 !important; width: 100% !important; flex: 1; }
+            .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; border: none; background: var(--card); color: var(--text2); cursor: pointer; }
+            .topbar { padding: 0 16px; height: 60px; border-bottom: 1px solid var(--border-light); }
+            .topbar-center { font-size: 15px; font-weight: 700; }
+            
+            /* Compact mobile chat area */
+            .chat-inner { padding: 12px 16px 20px; }
+            .welcome { min-height: calc(100vh - 220px); padding: 20px 16px; }
+            .welcome-hero { font-size: 28px; margin-bottom: 30px; }
+            .welcome-title { font-size: 18px; margin-bottom: 16px; }
+            .suggestion-grid { flex-direction: column; width: 100%; }
+            .sug-card { width: 100%; padding: 16px; text-align: left; justify-content: flex-start; }
+            
+            .msg-user .msg-body { max-width: 90%; padding: 12px 16px; }
+            .msg-ai .msg-text { font-size: 14.5px; line-height: 1.6; }
+            
+            .desktop-text { display: none; }
+            .ibar-btn { padding: 10px !important; }
+            
+            /* Clever mobile input zone avoiding bottom nav */
+            .input-zone { 
+              padding: 12px 16px env(safe-area-inset-bottom); 
+              background: var(--bg); 
+              border-top: 1px solid var(--border-light);
+              position: fixed;
+              bottom: 64px; /* Above bottom nav */
+              left: 0; right: 0;
+              z-index: 150;
+            }
+            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(13, 13, 20, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08); justify-content: space-around; align-items: center; z-index: 1000; }
+            .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text3); font-size: 10px; font-weight: 700; text-decoration: none; padding: 8px 12px; border-radius: 12px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.02em; }
+            .bnav-item.active { color: #fff; }
+            .bnav-item svg { width: 20px; height: 20px; color: var(--text3); transition: transform 0.2s; }
+            .bnav-item.active svg { color: var(--accent); transform: translateY(-2px); }
+            
+            .chat-area { padding-bottom: 180px; } /* Space for input zone + bottom nav */
         }
         @media (max-width: 480px) {
             .suggestion-grid { grid-template-columns: 1fr; }
@@ -314,93 +493,47 @@
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">N</div>
-        <span class="sidebar-logo-name">Nexa</span>
+    <div class="sidebar-header">
+        <div class="sidebar-logo-icon">✦</div>
+        <div class="sidebar-logo-text">NEXA</div>
     </div>
-    <div class="sidebar-search">
-        <div class="sidebar-search-box">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Search
-            <span style="margin-left:auto;font-size:11px;color:var(--text3)">⌘K</span>
-        </div>
-    </div>
+    
+    <div class="sidebar-section-label">Main</div>
+    
     <nav class="sidebar-nav">
-        <a href="{% url 'community:community_home' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Home
-        </a>
-        <a href="{% url 'community:community_home' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Community
-        </a>
-        <a href="{% url 'community:workspace_list' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            My Workspaces
-        </a>
-        <div class="nav-divider"></div>
-        <a href="{% url 'essay_request' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            AI Writer
-        </a>
-        <a href="{% url 'list_materials' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Chat with PDF
-        </a>
-        <a href="{% url 'library_home' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            Literature Review
-        </a>
-        <a href="{% url 'explore' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Find Topics
-        </a>
-        <div class="nav-divider"></div>
-        <a href="{% url 'ai_community:hub' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-            Paraphraser
-        </a>
-        <a href="{% url 'ai_community:hub' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-            Citation Generator
-        </a>
-        <a href="{% url 'ai_community:hub' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
-            Extract Data
+        <a href="{% url 'community:feed' %}" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Feed
         </a>
         <a href="{% url 'ai_chat' %}" class="nav-item active">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             AI Tutor
         </a>
-        <div class="nav-divider"></div>
         <a href="{% url 'community:workspace_list' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            Workspace
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Your Workspace
         </a>
-        <a href="{% url 'community:community_home' %}" class="nav-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Community
+        <a href="{% url 'community:ai_tools' %}" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Your Tools
         </a>
+        <a href="{% url 'list_materials' %}" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
+        </a>
+        
         {% if conversations %}
-        <div class="nav-divider"></div>
-        <div class="nav-section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:10px;">
-            Recent
-            <button onclick="NexaChat.clearChat()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:0;" title="Clear all">Clear</button>
+        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding:1.5rem 1.25rem 0.5rem;">
+            <span style="font-size:10px;font-weight:700;color:#4b4b5a;text-transform:uppercase;letter-spacing:0.05em;">History</span>
+            <button onclick="NexaChat.clearChat()" style="color:#4b4b5a;font-size:10px;font-weight:600;">Clear All</button>
         </div>
         {% endif %}
     </nav>
     <div class="sidebar-footer">
-        <div class="sidebar-user">
-            <div class="sidebar-avatar">{{ user.username|slice:":1"|upper }}</div>
-            <div class="sidebar-user-info">
-                <div class="sidebar-user-name">{{ user.username }}</div>
-                <div class="sidebar-user-email">{{ user.email|default:"Student" }}</div>
-            </div>
+        <div class="sidebar-avatar">
+            {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
         </div>
-        <a href="{% url 'logout' %}" class="nav-item" style="margin-top:4px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Log out
-        </a>
+        <div class="sidebar-footer-info">
+            <div class="sidebar-user-name">{{ user.username }}</div>
+            <div class="sidebar-user-status">Online</div>
+        </div>
     </div>
 </aside>
 
@@ -409,34 +542,17 @@
     <!-- TOPBAR -->
     <header class="topbar">
         <div class="topbar-left">
-            <button class="mobile-menu-btn" onclick="openSidebar()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <button class="tb-icon-btn" onclick="openSidebar()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
-            <span class="topbar-title">AI Chat</span>
         </div>
+        <div class="topbar-center">AI Chat</div>
         <div class="topbar-right">
-            <div class="mode-pills">
-                <button class="mode-pill active" data-mode="explain" onclick="NexaAI.setMode('explain')">Explain</button>
-                <button class="mode-pill" data-mode="coach" onclick="NexaAI.setMode('coach')">Coach</button>
-                <button class="mode-pill" data-mode="exam" onclick="NexaAI.setMode('exam')">Exam</button>
-            </div>
-            <button class="tb-btn" onclick="NexaVoice.open()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                Voice
-            </button>
-            <button class="tb-icon-btn danger" title="Clear chat" onclick="NexaChat.clearChat()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            </button>
-            <div class="sidebar-avatar" style="width:30px;height:30px;font-size:12px;">{{ user.username|slice:":1"|upper }}</div>
+            <a href="{% url 'community:profile' username=user.username %}" class="sidebar-avatar" style="width:36px;height:36px;border:2px solid rgba(255,255,255,0.1);">
+                {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+            </a>
         </div>
     </header>
-
-    <!-- Mobile mode strip -->
-    <div class="mode-toggle-mobile">
-        <button class="mode-pill-m active" data-mode="explain" onclick="NexaAI.setMode('explain');document.querySelectorAll('.mode-pill-m').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Explain</button>
-        <button class="mode-pill-m" data-mode="coach" onclick="NexaAI.setMode('coach');document.querySelectorAll('.mode-pill-m').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Coach</button>
-        <button class="mode-pill-m" data-mode="exam" onclick="NexaAI.setMode('exam');document.querySelectorAll('.mode-pill-m').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Exam</button>
-    </div>
 
     <!-- CHAT AREA -->
     <div class="chat-area" id="chat-container">
@@ -470,34 +586,26 @@
                     </div>
                 </div>
                 {% endfor %}
-                <script>
-                // Raw AI responses — safely JSON-encoded for JS rendering
-                window.NEXA_HISTORY = [{% for conv in conversations %}"{{ conv.response|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+                <script id="nexa-history-data" type="application/json">
+                    [{% for conv in conversations %}"{{ conv.response|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
                 </script>
             {% else %}
             <div class="welcome" id="welcome-screen">
-                <h1 class="welcome-title">Welcome to Nexa AI</h1>
-                <p class="welcome-sub">Your personal AI tutor. Ask anything and I'll teach you step by step.</p>
+                <div style="background:#10b981;width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 25px rgba(16,185,129,0.4);">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="#fff"><path d="M12 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <div class="welcome-title">Hello! <strong>{{ user.username|title }}</strong></div>
+                <h1 class="welcome-hero">HOW CAN I ASSIST<br>YOU TODAY?</h1>
+                
                 <div class="suggestion-grid">
-                    <div class="sug-card" onclick="NexaChat.send('Explain quantum computing in simple terms')">
-                        <div class="sug-icon orange">📖</div>
-                        <div><div class="sug-text">Explain a concept</div><div class="sug-desc">Quantum computing simplified</div></div>
-                        <span class="sug-plus">+</span>
+                    <div class="sug-card" onclick="NexaChat.send('Suggest me some events')">
+                        <div class="sug-text">Suggest me some events</div>
                     </div>
-                    <div class="sug-card" onclick="NexaChat.send('Help me solve quadratic equations step by step')">
-                        <div class="sug-icon blue">🧮</div>
-                        <div><div class="sug-text">Solve math problems</div><div class="sug-desc">Step-by-step solutions</div></div>
-                        <span class="sug-plus">+</span>
+                    <div class="sug-card" onclick="NexaChat.send('Suggest me match')">
+                        <div class="sug-text">Suggest me match</div>
                     </div>
-                    <div class="sug-card" onclick="NexaChat.send('What are the key points from my uploaded study materials?')">
-                        <div class="sug-icon green">📚</div>
-                        <div><div class="sug-text">Review materials</div><div class="sug-desc">Summarize my uploads</div></div>
-                        <span class="sug-plus">+</span>
-                    </div>
-                    <div class="sug-card" onclick="NexaChat.send('Create a 7-day study plan for my exams')">
-                        <div class="sug-icon pink">🗓️</div>
-                        <div><div class="sug-text">Study plan</div><div class="sug-desc">Build a learning schedule</div></div>
-                        <span class="sug-plus">+</span>
+                    <div class="sug-card" onclick="NexaChat.send('Ask Me For Advice')">
+                        <div class="sug-text">Ask Me For Advice</div>
                     </div>
                 </div>
             </div>
@@ -515,15 +623,49 @@
     <div class="input-zone">
         <div class="input-box-wrap">
             <input type="file" id="image-input" accept="image/*" style="display:none" onchange="NexaChat.handleImageSelected(this)">
-            <!-- Attach menu -->
-            <div class="attach-menu" id="attach-menu">
+            
+            <div id="websearch-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Web Search Active
+                <button onclick="NexaChat.clearWebSearch()" style="background:none; border:none; color:inherit; cursor:pointer; margin-left:4px; font-weight:900;">✕</button>
+            </div>
+
+            <div class="image-preview-strip" id="image-preview-strip">
+                <div class="preview-thumb-wrap">
+                    <img id="image-preview-thumb" src="" alt="preview">
+                    <button class="remove-img-btn" onclick="NexaChat.clearImage()">✕</button>
+                </div>
+                <span class="preview-text">Image ready to send</span>
+            </div>
+            
+            <div class="input-box">
+                <button class="ibar-btn" id="attach-btn" onclick="NexaChat.toggleAttachMenu(event)" title="Attach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </button>
+
+                <textarea class="input-textarea" id="chat-input" placeholder="Feel free to ask anything..." rows="1"></textarea>
+                
+                <div class="input-bar">
+                    <button class="ibar-btn" id="voice-btn" onclick="NexaVoice.toggleInput()" title="Voice">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    </button>
+                    
+                    <button class="send-btn" id="send-btn" onclick="NexaChat.send()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 20V4M5 11l7-7 7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Floating Attach menu -->
+            <div class="attach-menu" id="attach-menu" style="bottom: 100px; left: 24px;">
+                <button class="attach-menu-item" onclick="NexaCamera.open();NexaChat.closeAttachMenu()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Take Photo
+                </button>
+                <div class="attach-menu-divider"></div>
                 <button class="attach-menu-item" onclick="document.getElementById('image-input').click();NexaChat.closeAttachMenu()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     Upload photo
-                </button>
-                <button class="attach-menu-item" onclick="NexaCamera.open();NexaChat.closeAttachMenu()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    Take photo
                 </button>
                 <div class="attach-menu-divider"></div>
                 <button class="attach-menu-item" onclick="NexaChat.sendWebSearch();NexaChat.closeAttachMenu()">
@@ -531,73 +673,120 @@
                     Web search
                 </button>
             </div>
-            <div class="input-box">
-                <!-- Image preview -->
-                <div id="image-preview-strip" style="display:none;padding:8px 12px 0;gap:8px;align-items:center;display:none;">
-                    <img id="image-preview-thumb" style="height:44px;border-radius:6px;object-fit:cover;">
-                    <button onclick="NexaChat.clearImage()" style="background:var(--card-bg);border:1px solid var(--border);color:var(--text);border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">✕</button>
-                </div>
-                <!-- Web search badge -->
-                <div id="websearch-badge" style="display:none;padding:6px 12px 0;align-items:center;gap:6px;font-size:12px;color:var(--text2);">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    Web search enabled
-                    <button onclick="NexaChat.clearWebSearch()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;">✕</button>
-                </div>
-                <textarea class="input-textarea" id="chat-input" placeholder="Ask Anything..." rows="1"></textarea>
-                <div class="input-bar">
-                    <div class="input-bar-left">
-                        <button class="ibar-btn" id="attach-btn" onclick="NexaChat.toggleAttachMenu(event)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                            Attach
-                        </button>
-                        <button class="ibar-btn" id="voice-btn" onclick="NexaVoice.toggleInput()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                            Voice Message
-                        </button>
-                        <label class="rag-toggle ibar-btn" style="border:1px solid var(--border);border-radius:7px;padding:5px 10px;">
-                            <input type="checkbox" id="use-rag" checked>
-                            <span>Study materials</span>
-                        </label>
-                    </div>
-                    <div class="input-bar-right">
-                        <span class="char-count" id="char-count">0 / 3,000</span>
-                        <button class="send-btn" id="send-btn" onclick="NexaChat.send()">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
+            
             <div class="input-footer-note">Nexa may make mistakes. Verify important information.</div>
         </div>
     </div>
 </main>
 
 <!-- BOTTOM NAV (mobile) -->
-<nav class="bottom-nav">
-    <a href="{% url 'dashboard' %}" class="bnav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Home
-    </a>
-    <a href="{% url 'ai_chat' %}" class="bnav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Chat
-    </a>
-    <a href="{% url 'library_home' %}" class="bnav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Library
-    </a>
-    <a href="{% url 'essay_request' %}" class="bnav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Essays
-    </a>
-    <a href="{% url 'list_materials' %}" class="bnav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Materials
-    </a>
-    <a href="{% url 'community:feed' %}" class="bnav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        Community
-    </a>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #0b0b0f !important;
+  border-top: 1px solid #1e1e2c !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 100 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.375rem 0.5rem;
+  color: #8a8a93;
+  border-radius: 12px;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.15s;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
+.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
+.bn-unified-item:active svg { transform: scale(1.05); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
+  </a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
+  </a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
 </nav>
 
 <!-- CAMERA MODAL -->
@@ -625,81 +814,85 @@
 <!-- Hidden audio element — iOS/Android require a DOM <audio> for reliable playback -->
 <audio id="nexa-tts-audio" playsinline preload="none" style="display:none"></audio>
 
-<!-- VOICE OVERLAY -->
+<!-- VOICE ASSISTANT OVERLAY -->
 <div class="voice-overlay" id="voice-overlay">
-    <div class="voice-dual-panel">
-        <div class="voice-panel">
-            <button onclick="NexaVoice.close()" style="position:absolute;top:1.25rem;right:1.25rem;width:32px;height:32px;background:var(--card-bg);border:1px solid var(--border);border-radius:50%;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-            <div class="voice-status" id="voice-status">Tap to start...</div>
+    <header class="assistant-header">
+        <div class="assistant-brand">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Nexa
+        </div>
+        <button class="v-close-btn" onclick="NexaVoice.close()">✕</button>
+    </header>
 
-            <!-- Nexa Bird Avatar -->
-            <div id="nexa-bird-wrap" style="position:relative;width:160px;height:160px;margin-bottom:1.25rem;">
-                <svg id="nexa-bird-svg" viewBox="0 0 100 120" width="160" height="160" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 18px rgba(129,140,248,0.5));transition:filter .3s;">
-                    <!-- Glow ring -->
-                    <ellipse id="bird-glow" cx="50" cy="110" rx="28" ry="6" fill="rgba(99,102,241,0.18)"/>
-                    <!-- Body -->
-                    <ellipse cx="50" cy="72" rx="22" ry="26" fill="#818cf8"/>
-                    <!-- Wing left -->
-                    <ellipse id="wing-l" cx="26" cy="70" rx="13" ry="7" fill="#6366f1" transform="rotate(-15 26 70)"/>
-                    <!-- Wing right -->
-                    <ellipse id="wing-r" cx="74" cy="70" rx="13" ry="7" fill="#6366f1" transform="rotate(15 74 70)"/>
-                    <!-- Belly -->
-                    <ellipse cx="50" cy="78" rx="13" ry="16" fill="#c7d2fe"/>
-                    <!-- Head -->
-                    <circle cx="50" cy="40" r="20" fill="#a5b4fc"/>
-                    <!-- Ear tufts -->
-                    <polygon points="38,22 34,10 42,20" fill="#818cf8"/>
-                    <polygon points="62,22 66,10 58,20" fill="#818cf8"/>
-                    <!-- Eye left -->
-                    <circle cx="42" cy="38" r="7" fill="#1e1b4b"/>
-                    <circle cx="42" cy="38" r="4" fill="#fff"/>
-                    <circle id="pupil-l" cx="43" cy="37" r="2.5" fill="#1e1b4b"/>
-                    <circle cx="44" cy="36" r="1" fill="#fff"/>
-                    <!-- Eye right -->
-                    <circle cx="58" cy="38" r="7" fill="#1e1b4b"/>
-                    <circle cx="58" cy="38" r="4" fill="#fff"/>
-                    <circle id="pupil-r" cx="59" cy="37" r="2.5" fill="#1e1b4b"/>
-                    <circle cx="60" cy="36" r="1" fill="#fff"/>
-                    <!-- Beak (animates when talking) -->
-                    <g id="beak-group">
-                        <polygon id="beak-top" points="50,44 46,50 54,50" fill="#f97316"/>
-                        <polygon id="beak-bot" points="46,50 54,50 50,52" fill="#fb923c"/>
-                    </g>
-                    <!-- Feet -->
-                    <line x1="43" y1="96" x2="38" y2="106" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="43" y1="96" x2="43" y2="107" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="43" y1="96" x2="48" y2="106" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="57" y1="96" x2="52" y2="106" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="57" y1="96" x2="57" y2="107" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="57" y1="96" x2="62" y2="106" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
-                </svg>
-            </div>
-
-            <div class="voice-text-container">
-                <div class="voice-user-text" id="voice-user-text"></div>
-                <div class="voice-ai-text" id="voice-ai-text"></div>
-                <div id="interrupt-hint" style="display:none;font-size:11px;color:#f97316;margin-top:6px;animation:blink .8s step-end infinite;">🎙 Speak to interrupt</div>
-            </div>
-            <div class="voice-controls">
-                <button class="voice-control-btn" onclick="NexaVoice.stopSpeaking()">Stop</button>
-                <button class="voice-control-btn primary" id="voice-start-btn" onclick="NexaVoice.toggleListening()">
-                    <span id="voice-btn-text">Start Listening</span>
-                </button>
-                <label style="display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--text2);font-size:12px;cursor:pointer;">
-                    <input type="checkbox" id="always-listen" onchange="NexaVoice.toggleAlwaysListen(this.checked)" style="width:14px;height:14px;">
-                    Always listen for "Start voice"
-                </label>
+    <div class="assistant-content">
+        <div class="listening-status" id="voice-status">Listening...</div>
+        
+        <div class="nexa-robot-wrap robot-floating">
+            <div class="robot-glow"></div>
+            <!-- Nexa Robot (Premium SVG) -->
+            <svg viewBox="0 0 200 200" width="220" height="220" id="nexa-robot-svg">
+                <!-- Body -->
+                <rect x="60" y="80" width="80" height="70" rx="40" fill="#f0f0f5" />
+                <!-- Head -->
+                <rect x="50" y="45" width="100" height="85" rx="45" fill="#fff" style="stroke:rgba(0,0,0,0.05);stroke-width:1;" />
+                <!-- Faceplate -->
+                <rect x="62" y="58" width="76" height="50" rx="25" fill="#1e1b4b" />
+                <!-- Eyes (dots that blink) -->
+                <g id="eyes-group">
+                    <circle id="eye-l" cx="85" cy="83" r="4" fill="#a5b4fc">
+                        <animate attributeName="ry" values="4;0.5;4" dur="4s" repeatCount="indefinite" />
+                    </circle>
+                    <circle id="eye-r" cx="115" cy="83" r="4" fill="#a5b4fc">
+                        <animate attributeName="ry" values="4;0.5;4" dur="4s" repeatCount="indefinite" />
+                    </circle>
+                </g>
+                <!-- Hands -->
+                <rect id="hand-l" x="35" y="100" width="18" height="35" rx="9" fill="#f0f0f5" />
+                <rect id="hand-r" x="147" y="100" width="18" height="35" rx="9" fill="#f0f0f5" />
+            </svg>
+            <!-- Processing Bubble -->
+            <div class="think-bubble" id="assistant-thinking" style="display:none;">
+                <div class="think-dot"></div><div class="think-dot"></div><div class="think-dot"></div>
             </div>
         </div>
-        <div class="board-panel">
-            <div class="board-panel-header">
-                <div class="board-title">Solution Board</div>
-            </div>
-            <div class="board-content" id="board-content">
-                <div style="text-align:center;color:var(--text3);padding:4rem 2rem;">
-                    <p style="font-size:15px;">Ask a question to see the solution appear here step-by-step</p>
-                </div>
-            </div>
+
+        <div class="hero-text">
+            <div class="hero-title">Your <span>AI Sidekick.</span></div>
+            <div class="hero-sub">Always On. Always Smart.</div>
+        </div>
+
+        <div class="assistant-controls">
+            <button class="secondary-v-btn" onclick="NexaVoice.stopSpeaking()" title="Stop Speaking">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+            </button>
+            <button class="mic-btn-main" id="voice-start-btn" onclick="NexaVoice.toggleListening()">
+                <div class="mic-ripple"></div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:32px;height:32px;">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+            </button>
+            <button class="secondary-v-btn" onclick="document.getElementById('solution-board-sheet').classList.toggle('open')" title="View Steps">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </button>
+        </div>
+
+        <div class="v-text-display">
+            <div class="v-u-text" id="voice-user-text"></div>
+            <div class="v-a-text" id="voice-ai-text">Tap the mic to talk...</div>
+        </div>
+
+        <label class="always-listen-opt">
+            <input type="checkbox" id="always-listen" onchange="NexaVoice.toggleAlwaysListen(this.checked)">
+            Stay active for "Nexa"
+        </label>
+    </div>
+
+    <!-- Slide-up Board Sheet -->
+    <div class="board-sheet" id="solution-board-sheet">
+        <div class="sheet-handle" onclick="document.getElementById('solution-board-sheet').classList.remove('open')"></div>
+        <div class="sheet-title">Solution Steps</div>
+        <div class="board-scroll" id="board-content">
+            <p style="color:rgba(255,255,255,0.4);text-align:center;padding-top:40px;">Detailed work will appear here as I solve your request.</p>
         </div>
     </div>
 </div>
@@ -714,6 +907,11 @@ function closeSidebar() {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('open');
 }
+
+// Global data initialization
+const NEXA_HISTORY_RAW = document.getElementById('nexa-history-data');
+const NEXA_HISTORY = NEXA_HISTORY_RAW ? JSON.parse(NEXA_HISTORY_RAW.textContent) : [];
+const USER_NAME = "{{ user.username|escapejs }}";
 
 // ── NexaUI ──
 const NexaUI = {
@@ -753,19 +951,14 @@ const NexaUI = {
 
 // ── NexaAI ──
 const NexaAI = {
-    currentMode: 'explain',
     csrfToken: '{{ csrf_token }}',
     ajaxUrl: '{% url "ai_chat_ajax" %}',
     streamUrl: '{% url "ai_chat_stream" %}',
-    setMode(mode) {
-        this.currentMode = mode;
-        document.querySelectorAll('.mode-pill').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-    },
     async sendToAI(message, useRag = true) {
         const response = await fetch(this.ajaxUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.csrfToken },
-            body: JSON.stringify({ message, use_rag: useRag, learning_mode: this.currentMode })
+            body: JSON.stringify({ message, use_rag: useRag })
         });
         return response.json();
     }
@@ -838,11 +1031,8 @@ const NexaChat = {
         document.getElementById('attach-menu').classList.remove('open');
         try {
             if (this.pendingImage) {
-                const displayMsg = msg || 'What is in this image?';
-                this.addUserMessage(displayMsg, this.pendingImage);
-                const data = await this.sendImage(displayMsg, this.pendingImage);
-                if (data.success) await this.addAIMessage(data.response, data.timestamp);
-                else alert('Error: ' + (data.error || 'Image analysis failed'));
+                this.addUserMessage(msg, this.pendingImage);
+                await this.sendImageStreaming(msg, this.pendingImage);
                 this.clearImage();
             } else if (this.webSearchMode) {
                 this.addUserMessage('🌐 ' + msg);
@@ -865,21 +1055,84 @@ const NexaChat = {
         }
     },
 
-    async sendImage(message, imageFile) {
-        const formData = new FormData();
-        formData.append('message', message);
-        formData.append('image', imageFile);
-        formData.append('learning_mode', NexaAI.currentMode);
-        formData.append('csrfmiddlewaretoken', NexaAI.csrfToken);
-        const response = await fetch('{% url "ai_chat_image" %}', { method: 'POST', body: formData });
-        return response.json();
+    async sendImageStreaming(message, imageFile) {
+        const msgId = 'ai-msg-' + Date.now();
+        const html = `
+            <div class="msg-wrap" id="wrap-${msgId}">
+                <div class="msg msg-ai">
+                    <div class="msg-body">
+                        <div class="msg-text board-render" id="${msgId}">
+                            <div class="loading-indicator active">
+                                <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+                            </div>
+                        </div>
+                        <div class="msg-actions" id="actions-${msgId}" style="display:none">
+                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                            </button>
+                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
+        NexaUI.scrollToBottom();
+        const el = document.getElementById(msgId);
+        const wrap = document.getElementById('wrap-' + msgId);
+        let fullText = '';
+        
+        try {
+            wrap.querySelector('.msg-ai').classList.add('streaming');
+            const formData = new FormData();
+            formData.append('message', message || 'Analyze this image');
+            formData.append('image', imageFile);
+            formData.append('csrfmiddlewaretoken', NexaAI.csrfToken);
+
+            const res = await fetch('{% url "ai_chat_image" %}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    try {
+                        const payload = JSON.parse(line.slice(6));
+                        if (payload.error) { el.innerHTML = '<span style="color:#ef4444">Error: ' + payload.error + '</span>'; return; }
+                        if (payload.done) break;
+                        if (payload.token) {
+                            fullText += payload.token;
+                            el.innerHTML = NexaChat.renderBoardHTML(fullText) + '<span class="stream-cursor"></span>';
+                            NexaUI.scrollToBottom();
+                        }
+                    } catch(e) {}
+                }
+            }
+            wrap.querySelector('.msg-ai').classList.remove('streaming');
+            el.innerHTML = NexaChat.renderBoardHTML(fullText);
+            if (wrap) wrap.dataset.plain = fullText;
+            document.getElementById('actions-' + msgId).style.display = '';
+        } catch(e) {
+            wrap.querySelector('.msg-ai').classList.remove('streaming');
+            el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
+        }
     },
 
     async sendToWebSearch(message) {
         const response = await fetch('{% url "ai_web_search" %}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-            body: JSON.stringify({ message, learning_mode: NexaAI.currentMode })
+            body: JSON.stringify({ message })
         });
         return response.json();
     },
@@ -889,20 +1142,20 @@ const NexaChat = {
         const html = `
             <div class="msg-wrap" id="wrap-${msgId}">
                 <div class="msg msg-ai">
-                    <div class="msg-avatar">N</div>
                     <div class="msg-body">
-                        <div class="msg-text board-render" id="${msgId}"><span class="stream-cursor">▋</span></div>
+                        <div class="msg-text board-render" id="${msgId}">
+                            <div class="loading-indicator active">
+                                <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+                            </div>
+                        </div>
                         <div class="msg-actions" id="actions-${msgId}" style="display:none">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                                Listen
+                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
                             </button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                Copy
+                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                             </button>
                         </div>
-                        <div class="msg-time">${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
                 </div>
             </div>`;
@@ -912,10 +1165,11 @@ const NexaChat = {
         const wrap = document.getElementById('wrap-' + msgId);
         let fullText = '';
         try {
+            wrap.querySelector('.msg-ai').classList.add('streaming');
             const res = await fetch(NexaAI.streamUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                body: JSON.stringify({ message, use_rag: useRag, learning_mode: NexaAI.currentMode })
+                body: JSON.stringify({ message, use_rag: useRag })
             });
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
@@ -934,20 +1188,22 @@ const NexaChat = {
                         if (payload.done) break;
                         if (payload.token) {
                             fullText += payload.token;
-                            el.innerHTML = NexaChat.renderBoardHTML(fullText) + '<span class="stream-cursor">▋</span>';
+                            el.innerHTML = NexaChat.renderBoardHTML(fullText) + '<span class="stream-cursor"></span>';
                             NexaUI.scrollToBottom();
                         }
                     } catch(e) {}
                 }
             }
+            wrap.querySelector('.msg-ai').classList.remove('streaming');
         } catch(e) {
+            wrap.querySelector('.msg-ai').classList.remove('streaming');
             console.warn('Streaming failed, falling back to AJAX:', e);
             // Fallback to regular AJAX if streaming fails
             try {
                 const res2 = await fetch(NexaAI.ajaxUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                    body: JSON.stringify({ message, use_rag: useRag, learning_mode: NexaAI.currentMode })
+                    body: JSON.stringify({ message, use_rag: useRag })
                 });
                 const data = await res2.json();
                 if (data.success) {
@@ -967,7 +1223,7 @@ const NexaChat = {
                 const res3 = await fetch(NexaAI.ajaxUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                    body: JSON.stringify({ message, use_rag: useRag, learning_mode: NexaAI.currentMode })
+                    body: JSON.stringify({ message, use_rag: useRag })
                 });
                 const data = await res3.json();
                 fullText = data.success ? data.response : ('Error: ' + (data.error || 'No response'));
@@ -987,7 +1243,6 @@ const NexaChat = {
             <div class="msg-wrap">
                 <div class="msg msg-user">
                     <div class="msg-body"><div class="msg-text">${NexaUI.escapeHtml(text)}${imgHtml}</div></div>
-                    <div class="msg-avatar">{{ user.username|slice:":1"|upper }}</div>
                 </div>
             </div>`;
         NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
@@ -996,26 +1251,26 @@ const NexaChat = {
     async addAIMessage(text, timestamp) {
         const msgId = 'ai-msg-' + Date.now();
         const html = `
-            <div class="msg-wrap">
+            <div class="msg-wrap" id="wrap-${msgId}">
                 <div class="msg msg-ai">
-                    <div class="msg-avatar">N</div>
                     <div class="msg-body">
                         <div class="msg-text board-render" id="${msgId}"></div>
                         <div class="msg-actions">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)">Listen</button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)">Copy</button>
+                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                            </button>
+                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
                         </div>
-                        <div class="msg-time">${timestamp || new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
                 </div>
             </div>`;
         NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-        const wrapper = NexaUI.elements.chatMessages.lastElementChild;
-        wrapper.dataset.plain = text;
-        const element = document.getElementById(msgId);
-        if (element) {
-            element.innerHTML = NexaChat.renderBoardHTML(text);
-        }
+        const el = document.getElementById(msgId);
+        const wrap = document.getElementById('wrap-' + msgId);
+        el.innerHTML = NexaChat.renderBoardHTML(text);
+        if (wrap) wrap.dataset.plain = text;
         NexaUI.scrollToBottom();
     },
 
@@ -1108,11 +1363,12 @@ const NexaVoice = {
 
     init() {
         this.overlay = document.getElementById('voice-overlay');
-        this.bubble = document.getElementById('voice-bubble');
         this.status = document.getElementById('voice-status');
         this.userText = document.getElementById('voice-user-text');
         this.aiText = document.getElementById('voice-ai-text');
-        this.waves = document.getElementById('voice-waves');
+        this.micBtn = document.getElementById('voice-start-btn');
+        this.thinkingBubble = document.getElementById('assistant-thinking');
+        this.boardSheet = document.getElementById('solution-board-sheet');
         this.setupRecognition();
         this.setupInterruptRecognition();
     },
@@ -1200,14 +1456,16 @@ const NexaVoice = {
         if (this.overlay) this.overlay.classList.remove('active');
     },
     updateStatus(text, state) {
-        if (this.status) this.status.textContent = text;
-        const bird = document.getElementById('nexa-bird-svg');
-        if (bird) bird.className = state;
-        if (this.bubble) this.bubble.className = 'voice-bubble ' + state;
-        if (this.waves) this.waves.style.display = 'none';
-        // Show interrupt hint only while speaking
-        const hint = document.getElementById('interrupt-hint');
-        if (hint) hint.style.display = state === 'speaking' ? 'block' : 'none';
+        if (this.status) {
+            this.status.textContent = text;
+            this.status.classList.toggle('active', !!text);
+        }
+        if (this.micBtn) {
+            this.micBtn.classList.toggle('listening', state === 'listening');
+        }
+        if (this.thinkingBubble) {
+            this.thinkingBubble.style.display = (state === 'thinking') ? 'flex' : 'none';
+        }
     },
     async processMessage(message) {
         if (this.isProcessing || !message.trim()) return;
@@ -1220,7 +1478,7 @@ const NexaVoice = {
                 const res = await fetch('{% url "ai_web_search" %}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                    body: JSON.stringify({ message, learning_mode: NexaAI.currentMode })
+                    body: JSON.stringify({ message })
                 });
                 data = await res.json();
             } else {
@@ -1331,7 +1589,10 @@ const NexaVoice = {
     displayOnBoard(question, answer) {
         const content = document.getElementById('board-content');
         if (!content) return;
-        // Use the same renderBoardHTML pipeline so math/markdown renders properly
+        
+        // Auto-open board sheet if hidden
+        if (this.boardSheet) this.boardSheet.classList.add('open');
+
         let html = `<div class="board-step" style="animation-delay:0s">
             <div class="board-step-title">Question</div>
             <div class="board-step-subtitle">${this.escapeHtml(question)}</div>
@@ -1340,6 +1601,7 @@ const NexaVoice = {
             ${NexaChat.renderBoardHTML(answer)}
         </div>`;
         content.innerHTML = html;
+        content.scrollTop = 0;
     }
 };
 
@@ -1436,6 +1698,72 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+    <!-- BOTTOM NAV (mobile) -->
+    <style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
+  </a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
+  </a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
+</nav>
 </div>
 </body>
 </html>

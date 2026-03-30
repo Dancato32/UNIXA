@@ -1,4 +1,4 @@
-﻿{% extends "community/base.html" %}
+{% extends "community/base.html" %}
 {% load community_tags %}
 {% block title %}Post by {{ post.author.username }}{% endblock %}
 {% block mobile_title %}Post{% endblock %}
@@ -142,7 +142,17 @@
   {% if post.media and post.media_type == 'image' %}
     <img src="{{ post.media.url }}" alt="" class="post-media">
   {% elif post.media and post.media_type == 'video' %}
-    <video src="{{ post.media.url }}" controls class="post-media" style="background:#000;"></video>
+    <video src="{{ post.media.url }}" controls class="post-media"></video>
+  {% elif post.media and post.media_type == 'file' %}
+    <a href="{{ post.media.url }}" target="_blank" class="post-file-card" style="display:flex; align-items:center; gap:0.75rem; padding:1.125rem; background:#fff; border:2.5px solid var(--border-ink); border-radius:12px; box-shadow:4px 4px 0 var(--border-ink); text-decoration:none; color:inherit; margin-bottom:1.5rem;">
+      <div class="pfc-icon" style="width:48px; height:48px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border:2px solid var(--border-ink); border-radius:8px;">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+      </div>
+      <div class="pfc-info" style="flex:1; min-width:0;">
+        <div class="pfc-name" style="font-weight:800; font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.media.name|basename }}</div>
+        <div class="pfc-meta" style="font-size:0.8125rem; color:var(--text3); font-weight:600;">Download / Institutional Attachment</div>
+      </div>
+    </a>
   {% endif %}
   <div class="post-stats">
     <span class="stat"><strong id="like-count">{{ post.like_count }}</strong> likes</span>

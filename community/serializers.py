@@ -9,6 +9,7 @@ from rest_framework import serializers
 from community.models import (
     Block,
     Comment,
+    CommentLike,
     CommunityMembership,
     Conversation,
     CustomCommunity,
@@ -151,14 +152,26 @@ class PostSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = UserMinimalSerializer(read_only=True)
     replies = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+    reply_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = [
             'id', 'post', 'author', 'parent', 'content',
             'created_at', 'updated_at', 'like_count', 'replies',
+            'is_liked', 'reply_count',
         ]
-        read_only_fields = ['id', 'post', 'author', 'created_at', 'updated_at', 'like_count']
+        read_only_fields = ['id', 'post', 'author', 'created_at', 'updated_at', 'like_count', 'is_liked', 'reply_count']
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and getattr(request.user, 'is_authenticated', False):
+            return CommentLike.objects.filter(user=request.user, comment=obj).exists()
+        return False
+
+    def get_reply_count(self, obj):
+        return obj.replies.count()
 
     def get_replies(self, obj):
         # Only one level deep to avoid deep recursion

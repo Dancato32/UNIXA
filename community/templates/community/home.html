@@ -1,235 +1,773 @@
-﻿{% extends "community/base.html" %}
-{% block title %}Home{% endblock %}
-{% block mobile_title %}Home{% endblock %}
-{% block nav_home %}active{% endblock %}
-{% block bn_home %}active{% endblock %}
-{% block topbar_title %}Home{% endblock %}
-{% block topbar_desc %}Your community hub{% endblock %}
-{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>{% endblock %}
-
-{% block extra_css %}
+{% load static %}
+{% load community_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d0d14">
+<title>Feed — NEXA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-.page{padding:0!important;max-width:100%!important;}
-/* ── Layout ── */
-.ch-shell{display:flex;height:100%;overflow:hidden;background:var(--bg);}
-.ch-main{flex:1;overflow-y:auto;padding:1.5rem 1.75rem;min-width:0;}
-.ch-right{width:260px;flex-shrink:0;border-left:1px solid var(--border);padding:1.25rem 1rem;overflow-y:auto;}
-
-/* ── Welcome banner ── */
-.ch-banner{display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:1.5rem;box-shadow:var(--shadow-sm);}
-.ch-banner-av{width:52px;height:52px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;color:var(--accent);flex-shrink:0;overflow:hidden;}
-.ch-banner-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.ch-banner-text h2{font-size:1.125rem;font-weight:800;color:var(--text);letter-spacing:-.02em;}
-.ch-banner-text p{font-size:.8125rem;color:var(--text3);margin-top:.2rem;}
-.ch-banner-actions{margin-left:auto;display:flex;gap:.5rem;}
-.ch-banner-btn{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:all .15s;}
-.ch-banner-btn:hover{background:var(--surface3);color:var(--text);}
-.ch-banner-btn svg{width:16px;height:16px;}
-
-/* ── Search ── */
-.ch-search{display:flex;align-items:center;gap:.625rem;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:.625rem 1rem;margin-bottom:1.5rem;transition:all .2s;cursor:text;}
-.ch-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-subtle);}
-.ch-search svg{width:16px;height:16px;color:var(--text3);flex-shrink:0;}
-.ch-search input{flex:1;border:none;background:none;outline:none;font-size:.9375rem;color:var(--text);font-family:inherit;}
-.ch-search input::placeholder{color:var(--text3);}
-.ch-search-mic{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);flex-shrink:0;}
-
-/* ── Quick actions ── */
-.ch-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.75rem;}
-.ch-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:1.125rem .75rem;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit;}
-.ch-action:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-.ch-action.primary{background:linear-gradient(135deg,var(--accent),#818cf8);border-color:transparent;color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.3);}
-.ch-action.primary:hover{box-shadow:0 6px 20px rgba(99,102,241,.4);transform:translateY(-2px);}
-.ch-action-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
-.ch-action.primary .ch-action-icon{background:rgba(255,255,255,.2);}
-.ch-action:not(.primary) .ch-action-icon{background:var(--surface2);}
-.ch-action-icon svg{width:18px;height:18px;}
-.ch-action-label{font-size:.8125rem;font-weight:700;text-align:center;line-height:1.3;}
-.ch-action.primary .ch-action-label{color:#fff;}
-.ch-action:not(.primary) .ch-action-label{color:var(--text);}
-.ch-action-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;position:absolute;top:.625rem;right:.625rem;}
-
-/* ── Section ── */
-.ch-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;}
-.ch-section-title{font-size:.875rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;}
-.ch-see-all{font-size:.8125rem;font-weight:600;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:.25rem;}
-.ch-see-all:hover{text-decoration:underline;}
-.ch-see-all svg{width:14px;height:14px;}
-
-/* ── Workspace list ── */
-.ch-ws-list{display:flex;flex-direction:column;gap:.375rem;}
-.ch-ws-row{display:flex;align-items:center;gap:.875rem;padding:.75rem .875rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s;text-decoration:none;}
-.ch-ws-row:hover{box-shadow:var(--shadow-sm);border-color:var(--border2);}
-.ch-ws-av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.875rem;font-weight:800;color:#fff;flex-shrink:0;}
-.ch-ws-info{flex:1;min-width:0;}
-.ch-ws-name{font-size:.9375rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ch-ws-type{font-size:.75rem;color:var(--text3);margin-top:.1rem;}
-.ch-ws-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0;}
-
-/* ── Right panel ── */
-.ch-right-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.875rem;}
-.ch-community-row{display:flex;align-items:center;gap:.75rem;padding:.5rem .25rem;cursor:pointer;transition:background .15s;border-radius:8px;text-decoration:none;}
-.ch-community-row:hover{background:var(--surface2);}
-.ch-community-av{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
-.ch-community-av img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
-.ch-community-name{font-size:.875rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ch-community-type{font-size:.75rem;color:var(--text3);}
-
-/* ── Responsive ── */
-@media(max-width:900px){.ch-right{display:none;}}
-@media(max-width:600px){
-  .ch-actions{grid-template-columns:repeat(2,1fr);}
-  .ch-main{padding:1rem;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0d14;--sb:#111119;--card:#1a1a26;--card2:#1e1e2c;
+  --bdr:#252535;--t1:#f0f0f5;--t2:#9ba1b0;--t3:#5a5a78;
+  --acc:#6366f1;--acc2:#818cf8;--cyan:#00d4ff;--pink:#ec4899;--green:#22c55e;
+  --radius:16px;
 }
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+/* ── Shell ── */
+.shell{display:flex;height:100vh;height:100dvh;}
+
+/* ── Sidebar ── */
+.sb{
+  width:200px;flex-shrink:0;background:var(--sb);
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--bdr);
+  padding:0;
+}
+.sb-logo{
+  display:flex;align-items:center;gap:.625rem;
+  padding:1.375rem 1.25rem 1.25rem;
+  border-bottom:1px solid var(--bdr);
+  margin-bottom:.5rem;
+}
+.sb-logo-icon{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:#6366f1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(99,102,241,.3);
+}
+.sb-logo-icon svg{width:18px;height:18px;color:#fff;}
+.sb-logo-text{font-size:1.125rem;font-weight:900;letter-spacing:.08em;color:var(--t1);text-transform:uppercase;}
+.sb-nav{flex:1;padding:0 .75rem;display:flex;flex-direction:column;gap:.125rem;}
+.sb-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.6875rem .875rem;border-radius:10px;
+  font-size:.875rem;font-weight:500;color:var(--t2);
+  cursor:pointer;transition:all .15s;text-decoration:none;
+  border:none;background:none;width:100%;text-align:left;
+  min-height:44px;
+}
+.sb-item:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.sb-item.active{background:var(--acc);color:#fff;font-weight:600;}
+.sb-item.active .sb-item-icon{color:#fff;}
+.sb-item-icon{width:20px;height:20px;flex-shrink:0;transition:all .15s;}
+.sb-footer{
+  padding:.875rem .75rem;border-top:1px solid var(--bdr);
+  display:flex;align-items:center;gap:.625rem;
+}
+.sb-footer-av{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;color:#fff;overflow:hidden;
+}
+.sb-footer-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.sb-footer-name{font-size:.8125rem;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-footer-sub{font-size:.625rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* ── Topbar ── */
+.topbar{
+  height:56px;display:flex;align-items:center;justify-content:flex-end;
+  padding:0 1.5rem;flex-shrink:0;gap:.5rem;
+  border-bottom:1px solid var(--bdr);
+}
+.tb-notif{
+  position:relative;width:38px;height:38px;border-radius:10px;
+  background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--t2);
+  transition:all .15s;min-height:44px;min-width:44px;
+}
+.tb-notif:hover{background:rgba(255,255,255,.06);color:var(--t1);}
+.tb-notif svg{width:20px;height:20px;}
+.tb-notif-dot{
+  position:absolute;top:8px;right:8px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--pink);border:2px solid var(--bg);
+}
+.tb-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;color:#fff;cursor:pointer;
+  transition:opacity .15s;
+}
+.tb-avatar:hover{opacity:.85;}
+.tb-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+
+/* ── Feed scroll ── */
+.feed-scroll{flex:1;overflow-y:auto;padding:1.25rem 1.5rem 2rem;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent;}
+.feed-scroll::-webkit-scrollbar{width:4px;}
+.feed-scroll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px;}
+.feed-inner{max-width:580px;margin:0 auto;}
+
+/* ── Stories ── */
+.stories-wrap{margin-bottom:1.5rem;}
+.stories-label{font-size:.625rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:.875rem;padding-left:2px;}
+.stories{display:flex;gap:1rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.25rem;}
+.stories::-webkit-scrollbar{display:none;}
+.story{display:flex;flex-direction:column;align-items:center;gap:.4375rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.story-ring{
+  width:64px;height:64px;border-radius:50%;padding:3px;
+  background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.story-ring:hover{transform:scale(1.05);box-shadow:0 0 15px rgba(220,39,67,.3);}
+.story-ring.add{background:none;border:1.5px dashed var(--bdr);padding:0;}
+.story-ring.add:hover{border-color:var(--acc);background:rgba(99,102,241,.05);}
+.story-inner{
+  width:100%;height:100%;border-radius:50%;
+  background:var(--bg);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--bg);font-size:.75rem;font-weight:700;color:var(--t1);
+}
+.story-inner img{width:100%;height:100%;object-fit:cover;}
+.story-add-icon{
+  width:100%;height:100%;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--t2);font-size:1.5rem;font-weight:300;
+}
+.story-label{font-size:.7rem;color:var(--t2);font-weight:500;margin-top:.125rem;white-space:nowrap;max-width:64px;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+
+/* ── Post card ── */
+.post-card{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--radius);
+  padding:1.25rem;margin-bottom:1.125rem;
+  transition:border-color .2s,box-shadow .2s;
+}
+.post-card:hover{border-color:#2e2e45;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.post-card:nth-child(1){animation-delay:.04s;}
+.post-card:nth-child(2){animation-delay:.08s;}
+.post-card:nth-child(3){animation-delay:.12s;}
+.post-card:nth-child(4){animation-delay:.16s;}
+.post-card:nth-child(5){animation-delay:.2s;}
+.post-head{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
+.post-av{
+  width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.875rem;font-weight:700;color:#fff;
+}
+.post-av img{width:100%;height:100%;object-fit:cover;}
+.post-meta{flex:1;min-width:0;}
+.post-name{font-size:.9375rem;font-weight:700;color:var(--t1);}
+.post-time{font-size:.75rem;color:var(--t3);margin-top:1px;}
+.post-more{
+  width:32px;height:32px;border-radius:50%;
+  color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.post-more:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.post-more svg{width:18px;height:18px;}
+.post-body{font-size:.9375rem;line-height:1.6;color:var(--t1);margin-bottom:1.125rem;}
+.post-divider{height:1px;background:var(--bdr);margin-bottom:.875rem;}
+.post-actions{display:flex;align-items:center;gap:1.5rem;}
+.post-act{
+  display:flex;align-items:center;gap:.5rem;
+  font-size:.875rem;font-weight:600;color:var(--t2);
+  background:none;border:none;cursor:pointer;transition:all .15s;
+  padding:.25rem 0;
+}
+.post-act:hover{color:var(--t1);}
+.post-act.liked{color:var(--pink);}
+.post-act.liked:hover{color:var(--pink);}
+.post-act svg{width:20px;height:20px;transition:transform .15s;}
+.post-act:hover svg{transform:scale(1.1);}
+.post-act-spacer{flex:1;}
+.post-share{
+  width:34px;height:34px;border-radius:8px;
+  color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;min-height:44px;min-width:44px;
+}
+.post-share:hover{background:rgba(255,255,255,.05);color:var(--t1);}
+.post-share svg{width:16px;height:16px;}
+
+/* ── Empty state ── */
+.feed-empty{text-align:center;padding:4rem 1rem;}
+.feed-empty-icon{width:64px;height:64px;border-radius:20px;background:rgba(124,106,247,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
+.feed-empty-icon svg{width:28px;height:28px;color:var(--acc2);}
+.feed-empty h3{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:.5rem;}
+.feed-empty p{font-size:.875rem;color:var(--t3);margin-bottom:1.5rem;line-height:1.6;}
+.btn-primary{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:var(--acc);color:#fff;border-radius:10px;font-size:.875rem;font-weight:700;transition:all .15s;box-shadow:0 4px 16px rgba(124,106,247,.3);}
+.btn-primary:hover{background:#6b58f0;transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,247,.4);}
+
+/* ── Comments UI ── */
+.post-comments-sec {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bdr);
+  animation: fadeUp 0.2s ease both;
+}
+.comments-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding-right: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bdr) transparent;
+}
+.comment-item {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+.comment-av {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--acc2), var(--cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+}
+.comment-av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.comment-content {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.625rem 0.875rem;
+  border-radius: 0 12px 12px 12px;
+}
+.comment-hdr {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.comment-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--t1);
+}
+.comment-time {
+  font-size: 0.6875rem;
+  color: var(--t3);
+}
+.comment-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--t2);
+}
+.comment-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--bdr);
+  border-radius: 20px;
+  padding: 0.25rem 0.5rem;
+}
+.comment-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--t1);
+  outline: none;
+}
+.comment-input::placeholder {
+  color: var(--t3);
+}
+.comment-submit {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--acc);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.comment-submit:hover {
+  background: var(--acc2);
+  transform: scale(1.05);
+}
+.comment-submit svg {
+  width: 14px;
+  height: 14px;
+}
+.loading-comments {
+  text-align: center;
+  padding: 1rem;
+  color: var(--t3);
+  font-size: 0.8125rem;
+}
+.post-act-like svg {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.post-act-like.liked svg {
+  transform: scale(1.15);
+}
+
+/* ── Bottom tab bar (mobile) ── */
+.bottom-nav{display:none;}
+
+/* ── Skeleton ── */
+.skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* ── Mobile ── */
+@media(max-width:768px){
+  .sb{display:none;}
+  .topbar{padding:0 1rem;}
+  .feed-scroll{padding:.875rem .875rem 5.5rem;}
+  .bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    height:58px;background:var(--sb);border-top:1px solid var(--bdr);
+    z-index:100;padding-bottom:env(safe-area-inset-bottom);
+  }
+  .bn-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:.25rem;color:var(--t3);text-decoration:none;transition:color .15s;
+    min-height:44px;
+  }
+  .bn-item.active{color:var(--acc2);}
+  .bn-item svg{width:22px;height:22px;}
+  .bn-item span{font-size:.5625rem;font-weight:600;letter-spacing:.02em;}
+}
+
+/* ── FAB ── */
+.feed-fab {
+  position: fixed; 
+  bottom: 85px; 
+  right: 20px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--green); color: #fff; border: none;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(34,197,94,.4); cursor: pointer;
+  transition: transform .15s, box-shadow .15s; z-index: 4000; text-decoration: none;
+}
+.feed-fab:active { transform: scale(.92); }
+.feed-fab svg { width: 24px; height: 24px; }
 </style>
-{% endblock %}
+</head>
+<body>
+<div class="shell">
 
-{% block content %}
-<div class="ch-shell">
+  <!-- ── Sidebar ── -->
+  <nav class="sb">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <span class="sb-logo-text">NEXA</span>
+    </div>
+    <div class="sb-nav">
+      <a href="{% url 'community:community_home' %}" class="sb-item active">
+        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Community Feed
+      </a>
+      <a href="{% url 'ai_chat' %}" class="sb-item">
+        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><circle cx="12" cy="12" r="3"/><path d="M12 7v2m0 6v2m-2.5-5.5h-2m10 0h-2"/></svg>
+        AI Tutor
+      </a>
+      <a href="{% url 'community:workspace_list' %}" class="sb-item">
+        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Workspace
+      </a>
+      <a href="{% url 'community:ai_tools' %}" class="sb-item">
+        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Tools
+      </a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-av">
+        {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;">
+        <div class="sb-footer-name" style="line-height:1.2;">{{ user.get_full_name|default:user.username }}</div>
+        <div class="sb-footer-sub" style="margin-top:1px;">{{ user.email|truncatechars:22 }}</div>
+      </div>
+    </div>
+  </nav>
+
   <!-- ── Main ── -->
-  <div class="ch-main">
-
-    <!-- Welcome banner -->
-    <div class="ch-banner">
-      <div class="ch-banner-av">
-        {% if user.community_profile.avatar %}
-          <img src="{{ user.community_profile.avatar.url }}" alt="">
-        {% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-      </div>
-      <div class="ch-banner-text">
-        <h2>Welcome back, {{ user.get_full_name|default:user.username }}</h2>
-        <p>Here's what's happening in your community</p>
-      </div>
-      <div class="ch-banner-actions">
-        <a href="{% url 'community:feed' %}" class="ch-banner-btn" title="Search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </a>
-        <a href="{% url 'community:notifications' %}" class="ch-banner-btn" title="Notifications" style="position:relative;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          {% if unread_notif_count %}<span style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#ef4444;border:2px solid var(--surface);"></span>{% endif %}
-        </a>
-      </div>
-    </div>
-
-    <!-- Search -->
-    <div class="ch-search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Search..." id="home-search" oninput="homeSearch(this.value)">
-      <button class="ch-search-mic">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-      </button>
-    </div>
-
-    <!-- Quick actions -->
-    <div class="ch-actions">
-      <a href="{% url 'community:workspace_create' %}" class="ch-action primary" style="position:relative;">
-        <div class="ch-action-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        </div>
-        <span class="ch-action-label">New<br>Workspace +</span>
+  <div class="main">
+    <div class="topbar">
+      <a href="{% url 'community:notifications' %}" class="tb-notif">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        {% if unread_notif_count %}<span class="tb-notif-dot"></span>{% endif %}
       </a>
-      <a href="{% url 'community:post_create' %}" class="ch-action">
-        <div class="ch-action-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </div>
-        <span class="ch-action-label">New Post</span>
-      </a>
-      <a href="{% url 'community:messages' %}" class="ch-action" style="position:relative;">
-        <div class="ch-action-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <span class="ch-action-label">Messages</span>
-        {% if unread_msgs %}<span class="ch-action-dot"></span>{% endif %}
-      </a>
-      <a href="{% url 'community:nexa_workspace' %}" class="ch-action">
-        <div class="ch-action-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
-        </div>
-        <span class="ch-action-label">Open Nexa</span>
+      <a href="{% url 'community:profile' username=user.username %}" class="tb-avatar">
+        {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
       </a>
     </div>
 
-    <!-- My Workspaces -->
-    <div class="ch-section-head">
-      <span class="ch-section-title">My Workspaces</span>
-      <a href="{% url 'community:workspace_list' %}" class="ch-see-all">
-        See All
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>
-    </div>
-    <div class="ch-ws-list">
-      {% if personal_ws %}
-      <a href="{% url 'community:workspace_detail' ws_id=personal_ws.id %}" class="ch-ws-row">
-        <div class="ch-ws-av" style="background:linear-gradient(135deg,#6366f1,#818cf8);">{{ personal_ws.name|slice:":1"|upper }}</div>
-        <div class="ch-ws-info">
-          <div class="ch-ws-name">{{ personal_ws.name }}</div>
-          <div class="ch-ws-type">Private</div>
-        </div>
-        <div class="ch-ws-dot"></div>
-      </a>
-      {% endif %}
-      {% for wm in workspace_memberships %}
-      <a href="{% url 'community:workspace_detail' ws_id=wm.workspace.id %}" class="ch-ws-row">
-        <div class="ch-ws-av" style="background:{% cycle '#6366f1' '#0ea5e9' '#10b981' '#f59e0b' '#ef4444' '#8b5cf6' %};">{{ wm.workspace.name|slice:":1"|upper }}</div>
-        <div class="ch-ws-info">
-          <div class="ch-ws-name">{{ wm.workspace.name }}</div>
-          <div class="ch-ws-type">{{ wm.workspace.get_workspace_type_display|default:"Workspace" }}</div>
-        </div>
-        <div class="ch-ws-dot"></div>
-      </a>
-      {% empty %}
-      {% if not personal_ws %}
-      <div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:.875rem;">
-        No workspaces yet. <a href="{% url 'community:workspace_create' %}" style="color:var(--accent);font-weight:600;">Create one →</a>
-      </div>
-      {% endif %}
-      {% endfor %}
-    </div>
+    <div class="feed-scroll">
+      <div class="feed-inner">
 
-  </div>
+        <!-- Stories -->
+        <div class="stories-wrap">
+          <div class="stories-label">Stories</div>
+          <div class="stories">
+            <div class="story" onclick="window.location.href='{% url 'community:post_create' %}'">
+              <div class="story-ring add">
+                <div class="story-add-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </div>
+              </div>
+              <span class="story-label">Add Story</span>
+            </div>
+            {% for f in following %}
+            <div class="story">
+              <div class="story-ring">
+                <div class="story-inner">
+                  {% if f.following.community_profile.avatar %}<img src="{{ f.following.community_profile.avatar.url }}" alt="">{% else %}{{ f.following.username|slice:":1"|upper }}{% endif %}
+                </div>
+              </div>
+              <span class="story-label">{{ f.following.username|truncatechars:8 }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
 
-  <!-- ── Right panel ── -->
-  <div class="ch-right">
-    <div class="ch-right-title">My Communities</div>
-    {% for membership in school_memberships %}
-    <a href="{% url 'community:school_detail' slug=membership.community.slug %}" class="ch-community-row">
-      <div class="ch-community-av" style="background:{% cycle '#6366f1' '#0ea5e9' '#10b981' '#f59e0b' '#8b5cf6' %};">
-        {% if membership.community.logo_url %}<img src="{{ membership.community.logo_url }}" alt="">{% else %}{{ membership.community.name|slice:":2"|upper }}{% endif %}
+        <!-- Posts -->
+        {% for post in feed_posts %}
+        <div class="post-card" id="post-{{ post.id }}">
+          <div class="post-head">
+            <a href="{% url 'community:profile' username=post.author.username %}" class="post-av">
+              {% if post.author.community_profile.avatar %}<img src="{{ post.author.community_profile.avatar.url }}" alt="">{% else %}{{ post.author.username|slice:":1"|upper }}{% endif %}
+            </a>
+            <div class="post-meta">
+              <div class="post-name">{{ post.author.community_profile.display_name|default:post.author.username }}</div>
+              <div class="post-time">{{ post.created_at|timesince }} ago</div>
+            </div>
+            <button class="post-more">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            </button>
+          </div>
+          <div class="post-body">
+            <div class="post-text">{{ post.content|linebreaksbr }}</div>
+            {% if post.media %}
+            <div class="post-media" style="margin-top:0.875rem; border-radius:12px; overflow:hidden;">
+              {% if post.media_type == 'image' %}
+                <img src="{{ post.media.url }}" alt="" style="width:100%; display:block; border: 2px solid var(--border-ink); border-radius: 8px;">
+              {% elif post.media_type == 'video' %}
+                <video src="{{ post.media.url }}" controls style="width:100%; display:block; border: 2px solid var(--border-ink); border-radius: 8px;"></video>
+              {% elif post.media_type == 'file' %}
+                <a href="{{ post.media.url }}" target="_blank" class="post-file-card" style="display:flex; align-items:center; gap:0.75rem; padding:0.875rem; background:#fff; border:2px solid var(--border-ink); border-radius:12px; box-shadow:3px 3px 0 var(--border-ink); text-decoration:none; color:inherit;">
+                  <div class="pfc-icon" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border:1.5px solid var(--border-ink); border-radius:6px;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                  </div>
+                  <div class="pfc-info" style="flex:1; min-width:0;">
+                    <div class="pfc-name" style="font-weight:800; font-size:0.875rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.media.name|basename }}</div>
+                    <div class="pfc-meta" style="font-size:0.7rem; color:var(--text3); font-weight:600;">Click to open attachment</div>
+                  </div>
+                </a>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+          <div class="post-actions">
+            <button id="like-btn-{{ post.id }}" class="post-act post-act-like {% if post.id in liked_ids %}liked{% endif %}" onclick="likePost('{{ post.id }}')">
+              <svg id="like-svg-{{ post.id }}" viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="like-count-{{ post.id }}">{{ post.like_count|default:"0" }}</span>
+            </button>
+            <button class="post-act" onclick="toggleComments('{{ post.id }}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span id="comment-count-{{ post.id }}">{{ post.comment_count|default:"0" }}</span>
+            </button>
+            <button class="post-act post-share" onclick="sharePost('{{ post.id }}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
+          </div>
+          
+          <div class="post-comments-sec" id="comments-sec-{{ post.id }}" style="display:none;">
+            <div class="comments-list" id="comments-list-{{ post.id }}"></div>
+            <div class="comment-input-wrap">
+              <input type="text" id="comment-input-{{ post.id }}" class="comment-input" placeholder="Write a comment..." onkeypress="if(event.key === 'Enter') submitComment('{{ post.id }}')">
+              <button class="comment-submit" onclick="submitComment('{{ post.id }}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="feed-empty">
+          <div class="feed-empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Nothing here yet</h3>
+          <p>Follow people and join communities to see posts in your feed.</p>
+          <a href="{% url 'community:schools' %}" class="btn-primary">Browse Communities</a>
+        </div>
+        {% endfor %}
+
       </div>
-      <div style="flex:1;min-width:0;">
-        <div class="ch-community-name">{{ membership.community.name|truncatechars:22 }}</div>
-        <div class="ch-community-type">School</div>
-      </div>
-    </a>
-    {% endfor %}
-    {% for membership in custom_memberships %}
-    <a href="{% url 'community:custom_detail' slug=membership.community.slug %}" class="ch-community-row">
-      <div class="ch-community-av" style="background:{% cycle '#ef4444' '#f59e0b' '#10b981' '#6366f1' %};">{{ membership.community.name|slice:":2"|upper }}</div>
-      <div style="flex:1;min-width:0;">
-        <div class="ch-community-name">{{ membership.community.name|truncatechars:22 }}</div>
-        <div class="ch-community-type">Community</div>
-      </div>
-    </a>
-    {% endfor %}
-    {% if not school_memberships and not custom_memberships %}
-    <div style="font-size:.8125rem;color:var(--text3);line-height:1.6;">
-      Join schools and communities to see them here.
-      <a href="{% url 'community:schools' %}" style="color:var(--accent);font-weight:600;display:block;margin-top:.5rem;">Browse Schools →</a>
     </div>
-    {% endif %}
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<!-- ── Bottom nav (mobile) ── -->
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #0b0b0f !important;
+  border-top: 1px solid #1e1e2c !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 100 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.375rem 0.5rem;
+  color: #8a8a93;
+  border-radius: 12px;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.15s;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
+.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
+.bn-unified-item:active svg { transform: scale(1.05); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
+  </a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
+  </a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
+</nav>
+
+<!-- ── Floating Action Button ── -->
+<a href="{% url 'community:post_create' %}" class="feed-fab" aria-label="New post">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</a>
+
 <script>
-function homeSearch(q) {
-  if (q.trim().length > 1) {
-    window.location.href = '{% url "community:feed" %}?q=' + encodeURIComponent(q.trim());
+const CSRF = '{{ csrf_token }}';
+
+function getCsrfToken() {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; csrftoken=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return CSRF;
+}
+
+function likePost(id) {
+  fetch('/community/api/posts/' + id + '/like/', {
+    method: 'POST', 
+    headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
+    credentials: 'same-origin'
+  }).then(async r => {
+    if (!r.ok) {
+       console.error("Like api failed.", await r.text());
+       return null;
+    }
+    return r.json();
+  }).then(d => {
+    if (!d) return;
+    const btn = document.getElementById('like-btn-' + id);
+    if (btn) btn.classList.toggle('liked', d.liked);
+    const svg = document.getElementById('like-svg-' + id);
+    if (svg) svg.setAttribute('fill', d.liked ? 'currentColor' : 'none');
+    const span = document.getElementById('like-count-' + id);
+    if (span) span.textContent = d.like_count;
+  }).catch(e => {
+    console.error("Fetch error on like:", e);
+  });
+}
+
+function timeSince(dateStr) {
+  const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+  if (diff < 60) return diff + 's';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+  return Math.floor(diff / 86400) + 'd';
+}
+
+function buildCommentHtml(c) {
+  const av = c.author.community_profile && c.author.community_profile.avatar 
+      ? `<img src="${c.author.community_profile.avatar}">` 
+      : c.author.username.charAt(0).toUpperCase();
+  const name = (c.author.community_profile && c.author.community_profile.display_name) 
+      ? c.author.community_profile.display_name 
+      : c.author.username;
+  return `
+    <div class="comment-item">
+      <div class="comment-av">${av}</div>
+      <div class="comment-content">
+        <div class="comment-hdr">
+          <span class="comment-name">${name}</span>
+          <span class="comment-time">${timeSince(c.created_at)}</span>
+        </div>
+        <div class="comment-text">${c.content}</div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleComments(id) {
+  const sec = document.getElementById('comments-sec-' + id);
+  const list = document.getElementById('comments-list-' + id);
+  if (sec.style.display === 'none') {
+    sec.style.display = 'block';
+    if (!list.hasAttribute('data-loaded')) {
+      list.innerHTML = '<div class="loading-comments">Loading...</div>';
+      fetch('/community/api/posts/' + id + '/comments/', {
+        method: 'GET', 
+        headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
+        credentials: 'same-origin'
+      }).then(r => {
+        if(!r.ok) throw new Error("Load failed");
+        return r.json();
+      }).then(data => {
+        list.innerHTML = data.length ? data.map(buildCommentHtml).join('') : '<div class="loading-comments">No comments yet. Be the first to reply!</div>';
+        list.setAttribute('data-loaded', 'true');
+      }).catch(e => {
+        console.error(e);
+        list.innerHTML = '<div class="loading-comments">Error loading comments.</div>';
+      });
+    }
+  } else {
+    sec.style.display = 'none';
   }
 }
-document.getElementById('home-search').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') homeSearch(this.value);
-});
+
+function submitComment(id) {
+  const inp = document.getElementById('comment-input-' + id);
+  const val = inp.value.trim();
+  if (!val) return;
+  const list = document.getElementById('comments-list-' + id);
+  if (list.querySelector('.loading-comments')) {
+    list.innerHTML = '';
+  }
+  inp.disabled = true;
+  fetch('/community/api/posts/' + id + '/comments/', {
+    method: 'POST', 
+    body: JSON.stringify({content: val}), 
+    headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
+    credentials: 'same-origin'
+  }).then(async r => {
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }).then(data => {
+    list.insertAdjacentHTML('beforeend', buildCommentHtml(data));
+    inp.value = '';
+    inp.disabled = false;
+    inp.focus();
+    list.scrollTop = list.scrollHeight;
+    
+    // Update counter
+    const cspan = document.getElementById('comment-count-' + id);
+    if (cspan) cspan.textContent = parseInt(cspan.textContent || 0) + 1;
+  }).catch(e => {
+    console.error("Submit error:", e);
+    inp.disabled = false;
+  });
+}
+
+function sharePost(id) {
+  const url = window.location.origin + '/community/posts/' + id + '/';
+  if (navigator.share) {
+    navigator.share({ title: 'Check out this post on NEXA', url: url }).catch(console.error);
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      alert("Link copied to clipboard!");
+    });
+  }
+}
 </script>
-{% endblock %}
+</body>
+</html>

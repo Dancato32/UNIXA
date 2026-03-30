@@ -6,8 +6,8 @@ import os
 import json
 
 
-def build_system_prompt(learning_mode='explain', use_rag=False, user=None):
-    """Build the full system prompt for a given learning mode."""
+def build_system_prompt(use_rag=False, user=None, is_vision=False):
+    """Build the full system prompt for a simplified tutor experience."""
     system_message = """You are Nexa, an advanced AI Tutor designed to help students learn deeply while maintaining full awareness of the entire conversation.
 
 MEMORY AND CONTEXT RULES:
@@ -94,10 +94,16 @@ NEVER run steps together on one line.
 
 GOAL: Help the student understand concepts deeply, maintain conversation continuity, improve or modify code when requested, and act like a consistent tutor that remembers everything discussed in the chat."""
 
-    if learning_mode == 'coach':
-        system_message += "\n\nCURRENT MODE: COACH MODE — Guide the student with questions and hints rather than direct answers."
-    elif learning_mode == 'exam':
-        system_message += "\n\nCURRENT MODE: EXAM MODE — Provide direct, efficient step-by-step solutions."
+    if is_vision:
+        system_message += """
+
+VISION ANALYSIS ENABLED:
+1. INTERNAL OBSERVATION: First, silently observe every detail in the image - text, diagrams, handwritten notes, numbers, and layout.
+2. OCR AND EXTRACTION: If the image contains a problem statement or text, extract it accurately.
+3. INVESTIGATIVE ANALYSIS: Don't just answer; explain what you SEE. For example, "I see a quadratic equation on the board..." or "In the diagram you shared, the forces are shown acting on..."
+4. MULTI-MODAL REASONING: Use the visual evidence in the image to inform your step-by-step tutoring. If a student shared a graph, refer to specific coordinates or trends."""
+
+
 
     if use_rag and user:
         rag_context = get_study_materials_for_rag(user)
@@ -151,7 +157,7 @@ def get_study_materials_for_rag(user):
         return ""
 
 
-def ask_ai(message, user=None, use_rag=True, learning_mode='explain', history=None):
+def ask_ai(message, user=None, use_rag=True, history=None):
     """
     Send a message to AI and get a response.
 
@@ -257,94 +263,11 @@ NEVER run steps together on one line.
 
 GOAL: Help the student understand concepts deeply, maintain conversation continuity, improve or modify code when requested, and act like a consistent tutor that remembers everything discussed in the chat."""
 
-        # Add mode-specific instructions
-        if learning_mode == 'explain':
-            system_message += """
-
-CURRENT MODE: EXPLAIN MODE (Board Tutor Style)
-In Explain Mode, teach concepts clearly using board-style formatting.
-
-Behavior:
-- Give clear, structured explanations
-- Break ideas into numbered steps
-- Use LaTeX for all math expressions
-- Show work step-by-step like writing on a board
-- Use analogies and real-world examples
-- Include understanding checks
-
-Structure:
-Step 1: [Concept introduction]
-Step 2: [Example with work shown]
-Step 3: [Why it works]
-Step 4: [Understanding check]
-
-Example: "Does that make sense so far?" "Can you think of another example?"
-
-For math problems, always show each operation separately:
-Step 1: Write the equation
-Step 2: Simplify one part
-Step 3: Solve for the variable
-Step 4: Verify the answer"""
-
-        elif learning_mode == 'coach':
-            system_message += """
-
-CURRENT MODE: COACH MODE (Guided Discovery)
-In Coach Mode, guide the student's thinking process using questions and hints.
-
-Behavior:
-- Ask guiding questions instead of giving direct answers
-- Provide hints when students are stuck
-- Encourage students to attempt solutions
-- Use board-style formatting when showing hints
-- Help students discover answers independently
-
-Typical flow:
-Step 1: Understand the student's question
-Step 2: Ask a guiding question
-Step 3: Provide a hint if needed (using proper formatting)
-Step 4: Let the student think
-Step 5: Reveal solution with explanation if needed
-
-Example hints:
-"What operation should we do first?"
-"Can you identify the pattern here?"
-"Let's break this down - what do we know?"
-
-When showing hints, use proper LaTeX formatting:
-Hint: Look at $\\frac{1}{2}$ - what's the denominator?
-
-The goal is to train the student's reasoning ability through guided discovery."""
-
-        elif learning_mode == 'exam':
-            system_message += """
-
-CURRENT MODE: EXAM MODE (Direct Solutions)
-In Exam Mode, provide clear, direct answers with step-by-step solutions.
-
-Behavior:
-- Provide direct answers efficiently
-- Show complete step-by-step solutions
-- Use proper board-style formatting
-- Be concise but thorough
-- Focus on accuracy and clarity
-
-Structure:
-Problem: [State the problem]
-
-Solution:
-Step 1: [First operation with LaTeX]
-Step 2: [Second operation with LaTeX]
-Step 3: [Third operation with LaTeX]
-
-Final Answer: [Clear answer with proper formatting]
-
-You may also:
-- Provide practice questions
-- Check student answers
-- Explain mistakes clearly
-
-Exam Mode prioritizes correctness and efficiency while maintaining clear board-style presentation."""
+        # Add standard tutor behavior
+        system_message += """
+        
+CURRENT MODE: TUTOR MODE (Board Style)
+Teach concepts clearly using board-style formatting. Break ideas into steps, use LaTeX for math, and show work step-by-step."""
         
         # Add RAG context if enabled
         if use_rag and user:

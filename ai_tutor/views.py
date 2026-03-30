@@ -36,8 +36,9 @@ def chat_ai(request):
     else:
         form = ChatForm()
     
-    # Get past conversations for this user
-    conversations = Conversation.objects.filter(user=request.user)[:50]
+    # Get past conversations for this user (reversed to display oldest to newest top-down)
+    recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
+    conversations = list(reversed(recent))
     
     return render(request, 'ai_tutor/chat.html', {
         'form': form,
@@ -54,17 +55,16 @@ def chat_ajax(request):
             data = json.loads(request.body)
             message = data.get('message', '').strip()
             use_rag = data.get('use_rag', True)
-            learning_mode = data.get('learning_mode', 'explain')  # Get learning mode from request
             
             if not message:
                 return JsonResponse({'error': 'Message cannot be empty'}, status=400)
             
-            # Fetch last 10 conversations for memory context
-            recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:10]
+            # Fetch last 50 conversations for deep memory context
+            recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
             history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
 
-            # Get AI response with learning mode and history
-            response = ask_ai(message, user=request.user, use_rag=use_rag, learning_mode=learning_mode, history=history)
+            # Get AI response with history
+            response = ask_ai(message, user=request.user, use_rag=use_rag, history=history)
             
             # Save conversation
             conversation = Conversation.objects.create(
@@ -296,51 +296,75 @@ def delete_essay(request, essay_id):
 
 @login_required
 def chat_with_image(request):
-    """AJAX endpoint: send a message + image to the AI (vision model)."""
+    """SSE streaming endpoint: send a message + image to the AI and stream the response."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-    message = request.POST.get('message', '').strip() or 'What is in this image? Explain it as a tutor.'
-    learning_mode = request.POST.get('learning_mode', 'explain')
-    image_file = request.FILES.get('image')
-
-    if not image_file:
-        return JsonResponse({'error': 'No image provided'}, status=400)
-
     try:
+        message = request.POST.get('message', '').strip() or 'What is in this image? Explain it as a tutor.'
+        image_file = request.FILES.get('image')
+
+        if not image_file:
+            return JsonResponse({'error': 'No image provided'}, status=400)
+
         import base64
-        from .ai_utils import get_openai_client
+        from .ai_utils import get_openai_client, build_system_prompt
+        from django.http import StreamingHttpResponse
+
+        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
+        history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
 
         image_data = base64.b64encode(image_file.read()).decode('utf-8')
         mime = image_file.content_type or 'image/jpeg'
 
         client = get_openai_client()
-        response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": message},
-                        {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_data}"}}
-                    ]
-                }
-            ],
-            max_tokens=1000,
-        )
-        ai_response = response.choices[0].message.content
-
-        conversation = Conversation.objects.create(
-            user=request.user,
-            message=f"[Image] {message}",
-            response=ai_response
-        )
-
-        return JsonResponse({
-            'success': True,
-            'response': ai_response,
-            'timestamp': conversation.created_at.strftime('%H:%M')
+        # Use is_vision=True for the enhanced prompt
+        system_message = build_system_prompt(use_rag, request.user, is_vision=True)
+        
+        messages_list = [{"role": "system", "content": system_message}]
+        for h in history:
+            messages_list.append({"role": "user", "content": h['message']})
+            messages_list.append({"role": "assistant", "content": h['response']})
+            
+        messages_list.append({
+            "role": "user",
+            "content": [
+                {"type": "text", "text": message},
+                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_data}"}}
+            ]
         })
+
+        def event_stream():
+            full_response = []
+            try:
+                stream = client.chat.completions.create(
+                    model="openai/gpt-4o-mini",
+                    messages=messages_list,
+                    max_tokens=1000,
+                    stream=True,
+                )
+                for chunk in stream:
+                    token = chunk.choices[0].delta.content or ''
+                    if token:
+                        full_response.append(token)
+                        yield f"data: {json.dumps({'token': token})}\n\n"
+
+                # Save conversation with a specific marker
+                complete = ''.join(full_response)
+                Conversation.objects.create(
+                    user=request.user,
+                    message=f"[Image Analysis] {message}",
+                    response=complete
+                )
+                yield f"data: {json.dumps({'done': True})}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+        response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+        response['Cache-Control'] = 'no-cache, no-transform'
+        response['X-Accel-Buffering'] = 'no'
+        response['Transfer-Encoding'] = 'chunked'
+        return response
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -429,7 +453,6 @@ def web_search_ajax(request):
     try:
         data = json.loads(request.body)
         query = data.get('message', '').strip()
-        learning_mode = data.get('learning_mode', 'explain')
 
         if not query:
             return JsonResponse({'error': 'Query cannot be empty'}, status=400)
@@ -453,23 +476,28 @@ def web_search_ajax(request):
 
         web_context = '\n'.join(snippets[:5]) if snippets else ''
 
-        from .ai_utils import get_openai_client
         client = get_openai_client()
 
         system = """You are Nexa, an AI tutor. The user asked a question and web search results are provided below.
 Use the search results to give an accurate, up-to-date answer. Cite facts from the results naturally.
 Format your answer in clear steps or paragraphs as appropriate. Use LaTeX for any math."""
 
+        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
+        history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
+
         user_content = f"Question: {query}"
         if web_context:
             user_content += f"\n\nWeb search results:\n{web_context}"
 
+        messages_list = [{"role": "system", "content": system}]
+        for h in history:
+            messages_list.append({"role": "user", "content": h['message']})
+            messages_list.append({"role": "assistant", "content": h['response']})
+        messages_list.append({"role": "user", "content": user_content})
+
         response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user_content}
-            ],
+            messages=messages_list,
             max_tokens=1000,
             temperature=0.7
         )
@@ -504,7 +532,6 @@ def chat_stream(request):
         data = json.loads(request.body)
         message = data.get('message', '').strip()
         use_rag = data.get('use_rag', True)
-        learning_mode = data.get('learning_mode', 'explain')
 
         if not message:
             return JsonResponse({'error': 'Empty message'}, status=400)
@@ -512,11 +539,11 @@ def chat_stream(request):
         from .ai_utils import get_openai_client, get_study_materials_for_rag, build_system_prompt
         from django.http import StreamingHttpResponse
 
-        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:10]
+        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
         history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
 
         client = get_openai_client()
-        system_message = build_system_prompt(learning_mode, use_rag, request.user)
+        system_message = build_system_prompt(use_rag, request.user)
 
         messages_list = [{"role": "system", "content": system_message}]
         for h in history:

@@ -9,16 +9,16 @@ User = get_user_model()
 
 
 def landing_view(request):
-    """Landing page view - redirect to dashboard if logged in."""
+    """Landing page view - redirect to community feed if logged in."""
     if request.user.is_authenticated:
-        return redirect('dashboard_index') 
+        return redirect('community:feed') 
     return render(request, 'users/landing_final.html')
 
 
 def login_view(request):
-    """User login view - redirects to dashboard after login."""
+    """User login view - redirects to community feed after login."""
     if request.user.is_authenticated:
-        return redirect('dashboard_index') 
+        return redirect('community:feed') 
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -28,7 +28,7 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('dashboard_index')
+                return redirect('community:feed')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -38,9 +38,9 @@ def login_view(request):
 
 
 def register_view(request):
-    """User registration view - redirects to dashboard after signup."""
+    """User registration view - redirects to community feed after signup."""
     if request.user.is_authenticated:
-        return redirect('dashboard_index')
+        return redirect('community:feed')
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -112,8 +112,8 @@ def register_view(request):
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
 
-            # Redirect to dashboard after signup
-            return redirect('dashboard_index')
+            # Redirect to community feed after signup
+            return redirect('community:feed')
 
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')

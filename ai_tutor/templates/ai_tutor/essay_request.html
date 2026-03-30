@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Essay Generator — NEXA</title>
+<title>Essay Generator â€” NEXA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -11,9 +11,43 @@
   --bg:#f7f7f5;--surface:#fff;--surface2:#f0f0ec;--surface3:#e8e8e4;
   --border:#e8e8e4;--border2:#ddd;--text:#1a1a1a;--text2:#555;--text3:#999;
   --blue:#3b82f6;--green:#16a34a;--purple:#7c3aed;--orange:#f97316;
+  --sidebar-w:232px;
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
-/* Minimal topbar — logo + avatar only, no nav links */
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;}
+
+/* Sidebar (Standardized Redesign) */
+.sidebar {
+  width: var(--sidebar-w); background: #0b0b0f;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  display: flex; flex-direction: column; flex-shrink: 0;
+  z-index: 1500; height: 100vh; position: relative;
+}
+.sidebar-header { padding: 1.5rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.sidebar-logo-icon { color: #818cf8; font-size: 1.25rem; line-height: 1; display:flex; align-items:center; justify-content:center;}
+.sidebar-logo-text { font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+
+.sidebar-section-label { font-size: .625rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #4b4b5a; padding: 1.5rem 1.25rem 0.75rem; }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 0.5rem 0; scrollbar-width: none; display:flex; flex-direction:column; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
+
+.nav-item { display: flex; align-items: center; gap: 1rem; padding: .75rem 1.25rem; margin: 0.125rem 0.75rem; border-radius: 12px; color: #8a8a93; font-size: .9375rem; font-weight: 600; transition: all 0.2s ease; text-decoration: none; border: none; background: none; width: calc(100% - 1.5rem); text-align: left; }
+.nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
+.nav-item.active { background: rgba(129, 140, 248, 0.1); color: #818cf8; font-weight: 700; }
+.nav-item svg { width: 20px; height: 20px; stroke-width: 2px; flex-shrink: 0; }
+.nav-item.active svg { color: #818cf8; stroke-width: 2.5px; }
+
+.sidebar-footer { padding: 1.25rem; display: flex; align-items: center; gap: .75rem; border-top: 1px solid rgba(255,255,255,0.05); }
+.sidebar-avatar { width: 40px; height: 40px; border-radius: 50%; background: #334455; display: flex; align-items: center; justify-content: center; font-size: .875rem; font-weight: 800; color: #fff; flex-shrink: 0; overflow: hidden; }
+.sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sidebar-footer-info { flex: 1; min-width: 0; }
+.sidebar-user-name { font-size: .9375rem; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+.sidebar-user-status { font-size: .75rem; color: #4b4b5a; margin-top: 1px; }
+
+/* Main layout wrapper */
+.main-content { display:flex; flex-direction:column; flex:1; overflow:hidden; }
+
+/* Minimal topbar â€” logo + avatar only, no nav links */
 .topnav{display:flex;align-items:center;justify-content:space-between;height:48px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.25rem;position:sticky;top:0;z-index:200;flex-shrink:0;}
 .topnav-logo{font-size:.9375rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem;}
 .topnav-logo-icon{width:26px;height:26px;background:linear-gradient(135deg,#f97316,#fb923c);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;color:#fff;}
@@ -21,30 +55,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .topnav-back{display:flex;align-items:center;gap:.35rem;padding:.3rem .65rem;color:var(--text2);text-decoration:none;font-size:.775rem;font-weight:500;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);transition:all .15s;}
 .topnav-back:hover{background:var(--surface3);color:var(--text);}
 .topnav-back svg{width:13px;height:13px;}
-.avatar{width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--text2);}
-.mobile-topbar{display:none;height:48px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200;}
-.menu-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--text2);cursor:pointer;border-radius:6px;}
-.menu-btn svg{width:20px;height:20px;}
-.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:300;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .25s;}
-.sidebar.open{transform:translateX(0);}
-.sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);}
-.sidebar-logo a{font-size:1.125rem;font-weight:800;color:var(--text);text-decoration:none;}
-.sidebar-nav{flex:1;padding:.75rem;overflow-y:auto;}
-.nav-link{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;color:var(--text2);text-decoration:none;font-size:.8125rem;border-radius:8px;transition:all .15s;margin-bottom:1px;}
-.nav-link:hover{background:var(--surface2);color:var(--text);}
-.nav-link.active{background:rgba(249,115,22,.08);color:#ea6c00;}
-.nav-link svg{width:15px;height:15px;flex-shrink:0;}
-.nav-divider{height:1px;background:var(--border);margin:.5rem 0;}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:199;}
-.overlay.open{display:block;}
-</style>
-</head>
-<body>
-<style>
-.workspace{display:flex;flex:1;height:calc(100vh - 48px);overflow:hidden;}
-/* Left panel */
-.settings-panel{width:300px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-/* Mode tabs */
 .mode-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
 .mode-tab{flex:1;padding:.6rem .2rem;font-size:.65rem;font-weight:700;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:.2rem;border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.04em;}
 .mode-tab svg{width:13px;height:13px;}
@@ -238,7 +248,7 @@ textarea.field-input{resize:none;}
 .article-card-check svg{width:9px;height:9px;color:#fff;display:none;}
 .article-card.selected .article-card-check svg{display:block;}
 .article-card-title{font-size:.75rem;font-weight:600;color:var(--text);line-height:1.4;}
-.article-card-snippet{font-size:.68rem;color:var(--text2);margin-top:.25rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.article-card-snippet{font-size:.68rem;color:var(--text2);margin-top:.25rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .article-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.3rem;}
 .article-source-badge{font-size:.6rem;font-weight:600;padding:.1rem .4rem;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text3);}
 .article-link{font-size:.6rem;color:var(--blue);text-decoration:none;}
@@ -251,13 +261,44 @@ textarea.field-input{resize:none;}
 .bn-item.active{color:#f97316;}
 @media(max-width:900px){
   .topnav{display:none;}.mobile-topbar{display:flex;}.bottom-nav{display:flex;}
+  .sidebar{display:none;}
   .workspace{flex-direction:column;height:auto;overflow:visible;}
   .settings-panel{width:100%;border-right:none;border-bottom:1px solid var(--border);}
   .doc-panel{min-height:400px;}.doc-content{padding:1.25rem;}
 }
 @media(max-width:600px){.format-grid{grid-template-columns:1fr 1fr;}.essay-actions{flex-direction:column;}}
 </style>
-<!-- Desktop top navbar — minimal: logo + back + avatar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo-icon">✦</div>
+    <div class="sidebar-logo-text">NEXA</div>
+  </div>
+  <div class="sidebar-section-label">Main</div>
+  <nav class="sidebar-nav">
+    <a href="{% url 'community:feed' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Feed</a>
+    <a href="{% url 'ai_chat' %}" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>AI Tutor</a>
+    <a href="{% url 'community:workspace_list' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Your Workspace</a>
+    <a href="{% url 'community:ai_tools' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Your Tools</a>
+    <a href="{% url 'list_materials' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-avatar">
+      {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+    </div>
+    <div class="sidebar-footer-info">
+      <div class="sidebar-user-name">{{ user.username }}</div>
+      <div class="sidebar-user-status">Online</div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+<!-- Desktop top navbar â€” minimal: logo + back + avatar -->
 <nav class="topnav">
   <a href="{% url 'community:community_home' %}" class="topnav-logo">
     <div class="topnav-logo-icon">N</div>
@@ -271,27 +312,6 @@ textarea.field-input{resize:none;}
     <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
   </div>
 </nav>
-<div class="mobile-topbar">
-  <button class="menu-btn" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-  <span style="font-size:.875rem;font-weight:600;color:var(--text2);">Essay Generator</span>
-  <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
-</div>
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo"><a href="{% url 'dashboard' %}">NEXA</a></div>
-  <nav class="sidebar-nav">
-    <a href="{% url 'dashboard' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
-    <a href="{% url 'list_materials' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>My Materials</a>
-    <a href="{% url 'ai_chat' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Tutor</a>
-    <div class="nav-divider"></div>
-    <a href="{% url 'essay_request' %}" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Essay Generator</a>
-    <a href="{% url 'assignment_list' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Assignments</a>
-    <a href="{% url 'library_home' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Library</a>
-    <a href="{% url 'community:feed' %}" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community</a>
-    <div class="nav-divider"></div>
-    <a href="{% url 'logout' %}" class="nav-link" style="color:var(--text3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log out</a>
-  </nav>
-</aside>
-<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 <div class="workspace">
   <!-- Left: Settings panel with 3 mode tabs -->
   <aside class="settings-panel">
@@ -317,7 +337,7 @@ textarea.field-input{resize:none;}
         <div class="panel-body">
           <div>
             <div class="field-label">Essay Topic</div>
-            <textarea name="topic" id="topicInput" class="field-input" rows="3" placeholder="e.g. The impact of AI on modern education…" required></textarea>
+            <textarea name="topic" id="topicInput" class="field-input" rows="3" placeholder="e.g. The impact of AI on modern educationâ€¦" required></textarea>
             <div class="chips">
               <span class="chip" onclick="setTopic('The impact of artificial intelligence on education')">AI in Education</span>
               <span class="chip" onclick="setTopic('Climate change and its effects on biodiversity')">Climate Change</span>
@@ -363,7 +383,7 @@ textarea.field-input{resize:none;}
               <label class="toggle"><input type="checkbox" name="research_done" checked><span class="toggle-track"></span></label>
             </div>
           </div>
-          <!-- Web Search References — Generate -->
+          <!-- Web Search References â€” Generate -->
           <div class="ws-section">
             <button type="button" class="ws-toggle-btn" onclick="toggleWebSearch('generate')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -372,7 +392,7 @@ textarea.field-input{resize:none;}
             </button>
             <div class="ws-panel" id="ws-panel-generate">
               <div class="ws-input-row">
-                <input class="ws-input" id="ws-input-generate" placeholder="Search topic or keyword…" onkeydown="if(event.key==='Enter')runWebSearch('generate')">
+                <input class="ws-input" id="ws-input-generate" placeholder="Search topic or keywordâ€¦" onkeydown="if(event.key==='Enter')runWebSearch('generate')">
                 <button type="button" class="ws-search-btn" onclick="runWebSearch('generate')">Search</button>
               </div>
               <div class="ws-results" id="ws-results-generate"><div class="ws-empty">Search for articles to use as references</div></div>
@@ -386,7 +406,7 @@ textarea.field-input{resize:none;}
       </form>
       <div class="loading-state" id="loadingState">
         <div class="spinner"></div>
-        <div class="loading-text">Writing your essay…</div>
+        <div class="loading-text">Writing your essayâ€¦</div>
         <div class="loading-sub">Researching sources and generating content</div>
       </div>
     </div>
@@ -396,7 +416,7 @@ textarea.field-input{resize:none;}
       <div class="panel-body">
         <div>
           <div class="field-label">Your Essay Topic</div>
-          <textarea id="guidanceTopic" class="field-input" rows="3" placeholder="e.g. The causes and effects of World War I…"></textarea>
+          <textarea id="guidanceTopic" class="field-input" rows="3" placeholder="e.g. The causes and effects of World War Iâ€¦"></textarea>
           <div class="chips">
             <span class="chip" onclick="setGuidanceTopic('The causes and effects of World War I')">WW1</span>
             <span class="chip" onclick="setGuidanceTopic('The role of technology in modern education')">Tech in Education</span>
@@ -413,7 +433,7 @@ textarea.field-input{resize:none;}
             <option value="outline">Essay Outline only</option>
           </select>
         </div>
-        <!-- Web Search References — Guidance -->
+        <!-- Web Search References â€” Guidance -->
         <div class="ws-section">
           <button type="button" class="ws-toggle-btn" onclick="toggleWebSearch('guidance')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -422,7 +442,7 @@ textarea.field-input{resize:none;}
           </button>
           <div class="ws-panel" id="ws-panel-guidance">
             <div class="ws-input-row">
-              <input class="ws-input" id="ws-input-guidance" placeholder="Search topic or keyword…" onkeydown="if(event.key==='Enter')runWebSearch('guidance')">
+              <input class="ws-input" id="ws-input-guidance" placeholder="Search topic or keywordâ€¦" onkeydown="if(event.key==='Enter')runWebSearch('guidance')">
               <button type="button" class="ws-search-btn" onclick="runWebSearch('guidance')">Search</button>
             </div>
             <div class="ws-results" id="ws-results-guidance"><div class="ws-empty">Search for articles to use as references</div></div>
@@ -440,7 +460,7 @@ textarea.field-input{resize:none;}
       <div class="panel-body">
         <div>
           <div class="field-label">Paste Your Essay</div>
-          <textarea id="improverText" class="field-input" rows="6" placeholder="Paste your essay here and the AI will improve it…"></textarea>
+          <textarea id="improverText" class="field-input" rows="6" placeholder="Paste your essay here and the AI will improve itâ€¦"></textarea>
         </div>
         <div>
           <div class="field-label">Improvements to Apply</div>
@@ -461,7 +481,7 @@ textarea.field-input{resize:none;}
             <option value="friendly and conversational">Friendly / Conversational</option>
           </select>
         </div>
-        <!-- Web Search References — Improver -->
+        <!-- Web Search References â€” Improver -->
         <div class="ws-section">
           <button type="button" class="ws-toggle-btn" onclick="toggleWebSearch('improver')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -470,7 +490,7 @@ textarea.field-input{resize:none;}
           </button>
           <div class="ws-panel" id="ws-panel-improver">
             <div class="ws-input-row">
-              <input class="ws-input" id="ws-input-improver" placeholder="Search topic or keyword…" onkeydown="if(event.key==='Enter')runWebSearch('improver')">
+              <input class="ws-input" id="ws-input-improver" placeholder="Search topic or keywordâ€¦" onkeydown="if(event.key==='Enter')runWebSearch('improver')">
               <button type="button" class="ws-search-btn" onclick="runWebSearch('improver')">Search</button>
             </div>
             <div class="ws-results" id="ws-results-improver"><div class="ws-empty">Search for articles to use as references</div></div>
@@ -501,7 +521,7 @@ textarea.field-input{resize:none;}
               <div class="essay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
               <div class="essay-info">
                 <div class="essay-title">{{ essay.topic }}</div>
-                <div class="essay-meta">{{ essay.created_at|date:"M d, Y" }} · {{ essay.word_count|default:"500" }} words · {{ essay.get_output_format_display }}</div>
+                <div class="essay-meta">{{ essay.created_at|date:"M d, Y" }} Â· {{ essay.word_count|default:"500" }} words Â· {{ essay.get_output_format_display }}</div>
               </div>
               <div class="essay-actions">
                 <a href="{% url 'essay_detail' essay.id %}" class="btn-sm btn-view">Open</a>
@@ -563,7 +583,7 @@ textarea.field-input{resize:none;}
         <div class="essay-stream-wrap">
           <div class="essay-stream-header">
             <div class="essay-stream-topic" id="streamTopic"></div>
-            <div class="essay-stream-sub" id="streamSub">Generating…</div>
+            <div class="essay-stream-sub" id="streamSub">Generatingâ€¦</div>
           </div>
           <div class="essay-stream-body" id="streamBody"><span class="essay-cursor" id="streamCursor"></span></div>
           <div class="essay-stream-actions" id="streamActions" style="display:none;">
@@ -572,7 +592,7 @@ textarea.field-input{resize:none;}
             <button class="esa-btn esa-new" onclick="resetToGenerate()">New Essay</button>
           </div>
 
-          <!-- Edit chat — shown after generation -->
+          <!-- Edit chat â€” shown after generation -->
           <div class="essay-chat" id="essayChat" style="display:none;">
             <div class="essay-chat-label">Edit with AI</div>
             <div class="essay-chat-suggestions" id="chatSuggestions">
@@ -585,7 +605,7 @@ textarea.field-input{resize:none;}
             </div>
             <div class="essay-chat-msgs" id="essayChatMsgs"></div>
             <div class="essay-chat-input-row">
-              <textarea class="essay-chat-input" id="essayChatInput" rows="1" placeholder="Ask AI to edit your essay…" onkeydown="chatInputKeydown(event)"></textarea>
+              <textarea class="essay-chat-input" id="essayChatInput" rows="1" placeholder="Ask AI to edit your essayâ€¦" onkeydown="chatInputKeydown(event)"></textarea>
               <button class="essay-chat-send" id="essayChatSend" onclick="sendEssayChat()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
@@ -598,12 +618,113 @@ textarea.field-input{resize:none;}
   </div>
 </div>
 
-<nav class="bottom-nav">
-  <a href="{% url 'dashboard' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
-  <a href="{% url 'list_materials' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Materials</a>
-  <a href="{% url 'ai_chat' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Tutor</a>
-  <a href="{% url 'essay_request' %}" class="bn-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Essays</a>
-  <a href="{% url 'community:feed' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Community</a>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #0b0b0f !important;
+  border-top: 1px solid #1e1e2c !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 100 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.375rem 0.5rem;
+  color: #8a8a93;
+  border-radius: 12px;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.15s;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
+.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
+.bn-unified-item:active svg { transform: scale(1.05); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
+  </a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
+  </a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
 </nav>
 
 <script>
@@ -640,7 +761,7 @@ function switchMode(mode, btn){
         <div class="welcome-state">
           <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
           <div class="welcome-title">Plan before you write</div>
-          <div class="welcome-sub">Enter your topic on the left and get a breakdown, thesis ideas, and a full outline — before writing a single word.</div>
+          <div class="welcome-sub">Enter your topic on the left and get a breakdown, thesis ideas, and a full outline â€” before writing a single word.</div>
         </div>`;
     }
   } else {
@@ -657,7 +778,7 @@ function switchMode(mode, btn){
   }
 }
 
-// Generate form submit — AJAX + typewriter
+// Generate form submit â€” AJAX + typewriter
 const GENERATE_URL = '{% url "essay_generate_ajax" %}';
 let streamEssayText = '';
 let streamEssayId = null;
@@ -675,14 +796,14 @@ document.getElementById('essayForm').addEventListener('submit', async function(e
   // Disable button, show loading in left panel
   const genBtn = document.getElementById('genBtn');
   genBtn.disabled = true;
-  genBtn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;"></div> Generating…';
+  genBtn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;"></div> Generatingâ€¦';
   document.querySelector('#pane-generate form .panel-body').style.display = 'none';
   document.getElementById('loadingState').classList.add('active');
 
   // Switch right panel to stream view
   showView('stream');
   document.getElementById('streamTopic').textContent = topic;
-  document.getElementById('streamSub').textContent = 'Writing your essay…';
+  document.getElementById('streamSub').textContent = 'Writing your essayâ€¦';
   document.getElementById('streamBody').innerHTML = '<span class="essay-cursor" id="streamCursor"></span>';
   document.getElementById('streamActions').style.display = 'none';
   streamEssayText = '';
@@ -704,7 +825,7 @@ document.getElementById('essayForm').addEventListener('submit', async function(e
     await typewriterStream(streamEssayText, document.getElementById('streamBody'));
 
     // Done
-    document.getElementById('streamSub').textContent = `${streamEssayText.split(/\s+/).length} words · Done`;
+    document.getElementById('streamSub').textContent = `${streamEssayText.split(/\s+/).length} words Â· Done`;
     document.getElementById('streamActions').style.display = 'flex';
     document.getElementById('streamOpenBtn').href = data.detail_url;
     // Show chat panel
@@ -746,7 +867,7 @@ async function typewriterStream(text, container) {
     }
     // Scroll to bottom
     container.scrollTop = container.scrollHeight;
-    // Vary speed slightly for natural feel — faster for short words
+    // Vary speed slightly for natural feel â€” faster for short words
     const delay = words[i].length <= 3 ? 18 : words[i].length <= 6 ? 28 : 38;
     await sleep(delay);
   }
@@ -782,7 +903,7 @@ function resetToGenerate() {
   document.getElementById('essayChat').style.display = 'none';
 }
 
-// ── Essay edit chat ────────────────────────────────────────────
+// â”€â”€ Essay edit chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let essayChatBusy = false;
 
 function chatInputKeydown(e) {
@@ -822,7 +943,7 @@ async function sendEssayChat() {
   aiEl.className = 'ecm ai';
   const aiBubble = document.createElement('div');
   aiBubble.className = 'ecm-bubble streaming';
-  aiBubble.textContent = '…';
+  aiBubble.textContent = 'â€¦';
   aiEl.innerHTML = `<div class="ecm-avatar">N</div>`;
   aiEl.appendChild(aiBubble);
   msgs.appendChild(aiEl);
@@ -853,7 +974,7 @@ async function sendEssayChat() {
       const body = document.getElementById('streamBody');
       body.textContent = '';
       await typewriterStream(streamEssayText, body);
-      document.getElementById('streamSub').textContent = `${streamEssayText.split(/\s+/).length} words · Updated`;
+      document.getElementById('streamSub').textContent = `${streamEssayText.split(/\s+/).length} words Â· Updated`;
     }
 
   } catch(e) {
@@ -877,7 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ── Shared result chat ─────────────────────────────────────────
+// â”€â”€ Shared result chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // currentResultContext holds the text the chat will reference
 let currentResultContext = '';
 let resultChatBusy = false;
@@ -902,7 +1023,7 @@ function showResultChat(containerId, context, suggestions) {
     <div class="essay-chat-msgs" id="${containerId}-msgs"></div>
     <div class="essay-chat-input-row">
       <textarea class="essay-chat-input" id="${containerId}-input" rows="1"
-        placeholder="Ask a follow-up…"
+        placeholder="Ask a follow-upâ€¦"
         onkeydown="resultChatKey(event,'${containerId}')"></textarea>
       <button class="essay-chat-send" id="${containerId}-send" onclick="sendResultChat(null,'${containerId}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -948,7 +1069,7 @@ async function _doResultChat(msg, containerId) {
   aiEl.className = 'ecm ai';
   const aiBubble = document.createElement('div');
   aiBubble.className = 'ecm-bubble streaming';
-  aiBubble.textContent = '…';
+  aiBubble.textContent = 'â€¦';
   aiEl.innerHTML = `<div class="ecm-avatar">N</div>`;
   aiEl.appendChild(aiBubble);
   msgs.appendChild(aiEl);
@@ -979,7 +1100,7 @@ async function _doResultChat(msg, containerId) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-// ── Web Search References ──────────────────────────────────────
+// â”€â”€ Web Search References â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const WS_REFS = { generate: [], guidance: [], improver: [] };
 const WS_URL = '{% url "essay_web_search" %}';
 
@@ -993,7 +1114,7 @@ async function runWebSearch(pane) {
   const query = input.value.trim();
   if (!query) return;
   const resultsEl = document.getElementById('ws-results-' + pane);
-  resultsEl.innerHTML = '<div class="ws-empty">Searching…</div>';
+  resultsEl.innerHTML = '<div class="ws-empty">Searchingâ€¦</div>';
   try {
     const resp = await fetch(WS_URL, {
       method: 'POST',
@@ -1020,7 +1141,7 @@ async function runWebSearch(pane) {
         <div class="article-card-snippet">${escHtml(r.snippet)}</div>
         <div class="article-card-footer">
           <span class="article-source-badge">${escHtml(r.source)}</span>
-          <a class="article-link" href="${escHtml(r.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit ↗</a>
+          <a class="article-link" href="${escHtml(r.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit â†—</a>
         </div>`;
       card.addEventListener('click', () => toggleRef(card, r, pane));
       resultsEl.appendChild(card);
@@ -1053,14 +1174,14 @@ function getSelectedRefs(pane) {
   return WS_REFS[pane];
 }
 
-// ── Guidance
+// â”€â”€ Guidance
 async function runGuidance(){
   const topic = document.getElementById('guidanceTopic').value.trim();
   if(!topic){ alert('Please enter a topic.'); return; }
   const action = document.getElementById('guidanceAction').value;
   const btn = document.getElementById('guidanceBtn');
   btn.disabled = true;
-  btn.textContent = 'Thinking…';
+  btn.textContent = 'Thinkingâ€¦';
 
   showView('guidance');
   const gv = document.getElementById('view-guidance');
@@ -1073,7 +1194,7 @@ async function runGuidance(){
       <div class="result-panel-body" id="guidance-result-body">
         <div style="padding:2rem;text-align:center;">
           <div style="width:28px;height:28px;border:2px solid var(--border2);border-top-color:#22c55e;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;"></div>
-          <div style="font-size:.8125rem;color:var(--text2);">Analysing your topic…</div>
+          <div style="font-size:.8125rem;color:var(--text2);">Analysing your topicâ€¦</div>
         </div>
       </div>
     </div>`;
@@ -1139,7 +1260,7 @@ async function runImprover(){
 
   const btn = document.getElementById('improverBtn');
   btn.disabled = true;
-  btn.textContent = 'Improving…';
+  btn.textContent = 'Improvingâ€¦';
 
   showView('improver');
   const iv = document.getElementById('view-improver');
@@ -1152,7 +1273,7 @@ async function runImprover(){
       <div class="result-panel-body" id="improver-result-body">
         <div style="padding:2rem;text-align:center;">
           <div style="width:28px;height:28px;border:2px solid var(--border2);border-top-color:#a78bfa;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;"></div>
-          <div style="font-size:.8125rem;color:var(--text2);">Improving your essay…</div>
+          <div style="font-size:.8125rem;color:var(--text2);">Improving your essayâ€¦</div>
         </div>
       </div>
     </div>`;
@@ -1207,7 +1328,7 @@ async function runImprover(){
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Improve My Essay';
 }
 
-// Typewrite into a plain element (no cursor node needed — just text)
+// Typewrite into a plain element (no cursor node needed â€” just text)
 async function typewriterIntoEl(text, el) {
   el.textContent = '';
   const words = text.split(' ');
@@ -1224,5 +1345,7 @@ function copyImproved(){
   if(el){ navigator.clipboard.writeText(el.textContent); }
 }
 </script>
+  </div> <!-- /workspace -->
+</div> <!-- /main-content -->
 </body>
 </html>

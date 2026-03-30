@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse, FileResponse, StreamingHttpResponse, HttpResponse
 from django.conf import settings
-from .models import StudyMaterial
+from .models import StudyMaterial, SavedFlashcardDeck, SavedPodcast, SavedStudySong
 from .forms import StudyMaterialForm
 from ai_tutor.ai_utils import ask_ai
 import os
@@ -121,40 +121,69 @@ def upload_material(request):
 
 @login_required
 def upload_material_ajax(request):
-    """AJAX upload endpoint â€” returns JSON so the frontend can show a progress bar."""
+    """AJAX upload endpoint — auto-detects material_type from file extension."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
-    form = StudyMaterialForm(request.POST, request.FILES)
-    if form.is_valid():
-        uploaded_file = request.FILES.get('file')
-        MAX_SIZE = 200 * 1024 * 1024  # 200 MB â€” local filesystem
-        if uploaded_file and uploaded_file.size > MAX_SIZE:
-            return JsonResponse({'success': False, 'errors': {'file': [f'File too large ({uploaded_file.size // (1024*1024)} MB). Maximum allowed size is 200 MB.']}}, status=400)
-        material = form.save(commit=False)
-        material.owner = request.user
-        try:
-            material.save()
-        except Exception as e:
-            err = str(e)
-            if 'size' in err.lower() or 'large' in err.lower() or '10485760' in err:
-                return JsonResponse({'success': False, 'errors': {'file': ['File too large. Maximum allowed size is 200 MB.']}}, status=400)
-            return JsonResponse({'success': False, 'errors': {'__all__': [f'Upload failed: {err}']}}, status=500)
 
-        # Extract text â€” works with both local disk and Cloudinary storage
-        file_extension = os.path.splitext(uploaded_file.name)[1].lower() if uploaded_file else ''
+    uploaded_file = request.FILES.get('file')
+    if not uploaded_file:
+        return JsonResponse({'success': False, 'errors': {'file': ['No file was submitted.']}}, status=400)
 
-        try:
-            # Try local path first (local dev)
-            file_path = material.file.path
-            extracted_text = extract_text_from_file(file_path, file_extension)
-        except (NotImplementedError, ValueError, AttributeError):
-            # Cloudinary storage â€” read from the uploaded file in memory
-            extracted_text = extract_text_from_memory(uploaded_file, file_extension)
+    # Auto-detect material_type from extension
+    ext = os.path.splitext(uploaded_file.name)[1].lower()
+    ext_to_type = {
+        '.pdf':  'PDF',
+        '.docx': 'Word',
+        '.doc':  'Word',
+        '.pptx': 'PowerPoint',
+        '.ppt':  'PowerPoint',
+    }
+    material_type = ext_to_type.get(ext)
+    if not material_type:
+        return JsonResponse({
+            'success': False,
+            'errors': {'file': [f'Unsupported file type "{ext}". Please upload PDF, Word (.docx), or PowerPoint (.pptx).']}
+        }, status=400)
 
-        material.extracted_text = extracted_text
-        material.save(update_fields=['extracted_text'])
-        return JsonResponse({'success': True, 'redirect': '/materials/list/'})
-    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    # Build POST data with auto-detected type and title fallback
+    post_data = request.POST.copy()
+    post_data['material_type'] = material_type
+    if not post_data.get('title', '').strip():
+        post_data['title'] = os.path.splitext(uploaded_file.name)[0][:255]
+
+    form = StudyMaterialForm(post_data, request.FILES)
+    if not form.is_valid():
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+    MAX_SIZE = 200 * 1024 * 1024  # 200 MB
+    if uploaded_file.size > MAX_SIZE:
+        return JsonResponse({
+            'success': False,
+            'errors': {'file': [f'File too large ({uploaded_file.size // (1024*1024)} MB). Maximum is 200 MB.']}
+        }, status=400)
+
+    material = form.save(commit=False)
+    material.owner = request.user
+    material.material_type = material_type
+    try:
+        material.save()
+    except Exception as e:
+        err = str(e)
+        if 'size' in err.lower() or 'large' in err.lower() or '10485760' in err:
+            return JsonResponse({'success': False, 'errors': {'file': ['File too large. Maximum is 200 MB.']}}, status=400)
+        return JsonResponse({'success': False, 'errors': {'__all__': [f'Upload failed: {err}']}}, status=500)
+
+    # Extract text for AI features
+    try:
+        file_path = material.file.path
+        extracted_text = extract_text_from_file(file_path, ext)
+    except (NotImplementedError, ValueError, AttributeError):
+        extracted_text = extract_text_from_memory(uploaded_file, ext)
+
+    material.extracted_text = extracted_text
+    material.save(update_fields=['extracted_text'])
+    return JsonResponse({'success': True, 'redirect': '/materials/list/'})
+
 
 
 @login_required
@@ -230,7 +259,7 @@ def generate_podcast_ajax(request):
 
         text_content = material.extracted_text[:4000]
         prompt = build_podcast_prompt(text_content, material.title)
-        podcast_script = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+        podcast_script = ask_ai(prompt, user=request.user, use_rag=False)
 
         word_count = len(podcast_script.split())
         duration_mins = round(word_count / 130)
@@ -636,25 +665,16 @@ Student's Question: {question}
 Provide a clear, concise answer (2-3 sentences) that directly addresses their question. Be friendly and encouraging."""
         
         # Get AI answer
-        answer = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+        answer = ask_ai(prompt, user=request.user, use_rag=False)
         
-        # Generate audio for the answer using the same TTS system
+        # Generate audio for the answer natively using Edge TTS (matching the podcast hosts)
         audio_url = None
-        
-        # Try Resemble TTS first (returns data URL directly)
         try:
-            audio_url = generate_answer_audio_elevenlabs(answer, material_id)
+            audio_filename = generate_answer_audio_host(answer, material_id)
+            if audio_filename:
+                audio_url = f'/materials/podcast/answer-audio/{material_id}/{audio_filename}'
         except Exception as e:
-            print(f"Resemble TTS failed: {e}")
-        
-        # Fall back to OpenAI TTS (saves file, build URL)
-        if not audio_url:
-            try:
-                audio_filename = generate_answer_audio_openai(answer, material_id)
-                if audio_filename:
-                    audio_url = f'/materials/podcast/answer-audio/{material_id}/{audio_filename}'
-            except Exception as e:
-                print(f"OpenAI TTS failed: {e}")
+            print(f"Host TTS failed: {e}")
         
         return JsonResponse({
             'success': True,
@@ -666,81 +686,37 @@ Provide a clear, concise answer (2-3 sentences) that directly addresses their qu
         return JsonResponse({'error': str(e)}, status=500)
 
 
-def generate_answer_audio_elevenlabs(answer_text, material_id):
-    """Generate answer audio using Resemble.ai TTS. Returns base64 data URL (no file system needed)."""
+def generate_answer_audio_host(answer_text, material_id):
+    """Generate answer audio natively using Edge TTS (randomly alternating between podcast hosts)"""
     try:
         import os
-        import requests
-
-        api_key = os.environ.get("RESEMBLE_API_KEY") or os.getenv("RESEMBLE_API_KEY") or getattr(settings, 'RESEMBLE_API_KEY', None)
-        if not api_key:
-            return None
-
-        text = answer_text[:2000]
-        if not text:
-            return None
-
-        voice_uuid = _get_resemble_voice_uuid(api_key)
-
-        response = requests.post(
-            "https://f.cluster.resemble.ai/synthesize",
-            headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
-            json={"voice_uuid": voice_uuid, "data": text, "output_format": "mp3"},
-            timeout=60
-        )
-
-        if response.status_code == 200:
-            audio_b64 = response.json().get("audio_content")
-            if audio_b64:
-                return f"data:audio/mpeg;base64,{audio_b64}"
-        print(f"Resemble answer TTS Error {response.status_code}: {response.text[:200]}")
-        return None
-
-    except Exception as e:
-        print(f"Resemble answer TTS Exception: {e}")
-        return None
-
-
-def generate_answer_audio_openai(answer_text, material_id):
-    """Generate answer audio using OpenAI TTS."""
-    try:
-        from openai import OpenAI
-        import os
+        import uuid
+        import random
+        import asyncio
+        import edge_tts
+        from django.conf import settings
         
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            return None
-        
-        client = OpenAI(api_key=api_key)
-        
-        # Limit text length
         text = answer_text[:1000]
-        
         if not text:
             return None
-        
-        # Create audio directory
+            
         audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcast_answers')
         os.makedirs(audio_dir, exist_ok=True)
         
-        # Generate unique filename
         filename = f"answer_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
         filepath = os.path.join(audio_dir, filename)
         
-        # Generate speech
-        response = client.audio.speech.create(
-            model="tts-1",
-            voice="nova",
-            input=text,
-            response_format="mp3"
-        )
+        # Randomly choose between Alex's and Sam's actual Edge TTS voice
+        voice = random.choice(['en-US-AndrewNeural', 'en-US-AvaNeural'])
         
-        response.stream_to_file(filepath)
+        async def _bake_answer():
+            await edge_tts.Communicate(text, voice).save(filepath)
+            
+        asyncio.run(_bake_answer())
         
         return filename
-        
     except Exception as e:
-        print(f"OpenAI answer TTS Exception: {e}")
+        print(f"Host answer TTS Exception: {e}")
         return None
 
 
@@ -786,7 +762,7 @@ Content:
 
 Summary:"""
     try:
-        result = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+        result = ask_ai(prompt, user=request.user, use_rag=False)
         return JsonResponse({'success': True, 'result': result})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -826,7 +802,7 @@ Q2: ...
 Material ({material.title}):
 {material.extracted_text[:2000]}"""
     try:
-        raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+        raw = ask_ai(prompt, user=request.user, use_rag=False)
         import re
         questions = []
         blocks = re.split(r'\n(?=Q\d+:)', raw.strip())
@@ -882,7 +858,7 @@ Content:
 
 Flashcards:"""
     try:
-        raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+        raw = ask_ai(prompt, user=request.user, use_rag=False)
         import re
         pairs = re.findall(r'FRONT:\s*(.+?)\nBACK:\s*(.+?)(?=\nFRONT:|\Z)', raw, re.DOTALL)
         cards = [{'front': f.strip(), 'back': b.strip()} for f, b in pairs]
@@ -1203,14 +1179,140 @@ def learn_view(request, pk):
     })
 
 
+@login_required
+def material_slides_api(request, pk):
+    """JSON API: returns extracted pages/slides for the list-page slide viewer."""
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+
+    ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
+    pages = []
+
+    file_path = None
+    try:
+        file_path = material.file.path
+        if not os.path.exists(file_path):
+            file_path = None
+    except Exception:
+        file_path = None
+
+    if file_path and ext == '.pptx':
+        pages = _extract_pptx_pages(file_path)
+    elif file_path and ext == '.pdf':
+        pages = _extract_pdf_pages(file_path)
+    elif file_path and ext in ('.docx', '.doc'):
+        pages = _extract_docx_pages(file_path)
+    else:
+        text = material.extracted_text or ''
+        if text:
+            paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
+            current, size = [], 0
+            for para in paragraphs:
+                current.append(para)
+                size += len(para)
+                if size >= 600:
+                    pages.append({'text': '\n\n'.join(current), 'images': []})
+                    current, size = [], 0
+            if current:
+                pages.append({'text': '\n\n'.join(current), 'images': []})
+
+    if not pages:
+        pages = [{'text': 'No content could be extracted from this file.', 'images': []}]
+
+    for i, p in enumerate(pages):
+        if 'label' not in p:
+            p['label'] = ('Slide' if ext == '.pptx' else 'Page') + f' {i + 1}'
+
+    return JsonResponse({
+        'success': True,
+        'title': material.title,
+        'material_type': material.material_type,
+        'file_url': material.file.url if material.file else '',
+        'file_ext': ext,
+        'pages': pages,
+        'total': len(pages),
+    })
+
+    ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
+    pages = []
+
+    file_path = None
+    try:
+        file_path = material.file.path
+        if not os.path.exists(file_path):
+            file_path = None
+    except Exception:
+        file_path = None
+
+    if file_path and ext == '.pptx':
+        pages = _extract_pptx_pages(file_path)
+    elif file_path and ext == '.pdf':
+        pages = _extract_pdf_pages(file_path)
+    elif file_path and ext in ('.docx', '.doc'):
+        pages = _extract_docx_pages(file_path)
+    else:
+        text = material.extracted_text or ''
+        if text:
+            paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
+            current, size = [], 0
+            for para in paragraphs:
+                current.append(para)
+                size += len(para)
+                if size >= 600:
+                    pages.append({'text': '\n\n'.join(current), 'images': []})
+                    current, size = [], 0
+            if current:
+                pages.append({'text': '\n\n'.join(current), 'images': []})
+
+    if not pages:
+        pages = [{'text': 'No content could be extracted from this file.', 'images': []}]
+
+    for i, p in enumerate(pages):
+        if 'label' not in p:
+            p['label'] = ('Slide' if ext == '.pptx' else 'Page') + f' {i + 1}'
+
+    return JsonResponse({
+        'success': True,
+        'title': material.title,
+        'material_type': material.material_type,
+        'file_url': material.file.url if material.file else '',
+        'file_ext': ext,
+        'pages': pages,
+        'total': len(pages),
+    })
+
+
 def _extract_pptx_pages(file_path):
-    """Extract each slide as a page with text + images (base64)."""
+    """Extract each slide as a page with text + images (base64). Recursive for groups."""
     import base64, io
     pages = []
     try:
         import pptx
-        from pptx.util import Inches
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
         prs = pptx.Presentation(file_path)
+
+        def _get_shape_images(shape, img_list):
+            # Recursive image extraction from groups or solo pictures
+            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                try:
+                    img_blob = shape.image.blob
+                    img_ext = shape.image.ext or 'png'
+                    b64 = base64.b64encode(img_blob).decode('utf-8')
+                    mime = 'image/jpeg' if img_ext.lower() in ('jpg','jpeg') else f'image/{img_ext.lower()}'
+                    img_list.append(f'data:{mime};base64,{b64}')
+                except Exception: pass
+            elif shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+                for s in shape.shapes:
+                    _get_shape_images(s, img_list)
+            # Check for picture fills in any shape type
+            try:
+                if hasattr(shape, 'fill') and hasattr(shape.fill, 'type') and shape.fill.type == 6: # MSO_FILL.PICTURE
+                    img_blob = shape.fill.picture_fill.image.blob
+                    img_ext = shape.fill.picture_fill.image.ext or 'png'
+                    b64 = base64.b64encode(img_blob).decode('utf-8')
+                    mime = 'image/jpeg' if img_ext.lower() in ('jpg','jpeg') else f'image/{img_ext.lower()}'
+                    img_list.append(f'data:{mime};base64,{b64}')
+            except Exception: pass
+
         for slide_num, slide in enumerate(prs.slides, 1):
             text_parts = []
             images = []
@@ -1219,49 +1321,52 @@ def _extract_pptx_pages(file_path):
                 if hasattr(shape, 'text') and shape.text.strip():
                     text_parts.append(shape.text.strip())
                 # Images
-                if shape.shape_type == 13:  # MSO_SHAPE_TYPE.PICTURE
-                    try:
-                        img_blob = shape.image.blob
-                        img_ext = shape.image.ext or 'png'
-                        b64 = base64.b64encode(img_blob).decode('utf-8')
-                        mime = 'image/jpeg' if img_ext.lower() in ('jpg','jpeg') else f'image/{img_ext.lower()}'
-                        images.append(f'data:{mime};base64,{b64}')
-                    except Exception:
-                        pass
+                _get_shape_images(shape, images)
+
             pages.append({
                 'text': '\n\n'.join(text_parts) or f'Slide {slide_num}',
                 'images': images,
                 'label': f'Slide {slide_num}',
             })
     except ImportError:
-        pages = [{'text': 'python-pptx is required to view slides. Install with: pip install python-pptx', 'images': []}]
+        pages = [{'text': 'python-pptx is required. Install with: pip install python-pptx', 'images': []}]
     except Exception as e:
         pages = [{'text': f'Error reading presentation: {str(e)}', 'images': []}]
     return pages
 
 
 def _extract_pdf_pages(file_path):
-    """Extract each PDF page as text + images (base64) using PyMuPDF (fitz) if available, else PyPDF2."""
+    """Extract each PDF page as text + images (base64). Incudes a full-page snapshot for diagrams."""
     import base64
     pages = []
-    # Try PyMuPDF first â€” best image extraction
     try:
         import fitz  # PyMuPDF
         doc = fitz.open(file_path)
         for page_num, page in enumerate(doc, 1):
             text = page.get_text('text').strip()
             images = []
+            
+            # --- 1. A whole-page visual snapshot (Great for complex diagrams and layouts!) ---
+            try:
+                pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5)) # 1.5x zoom for high fidelity
+                img_data = pix.tobytes("png")
+                b64_snap = base64.b64encode(img_data).decode('utf-8')
+                images.append(f'data:image/png;base64,{b64_snap}')
+            except Exception: pass
+
+            # --- 2. Individual sub-images from the layer ---
             for img_index, img in enumerate(page.get_images(full=True)):
                 try:
                     xref = img[0]
                     base_image = doc.extract_image(xref)
-                    img_bytes = base_image['image']
-                    img_ext = base_image.get('ext', 'png')
-                    b64 = base64.b64encode(img_bytes).decode('utf-8')
-                    mime = 'image/jpeg' if img_ext.lower() in ('jpg','jpeg') else f'image/{img_ext.lower()}'
-                    images.append(f'data:{mime};base64,{b64}')
-                except Exception:
-                    pass
+                    if base_image:
+                        img_bytes = base_image['image']
+                        img_ext = base_image.get('ext', 'png')
+                        b64 = base64.b64encode(img_bytes).decode('utf-8')
+                        mime = 'image/jpeg' if img_ext.lower() in ('jpg','jpeg') else f'image/{img_ext.lower()}'
+                        images.append(f'data:{mime};base64,{b64}')
+                except Exception: pass
+                
             pages.append({
                 'text': text or f'Page {page_num}',
                 'images': images,
@@ -1288,39 +1393,90 @@ def _extract_pdf_pages(file_path):
 
 
 def _extract_docx_pages(file_path):
-    """Extract Word doc â€” split into ~800 char pages, extract inline images."""
+    """Extract Word doc — upgraded to harvest ALL embedded images."""
     import base64, io
     pages = []
     try:
         import docx
+        from docx.document import Document as _Document
+        from docx.oxml.table import CT_Tbl
+        from docx.oxml.text.paragraph import CT_P
+        from docx.table import _Cell, Table
+        from docx.text.paragraph import Paragraph
+
         doc = docx.Document(file_path)
+        
+        # Pre-harvest ALL images from the relationship parts to be safe
+        fallback_images = []
+        try:
+            for rel in doc.part.rels.values():
+                if 'image' in rel.reltype:
+                    img_part = rel.target_part
+                    img_blob = img_part.blob
+                    ct = img_part.content_type or 'image/png'
+                    b64 = base64.b64encode(img_blob).decode('utf-8')
+                    fallback_images.append(f'data:{ct};base64,{b64}')
+        except Exception: pass
+
         current_text, current_images, size = [], [], 0
         page_num = 1
 
-        for para in doc.paragraphs:
-            txt = para.text.strip()
-            if txt:
-                current_text.append(txt)
-                size += len(txt)
-            if size >= 800:
-                pages.append({'text': '\n\n'.join(current_text), 'images': current_images, 'label': f'Section {page_num}'})
+        def add_page():
+            nonlocal page_num, current_text, current_images, size
+            if current_text or current_images:
+                # If no images found for this chunk, give it access to one fallback image if available?
+                # No, just include everything found in this element.
+                pages.append({
+                    'text': '\n\n'.join(current_text),
+                    'images': current_images,
+                    'label': f'Section {page_num}'
+                })
                 current_text, current_images, size = [], [], 0
                 page_num += 1
 
-        # Extract inline images from the document
-        for rel in doc.part.rels.values():
-            if 'image' in rel.reltype:
-                try:
-                    img_part = rel.target_part
-                    img_bytes = img_part.blob
-                    ct = img_part.content_type or 'image/png'
-                    b64 = base64.b64encode(img_bytes).decode('utf-8')
-                    current_images.append(f'data:{ct};base64,{b64}')
-                except Exception:
-                    pass
+        # Iterate through all elements in order
+        for block in doc.element.body:
+            if isinstance(block, CT_P):
+                p = Paragraph(block, doc)
+                txt = p.text.strip()
+                if txt:
+                    current_text.append(txt)
+                    size += len(txt)
+                
+                # Check for images in this paragraph
+                for rel in p.part.rels.values():
+                    if 'image' in rel.reltype:
+                        try:
+                            # If it's referenced in the paragraph's XML, it belongs here
+                            if rel.rId in p._element.xml:
+                                img_part = rel.target_part
+                                img_bytes = img_part.blob
+                                ct = img_part.content_type or 'image/png'
+                                b64 = base64.b64encode(img_bytes).decode('utf-8')
+                                current_images.append(f'data:{ct};base64,{b64}')
+                        except Exception: pass
 
-        if current_text or current_images:
-            pages.append({'text': '\n\n'.join(current_text), 'images': current_images, 'label': f'Section {page_num}'})
+                if size >= 800:
+                    add_page()
+            
+            elif isinstance(block, CT_Tbl):
+                t = Table(block, doc)
+                for row in t.rows:
+                    for cell in row.cells:
+                        txt = cell.text.strip()
+                        if txt:
+                            current_text.append(txt)
+                            size += len(txt)
+                if size >= 800:
+                    add_page()
+
+        add_page() # Final chunk
+        
+        # Final pass: If NO images were found in the sections, but they exist in doc, add to the first section
+        if not any(p['images'] for p in pages) and fallback_images:
+            if pages:
+                pages[0]['images'] = fallback_images
+
     except ImportError:
         pages = [{'text': 'python-docx is required. Install with: pip install python-docx', 'images': []}]
     except Exception as e:
@@ -1339,17 +1495,18 @@ def learn_ajax(request, pk):
         action = data.get('action', 'summarise')
         page_text = data.get('page_text', '').strip()
         page_label = data.get('page_label', 'this section')
-        if not page_text:
+
+        if not page_text and action not in ['podcast_list', 'podcast_detail']:
             return JsonResponse({'error': 'No text provided.'}, status=400)
 
         if action == 'summarise':
             prompt = f'Summarise this section titled "{page_label}" in 4-6 clear bullet points. Start each bullet with "â€¢ ". Plain text only, no markdown bold.\n\n{page_text}'
-            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            raw = ask_ai(prompt, user=request.user, use_rag=False)
             return JsonResponse({'success': True, 'action': action, 'result': raw})
 
         elif action == 'explain':
             prompt = f'Explain the key concepts in this section titled "{page_label}" clearly, as if teaching a student. Use numbered points. Plain text only.\n\n{page_text}'
-            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            raw = ask_ai(prompt, user=request.user, use_rag=False)
             return JsonResponse({'success': True, 'action': action, 'result': raw})
 
         elif action == 'quiz':
@@ -1362,7 +1519,7 @@ Return ONLY valid JSON array, no extra text:
 
 Section:
 {page_text}'''
-            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            raw = ask_ai(prompt, user=request.user, use_rag=False)
             import re
             # extract JSON array
             match = re.search(r'\[.*\]', raw, re.DOTALL)
@@ -1381,7 +1538,7 @@ Return ONLY valid JSON array, no extra text:
 
 Section:
 {page_text}'''
-            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            raw = ask_ai(prompt, user=request.user, use_rag=False)
             import re
             match = re.search(r'\[.*\]', raw, re.DOTALL)
             if match:
@@ -1394,9 +1551,134 @@ Section:
                 return JsonResponse({'success': True, 'action': action, 'cards': cards})
             return JsonResponse({'success': False, 'error': 'Could not parse flashcards.'}, status=500)
 
+        elif action == 'podcast_save':
+            from .audio_utils import generate_podcast_segments
+            script_json = data.get('script_json')
+            script_text = data.get('script_text', '').strip()
+            name = data.get('name', f"Podcast for {material.title}").strip()
+            
+            # If we already have the segments (from a Live run), save them directly
+            if script_json:
+                segments = script_json
+            elif script_text:
+                segments = generate_podcast_segments(script_text, material.pk)
+            else:
+                return JsonResponse({'success': False, 'error': 'No content to save.'})
+            
+            pod = SavedPodcast.objects.create(
+                material=material,
+                owner=request.user,
+                name=name,
+                script_json=segments
+            )
+            return JsonResponse({'success': True, 'podcast_id': pod.id})
+
+        elif action == 'podcast_list':
+            pods = SavedPodcast.objects.filter(material=material).values('id', 'name', 'created_at')
+            pod_list = []
+            for p in pods:
+                pod_list.append({
+                    'id': p['id'],
+                    'name': p['name'],
+                    'created_at': p['created_at'].strftime('%Y-%m-%d %H:%M')
+                })
+            return JsonResponse({'success': True, 'podcasts': pod_list})
+
+        elif action == 'podcast_detail':
+            pod_id = data.get('podcast_id')
+            pod = get_object_or_404(SavedPodcast, id=pod_id, owner=request.user)
+            return JsonResponse({'success': True, 'script_json': pod.script_json})
+
+        elif action == 'podcast_question':
+            from .audio_utils import generate_podcast_segments
+            user_q = data.get('question', '').strip()
+            conv_context = data.get('conversation_context', '').strip()
+            prompt = f'''You are Sam and Alex, hosts of a study podcast. A student just "called in" with a question about this section: "{page_label}".
+
+Podcast Conversation So Far:
+{conv_context}
+
+Caller's Question: "{user_q}"
+
+Respond as Sam or Alex in a friendly, conversational way. Answer the question accurately using the section text provided AND referencing the discussion above if relevant. 
+After answering, say exactly: "Alright, back to the show!" to signal a transition.
+
+Section Content:
+{page_text}'''
+            raw = ask_ai(prompt, user=request.user, use_rag=False)
+            
+            # Generate premium audio for the answer
+            segments = generate_podcast_segments(raw, material.pk)
+            audio_url = segments[0]['audio_url'] if segments else None
+            
+            return JsonResponse({'success': True, 'action': action, 'result': raw, 'audio_url': audio_url})
+
+        elif action == 'song_generate':
+            from .audio_utils import generate_podcast_segments
+            genre = data.get('genre', 'Lofi').strip()
+            prompt = f'''You are a world-class Divine Singer. Create catchy, rhythmic, and rhymed song lyrics about this study section titled "{page_label}" in the style of {genre} music.
+
+Lyrics Rules:
+1. Every line MUST rhyme with the next (Strong AABB or ABAB schemes).
+2. The rhythm should be musical and easy to "sing" or "rap" over a beat.
+3. EVERY LINE of the lyrics must be prefixed with "Divine: ".
+4. Focus on making the chorus very catchy and repetitive.
+5. Use section headers like [Intro], [Verse 1], [Chorus], [Verse 2], [Chorus], [Outro] on their own lines.
+
+Example:
+[Verse 1]
+Divine: We're diving deep into the cell today
+Divine: Working on our notes in a brand new way!
+
+Section Content:
+{page_text}'''
+            raw_lyrics = ask_ai(prompt, user=request.user, use_rag=False)
+            
+            # Bake the "Singing" vocals using our premium neural engine
+            segments = generate_podcast_segments(raw_lyrics, material.pk, use_premium=True)
+            return JsonResponse({'success': True, 'action': action, 'lyrics_json': segments, 'raw_text': raw_lyrics})
+
+        elif action == 'song_save':
+            lyrics_json = data.get('lyrics_json')
+            genre = data.get('genre', 'Lofi').strip()
+            name = data.get('name', f"{genre} Beat about {material.title}").strip()
+            
+            song = SavedStudySong.objects.create(
+                material=material,
+                owner=request.user,
+                name=name,
+                genre=genre,
+                lyrics_json=lyrics_json
+            )
+            return JsonResponse({'success': True, 'song_id': song.id})
+
+        elif action == 'song_list':
+            songs = SavedStudySong.objects.filter(material=material, owner=request.user)
+            song_data = [{'id': s.id, 'name': s.name, 'genre': s.genre, 'created_at': s.created_at.strftime('%b %d')} for s in songs]
+            return JsonResponse({'success': True, 'songs': song_data})
+
+        elif action == 'song_detail':
+            song_id = data.get('song_id')
+            song = get_object_or_404(SavedStudySong, id=song_id, owner=request.user)
+            return JsonResponse({'success': True, 'lyrics_json': song.lyrics_json, 'genre': song.genre})
+
+        elif action == 'podcast':
+            from .audio_utils import generate_podcast_segments
+            prompt = f'''Create a conversational, engaging podcast script explaining this section titled "{page_label}".
+The script should be for two hosts, Alex and Sam, discussing the topic in a way that is easy to follow by listening. 
+Keep it under 3 minutes of speaking time. Plain text only.
+
+Section:
+{page_text}'''
+            raw = ask_ai(prompt, user=request.user, use_rag=False)
+            
+            # Auto-generate high-quality audio segments for Live playback!
+            segments = generate_podcast_segments(raw, material.pk)
+            return JsonResponse({'success': True, 'action': action, 'script_json': segments})
+
         else:
-            prompt = f'Help me understand this section:\n\n{page_text}'
-            raw = ask_ai(prompt, user=request.user, use_rag=False, learning_mode='explain')
+            prompt = f'Provide general help for the section "{page_label}":\n\n{page_text}'
+            raw = ask_ai(prompt, user=request.user, use_rag=False)
             return JsonResponse({'success': True, 'action': action, 'result': raw})
 
     except Exception as e:

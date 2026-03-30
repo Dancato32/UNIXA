@@ -614,6 +614,12 @@ class GroupWorkspace(models.Model):
     invite_code = models.CharField(max_length=12, unique=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_personal = models.BooleanField(default=False, db_index=True)  # auto-created personal workspace
+    
+    # Smart Project Workflow Fields
+    is_project_mode = models.BooleanField(default=False)
+    project_summary = models.TextField(blank=True)
+    project_objectives = models.JSONField(default=list, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -719,6 +725,8 @@ class WorkspaceFile(models.Model):
     file = models.FileField(upload_to='workspace/files/')
     original_name = models.CharField(max_length=255)
     file_size = models.PositiveIntegerField(default=0)  # bytes
+    ai_summary = models.TextField(blank=True, null=True)
+    ai_metadata = models.JSONField(blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -751,6 +759,15 @@ class WorkspaceTask(models.Model):
         (REVIEW_REVISION, 'Revision requested'),
     ]
 
+    DIFFICULTY_EASY = 'easy'
+    DIFFICULTY_MEDIUM = 'medium'
+    DIFFICULTY_HARD = 'hard'
+    DIFFICULTY_CHOICES = [
+        (DIFFICULTY_EASY, 'Easy'),
+        (DIFFICULTY_MEDIUM, 'Medium'),
+        (DIFFICULTY_HARD, 'Hard'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
     workspace = models.ForeignKey(
         GroupWorkspace, on_delete=models.CASCADE, related_name='tasks'
@@ -770,6 +787,7 @@ class WorkspaceTask(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_TODO)
+    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default=DIFFICULTY_MEDIUM)
     due_date = models.DateField(null=True, blank=True)
     # Contribution / review fields
     submission = models.TextField(blank=True)
@@ -783,6 +801,24 @@ class WorkspaceTask(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class TaskWorksheet(models.Model):
+    """
+    Dedicated working environment (rich text execution) for an assigned task.
+    Supports auto-saving, embedded AI context, and notes.
+    """
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    task = models.OneToOneField(
+        WorkspaceTask, on_delete=models.CASCADE, related_name='worksheet'
+    )
+    content = models.TextField(blank=True)
+    ai_notes = models.TextField(blank=True)
+    last_saved_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Worksheet for {self.task.title}"
 
 
 # ── Meeting Record ───────────────────────────────────────────────────────────
@@ -1550,3 +1586,89 @@ class NexaSyncLog(models.Model):
 
     def __str__(self):
         return f'SyncLog({self.action}): {self.draft} → {self.target_workspace}'
+
+
+# ── Story ─────────────────────────────────────────────────────────────────────
+
+class Story(models.Model):
+    """24-Hour ephemeral story post."""
+
+    MEDIA_IMAGE = 'image'
+    MEDIA_VIDEO = 'video'
+    MEDIA_TEXT = 'text'
+    MEDIA_CHOICES = [
+        (MEDIA_IMAGE, 'Image'),
+        (MEDIA_VIDEO, 'Video'),
+        (MEDIA_TEXT, 'Text'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='stories',
+    )
+    media = models.FileField(upload_to='community/stories/media/', null=True, blank=True)
+    media_type = models.CharField(max_length=10, choices=MEDIA_CHOICES, default=MEDIA_IMAGE)
+    text = models.CharField(max_length=255, blank=True)  # for text-only stories or captions
+    bg_color = models.CharField(max_length=20, default='#1e1e2c') # for text-only backgrounds
+    
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    expires_at = models.DateTimeField(db_index=True)
+
+    like_count = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['author', 'expires_at']),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            from django.utils import timezone
+            import datetime
+            self.expires_at = timezone.now() + datetime.timedelta(hours=24)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'Story by {self.author} exp {self.expires_at}'
+
+
+class StoryView(models.Model):
+    """Tracks unique views of a Story to increment view_count."""
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='story_views',
+    )
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='views')
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'story')
+
+    def __str__(self):
+        return f'{self.user} viewed {self.story.id}'
+
+
+class StoryLike(models.Model):
+    """Tracks unique likes of a Story to increment like_count."""
+    id = models.UUIDField(primary_key=True, default=_uuid, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='story_likes',
+    )
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='likes')
+    liked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'story')
+
+    def __str__(self):
+        return f'{self.user} likes {self.story.id}'
+

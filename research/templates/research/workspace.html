@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{{ ws.name }} — Nexa Research</title>
+<title>{{ ws.name }} â€” Nexa Research</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
 <style>
@@ -30,7 +30,7 @@ button{font-family:inherit;cursor:pointer}
   <a href="{% url 'research:home' %}" class="rb active" title="Research">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
   </a>
-  <a href="{% url 'dashboard' %}" class="rb" title="Dashboard">
+  <a href="{% url 'community:community_home' %}" class="rb" title="Dashboard">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
   </a>
   <a href="{% url 'ai_chat' %}" class="rb" title="AI Tutor">
@@ -78,7 +78,7 @@ button{font-family:inherit;cursor:pointer}
 /* PANELS */
 .panels{display:flex;flex:1;overflow:hidden}
 
-/* ── NEXTSUNLEARN SIDEBAR ── */
+/* â”€â”€ NEXTSUNLEARN SIDEBAR â”€â”€ */
 :root{--nsl-w:268px}
 .nsl-sidebar{width:var(--nsl-w);background:var(--white);border-right:1px solid var(--border);
   display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .22s ease,opacity .22s ease}
@@ -336,7 +336,7 @@ button{font-family:inherit;cursor:pointer}
   </div>
 
   <div class="panels">
-    <!-- ── NEXTSUNLEARN SIDEBAR ── -->
+    <!-- â”€â”€ NEXTSUNLEARN SIDEBAR â”€â”€ -->
     <div class="nsl-sidebar collapsed" id="nslSidebar">
       <div class="nsl-head">
         <div class="nsl-logo">
@@ -526,7 +526,7 @@ button{font-family:inherit;cursor:pointer}
       <div class="doc-list" id="docList">
         {% for doc in docs %}
         <div class="doc-item" id="doc-{{ doc.id }}">
-          <div class="doc-icon">{% if doc.file_type == 'pdf' %}📄{% elif doc.file_type == 'docx' %}📝{% else %}📃{% endif %}</div>
+          <div class="doc-icon">{% if doc.file_type == 'pdf' %}ðŸ“„{% elif doc.file_type == 'docx' %}ðŸ“{% else %}ðŸ“ƒ{% endif %}</div>
           <div class="doc-info">
             <div class="doc-name" title="{{ doc.name }}">{{ doc.name }}</div>
             <div class="doc-st {{ doc.status }}">{{ doc.status|capfirst }}</div>
@@ -554,9 +554,9 @@ button{font-family:inherit;cursor:pointer}
       <div class="chat-msgs" id="chatMsgs">
         {% if not chats %}
         <div style="text-align:center;padding:48px 20px;color:var(--text3)">
-          <div style="font-size:36px;margin-bottom:12px">🧠</div>
+          <div style="font-size:36px;margin-bottom:12px">ðŸ§ </div>
           <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:6px">Ask anything about your documents</div>
-          <div style="font-size:12px">Upload files and start chatting — Nexa answers from your materials.</div>
+          <div style="font-size:12px">Upload files and start chatting â€” Nexa answers from your materials.</div>
         </div>
         {% endif %}
         {% for chat in chats %}
@@ -584,7 +584,7 @@ button{font-family:inherit;cursor:pointer}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
-        <div class="input-hint">Enter to send · Shift+Enter for new line · 🎙 for voice</div>
+        <div class="input-hint">Enter to send Â· Shift+Enter for new line Â· ðŸŽ™ for voice</div>
       </div>
     </div>
 
@@ -643,7 +643,7 @@ button{font-family:inherit;cursor:pointer}
             Stop Speaking
           </button>
           <div class="voice-info">
-            <strong>Voice Input:</strong> Tap 🎙 in the chat box to speak your question.<br><br>
+            <strong>Voice Input:</strong> Tap ðŸŽ™ in the chat box to speak your question.<br><br>
             <strong>Voice Output:</strong> Click "Read Last Response" to hear the AI answer aloud.
           </div>
         </div>
@@ -661,13 +661,13 @@ const UPLOAD_URL = '{% url "research:upload_document" ws.id %}';
 const SIMPLIFY_URL = '{% url "research:simplify" ws.id %}';
 const SEARCH_URL = '{% url "research:search_papers" ws.id %}';
 
-// ── Render existing markdown messages on load ──
+// â”€â”€ Render existing markdown messages on load â”€â”€
 document.querySelectorAll('[data-md="1"]').forEach(el => {
   el.innerHTML = marked.parse(el.textContent);
 });
 scrollBottom();
 
-// ── Chat ──
+// â”€â”€ Chat â”€â”€
 let sending = false;
 let lastAIText = '';
 
@@ -764,12 +764,12 @@ async function clearChat() {
   await fetch(CLEAR_URL, {method:'POST', headers:{'X-CSRFToken':CSRF}});
   const msgs = document.getElementById('chatMsgs');
   msgs.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text3)">
-    <div style="font-size:36px;margin-bottom:12px">🧠</div>
+    <div style="font-size:36px;margin-bottom:12px">ðŸ§ </div>
     <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:6px">Chat cleared</div>
     <div style="font-size:12px">Ask anything about your documents.</div></div>`;
 }
 
-// ── Documents ──
+// â”€â”€ Documents â”€â”€
 async function uploadDoc(input) {
   const file = input.files[0];
   if (!file) return;
@@ -784,7 +784,7 @@ async function uploadDoc(input) {
     if (data.id) {
       const empty = document.getElementById('docEmpty');
       if (empty) empty.remove();
-      const icon = data.file_type === 'pdf' ? '📄' : data.file_type === 'docx' ? '📝' : '📃';
+      const icon = data.file_type === 'pdf' ? 'ðŸ“„' : data.file_type === 'docx' ? 'ðŸ“' : 'ðŸ“ƒ';
       const item = document.createElement('div');
       item.className = 'doc-item';
       item.id = 'doc-' + data.id;
@@ -838,7 +838,7 @@ async function summarizeDoc(docId, docName) {
   } catch(e) { /* ignore */ }
 }
 
-// ── Simplify ──
+// â”€â”€ Simplify â”€â”€
 let simplifyMode = 'explain';
 function selSMode(el) {
   document.querySelectorAll('.smode').forEach(b => b.classList.remove('active'));
@@ -863,7 +863,7 @@ async function runSimplify() {
   } catch(e) { result.textContent = 'Error simplifying text.'; }
 }
 
-// ── Paper Search ──
+// â”€â”€ Paper Search â”€â”€
 async function searchPapers() {
   const q = document.getElementById('paperQuery').value.trim();
   if (!q) return;
@@ -879,14 +879,14 @@ async function searchPapers() {
     container.innerHTML = data.results.map(p => `
       <div class="paper-card">
         <div class="paper-title">${p.title}</div>
-        <div class="paper-meta">${p.authors} ${p.year ? '· ' + p.year : ''}</div>
+        <div class="paper-meta">${p.authors} ${p.year ? 'Â· ' + p.year : ''}</div>
         ${p.abstract ? `<div class="paper-abs">${p.abstract}...</div>` : ''}
-        <a class="paper-link" href="${p.link}" target="_blank" rel="noopener">View Paper →</a>
+        <a class="paper-link" href="${p.link}" target="_blank" rel="noopener">View Paper â†’</a>
       </div>`).join('');
   } catch(e) { container.innerHTML = '<div style="font-size:11px;color:var(--text3)">Search failed.</div>'; }
 }
 
-// ── Voice Input (STT) ──
+// â”€â”€ Voice Input (STT) â”€â”€
 let recognition = null;
 let isRecording = false;
 
@@ -923,7 +923,7 @@ function stopRecording() {
   document.getElementById('voiceBtn').classList.remove('rec');
 }
 
-// ── Voice Output (TTS) ──
+// â”€â”€ Voice Output (TTS) â”€â”€
 let utterance = null;
 
 function speakLast() {
@@ -948,7 +948,7 @@ function stopSpeech() {
   document.getElementById('ttsBtn') && document.getElementById('ttsBtn').classList.remove('active');
 }
 
-// ── Tabs ──
+// â”€â”€ Tabs â”€â”€
 function switchTab(el, paneId) {
   document.querySelectorAll('.ttab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tpane').forEach(p => p.classList.remove('active'));
@@ -956,7 +956,7 @@ function switchTab(el, paneId) {
   document.getElementById(paneId).classList.add('active');
 }
 
-// ── Mobile panel toggles ──
+// â”€â”€ Mobile panel toggles â”€â”€
 function togglePanel(which) {
   const docP = document.getElementById('docPanel');
   const toolsP = document.getElementById('toolsPanel');
@@ -985,11 +985,11 @@ function closePanels() {
   }
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // NEXTSUNLEARN SIDEBAR LOGIC
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── Toggle sidebar open/closed ──
+// â”€â”€ Toggle sidebar open/closed â”€â”€
 let nslOpen = false;
 function toggleNSL() {
   nslOpen = !nslOpen;
@@ -1010,21 +1010,21 @@ document.getElementById('mobOverlay').addEventListener('click', () => {
   if (nslOpen) { nslOpen = false; toggleNSL(); nslOpen = false; }
 });
 
-// ── Collapsible sections ──
+// â”€â”€ Collapsible sections â”€â”€
 function toggleSec(hdr) {
   hdr.classList.toggle('open');
   const body = hdr.nextElementSibling;
   body.classList.toggle('open');
 }
 
-// ── Shared: show result in a box ──
+// â”€â”€ Shared: show result in a box â”€â”€
 function nslShowResult(elId, text, isLoading) {
   const el = document.getElementById(elId);
   el.textContent = text;
   el.className = 'nsl-result visible' + (isLoading ? ' loading' : '');
 }
 
-// ── Shared: call the chat/simplify endpoint and show in result box ──
+// â”€â”€ Shared: call the chat/simplify endpoint and show in result box â”€â”€
 async function nslCallAI(prompt, resultElId) {
   nslShowResult(resultElId, 'Thinking...', true);
   try {
@@ -1040,7 +1040,7 @@ async function nslCallAI(prompt, resultElId) {
   }
 }
 
-// ── A. Next AI ──
+// â”€â”€ A. Next AI â”€â”€
 async function nslAskAI() {
   const q = document.getElementById('nslAiInput').value.trim();
   if (!q) return;
@@ -1050,7 +1050,7 @@ document.getElementById('nslAiInput').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); nslAskAI(); }
 });
 
-// ── B. Library: sync doc list from main panel ──
+// â”€â”€ B. Library: sync doc list from main panel â”€â”€
 function nslSyncDocs() {
   const items = document.querySelectorAll('#docList .doc-item');
   const list = document.getElementById('nslDocList');
@@ -1066,7 +1066,7 @@ function nslSyncDocs() {
     btn.onclick = () => {
       document.querySelectorAll('#nslDocList .nsl-btn').forEach(b => b.style.background = '');
       btn.style.background = '#eff6ff';
-      document.getElementById('nslSelectedDoc').textContent = '✓ Selected: ' + name;
+      document.getElementById('nslSelectedDoc').textContent = 'âœ“ Selected: ' + name;
       nslSelectedDocId = id;
       nslSelectedDocName = name;
     };
@@ -1081,7 +1081,7 @@ document.getElementById('nslToggle').addEventListener('click', () => {
   setTimeout(nslSyncDocs, 50);
 });
 
-// ── C. Smart Actions ──
+// â”€â”€ C. Smart Actions â”€â”€
 const ACTION_PROMPTS = {
   summarize:   () => nslSelectedDocName
     ? `Summarize the document "${nslSelectedDocName}" in clear bullet points for a student.`
@@ -1103,7 +1103,7 @@ async function nslAction(type) {
   await nslCallAI(prompt, 'nslActionResult');
 }
 
-// ── D. Citations ──
+// â”€â”€ D. Citations â”€â”€
 let citeFmt = 'APA';
 function selCiteFmt(el) {
   document.querySelectorAll('.cite-pill').forEach(p => p.classList.remove('active'));
@@ -1125,7 +1125,7 @@ async function nslCite(type) {
   await nslCallAI(prompt, 'nslCiteResult');
 }
 
-// ── E. Podcast / Audio ──
+// â”€â”€ E. Podcast / Audio â”€â”€
 let nslPodcastText = '';
 
 async function nslPodcast(type) {
@@ -1165,7 +1165,7 @@ function nslPlayAudio() {
   window.speechSynthesis.speak(u);
 }
 
-// ── F. Ethics & Critical Analysis ──
+// â”€â”€ F. Ethics & Critical Analysis â”€â”€
 const ETHICS_PROMPTS = {
   ethical:  () => `What are the main ethical implications and concerns related to ${ws_subject}? Explain clearly for a student.`,
   bias:     () => nslSelectedDocName

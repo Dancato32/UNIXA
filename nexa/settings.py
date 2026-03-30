@@ -148,6 +148,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 # ── Media Files (user uploads) ────────────────────────────────────────────────
 CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', '')
 CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY', '')
@@ -169,7 +171,7 @@ else:
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 AUTH_USER_MODEL = 'users.CustomUser'
-LOGIN_REDIRECT_URL = '/community/home/'
+LOGIN_REDIRECT_URL = '/community/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
 
@@ -237,24 +239,33 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'simple': {'format': '[{levelname}] {name}: {message}', 'style': '{'},
+        'verbose': {
+            'format': '\n[{levelname}] {asctime} {name}\n{message}\n',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'verbose',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': 'WARNING',
     },
     'loggers': {
-        'django': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
-        'django.request': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+        # Show Django errors and request errors clearly
+        'django': {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        'django.security': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        # Suppress the autoreload DEBUG spam completely
+        'django.utils.autoreload': {'handlers': [], 'level': 'CRITICAL', 'propagate': False},
+        # App loggers
         'ai_tutor': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
         'assignment': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
         'materials': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'community': {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
     },
 }
 

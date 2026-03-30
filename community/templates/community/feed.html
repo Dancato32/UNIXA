@@ -1,4 +1,5 @@
-﻿{% extends "community/base.html" %}
+{% extends "community/base.html" %}
+{% load community_tags %}
 {% block title %}Feed{% endblock %}
 {% block mobile_title %}Community{% endblock %}
 {% block breadcrumb_label %}Feed{% endblock %}
@@ -11,116 +12,183 @@
 {% block extra_css %}
 <style>
 /* ── Feed page theme ── */
-.content-scroll { background: #f2f2f0; }
-.page { padding: .75rem 1rem; max-width: 680px; }
+.content-scroll { background: var(--bg); }
+/* ── Sidebar Right Widgets ── */
+.meet-friend-card {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); padding: 1.25rem; border-radius: var(--radius-lg);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+  text-decoration: none; margin-bottom: 1.5rem; transition: transform .2s, box-shadow .2s;
+}
+.meet-friend-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border2); }
+.mfc-content h3 { font-family: var(--font-display); font-size: 1.25rem; margin-bottom: .25rem; color: var(--text); }
+.mfc-content p { font-size: .875rem; color: var(--text2); margin: 0; line-height: 1.4; }
+.mfc-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: var(--surface2); border: 1px solid var(--border); border-radius: 50%; color: var(--accent); flex-shrink: 0; }
+.mfc-icon svg { width: 22px; height: 22px; }
+/* ── Social Features ── */
+.stories-outer { padding: 0 1rem; margin-bottom: 2rem; }
+.stories-container {
+  display: flex; gap: 1rem; overflow-x: auto; padding: .5rem 0;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.stories-container::-webkit-scrollbar { display: none; }
+.story-item {
+  display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  flex-shrink: 0; cursor: pointer; width: 68px;
+}
+.story-av-wrap {
+  width: 64px; height: 64px; border-radius: 50%; padding: 3px;
+  background: linear-gradient(135deg, var(--accent), #ff00ea);
+  position: relative; transition: transform .2s;
+}
+.story-item:hover .story-av-wrap { transform: scale(1.05); }
+.story-av {
+  width: 100%; height: 100%; border-radius: 50%; background: var(--surface);
+  border: 1px solid var(--border); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.story-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.story-name { font-size: .75rem; color: var(--text2); font-weight: 600; text-align: center; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.story-add-plus {
+  position: absolute; bottom: 0; right: 0;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: 2px solid var(--bg);
+  display: flex; align-items: center; justify-content: center; font-size: .8rem;
+}
 
-/* ── Search bar ── */
-.feed-search {
-  position: relative; margin-bottom: .75rem;
+.create-post-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 2rem; padding: 1.5rem; position: relative;
+  box-shadow: var(--shadow);
 }
-.feed-search svg {
-  position: absolute; left: .875rem; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 16px; color: #999; pointer-events: none;
+.create-post-card::before {
+  content: ''; position: absolute; top: -2px; left: 24px;
+  width: 14px; height: 28px; background: var(--red-flag);
+  border-radius: 0 0 2px 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  z-index: 2;
 }
-.feed-search input {
-  width: 100%; background: #fff; border: 1px solid #e8e8e4;
-  border-radius: 24px; padding: .625rem .875rem .625rem 2.5rem;
-  font-size: .9375rem; color: #1a1a1a; outline: none;
-  transition: border-color .15s; box-sizing: border-box;
+.create-post-top { display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem; }
+.create-post-trigger {
+  flex: 1; min-height: 80px; background: none; border: none;
+  font-family: var(--font-hand); font-size: 1.25rem; color: var(--text3);
+  padding: .5rem 0; outline: none; transition: color .2s;
 }
-.feed-search input::placeholder { color: #aaa; }
-.feed-search input:focus { border-color: #ccc; }
+.create-post-trigger:focus { color: var(--text); }
 
-/* ── Tab pills ── */
+.create-post-acts {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 1rem; border-top: 1px solid var(--surface2);
+}
+.cp-acts-left { display: flex; gap: 1.25rem; }
+.cp-act {
+  display: flex; align-items: center; gap: .5rem; font-size: .875rem;
+  font-weight: 500; color: var(--text3); cursor: pointer; transition: color .2s;
+}
+.cp-act:hover { color: var(--text); }
+.cp-act svg { width: 18px; height: 18px; stroke-width: 2; }
+
+.btn-post-slate {
+  background: var(--blue-post); color: #fff; border: none;
+  padding: .625rem 1.75rem; border-radius: 10px;
+  font-family: var(--font-hand); font-size: 1.125rem; font-weight: 600;
+  cursor: pointer; transition: transform .2s, background .2s;
+}
+.btn-post-slate:hover { background: #1a252f; transform: translateY(-1px); }
+
+/* ── Feed tabs ── */
 .feed-tabs {
-  display: flex; gap: .5rem; margin-bottom: 1rem;
-  overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  display: flex; gap: 1.5rem; margin: 0 0 1.5rem 0;
+  border-bottom: 1px solid var(--border); padding: 0 .25rem;
+  overflow-x: auto; scrollbar-width: none;
 }
 .feed-tabs::-webkit-scrollbar { display: none; }
 .feed-tab {
-  display: inline-flex; align-items: center;
-  padding: .45rem 1.125rem; border-radius: 24px;
-  font-size: .875rem; font-weight: 600; white-space: nowrap;
-  border: 1.5px solid #e0e0dc; background: #fff; color: #555;
-  text-decoration: none; transition: all .15s; cursor: pointer;
+  padding: .75rem .25rem; font-family: var(--font-hand); font-size: 1.125rem;
+  font-weight: 500; color: var(--text3); text-decoration: none;
+  position: relative; transition: all .2s; white-space: nowrap;
 }
-.feed-tab.active {
-  background: #22c55e; border-color: #22c55e; color: #fff;
+.feed-tab:hover { color: var(--text); }
+.feed-tab.active { color: var(--accent-pink); font-weight: 700; }
+.feed-tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 2.5px; background: var(--accent-pink); border-radius: 3px;
+  box-shadow: 0 0 8px rgba(233, 30, 99, 0.3);
 }
-.feed-tab:not(.active):hover { background: #f5f5f3; color: #1a1a1a; }
 
 /* ── Post card ── */
 .post-card {
-  background: #fff; border: 1px solid #e8e8e4; border-radius: 16px;
-  margin-bottom: .75rem; overflow: hidden; transition: box-shadow .15s;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 16px;
+  margin-bottom: 1.25rem; overflow: hidden; transition: all .2s;
 }
-.post-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+.post-card:hover { border-color: var(--border2); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
 
 /* Post header */
 .pc-head {
-  display: flex; align-items: center; gap: .75rem;
-  padding: .875rem 1rem .5rem;
+  display: flex; align-items: center; gap: .875rem;
+  padding: 1.125rem 1.25rem .75rem;
 }
 .pc-av {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  background: #e8e8e4; display: flex; align-items: center; justify-content: center;
-  font-size: .9375rem; font-weight: 700; color: #555; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover)); 
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9375rem; font-weight: 700; color: #fff; overflow: hidden;
 }
-.pc-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.pc-av img { width: 100%; height: 100%; object-fit: cover; }
 .pc-meta { flex: 1; min-width: 0; }
 .pc-name {
-  font-size: .9375rem; font-weight: 700; color: #1a1a1a;
+  font-size: .9375rem; font-weight: 700; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.pc-sub { font-size: .8125rem; color: #999; margin-top: .05rem; }
+.pc-sub { font-size: .8125rem; color: var(--text3); margin-top: .125rem; }
 .pc-more {
-  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-  background: none; border: none; color: #aaa; cursor: pointer; border-radius: 50%;
-  flex-shrink: 0; transition: background .12s;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  background: none; border: none; color: var(--text3); cursor: pointer; border-radius: 50%;
+  flex-shrink: 0; transition: all .2s;
 }
-.pc-more:hover { background: #f5f5f3; }
+.pc-more:hover { background: rgba(255,255,255,.05); color: var(--text2); }
 .pc-more svg { width: 18px; height: 18px; }
 
 /* Post body */
-.pc-body { padding: .25rem 1rem .75rem; }
+.pc-body { padding: .25rem 1.25rem 1rem; }
 .pc-text {
-  font-size: .9375rem; line-height: 1.65; color: #1a1a1a;
-  white-space: pre-wrap; margin-bottom: .625rem;
+  font-size: .9375rem; line-height: 1.6; color: var(--text);
+  white-space: pre-wrap; margin-bottom: .875rem;
 }
 .pc-img {
   width: 100%; border-radius: 12px; display: block;
-  max-height: 480px; object-fit: cover; margin-bottom: .625rem;
+  max-height: 500px; object-fit: cover; margin-bottom: .875rem;
+  border: 1px solid var(--border);
 }
 .pc-community-tag {
   display: inline-flex; align-items: center;
-  font-size: .75rem; font-weight: 600; color: #555;
-  background: #f2f2f0; border-radius: 6px; padding: .15rem .5rem;
-  margin-bottom: .5rem; text-decoration: none;
+  font-size: .75rem; font-weight: 700; color: var(--accent);
+  background: var(--accent-subtle); border-radius: 6px; padding: .2rem .625rem;
+  margin-bottom: .75rem; text-decoration: none; transition: all .2s;
 }
-.pc-community-tag:hover { background: #e8e8e4; }
+.pc-community-tag:hover { background: var(--accent); color: #fff; }
 
 /* Post actions */
 .pc-actions {
-  display: flex; align-items: center; gap: .25rem;
-  padding: .5rem 1rem .875rem; border-top: 1px solid #f2f2f0;
+  display: flex; align-items: center; gap: 1.5rem;
+  padding: .75rem 1.25rem 1.125rem;
 }
 .pc-act {
-  display: inline-flex; align-items: center; gap: .375rem;
-  padding: .4rem .75rem; border-radius: 24px;
-  font-size: .875rem; font-weight: 600; color: #555;
-  background: none; border: none; cursor: pointer; transition: all .15s;
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .875rem; font-weight: 600; color: var(--text2);
+  background: none; border: none; cursor: pointer; transition: all .2s;
   text-decoration: none;
 }
-.pc-act:hover { background: #f2f2f0; color: #1a1a1a; }
-.pc-act.liked { color: #ef4444; }
-.pc-act svg { width: 18px; height: 18px; }
+.pc-act:hover { color: var(--text); }
+.pc-act.liked { color: var(--pink); }
+.pc-act svg { width: 20px; height: 20px; transition: transform .2s; }
+.pc-act:hover svg { transform: scale(1.1); }
 .pc-act-spacer { flex: 1; }
 .pc-save {
-  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-  background: none; border: none; color: #aaa; cursor: pointer; border-radius: 50%;
-  transition: all .15s;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  background: none; border: none; color: var(--text3); cursor: pointer; border-radius: 50%;
+  transition: all .2s;
 }
-.pc-save:hover { background: #f2f2f0; color: #555; }
+.pc-save:hover { background: rgba(255,255,255,.05); color: var(--text2); }
 .pc-save svg { width: 18px; height: 18px; }
 
 /* ── Live Campus strip ── */
@@ -176,14 +244,14 @@
 .lc-divider { height: 1px; background: #e8e8e4; margin: .75rem 0 .25rem; }
 
 /* ── Right panel ── */
-.right-card { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; overflow: hidden; margin-bottom: .75rem; }
-.rc-head { padding: .625rem 1rem; border-bottom: 1px solid #f2f2f0; font-size: .6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #999; }
-.rc-item { display: flex; align-items: center; gap: .625rem; padding: .5rem 1rem; border-bottom: 1px solid #f2f2f0; transition: background .12s; }
+.right-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
+.rc-head { padding: .75rem 1.125rem; border-bottom: 1px solid var(--border); font-size: .625rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--text3); }
+.rc-item { display: flex; align-items: center; gap: .75rem; padding: .625rem 1.125rem; border-bottom: 1px solid var(--border); transition: background .15s; }
 .rc-item:last-child { border-bottom: none; }
-.rc-item:hover { background: #f9f9f7; }
-.rc-icon { width: 28px; height: 28px; background: #f2f2f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: .6875rem; font-weight: 700; flex-shrink: 0; color: #555; }
-.rc-name { flex: 1; font-size: .8125rem; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #555; }
-.rc-count { font-size: .6875rem; color: #999; }
+.rc-item:hover { background: rgba(255,255,255,.03); }
+.rc-icon { width: 32px; height: 32px; background: var(--surface3); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; flex-shrink: 0; color: var(--text); border: 1px solid var(--border); }
+.rc-name { flex: 1; font-size: .875rem; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); }
+.rc-count { font-size: .75rem; color: var(--text3); }
 .join-btn { padding: .2rem .5rem; background: #f2f2f0; border: 1px solid #e8e8e4; border-radius: 3px; font-size: .6875rem; font-weight: 700; color: #555; transition: all .15s; white-space: nowrap; }
 .join-btn:hover { background: #e8e8e4; color: #1a1a1a; }
 .join-btn.joined { background: rgba(34,197,94,.08); border-color: rgba(34,197,94,.2); color: #16a34a; }
@@ -194,13 +262,13 @@
 .rc-actions .btn { justify-content: center; }
 
 /* ── Find friends ── */
-.fs-item { display: flex; align-items: center; gap: .625rem; padding: .5rem .75rem; transition: background .12s; }
-.fs-item:hover { background: #f9f9f7; }
-.fs-av { width: 34px; height: 34px; border-radius: 50%; background: #f2f2f0; display: flex; align-items: center; justify-content: center; font-size: .8125rem; font-weight: 700; flex-shrink: 0; overflow: hidden; color: #555; }
-.fs-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.fs-item { display: flex; align-items: center; gap: .75rem; padding: .625rem 1.125rem; transition: background .15s; }
+.fs-item:hover { background: rgba(255,255,255,.03); }
+.fs-av { width: 36px; height: 36px; border-radius: 50%; background: var(--surface4); display: flex; align-items: center; justify-content: center; font-size: .875rem; font-weight: 700; flex-shrink: 0; overflow: hidden; color: var(--text); }
+.fs-av img { width: 100%; height: 100%; object-fit: cover; }
 .fs-info { flex: 1; min-width: 0; }
-.fs-name { font-size: .8125rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #1a1a1a; }
-.fs-user { font-size: .6875rem; color: #999; }
+.fs-name { font-size: .875rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.fs-user { font-size: .75rem; color: var(--text3); }
 .fs-actions { display: flex; gap: .25rem; flex-shrink: 0; }
 .fs-btn { padding: .25rem .5rem; border-radius: 6px; font-size: .6875rem; font-weight: 700; border: none; cursor: pointer; transition: all .15s; white-space: nowrap; }
 .fs-btn.add { background: #1a1a1a; color: #fff; }
@@ -214,7 +282,7 @@
 .fs-loading { padding: .5rem .75rem; font-size: .75rem; color: #999; }
 
 /* ── Inline comments ── */
-.inline-comment { display: none; background: #f2f2f0; border-top: 1px solid #e8e8e4; padding: 1rem; }
+.inline-comment { display: none; background: var(--surface3); border-top: 1px solid var(--border); padding: 1.25rem; }
 .inline-comment.open { display: block; }
 
 /* Comment composer */
@@ -227,40 +295,41 @@
 .ic-composer-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .ic-composer-wrap { flex: 1; }
 .ic-input {
-  width: 100%; background: #fff; border: 1px solid #e8e8e4;
-  border-radius: 12px; padding: .625rem .875rem;
-  color: #1a1a1a; font-size: .9rem; resize: none; min-height: 44px;
-  outline: none; transition: border-color .15s; line-height: 1.5;
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: .75rem 1rem;
+  color: var(--text); font-size: .9375rem; resize: none; min-height: 48px;
+  outline: none; transition: all .2s; line-height: 1.5;
   box-sizing: border-box;
 }
-.ic-input:focus { border-color: #ccc; min-height: 80px; }
-.ic-input::placeholder { color: #aaa; }
+.ic-input:focus { border-color: var(--accent); background: var(--surface4); min-height: 100px; }
+.ic-input::placeholder { color: var(--text3); }
 .ic-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .375rem; }
 
 /* Comment list header */
 .ic-list-header {
-  font-size: .9375rem; font-weight: 700; color: #1a1a1a;
+  font-size: .9375rem; font-weight: 700; color: var(--text);
   margin-bottom: .75rem;
 }
 
 /* Comment card */
 .ic-comments { display: flex; flex-direction: column; gap: .625rem; }
 .ic-card {
-  background: #fff; border-radius: 14px; padding: .875rem 1rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  background: var(--surface); border-radius: 14px; padding: .875rem 1rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 .ic-card-head {
   display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .625rem;
 }
 .ic-card-av {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  background: #e8e8e4; display: flex; align-items: center; justify-content: center;
-  font-size: .9375rem; font-weight: 700; color: #555; overflow: hidden;
+  background: var(--surface2); display: flex; align-items: center; justify-content: center;
+  font-size: .9375rem; font-weight: 700; color: var(--text2); overflow: hidden;
 }
 .ic-card-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .ic-card-meta { flex: 1; min-width: 0; }
-.ic-card-name { font-size: .9375rem; font-weight: 700; color: #1a1a1a; line-height: 1.2; }
-.ic-card-time { font-size: .8125rem; color: #999; margin-top: .1rem; }
+.ic-card-name { font-size: .9375rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.ic-card-time { font-size: .8125rem; color: var(--text3); margin-top: .1rem; }
 .ic-card-more { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
   background: none; border: none; color: #aaa; cursor: pointer; border-radius: 50%;
   flex-shrink: 0; transition: background .12s;
@@ -268,17 +337,17 @@
 .ic-card-more:hover { background: #f2f2f0; }
 .ic-card-more svg { width: 16px; height: 16px; }
 .ic-more-menu {
-  position: absolute; top: 0; right: 0; background: #fff; border: 1px solid #e8e8e4;
-  border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,.1); z-index: 100;
+  position: absolute; top: 0; right: 0; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: var(--shadow); z-index: 100;
   min-width: 140px; overflow: hidden;
 }
 .ic-more-menu button {
   display: block; width: 100%; padding: .6rem 1rem; background: none; border: none;
-  text-align: left; font-size: .875rem; color: #1a1a1a; cursor: pointer;
+  text-align: left; font-size: .875rem; color: var(--text); cursor: pointer;
 }
-.ic-more-menu button:hover { background: #f2f2f0; }
+.ic-more-menu button:hover { background: var(--surface3); }
 .ic-card-text {
-  font-size: .9375rem; line-height: 1.6; color: #1a1a1a;
+  font-size: .9375rem; line-height: 1.6; color: var(--text);
   margin-bottom: .75rem; white-space: pre-wrap;
 }
 .ic-card-actions {
@@ -286,12 +355,12 @@
 }
 .ic-card-act {
   display: inline-flex; align-items: center; gap: .375rem;
-  font-size: .875rem; font-weight: 500; color: #555;
+  font-size: .875rem; font-weight: 500; color: var(--text3);
   background: none; border: none; cursor: pointer; transition: color .12s;
   padding: 0;
 }
-.ic-card-act:hover { color: #1a1a1a; }
-.ic-card-act.liked { color: #ef4444; }
+.ic-card-act:hover { color: var(--text); }
+.ic-card-act.liked { color: var(--red); }
 .ic-card-act svg { width: 17px; height: 17px; }
 .ic-card-reply-btn {
   display: inline-flex; align-items: center; gap: .375rem;
@@ -370,14 +439,13 @@
 .share-send-btn:disabled { background: #f2f2f0; color: #aaa; cursor: not-allowed; }
 .share-empty { text-align: center; padding: 2rem; color: #999; font-size: .875rem; }
 
-/* ── FAB ── */
 .feed-fab {
-  position: fixed; bottom: calc(var(--bottom-nav-h) + 1rem); right: 1rem;
+  position: fixed; bottom: 85px; right: 20px;
   width: 52px; height: 52px; border-radius: 50%;
   background: #22c55e; color: #fff; border: none;
-  display: none; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 16px rgba(34,197,94,.4); cursor: pointer;
-  transition: transform .15s, box-shadow .15s; z-index: 90; text-decoration: none;
+  transition: transform .15s, box-shadow .15s; z-index: 4000; text-decoration: none;
 }
 .feed-fab:active { transform: scale(.92); }
 .feed-fab svg { width: 22px; height: 22px; }
@@ -433,66 +501,170 @@
   .load-more { border-radius: 0; border-left: none; border-right: none; }
 }
 @media(min-width:601px) {
-  .feed-fab { display: none; }
+  .feed-fab { display: flex; }
 }
+
+/* ── Premium Widgets ── */
+.right-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+.right-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.rc-head {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+.rc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--surface2);
+}
+.rc-item:last-child { border-bottom: none; }
+.rc-name { font-weight: 600; font-size: 0.9375rem; color: var(--text); }
+.rc-count { font-size: 0.75rem; color: var(--text3); margin-left: auto; }
+
+/* ── Like Animation ── */
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.pc-act.liked svg {
+  color: var(--accent-pink);
+  animation: heartPulse 0.3s ease-out;
+}
+
 </style>
 {% endblock %}
 
 {% block pre_content %}{% endblock %}
 {% block content %}
-<div class="feed-shell">
-  <div class="feed-main">
+<div class="page-header">
+  <div class="header-text">
+    <h1>Feed</h1>
+    <p>All posts from the community</p>
+  </div>
+</div>
 
-    <!-- Search -->
-    <div class="feed-search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Search..." id="feed-search-input" oninput="feedSearch(this.value)">
-    </div>
+<div class="page">
+  <div class="feed-header-wrap">
+    <div class="feed-shell">
+      <div class="feed-main">
+
+        <!-- Create Post Section (Uni Notes Style) -->
+        <div class="create-post-card">
+          <div class="create-post-top">
+            <div class="sidebar-footer-av" style="width:48px;height:48px;">
+               {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+            </div>
+            <textarea class="create-post-trigger" placeholder="What's on your mind, {{ user.username }}?" onclick="openCreatePostModal()"></textarea>
+          </div>
+          <div class="create-post-acts">
+            <div class="cp-acts-left">
+              <div class="cp-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+              <div class="cp-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="cp-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            </div>
+            <button class="btn-post-slate" onclick="openCreatePostModal()">Post</button>
+          </div>
+        </div>
+
+        <!-- Sidebar Widgets (Repositioned to right for desktop) -->
+        <div class="feed-right-panel" style="display:flex; flex-direction:column; gap:1.5rem;">
+          <!-- Trending -->
+          <div class="right-card">
+            <div class="rc-head">
+               <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" width="14" height="14" style="margin-right:6px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+               Trending on Campus
+            </div>
+            <div class="rc-item">
+              <div class="rc-name" style="font-family:var(--font-hand); font-weight:700; color:var(--text); font-size:1rem;">#FinalsWeek</div>
+              <div class="rc-count">2.4k posts</div>
+            </div>
+            <div class="rc-item">
+              <div class="rc-name" style="font-family:var(--font-hand); font-weight:700; color:var(--text); font-size:1rem;">#CS301Algorithms</div>
+              <div class="rc-count">1.1k posts</div>
+            </div>
+            <div class="rc-item">
+              <div class="rc-name" style="font-family:var(--font-hand); font-weight:700; color:var(--text); font-size:1rem;">#CampusLife</div>
+              <div class="rc-count">850 posts</div>
+            </div>
+          </div>
+
+          <!-- Events -->
+          <div class="right-card">
+            <div class="rc-head">
+               <svg viewBox="0 0 24 24" fill="none" stroke="#e91e63" stroke-width="2.5" width="14" height="14" style="margin-right:6px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+               Upcoming Events
+            </div>
+            <div class="rc-item" style="padding:1rem;">
+              <div style="background:var(--surface2); width:44px; height:44px; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <span style="font-size:.6rem; font-weight:700; text-transform:uppercase;">Oct</span>
+                <span style="font-size:.9rem; font-weight:800;">24</span>
+              </div>
+              <div class="rc-info" style="flex:1; padding-left:.75rem;">
+                <div style="font-size:.9rem; font-weight:700; color:var(--text);">Hackathon 2023</div>
+                <div style="font-size:.7rem; color:var(--text3);">Main Hall · 9:00 AM</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
     <!-- Tabs -->
     <div class="feed-tabs">
-      <a class="feed-tab {% if tab == 'all' or not tab %}active{% endif %}" href="?tab=all">For You</a>
-      <a class="feed-tab {% if tab == 'following' %}active{% endif %}" href="?tab=following">Following</a>
-      <a class="feed-tab {% if tab == 'liked' %}active{% endif %}" href="?tab=liked">Liked</a>
-      <a class="feed-tab" href="{% url 'community:live_campus' %}" style="display:inline-flex;align-items:center;gap:.35rem;">
-        <span style="width:7px;height:7px;border-radius:50%;background:#f97316;flex-shrink:0;"></span>Live
-      </a>
+      <a class="feed-tab {% if tab == 'all' or not tab %}active{% endif %}" href="?tab=all">All Posts</a>
+      <a class="feed-tab {% if tab == 'following' %}active{% endif %}" href="?tab=following">Questions</a>
+      <a class="feed-tab {% if tab == 'liked' %}active{% endif %}" href="?tab=liked">Notes</a>
+      <a class="feed-tab" href="#">Events</a>
     </div>
+
+    <!-- Create Post Section removed per user request -->
 
     <!-- Posts -->
     {% for post in posts %}
     {% if post.category == 'study_group' %}
     <!-- Study Group Card -->
-    <div class="sg-card" id="post-{{ post.id }}">
-      <div class="sg-head">
-        <div class="sg-icon">&#128218;</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:.9375rem;font-weight:800;color:#1a1a1a;">{{ post.title }}</div>
-          <div style="font-size:.75rem;color:#999;margin-top:.1rem;">AI Study Group &middot; by @{{ post.author.username }} &middot; {{ post.created_at|timesince }} ago</div>
+    <div class="sg-card" id="post-{{ post.id }}" style="background:var(--surface2); border:1px solid var(--border); border-radius:16px; margin-bottom:1.25rem; overflow:hidden;">
+      <div class="sg-head" style="background:var(--surface3); border-bottom:1px solid var(--border); padding:.875rem 1.125rem; display:flex; align-items:center; gap:.875rem;">
+        <div class="sg-icon" style="width:36px; height:36px; background:var(--accent-subtle); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.125rem;">📚</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:1rem; font-weight:800; color:var(--text);">{{ post.title }}</div>
+          <div style="font-size:.8125rem; color:var(--text3); margin-top:.125rem;">AI Study Group &middot; by @{{ post.author.username }} &middot; {{ post.created_at|timesince }} ago</div>
         </div>
-        <span style="font-size:.6875rem;font-weight:700;padding:.2rem .6rem;border-radius:20px;background:rgba(99,102,241,.1);color:#6366f1;">AI Matched</span>
+        <span style="font-size:.6875rem; font-weight:700; padding:.25rem .625rem; border-radius:20px; background:rgba(99,102,241,.15); color:var(--accent);">AI Matched</span>
       </div>
-      <div class="sg-body">
-        <div style="font-size:.875rem;color:#555;line-height:1.65;margin-bottom:.875rem;">
+      <div class="sg-body" style="padding:1.125rem 1.25rem;">
+        <div style="font-size:.9375rem; color:var(--text2); line-height:1.6; margin-bottom:1rem;">
           {% for line in post.content.splitlines %}{% if not 'workspace_id:' in line %}{{ line }}<br>{% endif %}{% endfor %}
         </div>
-        <div style="display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;">
-          <button class="btn btn-primary btn-sm sg-join-btn" data-wsid="{{ post.content|slice:'-36:' }}" id="sgjoin-{{ post.id }}" onclick="joinStudyGroup(this)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm sg-join-btn" data-wsid="{{ post.content|slice:'-36:' }}" id="sgjoin-{{ post.id }}" onclick="joinStudyGroup(this)" style="background:var(--accent); color:#fff; font-weight:700; border-radius:8px; padding:.5rem 1rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
             Join Group
           </button>
           <button class="pc-act" onclick="toggleCommentBox('{{ post.id }}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span id="cc-{{ post.id }}">{{ post.comment_count }}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <span id="cc-{{ post.id }}" style="font-weight:700;">{{ post.comment_count|default:"0" }}</span>
           </button>
         </div>
       </div>
-      <div class="inline-comment" id="ic-{{ post.id }}" style="padding:0 1rem .75rem;"></div>
+      <div class="inline-comment" id="ic-{{ post.id }}" style="padding:0 1.25rem 1.125rem;"></div>
     </div>
     {% elif post.is_opportunity %}
     <!-- Opportunity Card -->
-    <div class="opp-feed-card" id="post-{{ post.id }}">
-      <div class="ofc-header">
+    <div class="opp-feed-card" id="post-{{ post.id }}" style="background:var(--surface2); border:1px solid var(--border); border-radius:16px; margin-bottom:1.25rem; overflow:hidden;">
+      <div class="ofc-header" style="background:var(--surface3); border-bottom:1px solid var(--border); padding:.75rem 1rem;">
         <div class="ofc-icon ofc-{{ post.opportunity_type }}">
           {% if post.opportunity_type == 'internship' %}💼
           {% elif post.opportunity_type == 'scholarship' %}🎓
@@ -503,28 +675,28 @@
           {% else %}📌{% endif %}
         </div>
         <div class="ofc-meta">
-          <div class="ofc-type-badge">{{ post.get_opportunity_type_display }}</div>
-          <div class="ofc-byline">
-            <a href="{% url 'community:profile' post.author.username %}" style="color:inherit;text-decoration:none;">@{{ post.author.username }}</a>
+          <div class="ofc-type-badge" style="background:var(--accent-subtle); color:var(--accent); font-weight:700;">{{ post.get_opportunity_type_display }}</div>
+          <div class="ofc-byline" style="color:var(--text3);">
+            <a href="{% url 'community:profile' post.author.username %}" style="color:var(--text2);text-decoration:none;font-weight:600;">@{{ post.author.username }}</a>
             &middot; {{ post.created_at|timesince }} ago
           </div>
         </div>
-        <a href="{% url 'ai_community:hub' %}#opportunities" class="ofc-hub-link" title="View in AI Hub">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <a href="{% url 'ai_community:hub' %}#opportunities" class="ofc-hub-link" title="View in AI Hub" style="color:var(--text3);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>
       </div>
-      <div class="ofc-body">
-        {% if post.title %}<div class="ofc-title">{{ post.title }}</div>{% endif %}
-        <div class="ofc-content">{{ post.content|truncatechars:280 }}</div>
+      <div class="ofc-body" style="padding:1rem 1.25rem;">
+        {% if post.title %}<div class="ofc-title" style="color:var(--text);font-weight:700;">{{ post.title }}</div>{% endif %}
+        <div class="ofc-content" style="color:var(--text2);">{{ post.content|truncatechars:280 }}</div>
       </div>
-      <div class="ofc-actions">
+      <div class="ofc-actions" style="padding:.5rem 1.25rem 1rem; display:flex; gap:1rem;">
         <button class="pc-act {% if post.id in liked_ids %}liked{% endif %}" onclick="toggleLike('{{ post.id }}',this)">
-          <svg viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span id="lc-{{ post.id }}">{{ post.like_count }}</span>
+          <svg viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="lc-{{ post.id }}" style="font-weight:700;">{{ post.like_count|default:"0" }}</span>
         </button>
         <button class="pc-act" onclick="toggleCommentBox('{{ post.id }}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span id="cc-{{ post.id }}">{{ post.comment_count }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span id="cc-{{ post.id }}" style="font-weight:700;">{{ post.comment_count|default:"0" }}</span>
         </button>
       </div>
       <div class="inline-comment" id="ic-{{ post.id }}"></div>
@@ -543,60 +715,64 @@
         </a>
         <div class="pc-meta">
           <div class="pc-name">
-            <a href="{% url 'community:profile' post.author.username %}" style="color:#1a1a1a;text-decoration:none;">
+            <a href="{% url 'community:profile' post.author.username %}" style="color:var(--text);text-decoration:none;font-weight:700;">
               {{ post.author.community_profile.display_name|default:post.author.username }}
             </a>
             {% if post.author != user %}
             <button class="fs-btn follow {% if post.author.id in following_user_ids %}following{% endif %}"
                     id="pfp-{{ post.author.id }}"
                     onclick="quickFollow('{{ post.author.username }}','{{ post.author.id }}',this)"
-                    style="margin-left:.375rem;font-size:.6rem;">
+                    style="margin-left:.5rem;font-size:.625rem;padding:.2rem .5rem;border-radius:6px;background:var(--surface3);color:var(--text2);border:1px solid var(--border);">
               {% if post.author.id in following_user_ids %}Following{% else %}+ Follow{% endif %}
             </button>
             {% endif %}
           </div>
           <div class="pc-sub">
             {{ post.created_at|timesince }} ago
-            {% if post.school_community %}&nbsp;&middot;&nbsp;<a href="{% url 'community:school_detail' post.school_community.slug %}" style="color:#999;text-decoration:none;">{{ post.school_community.name }}</a>{% endif %}
-            {% if post.custom_community %}&nbsp;&middot;&nbsp;<a href="{% url 'community:custom_detail' post.custom_community.slug %}" style="color:#999;text-decoration:none;">{{ post.custom_community.name }}</a>{% endif %}
+            {% if post.school_community %}&nbsp;&middot;&nbsp;<a href="{% url 'community:school_detail' post.school_community.slug %}" style="color:var(--text3);text-decoration:none;">{{ post.school_community.name }}</a>{% endif %}
+            {% if post.custom_community %}&nbsp;&middot;&nbsp;<a href="{% url 'community:custom_detail' post.custom_community.slug %}" style="color:var(--text3);text-decoration:none;">{{ post.custom_community.name }}</a>{% endif %}
           </div>
         </div>
-        <button class="pc-more" onclick="window.location='{% url 'community:post_detail' post.id %}'">
-          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
-        </button>
+        <a href="{% url 'community:post_detail' post.id %}" class="pc-more" style="display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </a>
       </div>
 
       <!-- Body -->
       <div class="pc-body">
-        {% if post.title %}<div style="font-size:1rem;font-weight:700;color:#1a1a1a;margin-bottom:.375rem;">{{ post.title }}</div>{% endif %}
-        <div class="pc-text">{{ post.content|truncatechars:300 }}</div>
+        {% if post.title %}<div style="font-size:1.0625rem;font-weight:700;color:var(--text);margin-bottom:.5rem;">{{ post.title }}</div>{% endif %}
+        <div class="pc-text">{{ post.content|linebreaksbr }}</div>
         {% if post.media and post.media_type == 'image' %}
-          <img src="{{ post.media.url }}" alt="" class="pc-img">
+          <img src="{{ post.media.url }}" alt="" class="pc-img" style="border:2px solid var(--border-ink); border-radius:8px;">
         {% elif post.media and post.media_type == 'video' %}
-          <video src="{{ post.media.url }}" controls class="pc-img" style="background:#000;max-height:400px;"></video>
+          <video src="{{ post.media.url }}" controls class="pc-img" style="background:#000; max-height:450px; width:100%; border:2px solid var(--border-ink); border-radius:8px;"></video>
+        {% elif post.media and post.media_type == 'file' %}
+          <a href="{{ post.media.url }}" target="_blank" class="post-file-card" style="display:flex; align-items:center; gap:0.75rem; padding:0.875rem; background:var(--surface); border:2px solid var(--border-ink); border-radius:12px; box-shadow:3px 3px 0 var(--border-ink); text-decoration:none; color:inherit; margin:0.5rem 0;">
+            <div class="pfc-icon" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border:1.5px solid var(--border-ink); border-radius:6px;">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            </div>
+            <div class="pfc-info" style="flex:1; min-width:0;">
+              <div class="pfc-name" style="font-weight:800; font-size:0.875rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.media.name|basename }}</div>
+              <div class="pfc-meta" style="font-size:0.7rem; color:var(--text3); font-weight:600;">Download Attachment</div>
+            </div>
+          </a>
         {% endif %}
       </div>
 
       <!-- Actions -->
       <div class="pc-actions">
         <button class="pc-act {% if post.id in liked_ids %}liked{% endif %}" onclick="toggleLike('{{ post.id }}',this)">
-          <svg viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span id="lc-{{ post.id }}">{{ post.like_count }}</span>
+          <svg viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="lc-{{ post.id }}">{{ post.like_count|default:"0" }}</span>
         </button>
         <button class="pc-act" onclick="toggleCommentBox('{{ post.id }}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span id="cc-{{ post.id }}">{{ post.comment_count }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span id="cc-{{ post.id }}">{{ post.comment_count|default:"0" }}</span>
         </button>
         <button class="pc-act" onclick="openShareModal('{{ post.id }}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Share
         </button>
         <span class="pc-act-spacer"></span>
-        {% if post.author == user %}
-        <a href="{% url 'community:post_delete' post.id %}" class="pc-act" style="color:#ef4444;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        </a>
-        {% endif %}
         <button class="pc-save" title="Save" onclick="toggleSave('{{ post.id }}', this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         </button>
@@ -623,22 +799,22 @@
     {% endif %}
     {% empty %}
     {% if tab == 'following' %}
-    <div class="feed-empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-      <p>No posts from people you follow or communities you've joined yet.</p>
-      <button onclick="openFriendDrawer()" class="btn btn-primary" style="background:#22c55e;">Find People to Follow</button>
+    <div class="feed-empty" style="text-align:center; padding:4rem 2rem; color:var(--text3);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px; height:48px; margin:0 auto 1rem; opacity:.3;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+      <p style="margin-bottom:1.5rem;">No posts from people you follow or communities you've joined yet.</p>
+      <button onclick="openFriendDrawer()" class="btn btn-primary">Find People to Follow</button>
     </div>
     {% elif tab == 'liked' %}
-    <div class="feed-empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      <p>You haven't liked any posts yet.</p>
-      <a href="?tab=all" class="btn btn-primary" style="background:#22c55e;">Browse posts</a>
+    <div class="feed-empty" style="text-align:center; padding:4rem 2rem; color:var(--text3);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px; height:48px; margin:0 auto 1rem; opacity:.3;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <p style="margin-bottom:1.5rem;">You haven't liked any posts yet.</p>
+      <a href="?tab=all" class="btn btn-primary">Browse posts</a>
     </div>
     {% else %}
-    <div class="feed-empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <p>No posts yet. Be the first to post!</p>
-      <a href="{% url 'community:post_create' %}" class="btn btn-primary" style="background:#22c55e;">Create a post</a>
+    <div class="feed-empty" style="text-align:center; padding:4rem 2rem; color:var(--text3);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px; height:48px; margin:0 auto 1rem; opacity:.3;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <p style="margin-bottom:1.5rem;">No posts yet. Be the first to post!</p>
+      <a href="{% url 'community:post_create' %}" class="btn btn-primary">Create a post</a>
     </div>
     {% endif %}
     {% endfor %}
@@ -649,6 +825,15 @@
   </div>
   <!-- Right sidebar -->
   <div class="feed-right">
+    <a href="{% url 'ai_community:hub' %}" class="meet-friend-card">
+      <div class="mfc-content">
+        <h3>Meet a Friend</h3>
+        <p>Discover AI-matched connections at the Hub.</p>
+      </div>
+      <div class="mfc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </a>
     <div class="right-card" id="find-friends-card">
       <div class="rc-head" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleFriendCard()">
         <span>Find Friends</span>
@@ -767,6 +952,7 @@
 <style>@keyframes sgld{from{opacity:.2;}to{opacity:1;}}</style>
 {% endblock %}
 {% block extra_js %}
+<div id="share-toast"></div>
 <script>
 const CSRF = '{{ csrf_token }}';
 const loadedComments = {};
@@ -943,9 +1129,9 @@ function buildCommentHtml(c) {
           </div>
           <div class="ic-card-text">${esc(r.content)}</div>
           <div class="ic-card-actions">
-            <button class="ic-card-act" onclick="icLike('${r.id}',this)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              <span id="ic-lc-${r.id}">0</span>
+            <button class="ic-card-act ${r.is_liked ? 'liked' : ''}" onclick="icLike('${r.id}',this)">
+              <svg viewBox="0 0 24 24" fill="${r.is_liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="ic-lc-${r.id}">${r.like_count || 0}</span>
             </button>
           </div>
         </div>`).join('')}</div>`
@@ -962,9 +1148,9 @@ function buildCommentHtml(c) {
     </div>
     <div class="ic-card-text">${esc(c.content)}</div>
     <div class="ic-card-actions">
-      <button class="ic-card-act" onclick="icLike('${c.id}',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        <span id="ic-lc-${c.id}">0</span>
+      <button class="ic-card-act ${c.is_liked ? 'liked' : ''}" onclick="icLike('${c.id}',this)">
+        <svg viewBox="0 0 24 24" fill="${c.is_liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span id="ic-lc-${c.id}">${c.like_count || 0}</span>
       </button>
       <button class="ic-card-act" onclick="icToggleReply('${c.id}','${esc(c.author.username)}')">
         <span id="ic-cc-${c.id}">${c.reply_count || 0}</span>
@@ -1027,7 +1213,26 @@ function submitReply(commentId) {
       const avHtml = c.author.profile_picture
         ? `<div class="ic-card-av" style="width:36px;height:36px;"><img src="${esc(c.author.profile_picture)}" alt=""></div>`
         : `<div class="ic-card-av" style="width:36px;height:36px;">${esc(initials)}</div>`;
-      replies.insertAdjacentHTML('beforeend', `<div class="ic-reply-card" id="ic-comment-${c.id}"><div class="ic-card-head">${avHtml}<div class="ic-card-meta"><div class="ic-card-name">${esc(c.author.username)}</div><div class="ic-card-time">just now</div></div></div><div class="ic-card-text">${esc(c.content)}</div></div>`);
+      replies.insertAdjacentHTML('beforeend', `
+        <div class="ic-reply-card ic-card-head" style="display:block;" id="ic-comment-${c.id}">
+          <div class="ic-card-head">
+            ${avHtml}
+            <div class="ic-card-meta">
+              <div class="ic-card-name">${esc(c.author.username)}</div>
+              <div class="ic-card-time">just now</div>
+            </div>
+            <button class="ic-card-more" onclick="icCardMore('${c.id}',this)"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button>
+          </div>
+          <div class="ic-card-text">${esc(c.content)}</div>
+          <div class="ic-card-actions">
+            <button class="ic-card-act" onclick="icLike('${c.id}',this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="ic-lc-${c.id}">0</span>
+            </button>
+          </div>
+        </div>`);
+      const r_count = document.getElementById('ic-cc-' + commentId);
+      if (r_count) r_count.textContent = parseInt(r_count.textContent || 0) + 1;
     }
   }).catch(() => {});
 }

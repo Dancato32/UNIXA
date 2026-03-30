@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{{ essay.topic }} — NEXA</title>
+<title>{{ essay.topic }} â€” NEXA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -26,9 +26,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </head>
 <body>
 <style>
-/* ── Two-panel layout ── */
+/* â”€â”€ Two-panel layout â”€â”€ */
 .workspace{display:flex;flex:1;height:calc(100vh - 48px);overflow:hidden;}
-/* ── Left info panel ── */
+/* â”€â”€ Left info panel â”€â”€ */
 .info-panel{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
 .info-panel::-webkit-scrollbar{width:4px;}
 .info-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
@@ -56,7 +56,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .danger-btn{display:flex;align-items:center;gap:.5rem;padding:.55rem .75rem;font-size:.775rem;font-weight:600;border-radius:7px;cursor:pointer;border:1px solid rgba(239,68,68,.2);font-family:inherit;transition:all .15s;background:rgba(239,68,68,.06);color:#dc2626;width:100%;text-decoration:none;}
 .danger-btn:hover{background:rgba(239,68,68,.12);}
 .danger-btn svg{width:13px;height:13px;}
-/* ── Right document panel ── */
+/* â”€â”€ Right document panel â”€â”€ */
 .doc-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 /* Formatting toolbar */
 .doc-toolbar{display:flex;align-items:center;gap:.375rem;padding:.5rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
@@ -101,7 +101,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .doc-toolbar{gap:.25rem;}
 }
 </style>
-<!-- Desktop top navbar — minimal -->
+<!-- Desktop top navbar â€” minimal -->
 <nav class="topnav">
   <a href="{% url 'essay_request' %}" class="topnav-logo">
     <div class="topnav-logo-icon">N</div>
@@ -172,7 +172,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
       <!-- AI Restyle -->
       <div>
         <div class="dl-label">AI Style Editor</div>
-        <textarea id="styleInstructions" placeholder="e.g. Make it more formal, add an introduction, write in bullet points, use a persuasive tone…" style="width:100%;padding:.6rem .75rem;font-size:.75rem;background:var(--bg);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:inherit;resize:vertical;min-height:72px;outline:none;line-height:1.5;" onfocus="this.style.borderColor='#aaa'" onblur="this.style.borderColor='var(--border2)'"></textarea>
+        <textarea id="styleInstructions" placeholder="e.g. Make it more formal, add an introduction, write in bullet points, use a persuasive toneâ€¦" style="width:100%;padding:.6rem .75rem;font-size:.75rem;background:var(--bg);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:inherit;resize:vertical;min-height:72px;outline:none;line-height:1.5;" onfocus="this.style.borderColor='#aaa'" onblur="this.style.borderColor='var(--border2)'"></textarea>
         <button onclick="restyleEssay()" id="restyleBtn" class="dl-btn" style="margin-top:.5rem;justify-content:center;background:var(--surface2);color:var(--text);border-color:var(--border2);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           Apply AI Style
@@ -235,12 +235,113 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </div>
 
 <!-- Bottom nav -->
-<nav class="bottom-nav">
-  <a href="{% url 'dashboard' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
-  <a href="{% url 'list_materials' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Materials</a>
-  <a href="{% url 'ai_chat' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Tutor</a>
-  <a href="{% url 'essay_request' %}" class="bn-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Essays</a>
-  <a href="{% url 'community:feed' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Community</a>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #0b0b0f !important;
+  border-top: 1px solid #1e1e2c !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 100 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.375rem 0.5rem;
+  color: #8a8a93;
+  border-radius: 12px;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.15s;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
+.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
+.bn-unified-item:active svg { transform: scale(1.05); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
+  </a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
+  </a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
 </nav>
 
 <script>
@@ -291,7 +392,7 @@ function toggleEdit(){
 async function saveEdits(){
   const saveBtn = document.getElementById('saveBtn');
   const content = document.getElementById('essayEditor').value;
-  saveBtn.textContent = 'Saving…';
+  saveBtn.textContent = 'Savingâ€¦';
   saveBtn.disabled = true;
   try {
     const resp = await fetch('{% url "essay_save_edits" essay.id %}', {
@@ -305,7 +406,7 @@ async function saveEdits(){
       document.getElementById('essayEditor').style.display = 'none';
       document.getElementById('editBtn').style.display = '';
       editMode = false;
-      saveBtn.innerHTML = '✓ Saved';
+      saveBtn.innerHTML = 'âœ“ Saved';
       setTimeout(() => {
         saveBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save';
         saveBtn.style.display = 'none';
@@ -323,7 +424,7 @@ async function restyleEssay(){
   const btn = document.getElementById('restyleBtn');
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.textContent = 'Restyling…';
+  btn.textContent = 'Restylingâ€¦';
   const currentText = document.getElementById('essayView').textContent;
   try {
     const resp = await fetch('{% url "essay_restyle" essay.id %}', {
@@ -336,7 +437,7 @@ async function restyleEssay(){
       document.getElementById('essayView').textContent = data.text;
       document.getElementById('essayEditor').value = data.text;
       document.getElementById('styleInstructions').value = '';
-      btn.textContent = '✓ Done';
+      btn.textContent = 'âœ“ Done';
       setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
     } else {
       alert('Error: ' + (data.error || 'Unknown error'));
@@ -349,7 +450,7 @@ async function downloadEssay(format){
   const btn = event.target.closest('.dl-btn');
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.textContent = 'Downloading…';
+  btn.textContent = 'Downloadingâ€¦';
   const content = document.getElementById('essayView').textContent;
   try {
     const resp = await fetch('{% url "export_essay" %}', {

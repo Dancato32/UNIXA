@@ -151,8 +151,23 @@ def community_home(request):
     except Exception:
         unread_msgs = 0
 
+    # Following + liked_ids for home feed
+    from community.models import Follow as _Follow
+    following = (
+        _Follow.objects.filter(follower=request.user)
+        .select_related('following', 'following__community_profile')
+        .order_by('-created_at')[:8]
+    )
+    post_ids = [p.id for p in feed_posts]
+    liked_ids = set(
+        PostLike.objects.filter(user=request.user, post_id__in=post_ids)
+        .values_list('post_id', flat=True)
+    )
+
     return render(request, 'community/home.html', {
         'feed_posts': feed_posts,
+        'following': following,
+        'liked_ids': liked_ids,
         'school_memberships': school_memberships,
         'custom_memberships': custom_memberships,
         'suggested_communities': suggested_communities,
@@ -369,6 +384,43 @@ def feed(request):
     )
     following_user_ids = set(Follow.objects.filter(follower=request.user).values_list('following_id', flat=True))
 
+    # Stories logic
+    from community.models import Story, StoryView, StoryLike
+    from django.utils import timezone
+    now = timezone.now()
+    st_qs = Story.objects.filter(is_deleted=False, expires_at__gt=now).select_related('author', 'author__community_profile').order_by('author_id', 'created_at')
+    
+    active_story_groups = {}
+    for st in st_qs:
+        if st.author not in active_story_groups:
+            active_story_groups[st.author] = []
+        active_story_groups[st.author].append(st)
+        
+    viewed_story_ids = set(StoryView.objects.filter(user=request.user).values_list('story_id', flat=True))
+    liked_story_ids = set(StoryLike.objects.filter(user=request.user).values_list('story_id', flat=True))
+
+    story_users = []
+    has_my_story = False
+    
+    # Current user first
+    if request.user in active_story_groups:
+        my_stories = active_story_groups[request.user]
+        has_my_story = True
+        story_users.append({
+            'user': request.user,
+            'stories': my_stories,
+            'all_viewed': all(s.id in viewed_story_ids for s in my_stories)
+        })
+        
+    for author, stories in active_story_groups.items():
+        if author == request.user:
+            continue
+        story_users.append({
+            'user': author,
+            'stories': stories,
+            'all_viewed': all(s.id in viewed_story_ids for s in stories)
+        })
+
     return render(request, 'community/feed.html', {
         'posts': posts,
         'has_more': has_more,
@@ -381,6 +433,10 @@ def feed(request):
         'tab': tab,
         'following': following,
         'following_user_ids': following_user_ids,
+        'story_users': story_users,
+        'has_my_story': has_my_story,
+        'viewed_story_ids': viewed_story_ids,
+        'liked_story_ids': liked_story_ids,
     })
 
 
@@ -1152,16 +1208,45 @@ def get_peer_id(request, convo_id):
 # â”€â”€ Group Workspaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
+def ai_tools(request):
+    """AI Tools Suite page."""
+    return render(request, 'community/ai_tools.html')
+
+
+@login_required
 def workspace_list(request):
-    """List all workspaces the user belongs to."""
-    memberships = (
+    """Dashboard view for Local Workspace and Shared Workspaces."""
+    from community.models import GroupWorkspace, WorkspaceMember, WorkspaceTask
+    
+    # 1. Ensure user has a local workspace (MyNexa)
+    local_ws = _get_or_create_mynexa(request.user)
+    
+    # 2. Get shared workspaces
+    shared_memberships = (
         WorkspaceMember.objects
-        .filter(user=request.user)
+        .filter(user=request.user, workspace__is_personal=False)
         .select_related('workspace', 'workspace__owner')
         .order_by('-workspace__updated_at')
     )
+    
+    # 3. Get all pending tasks assigned to the user across ALL shared workspaces
+    shared_ws_ids = [m.workspace_id for m in shared_memberships]
+    pending_tasks = (
+        WorkspaceTask.objects
+        .filter(workspace_id__in=shared_ws_ids, assigned_to=request.user)
+        .exclude(status=WorkspaceTask.STATUS_DONE)
+        .select_related('workspace')
+        .order_by('due_date', 'status')
+    )
+
+    # 4. Filter logic based on request param (for the sidebar tabs)
+    tab = request.GET.get('tab', 'local') # 'local' or 'shared'
+
     return render(request, 'community/workspace_list.html', {
-        'memberships': memberships,
+        'local_ws': local_ws,
+        'shared_memberships': shared_memberships,
+        'pending_tasks': pending_tasks,
+        'tab': tab,
     })
 
 
@@ -2616,24 +2701,36 @@ def workspace_ai_chat(request, ws_id):
 
 
 @login_required
+@require_POST
 def workspace_ai_analyze(request, ws_id):
-    """Analyze workspace files and generate project brief + suggested tasks."""
+    """Analyze workspace files + text prompt to bootstrap the project."""
+    import json
     from ai_community.ai_engine import analyze_project_files as _analyze
-    ws, _ = _ws_member_or_404(request, ws_id)
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    
+    ws, membership = _ws_member_or_404(request, ws_id)
+    if membership.role not in (WorkspaceMember.ROLE_OWNER, WorkspaceMember.ROLE_ADMIN):
+        return JsonResponse({'error': 'Only admins can initialize project mode.'}, status=403)
+
+    try:
+        body = json.loads(request.body)
+        prompt_text = body.get('prompt', '').strip()
+    except Exception:
+        prompt_text = request.POST.get('prompt', '').strip()
 
     files = ws.files.select_related('uploaded_by').order_by('-uploaded_at')[:10]
     members = list(
         WorkspaceMember.objects.filter(workspace=ws)
         .select_related('user')
-        .values('user__username')
+        .values('user__username', 'user__id')
     )
-    members_clean = [{'username': m['user__username']} for m in members]
+    members_clean = [{'username': m['user__username'], 'id': m['user__id']} for m in members]
 
     files_data = []
     for f in files:
         preview = ''
         try:
-            # For Cloudinary/remote storage, fetch via URL; fallback to local open
             file_url = f.file.url
             if file_url.startswith('http'):
                 import requests as _req
@@ -2651,13 +2748,51 @@ def workspace_ai_analyze(request, ws_id):
             preview = f'[Could not read: {f.original_name}]'
         files_data.append({'name': f.original_name, 'content_preview': preview})
 
-    if not files_data:
-        return JsonResponse({'error': 'No files uploaded yet. Upload your assignment brief first.'}, status=400)
+    if not files_data and not prompt_text:
+        return JsonResponse({'error': 'Please provide project instructions or upload files first.'}, status=400)
 
-    result = _analyze(files_data, ws.name, members_clean)
+    result = _analyze(files_data, prompt_text, ws.name, members_clean)
     if not result:
-        return JsonResponse({'error': 'Could not analyze files. Try again.'}, status=500)
+        return JsonResponse({'error': 'Could not analyze project. Please try again.'}, status=500)
 
+    # Bootstrapping the Project Mode in Database
+    ws.is_project_mode = True
+    ws.project_summary = result.get('summary', '')
+    ws.project_objectives = result.get('objectives', [])
+    ws.save(update_fields=['is_project_mode', 'project_summary', 'project_objectives'])
+
+    # Auto-create the distributed tasks
+    raw_tasks = result.get('tasks', [])
+    created_tasks = []
+    for rt in raw_tasks:
+        assignee_uname = rt.get('suggested_assignee')
+        assignee_user = None
+        if assignee_uname:
+            try:
+                assignee_user = User.objects.get(username=assignee_uname)
+            except User.DoesNotExist:
+                pass
+        
+        diff_str = rt.get('difficulty', 'medium').lower()
+        if diff_str not in ('easy', 'medium', 'hard'):
+            diff_str = 'medium'
+
+        task = WorkspaceTask.objects.create(
+            workspace=ws,
+            created_by=request.user,
+            title=rt.get('title', 'Project Task'),
+            description=rt.get('description', ''),
+            difficulty=diff_str,
+            assigned_to=assignee_user,
+        )
+        created_tasks.append({
+            'id': str(task.id),
+            'title': task.title,
+            'difficulty': task.difficulty,
+            'assigned_to': task.assigned_to.username if task.assigned_to else None,
+        })
+    
+    result['created_tasks'] = created_tasks
     return JsonResponse(result)
 
 
@@ -2754,34 +2889,104 @@ def workspace_ai_autocomplete(request, ws_id):
 # â”€â”€ GitHub-style contribution system â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
+def worksheet_view(request, ws_id, task_id):
+    """Render the split-screen Worksheet Execution Environment."""
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+    
+    # Ensure worksheet exists
+    from community.models import TaskWorksheet
+    worksheet, _ = TaskWorksheet.objects.get_or_create(task=task)
+
+    return render(request, 'community/worksheet.html', {
+        'ws': ws,
+        'task': task,
+        'worksheet': worksheet,
+    })
+
+@login_required
+@require_POST
+def worksheet_save(request, ws_id, task_id):
+    """Auto-save the worksheet content from the rich text editor."""
+    import json
+    ws, _ = _ws_member_or_404(request, ws_id)
+    task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
+    worksheet = task.worksheet
+
+    try:
+        body = json.loads(request.body)
+        content = body.get('content', '')
+    except Exception:
+        content = request.POST.get('content', '')
+
+    worksheet.content = content
+    worksheet.save(update_fields=['content', 'last_saved_at'])
+    return JsonResponse({'ok': True, 'last_saved_at': worksheet.last_saved_at.isoformat()})
+
+@login_required
 @require_POST
 def workspace_task_submit(request, ws_id, task_id):
-    """Member submits their work for a task."""
-    import json as _json
+    """Submit the worksheet for AI Review."""
     ws, _ = _ws_member_or_404(request, ws_id)
     task = get_object_or_404(WorkspaceTask, id=task_id, workspace=ws)
 
-    try:
-        body = _json.loads(request.body)
-        submission = body.get('submission', '').strip()
-    except Exception:
-        submission = request.POST.get('submission', '').strip()
-
-    if not submission:
-        return JsonResponse({'error': 'Submission content is required.'}, status=400)
+    if not hasattr(task, 'worksheet') or not task.worksheet.content.strip():
+        return JsonResponse({'error': 'Your worksheet is empty. Write something before submitting.'}, status=400)
 
     from django.utils import timezone
-    task.submission = submission
+    task.submission = task.worksheet.content
     task.review_status = WorkspaceTask.REVIEW_PENDING
     task.submitted_at = timezone.now()
     task.status = WorkspaceTask.STATUS_DOING
     task.save(update_fields=['submission', 'review_status', 'submitted_at', 'status'])
 
+    # Optional: trigger AI Review async if using celery, but for now we let frontend poll or call review manually.
+    # We will trigger review immediately for demonstration.
+    from ai_community.ai_engine import review_task_submission as _review
+    files_data = []
+    for f in ws.files.order_by('-uploaded_at')[:5]:
+        preview = ''
+        try:
+            file_url = f.file.url
+            if file_url.startswith('http'):
+                import requests as _req
+                resp = _req.get(file_url, timeout=5)
+                preview = resp.content[:1500].decode('utf-8', errors='ignore')
+            else:
+                f.file.open('rb')
+                preview = f.file.read(1500).decode('utf-8', errors='ignore')
+                f.file.close()
+        except Exception:
+            pass
+        if preview:
+            files_data.append({'name': f.original_name, 'content_preview': preview})
+
+    result = _review(
+        task_title=task.title,
+        task_description=task.description,
+        submission=task.submission,
+        workspace_name=ws.name,
+        files_context=files_data,
+    )
+
+    if result:
+        task.review_status = result['status']  # 'approved' or 'revision'
+        task.review_feedback = result['feedback']
+        if result['status'] == WorkspaceTask.REVIEW_APPROVED:
+            task.status = WorkspaceTask.STATUS_DONE
+        task.save(update_fields=['review_status', 'review_feedback', 'status'])
+        
+        # Post AI feedback to group chat
+        from community.models import WorkspaceMessage
+        ai_msg = f"🤖 AI Review — *{task.title}*\nStatus: {'✅ Approved' if result['status'] == 'approved' else '🔄 Revision Requested'}\n{result['feedback']}"
+        WorkspaceMessage.objects.create(workspace=ws, sender=request.user, content=ai_msg)
+
     return JsonResponse({
         'ok': True,
         'task_id': str(task.id),
         'review_status': task.review_status,
-        'message': 'Submission received. Awaiting AI review.',
+        'review_feedback': task.review_feedback,
+        'message': 'Worksheet submitted and reviewed.',
     })
 
 
@@ -3510,7 +3715,7 @@ def citation_ajax(request):
 
         return JsonResponse({'metadata': metadata})
 
-    # â”€â”€ ACTION: generate citation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── ACTION: generate citation ──────────────────────────────────────
     elif action == 'generate':
         style = (body.get('style') or 'APA').strip()
         source_type = (body.get('source_type') or 'website').strip()
@@ -3532,12 +3737,12 @@ def citation_ajax(request):
             'MLA': 'MLA 9th edition. Author Last, First. "Title." Publisher, Year, URL.',
             'Harvard': 'Harvard referencing. Author (Year) Title. Publisher.',
             'Chicago': 'Chicago 17th edition author-date or notes-bibliography.',
-            'IEEE': 'IEEE style. [1] A. Author, "Title," Journal, vol. x, no. x, pp. xxâ€“xx, Year.',
+            'IEEE': 'IEEE style. [1] A. Author, "Title," Journal, vol. x, no. x, pp. xx–xx, Year.',
             'WAEC': 'Simplified WAEC/SHS style. Easy format for secondary school students. Author (Year). Title. Publisher.',
         }
 
         system_prompt = (
-            "You are Nexa Citation Intelligence Engine â€” an expert academic citation assistant.\n"
+            "You are Nexa Citation Intelligence Engine — an expert academic citation assistant.\n"
             "Generate a perfectly formatted citation AND teach the user what each part means.\n\n"
             "RESPONSE FORMAT (strict JSON, no markdown):\n"
             "{\n"
@@ -4440,3 +4645,67 @@ def help_beacon_resolve(request, beacon_id):
         beacon.helper_rating = min(5, max(1, int(rating)))
     beacon.save(update_fields=['status', 'resolved_at', 'helper_rating'])
     return JsonResponse({'ok': True})
+
+
+# ── Stories ───────────────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def story_create(request):
+    import json
+    try:
+        data = request.POST
+        media = request.FILES.get('media')
+        text = data.get('text', '').strip()
+        bg_color = data.get('bg_color', '#1e1e2c').strip()
+
+        if not media and not text:
+            return JsonResponse({'success': False, 'error': 'Must provide media or text'})
+
+        media_type = 'text'
+        if media:
+            if media.content_type.startswith('video'):
+                media_type = 'video'
+            elif media.content_type.startswith('image'):
+                media_type = 'image'
+
+        story = Story.objects.create(
+            author=request.user,
+            media=media,
+            media_type=media_type,
+            text=text,
+            bg_color=bg_color
+        )
+        return JsonResponse({'success': True, 'id': str(story.id)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def story_view(request, story_id):
+    """Marks a story as viewed by the current user."""
+    story = get_object_or_404(Story, id=story_id, is_deleted=False)
+    if story.author != request.user:
+        view_obj, created = StoryView.objects.get_or_create(user=request.user, story=story)
+        if created:
+            story.view_count = models.F('view_count') + 1
+            story.save(update_fields=['view_count'])
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_POST
+def story_like(request, story_id):
+    """Toggles like on a story."""
+    story = get_object_or_404(Story, id=story_id, is_deleted=False)
+    liked = False
+    if StoryLike.objects.filter(user=request.user, story=story).exists():
+        StoryLike.objects.filter(user=request.user, story=story).delete()
+        story.like_count = models.F('like_count') - 1
+    else:
+        StoryLike.objects.create(user=request.user, story=story)
+        story.like_count = models.F('like_count') + 1
+        liked = True
+    story.save(update_fields=['like_count'])
+    return JsonResponse({'success': True, 'liked': liked})

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>New Assignment — NEXA</title>
+<title>New Assignment â€” NEXA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -76,19 +76,19 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .file-drop-hint { font-size: 0.75rem; color: var(--text3); margin-top: 0.25rem; }
 .file-name-tag { margin-top: 0.625rem; padding: 0.5rem 0.875rem; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); border-radius: 7px; font-size: 0.8125rem; color: #a5b4fc; display: none; }
 
-/* ── Upload tabs ── */
+/* â”€â”€ Upload tabs â”€â”€ */
 .upload-tabs { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
 .upload-tab { display: flex; align-items: center; gap: 0.375rem; padding: 0.4rem 0.875rem; font-size: 0.8rem; font-weight: 600; border-radius: 7px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; font-family: inherit; transition: all 0.15s; }
 .upload-tab.active { background: rgba(99,102,241,0.12); border-color: var(--accent); color: #a5b4fc; }
 
-/* ── Camera ── */
+/* â”€â”€ Camera â”€â”€ */
 .camera-wrap { background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; overflow: hidden; min-height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; position: relative; }
 .camera-idle { text-align: center; padding: 2rem; color: var(--text3); }
 .camera-idle svg { color: var(--text3); }
 #cameraFeed { width: 100%; max-height: 280px; object-fit: cover; display: block; }
 .camera-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
-/* ── Materials section ── */
+/* â”€â”€ Materials section â”€â”€ */
 .mat-section { background: rgba(99,102,241,0.04); border: 1px solid rgba(99,102,241,0.15); border-radius: 12px; padding: 1.25rem; }
 .mat-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
 .rag-info-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.2rem; }
@@ -154,9 +154,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 <body>
 <div class="layout">
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><a href="{% url 'dashboard' %}">NEXA</a></div>
+    <div class="sidebar-logo"><a href="{% url 'community:community_home' %}">NEXA</a></div>
     <nav class="sidebar-nav">
-      <a href="{% url 'dashboard' %}" class="nav-link">
+      <a href="{% url 'community:community_home' %}" class="nav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Dashboard
       </a>
@@ -239,7 +239,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </div>
             <div class="voice-status" id="voiceStatus">Click the mic to start speaking</div>
-            <div class="voice-transcript" id="voiceTranscript">Your speech will appear here…</div>
+            <div class="voice-transcript" id="voiceTranscript">Your speech will appear hereâ€¦</div>
             <button type="button" class="voice-btn" onclick="toggleVoice()">
               <svg id="voiceBtnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
             </button>
@@ -316,11 +316,11 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
               </div>
               <div class="form-group span2">
                 <label class="form-label" for="text_content">Or Paste Assignment Content</label>
-                <textarea name="text_content" id="text_content" class="form-textarea" placeholder="Paste assignment instructions or content here…"></textarea>
+                <textarea name="text_content" id="text_content" class="form-textarea" placeholder="Paste assignment instructions or content hereâ€¦"></textarea>
               </div>
               <div class="form-group span2">
                 <label class="form-label" for="instructions">Additional Instructions</label>
-                <textarea name="instructions" id="instructions" class="form-textarea" style="min-height:80px" placeholder="Any specific requirements for the AI…"></textarea>
+                <textarea name="instructions" id="instructions" class="form-textarea" style="min-height:80px" placeholder="Any specific requirements for the AIâ€¦"></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label" for="output_format">Output Format</label>
@@ -398,7 +398,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
               <div class="mat-header">
                 <div>
                   <div class="rag-info-title">Study Materials</div>
-                  <div class="rag-info-sub">Choose which materials AI should reference — or enable all</div>
+                  <div class="rag-info-sub">Choose which materials AI should reference â€” or enable all</div>
                 </div>
                 <label class="toggle">
                   <input type="checkbox" name="use_rag" id="use_rag" checked onchange="toggleMaterials(this)">
@@ -424,7 +424,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
                       </div>
                       <div class="mat-info">
                         <div class="mat-title">{{ m.title }}</div>
-                        <div class="mat-meta">{{ m.material_type }} · {{ m.uploaded_at|date:"M d" }}</div>
+                        <div class="mat-meta">{{ m.material_type }} Â· {{ m.uploaded_at|date:"M d" }}</div>
                       </div>
                       <div class="mat-tick">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -457,26 +457,112 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   </main>
 </div>
 
-<nav class="bottom-nav">
-  <a href="{% url 'dashboard' %}" class="bn-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Home
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #0b0b0f !important;
+  border-top: 1px solid #1e1e2c !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 100 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.375rem 0.5rem;
+  color: #8a8a93;
+  border-radius: 12px;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.15s;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
+.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
+.bn-unified-item:active svg { transform: scale(1.05); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
   </a>
-  <a href="{% url 'ai_chat' %}" class="bn-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    AI
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
   </a>
-  <a href="{% url 'list_materials' %}" class="bn-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    Materials
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
   </a>
-  <a href="{% url 'assignment_list' %}" class="bn-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    Tasks
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
   </a>
-  <a href="{% url 'community:feed' %}" class="bn-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    Community
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
   </a>
 </nav>
 
@@ -501,7 +587,7 @@ function showFile(input) {
   }
 }
 
-// ── Upload tabs (file vs camera) ──
+// â”€â”€ Upload tabs (file vs camera) â”€â”€
 function switchUpload(mode) {
   document.querySelectorAll('.upload-tab').forEach(t => t.classList.remove('active'));
   event.target.closest('.upload-tab').classList.add('active');
@@ -510,7 +596,7 @@ function switchUpload(mode) {
   if (mode !== 'camera') stopCamera();
 }
 
-// ── Camera ──
+// â”€â”€ Camera â”€â”€
 let cameraStream = null;
 
 async function startCamera() {
@@ -557,7 +643,7 @@ function stopCamera() {
   if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
 }
 
-// ── Format preview ──
+// â”€â”€ Format preview â”€â”€
 const fontMap = {
   inter: "'Inter', sans-serif",
   georgia: "Georgia, serif",
@@ -581,13 +667,13 @@ function updateFormatPreview() {
   if (el) el.addEventListener('change', updateFormatPreview);
 });
 
-// ── Materials toggle ──
+// â”€â”€ Materials toggle â”€â”€
 function toggleMaterials(cb) {
   document.getElementById('materialsPanel').style.opacity = cb.checked ? '1' : '0.4';
   document.getElementById('materialsPanel').style.pointerEvents = cb.checked ? '' : 'none';
 }
 
-// ── Voice input ──
+// â”€â”€ Voice input â”€â”€
 let recognition = null;
 let isListening = false;
 
@@ -605,7 +691,7 @@ function toggleVoice() {
   recognition.onstart = () => {
     isListening = true;
     document.getElementById('voiceOrb').classList.add('listening');
-    document.getElementById('voiceStatus').textContent = 'Listening…';
+    document.getElementById('voiceStatus').textContent = 'Listeningâ€¦';
     document.getElementById('voiceTranscript').classList.add('has-text');
   };
   recognition.onresult = (e) => {

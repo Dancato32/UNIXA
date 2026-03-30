@@ -5,258 +5,276 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>{% block title %}Community{% endblock %} � NEXA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Handlee&family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Instant theme init — must run before CSS paint to avoid flash -->
+<script>if(localStorage.getItem('nx-theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}</script>
 <style>
 /* --- Reset --------------------------------------------------------------- */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  /* Surfaces */
-  --bg:#f5f5f0;
+  /* ── Black & White Hand-Drawn Professional ── */
+  --bg:#fafaf8;
   --surface:#ffffff;
-  --surface2:#f8f8f5;
-  --surface3:#f0f0eb;
-  --surface4:#e8e8e2;
-  --surface5:#e0e0da;
-  /* Borders */
-  --border:#e2e2dc;
-  --border2:#d4d4ce;
-  --border3:#c0c0ba;
+  --surface2:#f5f5f3;
+  --surface3:#eeeeeb;
+  --surface4:#e5e5e2;
+  --surface5:#d8d8d4;
+  /* Sidebar — clean black */
+  --sidebar-bg:#111111;
+  --sidebar-text:#f5f5f3;
+  --sidebar-sub:#888884;
+  --sidebar-active-bg:rgba(255,255,255,0.1);
+  /* Borders — ink-like */
+  --border:#d0d0cc;
+  --border2:#b8b8b4;
+  --border3:#9a9a96;
+  --border-ink:#111111;
   /* Text */
-  --text:#1a1a1a;
-  --text2:#4a4a4a;
-  --text3:#888880;
-  --text4:#b0b0a8;
-  /* Accents */
-  --accent:#6366f1;
-  --accent-hover:#4f46e5;
-  --accent-subtle:rgba(99,102,241,.1);
-  --accent-text:#4f46e5;
-  --green:#16a34a;
-  --green-subtle:rgba(22,163,74,.1);
-  --red:#dc2626;
-  --red-subtle:rgba(220,38,38,.1);
-  --amber:#d97706;
-  --amber-subtle:rgba(217,119,6,.1);
-  --white:#ffffff;
-  /* Layout */
-  --sidebar-w:232px;
-  --topbar-h:52px;
-  --bottom-nav-h:60px;
-  --radius-sm:6px;
-  --radius:10px;
-  --radius-lg:14px;
-  --radius-xl:20px;
-  /* Shadows */
-  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
-  --shadow:0 4px 16px rgba(0,0,0,.1);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.14);
+  --text:#111111;
+  --text2:#444440;
+  --text3:#888884;
+  --text4:#bbbbbb;
+  /* Accents — pure black */
+  --accent:#111111;
+  --accent-hover:#333333;
+  --accent-subtle:rgba(17,17,17,.06);
+  --accent-text:#111111;
+  --accent-pink:#111111;
+  --blue-post:#111111;
+  --red-flag:#111111;
+  --green:#111111;
+  --green-subtle:rgba(17,17,17,.06);
+  --red:#cc0000;
+  --red-subtle:rgba(204,0,0,.08);
+  --amber:#555550;
+  --amber-subtle:rgba(85,85,80,.08);
+  /* Radii — slightly rounded, sketch feel */
+  --radius-sm:3px;
+  --radius:6px;
+  --radius-lg:10px;
+  --radius-xl:16px;
+  /* Sketch shadows — offset, no blur */
+  --shadow-sm:2px 2px 0px rgba(0,0,0,.08);
+  --shadow:3px 3px 0px rgba(0,0,0,.1);
+  --shadow-lg:4px 4px 0px rgba(0,0,0,.12);
+  --shadow-accent:3px 3px 0px rgba(0,0,0,.15);
+  /* Fonts */
+  --font-display:'Gochi Hand',cursive;
+  --font-hand:'Handlee',cursive;
+  --theme-transition:background 0.2s,color 0.2s;
 }
-html,body{height:100%;overflow:hidden;}
-body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+
+/* ── Dark Mode — Black Paper ── */
+[data-theme="dark"] {
+  --bg:#0a0a0a;
+  --surface:#141414;
+  --surface2:#1c1c1c;
+  --surface3:#242424;
+  --surface4:#2e2e2e;
+  --surface5:#383838;
+  --border:#333333;
+  --border2:#444444;
+  --border3:#555555;
+  --border-ink:#f0f0ee;
+  --text:#f0f0ee;
+  --text2:#c8c8c4;
+  --text3:#888884;
+  --text4:#555550;
+  --sidebar-bg:#000000;
+  --sidebar-text:#f0f0ee;
+  --sidebar-sub:#888884;
+  --accent:#f0f0ee;
+  --accent-hover:#c8c8c4;
+  --accent-subtle:rgba(240,240,238,.08);
+  --accent-text:#f0f0ee;
+  --accent-pink:#f0f0ee;
+  --blue-post:#f0f0ee;
+  --red-flag:#f0f0ee;
+  --green:#f0f0ee;
+  --green-subtle:rgba(240,240,238,.08);
+  --red:#ff6666;
+  --red-subtle:rgba(255,102,102,.1);
+  --amber:#c8c8c4;
+  --amber-subtle:rgba(200,200,196,.08);
+  --shadow-sm:2px 2px 0px rgba(240,240,238,.12);
+  --shadow:3px 3px 0px rgba(240,240,238,.12);
+  --shadow-lg:4px 4px 0px rgba(240,240,238,.15);
+  --shadow-accent:3px 3px 0px rgba(240,240,238,.2);
+  --shadow-lg:5px 5px 0px rgba(240,237,230,.35);
+}
+html,body{height:100%;overflow:hidden;transition:var(--theme-transition);}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;transition:var(--theme-transition);}
+/* Hand-drawn heading helper */
+.hd-title{font-family:var(--font-display);font-weight:700;letter-spacing:0.02em;}
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;cursor:pointer;}
 input,textarea,select{font-family:inherit;}
 img{display:block;}
 *{min-width:0;}
+.btn-premium{
+  display:flex;align-items:center;gap:.625rem;padding:.75rem 1.5rem;
+  background:#000;color:#fff;font-weight:900;font-size:.875rem;text-transform:uppercase;letter-spacing:0.05em;
+  border:2px solid #000;border-radius:var(--sketch-radius);cursor:pointer;
+  box-shadow:var(--shadow);
+  transition:all .2s ease;text-decoration:none;
+}
+.btn-premium:hover{transform:translate(-2px, -2px);box-shadow:6px 6px 0px #000;}
+.page-header{padding:3rem 2.5rem 2rem;flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between;}
+.page-header h1{font-family:'Outfit',sans-serif;font-size:2.5rem;font-weight:900;letter-spacing:-1px;line-height:1;}
+.page-header p{color:var(--text2);margin-top:.75rem;font-size:.9375rem;font-weight:500;}
+@media(max-width:768px){
+  .page-header{padding:2rem 1.25rem 1.5rem;}
+  .page-header h1{font-size:1.875rem;}
+}
 </style>
 
 <style>
 /* --- App Shell ------------------------------------------------------------ */
-.shell{display:flex;height:100vh;overflow:hidden;}
+.shell{display:flex;height:100vh;overflow:hidden;background:var(--bg);}
 
 /* --- Sidebar -------------------------------------------------------------- */
 .sidebar{
-  width:var(--sidebar-w);flex-shrink:0;
-  background:var(--surface);
-  border-right:1px solid var(--border);
+  width:260px;flex-shrink:0;
+  background:var(--sidebar-bg);
+  color:var(--sidebar-text);
   display:flex;flex-direction:column;
   overflow:hidden;
+  border-right:none;
 }
 .sidebar-header{
-  height:var(--topbar-h);display:flex;align-items:center;
-  padding:0 1rem;gap:.625rem;
-  border-bottom:1px solid var(--border);flex-shrink:0;
+  height:72px;display:flex;flex-direction:column;justify-content:center;
+  padding:0 1.5rem;gap:2px;flex-shrink:0;
+  position:relative;
 }
-.sidebar-logo{
-  width:28px;height:28px;border-radius:8px;
-  background:var(--accent);color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.6875rem;font-weight:800;letter-spacing:-.03em;flex-shrink:0;
-}
-.sidebar-app-name{font-size:.9375rem;font-weight:700;color:var(--text);flex:1;}
-.sidebar-search-wrap{padding:.625rem .875rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sidebar-logo-text{font-family:var(--font-display);font-size:1.875rem;font-weight:400;color:#fff;line-height:1;}
+.sidebar-logo-sub{font-size:.7rem;font-weight:700;color:var(--sidebar-sub);text-transform:italic;opacity:.8;}
+
+.sidebar-logo{display:none;}
+.sidebar-search-wrap{padding:.875rem 1rem;border-bottom:1px solid var(--surface4);flex-shrink:0;}
 .sidebar-search{
   display:flex;align-items:center;gap:.5rem;
-  background:var(--surface3);border:1px solid var(--border);
-  border-radius:var(--radius-sm);padding:.375rem .625rem;
-  transition:border-color .15s;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:.375rem .75rem;
 }
-.sidebar-search:focus-within{border-color:var(--border3);}
-.sidebar-search svg{width:14px;height:14px;color:var(--text3);flex-shrink:0;}
+.sidebar-search svg{width:14px;height:14px;color:var(--text);flex-shrink:0;}
 .sidebar-search input{
   flex:1;background:none;border:none;outline:none;
-  color:var(--text);font-size:.8125rem;
+  color:var(--text);font-size:.8125rem;font-weight:600;
 }
-.sidebar-search input::placeholder{color:var(--text3);}
-.sidebar-scroll{flex:1;overflow-y:auto;padding:.5rem 0;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
-.sidebar-scroll::-webkit-scrollbar{width:4px;}
-.sidebar-scroll::-webkit-scrollbar-track{background:transparent;}
-.sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.sidebar-search input::placeholder{color:var(--text4);}
+
+.sidebar-scroll{flex:1;overflow-y:auto;padding:.75rem 0;scrollbar-width:none;}
+.sidebar-scroll::-webkit-scrollbar{display:none;}
+
 .sidebar-section-label{
-  font-size:.6875rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.07em;color:var(--text3);
-  padding:.75rem 1rem .375rem;
-  display:flex;align-items:center;justify-content:space-between;
+  font-size:.625rem;font-weight:900;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--text);
+  padding:1.25rem 1.25rem 0.625rem;opacity:.5;
 }
-.sidebar-section-label a,.sidebar-section-label button{
-  background:none;border:none;color:var(--text3);
-  width:18px;height:18px;display:flex;align-items:center;justify-content:center;
-  border-radius:4px;transition:all .12s;cursor:pointer;
-}
-.sidebar-section-label a:hover,.sidebar-section-label button:hover{background:var(--surface3);color:var(--text2);}
-.sidebar-section-label svg{width:13px;height:13px;}
+.sidebar-nav{display:flex;flex-direction:column;gap:4px;}
 .nav-item{
-  display:flex;align-items:center;gap:.625rem;
-  padding:.4rem .875rem;margin:1px .5rem;
-  border-radius:var(--radius-sm);
-  color:var(--text3);font-size:.875rem;font-weight:500;
-  transition:all .12s;cursor:pointer;position:relative;
+  display:flex;align-items:center;gap:1.125rem;
+  padding:.875rem 1.5rem;position:relative;
+  color:var(--sidebar-text);font-size:.9375rem;font-weight:500;
+  transition:all 0.15s ease;text-decoration:none;
+  opacity:.7;
 }
-.nav-item:hover{background:var(--surface3);color:var(--text2);}
-.nav-item.active{background:var(--surface4);color:var(--text);}
-.nav-item svg{width:16px;height:16px;flex-shrink:0;}
-.nav-item .nav-badge{
-  margin-left:auto;background:var(--red);color:#fff;
-  font-size:.6rem;font-weight:700;padding:.1rem .35rem;
-  border-radius:10px;min-width:16px;text-align:center;line-height:1.4;
+.nav-item:hover{background:var(--sidebar-active-bg);opacity:1;}
+.nav-item.active{
+  background:var(--sidebar-active-bg);
+  opacity:1;font-weight:700;
 }
-.nav-item .nav-live-dot{
-  width:6px;height:6px;border-radius:50%;background:#f97316;
-  margin-left:auto;flex-shrink:0;
-  animation:navLivePulse 2s ease-in-out infinite;
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:.5rem;bottom:.5rem;
+  width:4px;background:var(--accent-pink);border-radius:0 4px 4px 0;
 }
-@keyframes navLivePulse{0%,100%{opacity:1;}50%{opacity:.35;}}
-.nav-divider{height:1px;background:var(--border);margin:.5rem .875rem;}
+.nav-item svg{width:20px;height:20px;opacity:.8;stroke-width:2px;}
+.nav-item.active svg{opacity:1;stroke-width:2.5px;}
+
+
+.nav-divider{height:2px;background:var(--border);margin:.75rem 1.25rem;}
 .sidebar-footer{
-  border-top:1px solid var(--border);padding:.75rem .875rem;
-  display:flex;align-items:center;gap:.625rem;flex-shrink:0;
+  margin:1.5rem 1rem;padding:1rem;
+  display:flex;align-items:center;gap:.75rem;
+  border-radius:12px;background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
 }
 .sidebar-footer-av{
-  width:32px;height:32px;border-radius:50%;background:var(--surface4);
+  width:42px;height:42px;border-radius:10px;background:#eee;
   display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:700;flex-shrink:0;overflow:hidden;position:relative;
+  flex-shrink:0;overflow:hidden;border:1.5px solid rgba(255,255,255,.2);
 }
-.sidebar-footer-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.sidebar-footer-av .online-dot{
-  position:absolute;bottom:0;right:0;
-  width:9px;height:9px;border-radius:50%;
-  background:var(--green);border:2px solid var(--surface);
-}
+.sidebar-footer-av img{width:100%;height:100%;object-fit:cover;}
 .sidebar-footer-info{flex:1;min-width:0;}
-.sidebar-footer-name{font-size:.8125rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.sidebar-footer-status{font-size:.6875rem;color:var(--text3);}
-.sidebar-footer-actions{display:flex;gap:.125rem;}
-.sidebar-footer-btn{
-  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
-  border-radius:var(--radius-sm);background:none;border:none;
-  color:var(--text3);transition:all .15s;
-}
-.sidebar-footer-btn:hover{background:var(--surface3);color:var(--text2);}
-.sidebar-footer-btn svg{width:15px;height:15px;}
-.sidebar-close-btn{display:none;}
+.sidebar-footer-name{font-size:.8125rem;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sidebar-footer-status{font-size:.65rem;font-weight:500;color:var(--sidebar-sub);}
+.sidebar-footer-settings{color:var(--sidebar-sub);cursor:pointer;opacity:.6;transition:.2s;}
+.sidebar-footer-settings:hover{opacity:1;color:#fff;}
+
 </style>
 
 <style>
 /* --- Main Area ------------------------------------------------------------ */
-.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
-.topbar{
-  height:var(--topbar-h);background:var(--surface);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;flex-shrink:0;
-}
-.topbar-icon{color:var(--text3);}
-.topbar-icon svg{width:18px;height:18px;}
-.topbar-title{font-size:.9375rem;font-weight:700;color:var(--text);}
-.topbar-sep{width:1px;height:16px;background:var(--border2);}
-.topbar-desc{font-size:.8125rem;color:var(--text3);}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.25rem;}
-.tb-btn{
-  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-  border-radius:var(--radius-sm);background:none;border:none;
-  color:var(--text3);transition:all .15s;position:relative;
-}
-.tb-btn:hover{background:var(--surface3);color:var(--text2);}
-.tb-btn svg{width:18px;height:18px;}
-.tb-btn .tb-badge{
-  position:absolute;top:3px;right:3px;
-  background:var(--red);color:#fff;font-size:.5rem;font-weight:700;
-  min-width:13px;height:13px;border-radius:7px;
-  display:flex;align-items:center;justify-content:center;padding:0 2px;line-height:1;
-}
-.content-scroll{flex:1;overflow-y:auto;overflow-x:clip;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
-.content-scroll::-webkit-scrollbar{width:5px;}
-.content-scroll::-webkit-scrollbar-track{background:transparent;}
-.content-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-.page{padding:1.5rem 1.75rem;max-width:900px;width:100%;margin:0 auto;box-sizing:border-box;}
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:var(--white);}
+.topbar{display:none;} /* Handled by .nx-header below */
+
+.content-scroll{flex:1;overflow-y:auto;overflow-x:clip;background:var(--white);padding-bottom:var(--bottom-nav-h);}
+.page{padding:2.5rem;max-width:960px;width:100%;margin:0 auto;}
 
 /* --- Shared Components ---------------------------------------------------- */
 .btn{
-  display:inline-flex;align-items:center;gap:.375rem;
-  padding:.45rem .9rem;border-radius:var(--radius-sm);
-  font-size:.875rem;font-weight:600;border:none;
-  transition:all .15s;cursor:pointer;white-space:nowrap;
-  line-height:1.4;
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.625rem 1.25rem;border-radius:var(--radius);
+  font-size:.875rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;
+  border:2.5px solid var(--border);
+  transition:all 0.1s ease;cursor:pointer;white-space:nowrap;
+  line-height:1.2;background:var(--white);color:var(--text);
+  box-shadow:2px 2px 0px #000;
 }
-.btn-primary{background:var(--accent);color:#fff;}
-.btn-primary:hover{background:var(--accent-hover);}
-.btn-secondary{background:var(--surface3);color:var(--text2);border:1px solid var(--border2);}
-.btn-secondary:hover{background:var(--surface4);color:var(--text);}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
-.btn-ghost:hover{background:var(--surface3);color:var(--text);}
-.btn-danger{background:var(--red);color:#fff;}
-.btn-danger:hover{background:#dc2626;}
-.btn-sm{padding:.3rem .65rem;font-size:.8125rem;}
-.btn-xs{padding:.2rem .5rem;font-size:.75rem;}
-.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0px #000;}
+.btn:active{transform:translate(1px,1px);box-shadow:none;}
 
-.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:4px;font-size:.6875rem;font-weight:600;}
-.badge-green{background:var(--green-subtle);color:var(--green);}
-.badge-blue{background:var(--accent-subtle);color:var(--accent-text);}
-.badge-red{background:var(--red-subtle);color:var(--red);}
-.badge-amber{background:var(--amber-subtle);color:var(--amber);}
-.badge-gray{background:var(--surface4);color:var(--text2);}
+.btn-primary{background:var(--text);color:var(--white);}
+.btn-secondary{background:var(--surface2);}
+.btn-ghost{border-style:dashed;box-shadow:none;}
+.btn-ghost:hover{border-style:solid;box-shadow:var(--shadow-sm);}
+.btn-danger{border-color:#cc0000;color:#cc0000;}
+.btn-danger:hover{background:#cc0000;color:#fff;}
 
-.card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);}
-.card-hover{transition:border-color .15s;}
-.card-hover:hover{border-color:var(--border3);}
+.btn-sm{padding:.4rem .75rem;font-size:.75rem;border-width:2px;box-shadow:1.5px 1.5px 0 #000;}
+.btn-xs{padding:.25rem .5rem;font-size:.65rem;border-width:1.5px;box-shadow:1px 1px 0 #000;}
 
-.divider{height:1px;background:var(--border);margin:.75rem 0;}
-
-.empty-state{text-align:center;padding:3.5rem 1rem;color:var(--text3);}
-.empty-state svg{width:40px;height:40px;margin:0 auto .875rem;opacity:.12;display:block;}
-.empty-state h3{font-size:.9375rem;font-weight:600;color:var(--text2);margin-bottom:.375rem;}
-.empty-state p{font-size:.8125rem;margin-bottom:1.25rem;line-height:1.6;}
-
-.form-group{margin-bottom:.875rem;}
-.form-label{display:block;font-size:.8125rem;font-weight:600;color:var(--text2);margin-bottom:.375rem;}
-.form-input{
-  width:100%;background:var(--surface3);border:1px solid var(--border2);
-  border-radius:var(--radius-sm);padding:.5rem .75rem;
-  color:var(--text);font-size:.875rem;outline:none;
-  transition:border-color .15s;box-sizing:border-box;
+.card{
+  background:var(--white);border:2.5px solid var(--border);
+  border-radius:var(--sketch-radius);
+  padding:1.5rem;box-shadow:var(--shadow-sm);
+  transition:all 0.2s ease;
 }
-.form-input:focus{border-color:var(--accent);}
-.form-input::placeholder{color:var(--text3);}
-.form-textarea{resize:vertical;min-height:80px;line-height:1.55;}
-.form-select{
-  width:100%;background:var(--surface3);border:1px solid var(--border2);
-  border-radius:var(--radius-sm);padding:.5rem .75rem;
-  color:var(--text);font-size:.875rem;outline:none;box-sizing:border-box;
-  appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888880' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right .75rem center;padding-right:2rem;
+.card-hover:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow);}
+
+.badge{
+  display:inline-flex;align-items:center;gap:.25rem;
+  padding:.25rem .625rem;border:1.5px solid var(--border);
+  border-radius:20px;font-size:.6875rem;font-weight:900;
+  text-transform:uppercase;letter-spacing:0.05em;
 }
-.form-select:focus{border-color:var(--accent);}
+
+.form-group{margin-bottom:1.25rem;}
+.form-label{display:block;font-size:.75rem;font-weight:900;color:var(--text);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:0.05em;}
+.form-input, .form-textarea, .form-select{
+  width:100%;background:var(--white);border:2.5px solid var(--border);
+  border-radius:var(--radius);padding:.75rem 1rem;
+  color:var(--text);font-size:.9375rem;font-weight:600;outline:none;
+  box-sizing:border-box;
+}
+.form-input:focus{box-shadow:var(--shadow-sm);}
+.form-input::placeholder{color:var(--text4);font-weight:500;font-style:italic;}
+
+.divider{height:2.5px;background:var(--border);margin:1.5rem 0;}
+
+.empty-state{text-align:center;padding:4rem 2rem;border:2px dashed var(--border);border-radius:var(--radius-lg);margin:1.5rem 0;}
+.empty-state h3{font-family:'Outfit',sans-serif;font-size:1.25rem;font-weight:900;margin-bottom:.5rem;text-transform:uppercase;}
+.empty-state p{font-size:.9375rem;color:var(--text3);font-weight:500;}
 </style>
 
 <style>
@@ -522,190 +540,323 @@ img{display:block;}
 {% block extra_css %}{% endblock %}
 </head>
 <body>
+  <!-- ── Global Post FAB (Static Green +) ── -->
+  <a href="{% url 'community:post_create' %}" class="nx-global-fab" aria-label="Create Post">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" style="width:30px;height:30px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </a>
+  <style>
+    .nx-global-fab {
+      position: fixed !important;
+      bottom: 100px !important;
+      right: 25px !important;
+      width: 65px !important;
+      height: 65px !important;
+      background: #22c55e !important;
+      color: #ffffff !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 999999 !important;
+      box-shadow: 0 8px 32px rgba(34,197,94,0.4) !important;
+      border: 3px solid #ffffff !important;
+      text-decoration: none !important;
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    }
+    .nx-global-fab:hover { transform: scale(1.08) !important; }
+    .nx-global-fab:active { transform: scale(0.92) !important; }
+  </style>
+
+
+<!-- ── Global Floating Action Button ── -->
+<a href="{% url 'community:post_create' %}" class="feed-fab-global" aria-label="New post">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</a>
+
+<style>
+.feed-fab-global {
+  position: fixed !important;
+  bottom: 90px !important;
+  right: 20px !important;
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  background: #22c55e !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.5) !important;
+  z-index: 9999 !important;
+  text-decoration: none !important;
+}
+.feed-fab-global svg { width: 28px !important; height: 28px !important; }
+</style>
 
 <div class="shell">
-
-  <!-- -- Sidebar ----------------------------------------------------------- -->
+  <!-- -- Sidebar (Mobile Overlay) ------------------------------------------ -->
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo">NX</div>
-      <span class="sidebar-app-name">NEXA</span>
-      <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close menu">
+      <div class="sidebar-logo-text">Uni</div>
+      <div class="sidebar-logo-sub">Notes</div>
+      <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close menu" style="position:absolute;right:1rem;top:1.5rem;color:#fff;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-
-    <div class="sidebar-search-wrap">
-      <div class="sidebar-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="Search�" id="sidebar-search-input">
-      </div>
-    </div>
-
-    <div class="sidebar-scroll">
-      <div class="sidebar-section-label">
-        Main
-        <a href="{% url 'community:post_create' %}" title="New Post">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </a>
-      </div>
-
-      <a href="{% url 'community:community_home' %}" class="nav-item {% block nav_home %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Home
-      </a>
+    
+    <div class="sidebar-section-label">Main</div>
+    
+    <div class="sidebar-nav">
       <a href="{% url 'community:feed' %}" class="nav-item {% block nav_feed %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        Feed
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Feed
       </a>
-      <a href="{% url 'community:messages' %}" class="nav-item {% block nav_msgs %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Messages
-        {% if unread_msgs %}<span class="nav-badge">{{ unread_msgs }}</span>{% endif %}
+      <a href="{% url 'ai_chat' %}" class="nav-item {% block nav_tutor %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>AI Tutor
       </a>
-      <a href="{% url 'community:notifications' %}" class="nav-item {% block nav_notifs %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        Notifications
-        {% if unread_notif_count %}<span class="nav-badge">{{ unread_notif_count }}</span>{% endif %}
+      <a href="{% url 'community:workspace_list' %}" class="nav-item {% block nav_workspace %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Your Workspace
       </a>
-
-      <div class="nav-divider"></div>
-      <div class="sidebar-section-label">Spaces</div>
-
-      <a href="{% url 'community:schools' %}" class="nav-item {% block nav_schools %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Schools
+      <a href="{% url 'community:ai_tools' %}" class="nav-item {% block nav_tools %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Your Tools
       </a>
-      <a href="{% url 'community:custom_list' %}" class="nav-item {% block nav_communities %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Communities
-      </a>
-      <a href="{% url 'community:workspace_list' %}" class="nav-item {% block nav_workspaces %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        Workspaces
-      </a>
-      <a href="{% url 'community:live_campus' %}" class="nav-item {% block nav_live %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        Live Campus
-        <span class="nav-live-dot"></span>
-      </a>
-
-      <div class="nav-divider"></div>
-      <div class="sidebar-section-label">Tools</div>
-
-      <a href="{% url 'ai_community:hub' %}" class="nav-item {% block nav_ai %}{% endblock %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
-        AI Hub
-      </a>
-      <a href="{% url 'dashboard_index' %}" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Dashboard
+      <a href="{% url 'list_materials' %}" class="nav-item {% block nav_upload %}{% endblock %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
       </a>
     </div>
-
-    <div class="sidebar-footer">
+      <div class="sidebar-footer">
       <div class="sidebar-footer-av">
-        {% if user.community_profile.avatar %}
-          <img src="{{ user.community_profile.avatar.url }}" alt="">
-        {% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-        <div class="online-dot"></div>
+        {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
       </div>
       <div class="sidebar-footer-info">
-        <a href="{% url 'community:profile' username=user.username %}" style="text-decoration:none;">
-          <div class="sidebar-footer-name">{{ user.username }}</div>
-        </a>
-        <div class="sidebar-footer-status">Online</div>
+        <div class="sidebar-footer-name">{{ user.username }} Scholar</div>
+        <div class="sidebar-footer-status">CompSci · Year 3</div>
       </div>
-      <div class="sidebar-footer-actions">
-        <a href="{% url 'community:messages' %}" class="sidebar-footer-btn" title="Messages">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </a>
-        <a href="{% url 'logout' %}" class="sidebar-footer-btn" title="Log out">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </a>
+      <div class="sidebar-footer-settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </div>
     </div>
   </nav>
 
   <!-- -- Main Area ---------------------------------------------------------- -->
   <div class="main-area">
-
-    <!-- Desktop topbar -->
-    <div class="topbar">
-      <span class="topbar-icon">{% block topbar_icon %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>{% endblock %}</span>
-      <span class="topbar-title">{% block topbar_title %}Community{% endblock %}</span>
-      <div class="topbar-sep"></div>
-      <span class="topbar-desc">{% block topbar_desc %}{% endblock %}</span>
-      <div class="topbar-right">
-        <button class="tb-btn" onclick="openFriendDrawer()" title="Find Friends">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+    <!-- Header (Screenshot 2) -->
+    <header class="nx-header">
+      <div class="nx-header-left">
+        <button class="mob-menu-btn-nx" onclick="toggleSidebar()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-        <a href="{% url 'community:notifications' %}" class="tb-btn" title="Notifications">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          {% if unread_notif_count %}<span class="tb-badge">{{ unread_notif_count }}</span>{% endif %}
-        </a>
-        <a href="{% url 'dashboard_index' %}" class="tb-btn" title="Dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        </a>
+        <div class="nx-search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search notes, lectures, or tutors">
+        </div>
       </div>
-    </div>
-
-    <!-- Mobile top bar -->
-    <div class="mobile-bar">
-      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <span class="mob-title">{% block mobile_title %}Community{% endblock %}</span>
-      <div class="mob-actions">
-        <button class="mob-btn" onclick="openMobSearch()" aria-label="Search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div class="nx-header-right">
+        <button class="nx-head-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode">
+          <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         </button>
-        <a href="{% url 'community:notifications' %}" class="mob-btn" aria-label="Notifications" style="position:relative;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          {% if unread_notif_count %}<span class="mob-notif-dot"></span>{% endif %}
+        <a href="{% url 'community:notifications' %}" class="nx-head-btn nx-notif-btn" title="Notifications" style="position:relative;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          {% if unread_notif_count %}<span class="nx-notif-badge">{{ unread_notif_count }}</span>{% endif %}
         </a>
-        <a href="{% url 'community:profile' username=user.username %}" class="mob-avatar-btn" aria-label="Profile">
-          {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-        </a>
+        <div class="nx-header-library">
+          <span>Library</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
       </div>
+    </header>
+
+    <div class="content-scroll {% block content_scroll_class %}{% endblock %}" id="main-content">
+      {% block content %}{% endblock %}
     </div>
 
-    <div class="content-scroll">
-      {% block pre_content %}{% endblock %}
-      <div class="page">{% block content %}{% endblock %}</div>
-    </div>
   </div>
 </div>
+
+<style>
+/* ── Hand-Drawn Header ──────────────────────────────────────────── */
+.nx-header{
+  height:72px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 2rem;gap:1rem;z-index:400;
+}
+.nx-header-left{display:flex;align-items:center;gap:1.5rem;flex:1;}
+.nx-search-bar{
+  flex:1;max-width:400px;display:flex;align-items:center;gap:.75rem;
+  padding:.625rem 1rem;background:var(--white);border:1px solid var(--border);
+  border-radius:10px;
+}
+.nx-search-bar svg{width:18px;height:18px;color:var(--text3);stroke-width:2;}
+.nx-search-bar input{
+  background:none;border:none;outline:none;flex:1;
+  font-size:.875rem;font-family:var(--font-hand);font-weight:400;color:var(--text);
+}
+.nx-header-right{display:flex;align-items:center;gap:1.25rem;}
+.nx-head-btn{
+  background:none;border:none;color:var(--text2);
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border-radius:50%;transition:background .2s;position:relative;
+}
+.nx-head-btn:hover{background:var(--surface2);}
+.nx-head-btn svg{width:22px;height:22px;}
+.nx-notif-btn .nx-notif-badge{
+  position:absolute;top:10px;right:10px;width:6px;height:6px;
+  background:var(--red-flag);border-radius:50%;border:1.5px solid var(--surface);
+}
+.nx-header-library{
+  display:flex;align-items:center;gap:.5rem;
+  font-family:var(--font-hand);font-size:1.125rem;font-weight:400;
+  color:var(--text);cursor:pointer;padding-left:.5rem;border-left:1px solid var(--border);
+}
+.nx-header-library svg{width:20px;height:20px;}
+
+.mob-menu-btn-nx{
+  background:none;border:none;color:var(--text);
+  cursor:pointer;width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+}
+.mob-menu-btn-nx svg{width:24px;height:24px;}
+
+/* Sidebar Styles refined via base rules above */
+
+
+/* ── Content Area ───────────────────────────────────────────────── */
+.content-scroll{background:var(--bg);position:relative;}
+.content-scroll::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(var(--border) 0.5px, transparent 0.5px);
+  background-size:24px 24px;opacity:0.05;pointer-events:none;
+}
+
+</style>
 
 <div class="mob-overlay" id="mob-overlay" onclick="toggleSidebar()"></div>
 
 <!-- -- Bottom Navigation -------------------------------------------------- -->
-<nav class="bottom-nav" id="bottom-nav">
-  <a href="{% url 'community:community_home' %}" class="bn-item {% block bn_home %}{% endblock %}" aria-label="Home">
-    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-    <span class="bn-label">Home</span>
+<style>
+/* ── Hand-Drawn Bottom Nav ──────────────────────────────────────── */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--bg) !important;
+  border-top: 2.5px solid var(--border) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 100 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -2px 0 var(--border) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.375rem 0.5rem;
+  color: var(--text3);
+  border-radius: var(--radius);
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.15s;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
+.bn-unified-label { font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+.bn-unified-item.active { color: var(--text); }
+.bn-unified-item:hover { color: var(--text2); }
+.bn-unified-item:active svg { transform: scale(1.05); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
   </a>
-  <a href="{% url 'community:feed' %}" class="bn-item {% block bn_feed %}{% endblock %}" aria-label="Feed">
-    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="2" y="5" width="20" height="2" rx="1"/><rect x="2" y="11" width="20" height="2" rx="1"/><rect x="2" y="17" width="20" height="2" rx="1"/></svg>
-    <span class="bn-label">Feed</span>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
   </a>
-  <a href="{% url 'community:post_create' %}" class="bn-item bn-fab" aria-label="New Post">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
   </a>
-  <a href="{% url 'community:messages' %}" class="bn-item {% block bn_msgs %}{% endblock %}" aria-label="Messages" style="position:relative;">
-    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    {% if unread_msgs %}<span class="bn-badge">{{ unread_msgs }}</span>{% endif %}
-    <span class="bn-label">Messages</span>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
   </a>
-  <button class="bn-item {% block bn_more %}{% endblock %}" onclick="openMoreSheet()" aria-label="More">
-    <svg class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-    <svg class="icon-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="12" r="2"/></svg>
-    <span class="bn-label">More</span>
-  </button>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
 </nav>
+
+<script>
+  /* Synchronize mobile active state based on desktop sidebar active state */
+  document.addEventListener('DOMContentLoaded', () => {
+    const activeDesktopNav = document.querySelector('.sidebar-nav .nav-item.active');
+    if (activeDesktopNav) {
+      const activeHref = activeDesktopNav.getAttribute('href');
+      const mobileNav = document.querySelector(`.bottom-nav-unified .bn-unified-item[href="${activeHref}"]`);
+      if (mobileNav) {
+        mobileNav.classList.add('active');
+      }
+    }
+  });
+</script>
 
 <!-- -- More Bottom Sheet --------------------------------------------------- -->
 <div class="sheet-overlay" id="sheet-overlay" onclick="closeMoreSheet()"></div>
@@ -746,10 +897,7 @@ img{display:block;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
       <span class="sheet-item-label">Workspaces</span>
     </a>
-    <a href="{% url 'community:live_campus' %}" class="sheet-item {% block sheet_live %}{% endblock %}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      <span class="sheet-item-label">Live Campus</span>
-    </a>
+
     <a href="{% url 'ai_community:hub' %}" class="sheet-item {% block sheet_ai %}{% endblock %}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
       <span class="sheet-item-label">AI Hub</span>
@@ -773,6 +921,10 @@ img{display:block;}
     <a href="{% url 'library_home' %}" class="sheet-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       <span class="sheet-item-label">Library</span>
+    </a>
+    <a href="{% url 'list_materials' %}" class="sheet-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="sheet-item-label">Upload</span>
     </a>
   </div>
 </div>
@@ -961,6 +1113,42 @@ document.getElementById('sidebar-search-input').addEventListener('input', functi
     item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 });
+
+// -- Theme Toggle (Light / Dark) ------------------------------------------
+(function applyStoredTheme() {
+  const stored = localStorage.getItem('nx-theme') || 'light';
+  if (stored === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  _updateThemeIcons(stored);
+})();
+
+function toggleTheme() {
+  const current = localStorage.getItem('nx-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('nx-theme', next);
+  if (next === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  _updateThemeIcons(next);
+}
+
+function _updateThemeIcons(theme) {
+  const moon = document.getElementById('theme-icon-moon');
+  const sun  = document.getElementById('theme-icon-sun');
+  if (!moon || !sun) return;
+  if (theme === 'dark') {
+    moon.style.display = 'block'; // show moon in dark = "switch to light"
+    sun.style.display  = 'none';
+  } else {
+    sun.style.display  = 'block'; // show sun in light = "switch to dark"
+    moon.style.display = 'none';
+  }
+}
 
 // -- Active nav highlight --------------------------------------------------
 (function() {

@@ -1,0 +1,754 @@
+{% extends "community/base.html" %}
+{% load static %}
+
+{% block title %}{{ task.title }} — Worksheet{% endblock %}
+{% block nav_workspace %}active{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+<style>
+:root {
+  --wsh-bg: #ffffff;
+  --wsh-surface: #fafafa;
+  --wsh-border: #000000;
+  --wsh-acc: #000000;
+  --wsh-green: #000000;
+  --wsh-red: #000000;
+  --wsh-amber: #000000;
+}
+body { background: var(--wsh-bg); overflow: hidden; }
+.content-scroll:has(.wsh-layout-wrap) { overflow: hidden !important; }
+.page:has(.wsh-layout-wrap) { padding: 0 !important; max-width: 100% !important; margin: 0 !important; height: 100% !important; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.wsh-header {
+  height: 64px; flex-shrink: 0;
+  background: var(--white);
+  border-bottom: 2.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; z-index: 50;
+}
+.wsh-title-group { display: flex; align-items: center; gap: 0.875rem; min-width: 0; }
+.wsh-back { color: var(--text); text-decoration: none; padding: 0.375rem; border-radius: var(--radius-sm); border: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.wsh-back:hover { border-color: var(--border); background: var(--surface2); }
+.wsh-back svg { width: 20px; height: 20px; stroke-width: 2.5px; }
+.wsh-title { font-size: 1.125rem; font-weight: 900; color: var(--text); display: flex; align-items: center; gap: 0.75rem; overflow: hidden; text-transform: uppercase; letter-spacing: 0.05em; }
+.wsh-title-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wsh-status { font-size: 0.65rem; font-weight: 900; padding: 0.25rem 0.625rem; border: 2px solid var(--border); border-radius: 4px; text-transform: uppercase; letter-spacing: 0.08em; flex-shrink: 0; }
+.stat-todo { background: var(--white); color: var(--text3); }
+.stat-doing { background: var(--text); color: var(--white); }
+.stat-done { background: var(--white); border-style: dashed; }
+.wsh-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+.wsh-btn { 
+  display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.125rem; 
+  border-radius: var(--radius); font-weight: 900; font-size: 0.8125rem; cursor: pointer; 
+  border: 2.5px solid var(--border); transition: all 0.1s; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.wsh-btn-ghost { background: var(--white); color: var(--text); box-shadow: 2px 2px 0 #000; }
+.wsh-btn-ghost:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #000; }
+.wsh-btn-primary { background: var(--text); color: var(--white); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+.wsh-btn-primary:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #000; }
+
+.save-indicator { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); display: flex; align-items: center; gap: 0.375rem; }
+.save-indicator svg { width: 13px; height: 13px; }
+
+/* Layout */
+.wsh-layout-wrap { display: flex; flex-direction: column; height: 100%; }
+.wsh-layout { display: flex; flex: 1; overflow: hidden; }
+
+/* Editor Panel */
+.wsh-editor-panel { flex: 1; display: flex; flex-direction: column; background: var(--white); min-width: 0; }
+.editor-toolbar-wrapper { background: var(--white); border-bottom: 2.5px solid var(--border); padding: 0.5rem 1rem; flex-shrink: 0; }
+.ql-toolbar.ql-snow { border: none !important; padding: 0 !important; font-family: inherit !important; }
+.ql-container.ql-snow { border: none !important; font-family: inherit !important; font-size: 1.0625rem !important; }
+.ql-editor { padding: 3rem 4rem !important; color: var(--text); line-height: 1.8; min-height: 100%; }
+.ql-editor::before { color: var(--text4) !important; font-style: italic !important; }
+.ql-snow .ql-stroke { stroke: var(--text); stroke-width: 2px; }
+.ql-snow .ql-fill { fill: var(--text); }
+.ql-snow .ql-picker { color: var(--text); font-weight: 700; }
+.ql-snow .ql-picker-options { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); }
+.editor-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--white); }
+
+/* AI Panel */
+.wsh-ai-panel {
+  width: 440px; flex-shrink: 0;
+  background: var(--white);
+  border-left: 2.5px solid var(--border);
+  display: flex; flex-direction: column;
+}
+
+/* Tabs */
+.ai-tabs { display: flex; border-bottom: 2.5px solid var(--border); flex-shrink: 0; gap: 4px; padding: 4px 4px 0; }
+.ai-tab {
+  flex: 1; padding: 0.75rem; text-align: center;
+  font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text3); border: 2px solid transparent; border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.ai-tab svg { width: 14px; height: 14px; stroke-width: 2.5px; }
+.ai-tab:hover { color: var(--text); background: var(--surface2); }
+.ai-tab.active { color: var(--text); border-color: var(--border); background: var(--white); transform: translateY(2px); }
+
+/* Briefing Pane */
+.briefing-pane { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.125rem; scrollbar-width: thin; scrollbar-color: var(--wsh-border) transparent; }
+
+/* Skeleton */
+.skel { background: rgba(255,255,255,0.03); border-radius: 4px; animation: pulse 1.5s infinite ease-in-out; }
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.8; } }
+
+/* ── Worksheet High-Fidelity Extras ── */
+.quality-meter { margin-top: auto; padding-top: 2rem; }
+.qm-label { font-size: 0.65rem; font-weight: 900; color: var(--ws-text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; display: flex; justify-content: space-between; }
+.qm-bar-wrap { height: 6px; background: rgba(16,185,129,0.05); border-radius: 10px; overflow: hidden; position: relative; border: 1px solid rgba(16,185,129,0.1); }
+.qm-bar-fill { height: 100%; width: 40%; background: var(--ws-acc); box-shadow: 0 0 10px var(--ws-acc); transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
+
+.apply-step-btn {
+  margin-top: 10px; padding: 6px 12px; background: rgba(16,185,129,0.1); 
+  border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; color: var(--ws-acc);
+  font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s;
+}
+.apply-step-btn:hover { background: var(--ws-acc); color: #fff; transform: translateY(-1px); }
+
+/* Briefing Pane */
+.briefing-pane { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; scrollbar-width: none; background-image: radial-gradient(var(--border) 0.5px, transparent 0.5px); background-size: 24px 24px; }
+
+/* Briefing Cards */
+.briefing-summary { background: var(--white); border: 2.5px solid var(--border); border-radius: var(--sketch-radius); padding: 1.25rem; font-size: 0.9375rem; line-height: 1.6; color: var(--text); box-shadow: var(--shadow-sm); }
+.section-label { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text); opacity: 0.6; }
+.step-card { 
+  display: flex; gap: 1rem; align-items: flex-start; background: var(--white); 
+  border: 2.5px solid var(--border); border-radius: var(--sketch-radius); 
+  padding: 1.25rem; transition: transform 0.2s; box-shadow: var(--shadow-sm);
+}
+.step-card:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow); }
+.step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--text); color: var(--white); font-size: 0.8125rem; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid var(--border); }
+.step-body { flex: 1; min-width: 0; }
+.step-title { font-weight: 900; color: var(--text); font-size: 1rem; margin-bottom: 0.375rem; text-transform: uppercase; letter-spacing: 0.02em; }
+.step-detail { font-size: 0.875rem; color: var(--text2); line-height: 1.55; }
+
+.tips-box { background: var(--white); border: 2.5px dashed var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+.tips-box-label { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Chat Pane */
+.chat-pane { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; scrollbar-width: none; background: #fafafa; }
+.ai-msg { background: var(--white); border: 2.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; font-size: 0.9375rem; line-height: 1.6; color: var(--text); box-shadow: 4px 4px 0 rgba(0,0,0,0.05); }
+.ai-msg.user { background: var(--text); border-color: var(--border); align-self: flex-end; color: var(--white); max-width: 88%; border-radius: 14px 14px 2px 14px; box-shadow: 4px 4px 0 rgba(0,0,0,0.15); }
+
+.ai-input-wrap { padding: 1.25rem; border-top: 2.5px solid var(--border); display: flex; gap: 0.75rem; flex-shrink: 0; background: var(--white); }
+.ai-input { 
+  flex: 1; background: var(--white); border: 2.5px solid var(--border); 
+  border-radius: var(--radius); padding: 0.75rem 1.125rem; color: var(--text); 
+  font-family: inherit; font-size: 0.9375rem; font-weight: 600; resize: none; outline: none; line-height: 1.5; 
+}
+.ai-send-btn { background: var(--text); color: var(--white); border: 2.5px solid var(--border); width: 48px; height: 48px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s; flex-shrink: 0; align-self: flex-end; box-shadow: 2px 2px 0 #888; }
+.ai-send-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #000; }
+
+@media (max-width: 900px) {
+  .wsh-ai-panel { position: fixed; right: 0; bottom: 0; top: 60px; transform: translateX(100%); transition: transform 0.3s; z-index: 200; box-shadow: -10px 0 40px rgba(0,0,0,0.6); width: 100vw; }
+  .wsh-ai-panel.open { transform: translateX(0); }
+  #btnAiToggle { display: flex !important; }
+  .ql-editor { padding: 1.25rem !important; }
+}
+
+/* ── Deep Search ─────────────────────────────────────────── */
+.search-pane { flex: 1; overflow-y: auto; display: flex; flex-direction: column; scrollbar-width: none; background: #fafafa; }
+.search-input-wrap {
+  padding: 1.5rem; border-bottom: 2.5px solid var(--border);
+  display: flex; gap: 0.75rem; flex-shrink: 0; background: var(--white);
+}
+.search-input {
+  flex: 1; background: var(--white); border: 2.5px solid var(--border);
+  border-radius: var(--radius); padding: 0.75rem 1.125rem; color: var(--text);
+  font-family: inherit; font-size: 0.9375rem; font-weight: 600; outline: none;
+}
+.search-go-btn {
+  background: var(--text); color: var(--white); border: 2.5px solid var(--border);
+  border-radius: var(--radius); padding: 0 1.25rem; font-weight: 900; font-size: 0.8125rem;
+  cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+  transition: all 0.1s; white-space: nowrap; flex-shrink: 0;
+  text-transform: uppercase; letter-spacing: 0.04em; box-shadow: 2px 2px 0 #888;
+}
+.search-go-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #000; }
+
+.search-results-area { flex: 1; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; overflow-y: auto; }
+.search-empty { text-align: center; padding: 4rem 2rem; color: var(--text3); border: 2px dashed var(--border); border-radius: var(--radius-lg); }
+
+.search-summary-card {
+  background: var(--white);
+  border: 2.5px solid var(--border);
+  border-radius: var(--sketch-radius); padding: 1.25rem;
+  font-size: 0.9375rem; line-height: 1.6; color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.search-summary-card strong { color: var(--text); display: block; margin-bottom: 0.625rem; font-size: 0.8125rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.07em; }
+
+.findings-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.findings-list li {
+  background: var(--white); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 0.875rem 1rem 0.875rem 2.5rem;
+  font-size: 0.875rem; line-height: 1.55; color: var(--text);
+  position: relative; box-shadow: 2px 2px 0 rgba(0,0,0,0.05);
+}
+.findings-list li::before { content: '›'; position: absolute; left: 1rem; top: 0.75rem; color: var(--text); font-weight: 900; font-size: 1.25rem; }
+
+.source-card {
+  background: var(--white); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 1rem;
+  text-decoration: none; display: flex; flex-direction: column; gap: 0.375rem;
+  transition: all 0.1s; box-shadow: 2px 2px 0 rgba(0,0,0,0.05);
+}
+.source-card:hover { transform: translateX(4px); border-color: var(--border); box-shadow: var(--shadow-sm); }
+.source-title { font-size: 0.9375rem; font-weight: 800; color: var(--text); text-decoration: underline; text-decoration-thickness: 2px; }
+.source-snippet { font-size: 0.8125rem; color: var(--text2); line-height: 1.5; }
+
+.followup-chip {
+  background: var(--white); border: 2px solid var(--border);
+  border-radius: 20px; padding: 0.5rem 1rem;
+  font-size: 0.8125rem; font-weight: 800; color: var(--text);
+  cursor: pointer; transition: all 0.15s; box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+}
+.followup-chip:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 #000; }
+
+.summarize-btn {
+  background: var(--text); color: var(--white); border: 2.5px solid var(--border); 
+  border-radius: var(--radius); padding: 0.875rem 1.25rem; font-weight: 900; font-size: 0.875rem;
+  cursor: pointer; width: 100%; transition: all 0.1s;
+  display: flex; align-items: center; justify-content: center; gap: 0.625rem;
+  box-shadow: var(--shadow-sm); text-transform: uppercase; letter-spacing: 0.05em;
+}
+.summarize-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow); }
+
+.spin-ring { width: 44px; height: 44px; border: 4px solid #eee; border-top-color: var(--text); border-radius: 50%; animation: spinRing 0.9s linear infinite; }
+@keyframes spinRing { to { transform: rotate(360deg); } }
+.search-spinner p { font-size: 0.8375rem; color: #5a5a78; text-align: center; line-height: 1.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wsh-layout-wrap">
+  <!-- Header -->
+  <div class="wsh-header">
+    <div class="wsh-title-group">
+      <a href="{% url 'community:workspace_detail' ws_id=ws.id %}" class="wsh-back" title="Back to Project">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
+      <div class="wsh-title">
+        <span class="wsh-title-text">{{ task.title }}</span>
+        <span class="wsh-status {% if task.status == 'done' %}stat-done{% elif task.status == 'doing' %}stat-doing{% else %}stat-todo{% endif %}">{{ task.get_status_display }}</span>
+      </div>
+    </div>
+    <div class="wsh-actions">
+      <div class="save-indicator" id="saveIndicator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Saved
+      </div>
+      <button class="wsh-btn wsh-btn-ghost" onclick="saveWorksheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save
+      </button>
+      <button class="wsh-btn wsh-btn-primary" id="submitBtn" onclick="submitWorksheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Submit for Review
+      </button>
+      <button class="wsh-btn wsh-btn-ghost" id="btnAiToggle" style="display:none;" onclick="document.getElementById('aiPanel').classList.toggle('open')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2.5"><path d="M12 2l3 6 6 3-6 3-3 6-3-6-6-3 6-3z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="wsh-layout">
+    <!-- Editor -->
+    <div class="wsh-editor-panel">
+      <div class="editor-toolbar-wrapper">
+        <div id="toolbar">
+          <span class="ql-formats">
+            <select class="ql-header">
+              <option value="1">Heading 1</option>
+              <option value="2">Heading 2</option>
+              <option selected>Normal</option>
+            </select>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-link"></button>
+            <button class="ql-blockquote"></button>
+            <button class="ql-code-block"></button>
+          </span>
+        </div>
+      </div>
+      <div class="editor-container">
+        <div id="editor"></div>
+      </div>
+    </div>
+
+    <!-- AI Panel -->
+    <div class="wsh-ai-panel" id="aiPanel">
+      <!-- Tabs -->
+      <div class="ai-tabs">
+        <div class="ai-tab active" id="tab-briefing" onclick="switchTab('briefing')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 6 3-6 3-3 6-3-6-6-3 6-3z"/></svg>
+          Briefing
+        </div>
+        <div class="ai-tab" id="tab-search" onclick="switchTab('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Deep Search
+        </div>
+        <div class="ai-tab" id="tab-chat" onclick="switchTab('chat')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Ask AI
+        </div>
+      </div>
+
+      <!-- Briefing Pane -->
+      <div class="briefing-pane" id="briefingPane">
+        <!-- Skeleton loader shown while fetching -->
+        <div id="briefingSkeleton">
+          <div class="skel" style="height:24px; width:45%; margin-bottom:1rem;"></div>
+          <div class="skel" style="height:72px; margin-bottom:1.125rem;"></div>
+          <div class="skel" style="height:16px; width:30%; margin-bottom:0.875rem;"></div>
+          <div class="skel" style="height:68px; margin-bottom:0.75rem;"></div>
+          <div class="skel" style="height:68px; margin-bottom:0.75rem;"></div>
+          <div class="skel" style="height:68px; margin-bottom:0.75rem;"></div>
+          <div class="skel" style="height:68px; margin-bottom:0.75rem;"></div>
+        </div>
+        <!-- Rendered briefing injected here -->
+        <div id="briefingContent" style="display:none; display:flex; flex-direction:column; gap:1.125rem;"></div>
+      </div>
+
+      <!-- Deep Search Pane -->
+      <div class="search-pane" id="searchPane" style="display:none;">
+        <div class="search-input-wrap">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search articles, papers, news, any topic…" />
+          <button class="search-go-btn" id="searchGoBtn" onclick="doDeepSearch()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+          </button>
+        </div>
+        <div class="search-results-area" id="searchResultsArea">
+          <div class="search-empty" id="searchEmpty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M11 8v6M8 11h6"/></svg>
+            <p>Search the entire web — articles, academic papers, news, research, videos, and more. Powered by live AI browsing.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Pane (hidden by default) -->
+      <div class="chat-pane" id="chatPane" style="display:none;">
+        <div class="ai-msg">
+          <strong style="color:#fff;">Need help?</strong> I have full context of your task and workspace. Ask me anything — what to research, how to structure your work, or to review a draft.
+        </div>
+      </div>
+      <div class="ai-input-wrap" id="chatInputWrap" style="display:none;">
+        <textarea id="aiInput" class="ai-input" rows="2" placeholder="Ask Nexa AI..."></textarea>
+        <button class="ai-send-btn" onclick="sendAiMsg()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script>
+const WS_ID   = "{{ ws.id }}";
+const TASK_ID = "{{ task.id }}";
+const CSRF    = "{{ csrf_token }}";
+const TASK_TITLE = "{{ task.title|escapejs }}";
+
+// ── Quill setup ──────────────────────────────────────────────────────────────
+const quill = new Quill('#editor', {
+  theme: 'snow',
+  placeholder: 'Start executing your task here...',
+  modules: { toolbar: '#toolbar' }
+});
+
+const existingHtml = `{{ worksheet.content|safe|escapejs }}`;
+if (existingHtml.trim()) {
+  quill.clipboard.dangerouslyPasteHTML(0, existingHtml);
+}
+
+// ── Auto-save ────────────────────────────────────────────────────────────────
+let saveTimer;
+const ind = document.getElementById('saveIndicator');
+
+quill.on('text-change', () => {
+  ind.innerHTML = 'Unsaved…';
+  ind.style.color = '#f59e0b';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveWorksheet, 2000);
+});
+
+async function saveWorksheet() {
+  ind.innerHTML = 'Saving…';
+  try {
+    const res = await fetch(`/community/workspaces/${WS_ID}/tasks/${TASK_ID}/worksheet/save/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({ content: quill.root.innerHTML })
+    });
+    if (res.ok) {
+      ind.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg> Saved`;
+      ind.style.color = '#10b981';
+    } else { ind.innerHTML = 'Error saving'; ind.style.color = '#ef4444'; }
+  } catch { ind.innerHTML = 'Offline'; ind.style.color = '#ef4444'; }
+}
+
+// ── Submit for AI Review ──────────────────────────────────────────────────────
+async function submitWorksheet() {
+  await saveWorksheet();
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Submitting…'; btn.disabled = true;
+  try {
+    const res  = await fetch(`/community/workspaces/${WS_ID}/tasks/${TASK_ID}/submit/`, {
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.review_status === 'approved'
+        ? '✅ Approved! Your worksheet passed AI validation.'
+        : '🔄 Submitted! AI has requested revisions — check the workspace chat.');
+      window.location.href = `/community/workspaces/${WS_ID}/`;
+    } else {
+      alert(data.error || 'Failed to submit.');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="5 3 19 12 5 21 5 3"/></svg> Submit for Review`;
+      btn.disabled = false;
+    }
+  } catch {
+    alert('Network error.');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="5 3 19 12 5 21 5 3"/></svg> Submit for Review`;
+    btn.disabled = false;
+  }
+}
+
+// ── Tab Switcher ──────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('briefingPane').style.display  = tab === 'briefing' ? 'flex' : 'none';
+  document.getElementById('searchPane').style.display    = tab === 'search'   ? 'flex' : 'none';
+  document.getElementById('chatPane').style.display      = tab === 'chat'     ? 'flex' : 'none';
+  document.getElementById('chatInputWrap').style.display = tab === 'chat'     ? 'flex' : 'none';
+  if (tab === 'search') setTimeout(() => document.getElementById('searchInput').focus(), 50);
+}
+
+// ── AI Briefing ───────────────────────────────────────────────────────────────
+function difficultyColor(d) {
+  if (!d) return '#8a8a93';
+  const l = d.toLowerCase();
+  return l === 'easy' ? '#10b981' : l === 'hard' ? '#ef4444' : '#f59e0b';
+}
+
+function applyBriefingStep(htmlContent) {
+  const range = quill.getSelection();
+  const index = range ? range.index : quill.getLength();
+  quill.clipboard.dangerouslyPasteHTML(index, '<br>' + htmlContent + '<br>');
+  showToast('AI Draft inserted into editor');
+  updateQualityMeter(5);
+}
+
+function updateQualityMeter(increment) {
+  const bar = document.getElementById('qmBar');
+  const val = document.getElementById('qmValue');
+  if (!bar || !val) return;
+  let current = parseInt(val.textContent) || 0;
+  let next = Math.min(current + increment, 100);
+  val.textContent = next + '%';
+  bar.style.width = next + '%';
+  if (next > 80) bar.style.background = '#8b5cf6';
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:12px 24px;border-radius:30px;font-size:0.875rem;font-weight:700;z-index:10000;box-shadow:0 10px 30px rgba(0,0,0,0.5);animation:toastTrigger 0.3s ease both;";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = "toastOut 0.3s ease both";
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
+}
+
+// Add toast animations to style if not already present
+if (!document.getElementById('nexa-toast-styles')) {
+  const s = document.createElement('style');
+  s.id = 'nexa-toast-styles';
+  s.textContent = `
+    @keyframes toastTrigger { from { opacity:0; bottom:0; } to { opacity:1; bottom:24px; } }
+    @keyframes toastOut { from { opacity:1; bottom:24px; } to { opacity:0; bottom:0; } }
+  `;
+  document.head.appendChild(s);
+}
+
+async function loadBriefing() {
+  try {
+    const res  = await fetch(`/community/workspaces/${WS_ID}/tasks/${TASK_ID}/navigator/`);
+    const data = await res.json();
+    renderBriefing(data.navigator || {});
+  } catch {
+    renderBriefing(null);
+  }
+}
+
+function renderBriefing(nav) {
+  document.getElementById('briefingSkeleton').style.display = 'none';
+  const content = document.getElementById('briefingContent');
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+  content.style.gap = '1.125rem';
+
+  if (!nav || !Object.keys(nav).length) {
+    content.innerHTML = `<div class="ai-msg" style="color:#ef4444;border-color:rgba(239,68,68,0.2);">
+      Could not load task briefing. Switch to <strong>Ask AI</strong> tab for help.
+    </div>`;
+    return;
+  }
+
+  let html = '';
+
+  // Meta chips
+  if (nav.estimated_time || nav.difficulty) {
+    html += `<div class="briefing-meta">`;
+    if (nav.estimated_time) html += `<div class="b-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      ${nav.estimated_time}
+    </div>`;
+    if (nav.difficulty) {
+      const col = difficultyColor(nav.difficulty);
+      html += `<div class="b-chip" style="color:${col};border-color:${col}44;background:${col}11;">${nav.difficulty}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Summary
+  if (nav.summary) {
+    html += `<div class="briefing-summary">${nav.summary}</div>`;
+  }
+
+  // Steps
+  if (nav.steps && nav.steps.length) {
+    html += `<div class="section-label">Step-by-Step Plan</div>`;
+    nav.steps.forEach(s => {
+      const stepText = `<h3>${s.title}</h3><p>${s.detail}</p>`;
+      html += `<div class="step-card">
+        <div class="step-num">${s.step}</div>
+        <div class="step-body">
+          <div class="step-title">${s.title}</div>
+          <div class="step-detail">${s.detail}</div>
+          <button class="apply-step-btn" onclick="applyBriefingStep(\`${stepText.replace(/`/g, '\\`')}\`)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Draft with AI
+          </button>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Tips
+  if (nav.tips && nav.tips.length) {
+    html += `<div class="tips-box">
+      <div class="tips-box-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22c1.1 0 2-.9 2-2H10c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        Pro Tips
+      </div>
+      <ul class="tips-list">${nav.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  // Why it matters
+  if (nav.why_it_matters) {
+    html += `<div class="why-matters">💡 ${nav.why_it_matters}</div>`;
+  }
+
+  content.innerHTML = html;
+}
+
+// Kick off briefing load immediately
+loadBriefing();
+
+// ── Deep Search ───────────────────────────────────────────────────────────────
+let lastSearchResult = null;
+
+async function doDeepSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
+  const area = document.getElementById('searchResultsArea');
+  const btn  = document.getElementById('searchGoBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Searching…`;
+  area.innerHTML = `<div class="search-spinner">
+    <div class="spin-ring"></div>
+    <p>Nexa is browsing the web for <em>${query}</em>…<br>Scanning articles, papers & live data.</p>
+  </div>`;
+
+  try {
+    const res  = await fetch(`/community/workspaces/${WS_ID}/ai/deep-search/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    if (res.ok && data.result) {
+      lastSearchResult = data.result;
+      renderSearchResults(data.result, query);
+    } else {
+      area.innerHTML = `<div class="search-empty"><p style="color:#ef4444;">Search failed. Please try again.</p></div>`;
+    }
+  } catch {
+    area.innerHTML = `<div class="search-empty"><p style="color:#ef4444;">Connection error. Please try again.</p></div>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search`;
+}
+
+function renderSearchResults(r, query) {
+  const area = document.getElementById('searchResultsArea');
+  let html = '';
+
+  // Header label
+  html += `<div style="font-size:0.7rem;color:#4b4b5a;font-weight:700;">Results for &ldquo;${query}&rdquo;</div>`;
+
+  // Executive summary
+  if (r.summary) {
+    html += `<div class="search-summary-card">
+      <strong>Executive Summary</strong>
+      ${r.summary}
+    </div>`;
+  }
+
+  // Key findings
+  if (r.key_findings && r.key_findings.length) {
+    html += `<div class="sources-section-label">Key Findings</div>
+    <ul class="findings-list">${r.key_findings.map(f => `<li>${f}</li>`).join('')}</ul>`;
+  }
+
+  // Sources
+  if (r.sources && r.sources.length) {
+    html += `<div class="sources-section-label">Sources (${r.sources.length})</div>`;
+    r.sources.forEach(s => {
+      const href = s.url && s.url.startsWith('http') ? s.url : '#';
+      html += `<a href="${href}" target="_blank" rel="noopener" class="source-card">
+        <div class="source-title">${s.title || 'View Source'}</div>
+        <div class="source-url">${s.url || ''}</div>
+        ${s.snippet ? `<div class="source-snippet">${s.snippet}</div>` : ''}
+      </a>`;
+    });
+  }
+
+  // Summarize everything button
+  html += `<button class="summarize-btn" id="summarizeBtn" onclick="summarizeResults()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 6 3-6 3-3 6-3-6-6-3 6-3z"/></svg>
+    Summarize Everything for Me
+  </button>`;
+
+  // Follow-up questions
+  if (r.follow_up_questions && r.follow_up_questions.length) {
+    html += `<div class="sources-section-label">Explore Further</div>
+    <div class="followup-chips">${r.follow_up_questions.map(q => `<div class="followup-chip" onclick="followUp('${q.replace(/'/g, "\\'")}")">${q}</div>`).join('')}</div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+async function summarizeResults() {
+  if (!lastSearchResult) return;
+  const btn = document.getElementById('summarizeBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 2l3 6 6 3-6 3-3 6-3-6-6-3 6-3z"/></svg> Generating summary…`;
+
+  const allText = [
+    lastSearchResult.summary || '',
+    (lastSearchResult.key_findings || []).join(' '),
+    (lastSearchResult.sources || []).map(s => s.snippet || '').join(' ')
+  ].join('\n\n');
+
+  const prompt = `Based on this research, write a clear, well-structured summary I can use for my task titled "${TASK_TITLE}":\n\n${allText}`;
+
+  try {
+    const res  = await fetch(`/community/workspaces/${WS_ID}/ai/chat/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({ message: prompt, source: 'manager' })
+    });
+    const data = await res.json();
+    if (res.ok && data.reply) {
+      const area = document.getElementById('searchResultsArea');
+      area.insertAdjacentHTML('afterbegin', `<div class="search-summary-card" style="border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.06);margin-bottom:0.25rem;">
+        <strong style="color:#10b981;">✦ AI Summary</strong>
+        ${data.reply.replace(/\n/g,'<br>')}
+      </div>`);
+      area.scrollTop = 0;
+    }
+  } catch {
+    alert('Could not generate summary.');
+  }
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 2l3 6 6 3-6 3-3 6-3-6-6-3 6-3z"/></svg> Summarize Everything for Me`;
+}
+
+function followUp(q) {
+  document.getElementById('searchInput').value = q;
+  doDeepSearch();
+}
+
+// Allow Enter key in search input
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doDeepSearch();
+});
+
+// ── AI Chat ───────────────────────────────────────────────────────────────────
+async function sendAiMsg() {
+  const inp = document.getElementById('aiInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+
+  const box = document.getElementById('chatPane');
+  box.insertAdjacentHTML('beforeend', `<div class="ai-msg user">${txt}</div>`);
+  inp.value = '';
+  box.scrollTop = box.scrollHeight;
+
+  const loader = document.createElement('div');
+  loader.className = 'ai-msg';
+  loader.innerHTML = '<em style="color:#4b4b5a;">Nexa is thinking…</em>';
+  box.appendChild(loader);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const res  = await fetch(`/community/workspaces/${WS_ID}/ai/chat/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({ message: `${txt}\n[Context: Task — ${TASK_TITLE}]`, source: 'manager' })
+    });
+    const data = await res.json();
+    loader.remove();
+    if (res.ok && data.reply) {
+      box.insertAdjacentHTML('beforeend', `<div class="ai-msg"><strong style="color:#fff;">Nexa:</strong><br>${data.reply.replace(/\n/g,'<br>')}</div>`);
+    } else {
+      box.insertAdjacentHTML('beforeend', `<div class="ai-msg" style="color:#ef4444;">Could not get a response. Try again.</div>`);
+    }
+    box.scrollTop = box.scrollHeight;
+  } catch {
+    loader.remove();
+    box.insertAdjacentHTML('beforeend', `<div class="ai-msg" style="color:#ef4444;">Connection error.</div>`);
+  }
+}
+
+document.getElementById('aiInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiMsg(); }
+});
+</script>
+{% endblock %}

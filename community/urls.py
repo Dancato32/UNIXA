@@ -91,6 +91,7 @@ urlpatterns = [
 
     # Group Workspaces
     path('workspaces/', views.workspace_list, name='workspace_list'),
+    path('tools/', views.ai_tools, name='ai_tools'),
     # Nexa workspace (MyNexa)
     path('mynexa/', views.nexa_workspace, name='nexa_workspace'),
     path('mynexa/drafts/', views.mynexa_drafts, name='mynexa_drafts'),
@@ -123,6 +124,8 @@ urlpatterns = [
     path('workspaces/<uuid:ws_id>/ai/meeting/', views.workspace_ai_meeting, name='workspace_ai_meeting'),
     path('workspaces/<uuid:ws_id>/ai/autocomplete/', views.workspace_ai_autocomplete, name='workspace_ai_autocomplete'),
     path('workspaces/<uuid:ws_id>/ai/proactive/', views.workspace_ai_proactive, name='workspace_ai_proactive'),
+    path('workspaces/<uuid:ws_id>/tasks/<uuid:task_id>/worksheet/', views.worksheet_view, name='worksheet_view'),
+    path('workspaces/<uuid:ws_id>/tasks/<uuid:task_id>/worksheet/save/', views.worksheet_save, name='worksheet_save'),
     path('workspaces/<uuid:ws_id>/tasks/<uuid:task_id>/submit/', views.workspace_task_submit, name='workspace_task_submit'),
     path('workspaces/<uuid:ws_id>/tasks/<uuid:task_id>/review/', views.workspace_task_review, name='workspace_task_review'),
     path('workspaces/<uuid:ws_id>/tasks/<uuid:task_id>/start/', views.workspace_task_start, name='workspace_task_start'),
@@ -176,8 +179,6 @@ urlpatterns = [
     path('api/posts/recent/', views.api_posts_recent, name='api_posts_recent'),
     path('api/communities/list/', views.api_communities_list, name='api_communities_list'),
 
-    # ── Live Campus ──────────────────────────────────────────────────────────
-    path('live/', views.live_campus, name='live_campus'),
 
     # Skill Marketplace
     path('skills/', views.skill_marketplace, name='skill_marketplace'),
@@ -219,4 +220,8 @@ urlpatterns = [
     path('help/create/', views.help_beacon_create, name='help_beacon_create'),
     path('help/<uuid:beacon_id>/claim/', views.help_beacon_claim, name='help_beacon_claim'),
     path('help/<uuid:beacon_id>/resolve/', views.help_beacon_resolve, name='help_beacon_resolve'),
+    # Stories
+    path('stories/create/', views.story_create, name='story_create'),
+    path('stories/<uuid:story_id>/view/', views.story_view, name='story_view'),
+    path('stories/<uuid:story_id>/like/', views.story_like, name='story_like'),
 ]

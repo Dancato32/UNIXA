@@ -4,367 +4,534 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{{ material.title }} — NEXA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>{{ material.title }} — NEXA Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Gochi+Hand&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --bg:#f7f7f5;--sb:#fff;--bdr:#e8e8e4;
-  --t1:#1a1a1a;--t2:#555;--t3:#999;--hov:#f0f0ec;
-  --acc:#f97316;--acc2:#ea6c00;
-  --panel:#fff;--panel-w:340px;
+:root {
+  --sketch-bg: #fffefe;
+  --sketch-border: #000;
+  --sketch-shadow: #000;
+  --accent-blue: #3b82f6;
+  --accent-purple: #a855f7;
+  --accent-red: #ef4444;
+  --accent-amber: #f59e0b;
+  --paper-line: #e5e7eb;
 }
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;}
-a{color:inherit;text-decoration:none;}
-button{font-family:inherit;cursor:pointer;}
 
-/* ── Shell ── */
-.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body {
+  font-family: 'Schoolbell', cursive;
+  background: var(--sketch-bg);
+  color: #000;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-/* ── Topbar ── */
-.topbar{height:48px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1rem;gap:.75rem;flex-shrink:0;z-index:50;}
-.back-btn{display:flex;align-items:center;gap:.375rem;color:var(--t2);font-size:.8125rem;padding:.375rem .625rem;border:1px solid var(--bdr);border-radius:6px;white-space:nowrap;flex-shrink:0;transition:all .15s;background:none;}
-.back-btn:hover{color:var(--t1);border-color:#ccc;}
-.back-btn svg{width:13px;height:13px;}
-.topbar-title{font-size:.875rem;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
-.topbar-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0;margin-left:auto;}
-.page-counter{font-size:.8125rem;color:var(--t3);font-weight:500;white-space:nowrap;cursor:pointer;padding:.25rem .375rem;border-radius:5px;transition:background .15s;}
-.page-counter:hover{background:var(--hov);color:var(--t1);}
-.page-jump-wrap{display:flex;align-items:center;gap:.25rem;}
-.page-jump-input{width:44px;padding:.25rem .375rem;border:1.5px solid var(--acc);border-radius:6px;font-size:.8125rem;font-family:inherit;font-weight:600;text-align:center;outline:none;color:var(--t1);background:#fff;}
-.page-jump-input::-webkit-inner-spin-button,.page-jump-input::-webkit-outer-spin-button{-webkit-appearance:none;}
-.page-jump-of{font-size:.8125rem;color:var(--t3);font-weight:500;white-space:nowrap;}
-.nav-btn{width:32px;height:32px;border:1px solid var(--bdr);border-radius:6px;background:var(--sb);display:flex;align-items:center;justify-content:center;color:var(--t2);transition:all .15s;}
-.nav-btn:hover:not(:disabled){background:var(--hov);color:var(--t1);}
-.nav-btn:disabled{opacity:.3;cursor:default;}
-.nav-btn svg{width:14px;height:14px;}
-.panel-toggle{display:flex;align-items:center;gap:.375rem;padding:.375rem .75rem;border:1px solid var(--bdr);border-radius:6px;background:var(--sb);color:var(--t2);font-size:.8125rem;font-weight:600;transition:all .15s;}
-.panel-toggle:hover{background:var(--hov);color:var(--t1);}
-.panel-toggle.active{background:#fff3ed;border-color:#fed7aa;color:var(--acc);}
-.panel-toggle svg{width:14px;height:14px;}
+/* --- Topbar --- */
+.topbar {
+  height: 72px; background: #fff; border-bottom: 3.5px solid var(--sketch-border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; flex-shrink: 0; z-index: 100;
+}
+.topbar-left, .topbar-right { display: flex; align-items: center; gap: 1.25rem; flex: 1; }
+.topbar-center { flex: 1.5; display: flex; justify-content: center; }
 
-/* ── Body ── */
-.body{display:flex;flex:1;overflow:hidden;min-height:0;}
+.sketchy-search {
+  position: relative; width: 100%; max-width: 440px;
+}
+.sketchy-search input {
+  width: 100%; height: 48px; border: 3.5px solid var(--sketch-border); border-radius: 12px;
+  padding: 0 1rem 0 3rem; font-family: inherit; font-size: 1.15rem;
+  box-shadow: 4px 4px 0 var(--sketch-shadow); background: #fff;
+}
+.sketchy-search svg {
+  position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px; color: #000; stroke-width: 3;
+}
 
-/* ── Viewer ── */
-.viewer{flex:1;overflow-y:auto;padding:2.5rem 2rem;min-width:0;transition:all .3s;}
-.viewer-inner{max-width:720px;margin:0 auto;}
-.page-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;}
-.page-label-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);}
-.page-text{font-size:1rem;line-height:1.9;color:var(--t1);white-space:pre-wrap;word-break:break-word;}
+.page-pill {
+  background: #000; color: #fff; padding: .6rem 1.25rem; border-radius: 100px;
+  font-weight: 800; font-size: 1rem; border: 3px solid #000; cursor: pointer;
+  display: flex; align-items: center; gap: .5rem; transition: .2s;
+}
+.page-pill:hover { transform: scale(1.05); }
 
-/* Progress bar */
-.progress-track{height:3px;background:var(--bdr);flex-shrink:0;}
-.progress-fill{height:100%;background:var(--acc);transition:width .3s ease;}
+.top-icon-btn {
+  width: 48px; height: 48px; border: 3px solid #000; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; box-shadow: 3px 3px 0 #000; cursor: pointer; transition: .1s;
+}
+.top-icon-btn:hover { transform: translate(1px,1px); box-shadow: 1px 1px 0 #000; }
+.top-icon-btn svg { width: 22px; height: 22px; color: #000; stroke-width: 2.5; }
 
-/* ── Side panel ── */
-.side-panel{width:var(--panel-w);flex-shrink:0;background:var(--panel);border-left:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;transition:width .3s,opacity .3s;}
-.side-panel.hidden{width:0;opacity:0;pointer-events:none;border:none;}
+.settings-btn {
+  display: flex; align-items: center; gap: .75rem; background: #fff;
+  border: 3.5px solid #000; border-radius: 12px; padding: .6rem 1rem;
+  font-weight: 800; font-size: 1rem; box-shadow: 4px 4px 0 #000; cursor: pointer;
+}
 
-.panel-head{padding:.875rem 1rem;border-bottom:1px solid var(--bdr);flex-shrink:0;}
-.panel-head-title{font-size:.875rem;font-weight:700;color:var(--t1);margin-bottom:.625rem;}
-.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:.375rem;}
-.tool-btn{display:flex;align-items:center;gap:.375rem;padding:.5rem .625rem;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--t2);font-size:.775rem;font-weight:600;transition:all .15s;white-space:nowrap;}
-.tool-btn:hover{border-color:var(--acc);background:#fff3ed;color:var(--acc);}
-.tool-btn.active{border-color:var(--acc);background:#fff3ed;color:var(--acc);}
-.tool-btn svg{width:13px;height:13px;flex-shrink:0;}
-.tool-btn.full{grid-column:1/-1;}
+.ai-mobile-toggle {
+  display: none; align-items: center; gap: .5rem; background: #000; color: #fff;
+  border: none; border-radius: 12px; padding: .6rem 1rem; font-weight: 800; font-family: inherit;
+}
 
-.panel-body{flex:1;overflow-y:auto;padding:1rem;}
-.panel-idle{text-align:center;padding:2rem 1rem;color:var(--t3);font-size:.8125rem;line-height:1.6;}
-.panel-idle svg{width:32px;height:32px;margin:0 auto .75rem;display:block;opacity:.3;}
+/* --- Body Layout --- */
+.main-shell { display: flex; flex: 1; overflow: hidden; }
+.main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 2rem; position: relative; }
 
-/* AI result */
-.ai-result{font-size:.875rem;line-height:1.75;color:var(--t1);}
-.ai-result p{margin-bottom:.75rem;}
-.ai-result ul{padding-left:1.25rem;margin-bottom:.75rem;}
-.ai-result li{margin-bottom:.375rem;}
+/* Notebook / Viewer */
+.notebook-stage {
+  position: relative; margin: 0 auto 3rem; width: 100%; max-width: 900px;
+  display: flex; align-items: center; gap: 2rem;
+}
+.notebook-frame {
+  flex: 1; background: #fff; border: 4px solid #000; border-radius: 12px;
+  box-shadow: 8px 8px 0 #000; min-height: 480px; position: relative;
+  background-image: linear-gradient(var(--paper-line) 1px, transparent 1px);
+  background-size: 100% 2.4rem; padding-top: .4rem;
+}
+.notebook-inner { padding: 1.5rem 2rem; }
+.notebook-title {
+  font-size: 2rem; font-weight: 900; margin-bottom: 1.5rem; border-bottom: 2.5px dashed #ddd;
+  padding-bottom: .5rem; line-height: 1.2; word-break: break-word;
+}
+.page-text { 
+  font-size: 1.35rem; line-height: 1.6; color: #222; white-space: pre-wrap; 
+  word-break: break-word; min-height: 200px;
+}
 
-/* Loading spinner */
-.spin-wrap{display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:2rem;color:var(--t3);font-size:.8125rem;}
-.spin{width:28px;height:28px;border:2.5px solid var(--bdr);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+/* Large Nav Buttons */
+.nav-circle {
+  width: 72px; height: 72px; border: 4.5px solid #000; border-radius: 50%;
+  background: #fef08a; display: flex; align-items: center; justify-content: center;
+  box-shadow: 6px 6px 0 #000; cursor: pointer; z-index: 10; transition: .15s;
+}
+.nav-circle:hover:not(:disabled) { transform: translate(2px, 2px); box-shadow: 3px 3px 0 #000; }
+.nav-circle:disabled { opacity: 0.3; cursor: default; }
+.nav-circle svg { width: 32px; height: 32px; color: #000; stroke-width: 4; }
 
-/* Images grid */
-.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.875rem;margin-bottom:1.5rem;}
-.img-grid img{width:100%;border-radius:10px;border:1px solid var(--bdr);background:#f0f0ec;display:block;cursor:zoom-in;transition:transform .15s;}
-.img-grid img:hover{transform:scale(1.02);}
-.img-grid.single{grid-template-columns:1fr;}
-.img-grid.single img{max-height:480px;object-fit:contain;cursor:zoom-in;}
+/* Tools Section */
+.tools-wrap { max-width: 900px; margin: 0 auto; width: 100%; }
+.tools-header { font-size: 1.8rem; margin-bottom: 2rem; position: relative; display: inline-block; }
+.tools-header::after {
+  content: ""; position: absolute; bottom: -10px; left: 0; width: 110%; height: 8px;
+  background: var(--accent-red); clip-path: polygon(0 50%, 5% 40%, 10% 60%, 15% 40%, 20% 60%, 25% 40%, 30% 60%, 35% 40%, 40% 60%, 45% 40%, 50% 60%, 55% 40%, 60% 60%, 65% 40%, 70% 60%, 75% 40%, 80% 60%, 85% 40%, 90% 60%, 95% 40%, 100% 50%, 100% 100%, 0 100%);
+}
+
+.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.tool-card {
+  background: #fff; border: 3.5px solid #000; border-radius: 16px; padding: 1.25rem;
+  display: flex; align-items: center; gap: 1.25rem; box-shadow: 6px 6px 0 #000;
+  transition: .15s; cursor: pointer; text-align: left;
+}
+.tool-card:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 #000; }
+.tool-icon-circle {
+  width: 54px; height: 54px; border: 3px solid #000; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.tool-icon-circle svg { width: 26px; height: 26px; color: #fff; stroke-width: 2.5; }
+.tool-name-main { display: block; font-size: 1.4rem; font-weight: 800; margin-bottom: .1rem; }
+.tool-name-sub { font-size: .95rem; color: #666; font-family: 'Inter', sans-serif; font-weight: 600; }
+
+.bg-blue { background: var(--accent-blue); }
+.bg-purple { background: var(--accent-purple); }
+.bg-red { background: var(--accent-red); }
+.bg-amber { background: var(--accent-amber); }
+
+.podcast-deck { background:#f9f9f9; border:3.5px solid #000; border-radius:20px; padding:1.25rem; margin-bottom:1.5rem; box-shadow:6px 6px 0 #000; position:relative; overflow:hidden; }
+.podcast-progress { width:100%; height:10px; background:#ddd; border-radius:5px; margin-top:.8rem; overflow:hidden; border:2.5px solid #000; }
+.podcast-progress-fill { height:100%; width:0%; background:var(--accent-red); transition:width 0.4s ease; }
+.waveform { display:flex; align-items:flex-end; gap:4px; height:32px; margin-bottom:1rem; justify-content:center; }
+.wave-bar { width:5px; height:10px; background:var(--accent-blue); border:1.5px solid #000; border-radius:3px; }
+.wave-active .wave-bar { animation: bar-pulse 0.8s infinite ease-in-out; }
+@keyframes bar-pulse { 0%, 100% { height: 10px; } 50% { height: 30px; } }
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { animation-delay: 0.4s; }
+.wave-bar:nth-child(6) { animation-delay: 0.5s; }
+.wave-bar:nth-child(7) { animation-delay: 0.6s; }
+
+/* Sidebar */
+.sketch-sidebar {
+  width: 440px; border-left: 3.5px solid #000; background: #fff;
+  display: flex; flex-direction: column; height: 100%; position: relative;
+}
+.ai-pal-dashboard {
+  flex: 1; padding: 0 1.25rem 1.25rem; display: flex; flex-direction: column;
+  min-height: 0; /* Critical for inner scrolling */
+}
+.ai-pal-window {
+  flex: 1; background: #fafafa; border: 3.5px solid #000; border-radius: 20px;
+  background-image: radial-gradient(#ddd 1.5px, transparent 1.5px);
+  background-size: 1.8rem 1.8rem; overflow-y: auto; padding: 1.25rem;
+  text-align: left; position: relative;
+}
+.ai-pal-intro {
+  height: 100%; display: flex; flex-direction: column; 
+  align-items: center; justify-content: center; text-align: center;
+}
+.ai-pal-intro h3 { font-size: 2.2rem; margin: 1rem 0 .5rem; }
+.ai-pal-intro p { color: #666; font-size: 1.15rem; font-weight: 500; }
+.pal-bot-icon {
+  width: 88px; height: 88px; background: #fff; border: 3px solid #000;
+  border-radius: 50%; margin: 0 auto; display: flex; align-items: center;
+  justify-content: center; font-size: 3.5rem; box-shadow: 4px 4px 0 #000;
+}
+
+.chat-sketch-wrap { padding: 1.5rem; border-top: 3.5px solid #000; }
+.chat-pill {
+  display: flex; align-items: center; gap: .75rem; background: #fff;
+  border: 3.5px solid #000; border-radius: 100px; padding: .6rem 1.25rem;
+  box-shadow: 5px 5px 0 #000;
+}
+.chat-pill input { flex: 1; border: none; font-family: inherit; font-size: 1.3rem; background: none; outline: none; }
+.chat-btn-send {
+  width: 48px; height: 48px; background: var(--accent-blue); border: 2.5px solid #000;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 3px 3px 0 #000;
+}
+.chat-btn-send svg { width: 22px; height: 22px; color: #fff; stroke-width: 0; }
+
+/* Progress */
+.bottom-bookmark { position: fixed; bottom: 0; left: 0; right: 0; height: 16px; background: #eee; border-top: 3.5px solid #000; cursor: pointer; z-index: 200; }
+.bookmark-fill { height: 100%; background: #000; width: 0%; transition: width .3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+/* Components */
+.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.img-grid img { width: 100%; border: 3.5px solid #000; border-radius: 12px; cursor: zoom-in; box-shadow: 4px 4px 0 #000; background: #fff; }
+.img-wrap { position: relative; }
+.img-badge {
+  position: absolute; top: 10px; left: 10px; background: #000; color: #fff;
+  padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 900;
+  pointer-events: none; z-index: 5; border: 2px solid #fff;
+}
+
+.magic-menu {
+  position: fixed; background: #000; color: #fff; padding: 6px; border-radius: 14px;
+  display: flex; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2000;
+}
+.magic-menu button {
+  background: none; border: none; color: #fff; padding: 10px 20px;
+  font-family: inherit; font-size: 1.1rem; font-weight: 800; border-radius: 10px;
+}
+.magic-menu button:hover { background: rgba(255,255,255,0.2); }
+
+.sidebar-close {
+  display: none; position: absolute; top: 1rem; left: 1rem;
+  width: 44px; height: 44px; border: 3px solid #000; border-radius: 50%;
+  background: #fff; align-items: center; justify-content: center;
+  z-index: 1100; box-shadow: 3px 3px 0 #000; cursor: pointer;
+}
+.sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900;
+  display: none; animation: sketchyFade .2s ease-out;
+}
+.sidebar-overlay.open { display: block; }
+
+.fade-in { animation: sketchyFade .4s ease-out forwards; }
+@keyframes sketchyFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Responsive Layouts */
+@media (max-width: 1200px) {
+  .sketch-sidebar {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 100%; max-width: 420px;
+    z-index: 1000; box-shadow: -10px 0 50px rgba(0,0,0,0.3);
+    transform: translateX(100%); transition: transform .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .sketch-sidebar.open { transform: translateX(0); }
+  .sidebar-close { display: flex !important; }
+}
+
+/* --- Flashcards 3D --- */
+.fc-scene {
+  width: 100%; height: 220px; perspective: 1000px; margin-bottom: 1.5rem;
+}
+.fc-card {
+  width: 100%; height: 100%; position: relative; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d; cursor: pointer;
+}
+.fc-card.is-flipped { transform: rotateY(180deg); }
+
+.fc-face {
+  position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+  border: 3.5px solid #000; border-radius: 16px; background: #fff;
+  box-shadow: 6px 6px 0 #000; text-align: center; font-size: 1.4rem; font-weight: 800;
+}
+.fc-back { transform: rotateY(180deg); background: #fefce8; }
+
+.btn-save-deck {
+  width: 100%; padding: .85rem; background: var(--accent-amber); border: 3px solid #000;
+  border-radius: 12px; font-weight: 800; font-family: inherit; font-size: 1.1rem;
+  box-shadow: 4px 4px 0 #000; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: .5rem; transition: .15s; margin-top: 1rem;
+}
+.btn-save-deck:hover { transform: scale(1.02); }
+
+/* --- Podcast Player --- */
+.speaking-segment {
+  background: rgba(255, 255, 0, 0.4); border-radius: 4px; border-bottom: 2px dashed #000;
+  transition: .3s; padding: 2px 4px; font-weight: 800;
+}
+.podcast-controls {
+  margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;
+}
+.btn-call-in {
+  width: 100%; padding: 1rem; background: var(--accent-blue); color: #fff;
+  border: 4px solid #000; border-radius: 16px; font-weight: 900; font-size: 1.3rem;
+  box-shadow: 6px 6px 0 #000; cursor: pointer; display: none; /* Only show while playing */
+  align-items: center; justify-content: center; gap: .75rem; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+@media (max-width: 768px) {
+  .topbar { height: 60px; padding: 0 .75rem; }
+  .sketchy-search { display: none; }
+  .topbar-center { display: none; }
+  .topbar-right { gap: .5rem; }
+  .settings-btn { display: none; }
+  .ai-mobile-toggle { display: flex !important; }
+
+  .main-content { padding: 1rem 1rem 10rem; } /* Extra bottom padding for floating nav */
+  .notebook-stage { flex-direction: column; gap: 1rem; margin-bottom: 5rem; }
+  .notebook-frame { border-width: 2.5px; box-shadow: 4px 4px 0 #000; min-height: 380px; }
+  .notebook-inner { padding: 1.25rem; }
+  .notebook-title { font-size: 1.75rem; margin-bottom: 1.25rem; }
+  .page-text { font-size: 1.15rem; line-height: 1.5; }
+
+  .nav-circle {
+    position: fixed; bottom: 3rem; width: 62px; height: 62px;
+    box-shadow: 4px 4px 0 #000; border-width: 3.5px; z-index: 100;
+  }
+  #prevBtn { left: 1.5rem; }
+  #nextBtn { right: 1.5rem; }
+
+  .tool-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .tool-card { padding: 1rem; box-shadow: 4px 4px 0 #000; border-width: 3px; z-index: 50; }
+  .tool-name-main { font-size: 1.2rem; }
+  
+  .bottom-bookmark { height: 10px; border-width: 2.5px; }
+}
 
 /* Lightbox */
-.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem;}
-.lightbox.open{display:flex;}
-.lightbox img{max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain;}
-.lightbox-close{position:fixed;top:1rem;right:1rem;width:40px;height:40px;background:rgba(255,255,255,.1);border:none;border-radius:50%;color:#fff;font-size:1.25rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.lightbox-close:hover{background:rgba(255,255,255,.2);}
-
-/* Chat with AI — full page link */
-.chat-link-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.625rem;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.875rem;font-weight:700;margin-top:.75rem;text-decoration:none;}
-.chat-link-btn:hover{background:#333;}
-.chat-link-btn svg{width:15px;height:15px;}
-
-/* ── Inline Flashcards ── */
-.fc-wrap{display:flex;flex-direction:column;gap:.75rem;}
-.fc-counter{font-size:.75rem;color:var(--t3);font-weight:600;text-align:center;}
-.fc-card{perspective:600px;height:160px;cursor:pointer;}
-.fc-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s ease;border-radius:12px;}
-.fc-card.flipped .fc-inner{transform:rotateY(180deg);}
-.fc-front,.fc-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;font-size:.875rem;line-height:1.5;}
-.fc-front{background:#fff3ed;border:1.5px solid #fed7aa;color:var(--t1);font-weight:600;}
-.fc-back{background:#f0fdf4;border:1.5px solid #bbf7d0;color:#166534;transform:rotateY(180deg);}
-.fc-hint{font-size:.7rem;color:var(--t3);text-align:center;margin-top:.25rem;}
-.fc-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.5rem;}
-.fc-nav-btn{flex:1;padding:.5rem;border:1px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--t2);font-size:.8rem;font-weight:600;transition:all .15s;}
-.fc-nav-btn:hover:not(:disabled){background:var(--hov);color:var(--t1);}
-.fc-nav-btn:disabled{opacity:.3;cursor:default;}
-.fc-save-btn{display:flex;align-items:center;justify-content:center;gap:.375rem;width:100%;padding:.5rem;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;margin-top:.625rem;transition:background .15s;}
-.fc-save-btn:hover{background:var(--acc2);}
-.fc-save-btn:disabled{opacity:.5;cursor:default;}
-
-/* ── Inline Quiz ── */
-.qz-wrap{display:flex;flex-direction:column;gap:.75rem;}
-.qz-counter{font-size:.75rem;color:var(--t3);font-weight:600;}
-.qz-q{font-size:.875rem;font-weight:600;color:var(--t1);line-height:1.5;margin-bottom:.5rem;}
-.qz-opts{display:flex;flex-direction:column;gap:.375rem;}
-.qz-opt{display:flex;align-items:center;gap:.625rem;padding:.5rem .75rem;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);cursor:pointer;transition:all .15s;text-align:left;font-size:.8125rem;color:var(--t1);}
-.qz-opt:hover:not(:disabled){border-color:var(--acc);background:#fff3ed;}
-.qz-opt .qz-letter{width:22px;height:22px;border-radius:50%;background:var(--bdr);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;transition:all .15s;}
-.qz-opt.correct{border-color:#22c55e;background:#f0fdf4;}
-.qz-opt.correct .qz-letter{background:#22c55e;color:#fff;}
-.qz-opt.wrong{border-color:#ef4444;background:#fef2f2;}
-.qz-opt.wrong .qz-letter{background:#ef4444;color:#fff;}
-.qz-opt:disabled{cursor:default;}
-.qz-explanation{font-size:.8rem;color:#555;background:#f8f8f6;border-radius:8px;padding:.625rem .75rem;line-height:1.5;border-left:3px solid var(--acc);}
-.qz-next-btn{width:100%;padding:.5rem;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;transition:background .15s;}
-.qz-next-btn:hover{background:var(--acc2);}
-.qz-score{text-align:center;padding:1.5rem 1rem;}
-.qz-score-ring{width:72px;height:72px;border-radius:50%;border:4px solid var(--acc);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;font-size:1.25rem;font-weight:800;color:var(--acc);}
-.qz-score-label{font-size:.875rem;font-weight:700;color:var(--t1);margin-bottom:.25rem;}
-.qz-score-sub{font-size:.8rem;color:var(--t3);}
-.qz-retry-btn{margin-top:.75rem;width:100%;padding:.5rem;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:.8rem;font-weight:600;color:var(--t2);}
-.qz-retry-btn:hover{background:var(--hov);}
-
-/* Save deck modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;}
-.modal-overlay.open{display:flex;}
-.modal-box{background:#fff;border-radius:14px;padding:1.5rem;width:min(320px,90vw);box-shadow:0 20px 60px rgba(0,0,0,.2);}
-.modal-title{font-size:1rem;font-weight:700;margin-bottom:.875rem;}
-.modal-input{width:100%;padding:.625rem .75rem;border:1.5px solid var(--bdr);border-radius:8px;font-size:.875rem;font-family:inherit;outline:none;}
-.modal-input:focus{border-color:var(--acc);}
-.modal-actions{display:flex;gap:.5rem;margin-top:.875rem;}
-.modal-cancel{flex:1;padding:.5rem;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);font-size:.875rem;font-weight:600;color:var(--t2);}
-.modal-save{flex:1;padding:.5rem;border:none;border-radius:8px;background:var(--acc);color:#fff;font-size:.875rem;font-weight:700;}
-.modal-save:hover{background:var(--acc2);}
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 2rem; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 100%; max-height: 90vh; border: 4px solid #fff; border-radius: 8px; }
 
 /* Toast */
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a1a;color:#fff;padding:.625rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:300;transition:transform .3s ease;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.bottom-tools{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--sb);border-top:1px solid var(--bdr);padding:.5rem .75rem;z-index:100;gap:.375rem;overflow-x:auto;}
-.bottom-tools::-webkit-scrollbar{display:none;}
-
-@media(max-width:860px){
-  html,body{overflow:auto;}
-  .shell{height:auto;min-height:100vh;}
-  .body{flex-direction:column;overflow:visible;height:auto;}
-  .viewer{overflow:visible;padding:1.25rem 1rem;}
-  .side-panel{width:100%!important;opacity:1!important;pointer-events:auto!important;border-left:none;border-top:1px solid var(--bdr);display:none;}
-  .side-panel.mobile-open{display:flex;}
-  .side-panel.hidden{display:none!important;}
-  .panel-toggle{display:none;}
-  .bottom-tools{display:flex;}
-  body{padding-bottom:60px;}
-}
+.toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: #000; color: #fff; padding: 1rem 2rem; border-radius: 100px; font-weight: 800; z-index: 4000; display: none; }
+.toast.show { display: block; }
 </style>
 </head>
 <body>
-<div class="shell">
 
-<!-- Topbar -->
-<div class="topbar">
-  <a href="{% url 'list_materials' %}" class="back-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    Back
-  </a>
-  <span class="topbar-title">{{ material.title }}</span>
-  <div class="topbar-right">
-    <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <span class="page-counter" id="pageCounter" onclick="openPageJump()" title="Click to jump to page">1 / {{ total_pages }}</span>
-    <div class="page-jump-wrap" id="pageJumpWrap" style="display:none;">
-      <input class="page-jump-input" id="pageJumpInput" type="number" min="1" max="{{ total_pages }}" placeholder="…"
-        onkeydown="handlePageJumpKey(event)" onblur="closePageJump()">
-      <span class="page-jump-of">/ {{ total_pages }}</span>
-    </div>
-    <button class="nav-btn" id="nextBtn" onclick="changePage(1)" {% if total_pages == 1 %}disabled{% endif %}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-    <button class="panel-toggle active" id="panelToggle" onclick="togglePanel()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-      AI Tools
-    </button>
-  </div>
-</div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- Progress -->
-<div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-
-<!-- Body -->
-<div class="body">
-
-  <!-- Viewer -->
-  <div class="viewer" id="viewer">
-    <div class="viewer-inner">
-      <div class="page-label"><span class="page-label-dot"></span><span id="pageLabel">Page 1 of {{ total_pages }}</span></div>
-      <div id="imgGrid" class="img-grid" style="display:none;"></div>
-      <div class="page-text" id="pageText"></div>
-    </div>
-  </div>
-
-  <!-- Side panel -->
-  <div class="side-panel" id="sidePanel">
-    <div class="panel-head">
-      <div class="panel-head-title">AI Tools — Page <span id="panelPageNum">1</span></div>
-      <div class="tool-grid">
-        <button class="tool-btn" onclick="runTool('summarise')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          Summarise
-        </button>
-        <button class="tool-btn" onclick="runTool('explain')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Explain
-        </button>
-        <button class="tool-btn" onclick="runTool('quiz')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          Quiz Me
-        </button>
-        <button class="tool-btn" onclick="runTool('flashcards')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-          Flashcards
-        </button>
-        <a href="{% url 'podcast_view' material.pk %}" class="tool-btn full">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
-          Podcast
-        </a>
-        <a href="{% url 'material_detail' material.pk %}" class="chat-link-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Chat with AI about this material
-        </a>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'list_materials' %}" class="top-icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div class="page-pill" onclick="openPageJump()">
+        <span id="pageCounter">1 / {{ total_pages }}</span>
+        <div id="pageJumpWrap" style="display:none;">
+          <input type="number" id="pageJumpInput" min="1" max="{{ total_pages }}" onkeydown="handlePageJumpKey(event)" onblur="closePageJump()">
+        </div>
       </div>
     </div>
-    <div class="panel-body" id="panelBody">
-      <div class="panel-idle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
-        Pick a tool above to get AI help for this page
+
+    <div class="topbar-center">
+      <div class="sketchy-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search my sketches..." onkeyup="handleSearch(event)">
       </div>
     </div>
-  </div>
 
-</div><!-- .body -->
-
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightboxImg" src="" alt="">
-</div>
-
-<!-- Mobile bottom tools -->
-<div class="bottom-tools" id="bottomTools">
-  <button class="tool-btn" onclick="runTool('summarise');openMobilePanel()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
-    Summarise
-  </button>
-  <button class="tool-btn" onclick="runTool('explain');openMobilePanel()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg>
-    Explain
-  </button>
-  <button class="tool-btn" onclick="runTool('quiz');openMobilePanel()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
-    Quiz Me
-  </button>
-  <button class="tool-btn" onclick="runTool('flashcards');openMobilePanel()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
-    Flashcards
-  </button>
-  <a href="{% url 'podcast_view' material.pk %}" class="tool-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/></svg>
-    Podcast
-  </a>
-</div>
-
-</div><!-- .shell -->
-
-<!-- Save deck modal -->
-<div class="modal-overlay" id="saveDeckModal">
-  <div class="modal-box">
-    <div class="modal-title">Save Flashcard Deck</div>
-    <input class="modal-input" id="deckNameInput" type="text" placeholder="Deck name…" maxlength="80">
-    <div class="modal-actions">
-      <button class="modal-cancel" onclick="closeSaveModal()">Cancel</button>
-      <button class="modal-save" onclick="confirmSaveDeck()">Save</button>
+    <div class="topbar-right">
+      <button class="ai-mobile-toggle" onclick="toggleSidebar()">
+        AI Pal 🤖
+      </button>
+      <div class="top-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <button class="settings-btn">
+        Settings
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0  1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
-  </div>
-</div>
+  </header>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+  <div class="main-shell">
+    
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <div class="notebook-stage">
+        <button class="nav-circle" id="prevBtn" onclick="changePage(-1)" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+
+        <div class="notebook-frame">
+          <div class="notebook-inner" id="viewerContent">
+            <h1 class="notebook-title" id="paperTitle">{{ material.title }}</h1>
+            <div id="imgGrid" class="img-grid" style="display:none;"></div>
+            <div class="page-text" id="pageText"></div>
+          </div>
+        </div>
+
+        <button class="nav-circle" id="nextBtn" onclick="changePage(1)" {% if total_pages <= 1 %}disabled{% endif %}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="tools-wrap">
+        <h2 class="tools-header">Magic Tools for Slide <span id="toolSlideNum">1</span></h2>
+        
+        <div class="tool-grid">
+          <button class="tool-card" onclick="runTool('summarise')">
+            <div class="tool-icon-circle bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+            <div class="card-info">
+              <span class="tool-name-main">Summarize</span>
+              <span class="tool-name-sub">Quick notes</span>
+            </div>
+          </button>
+
+          <button class="tool-card" onclick="runTool('quiz')">
+            <div class="tool-icon-circle bg-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="card-info">
+              <span class="tool-name-main">Quiz Me</span>
+              <span class="tool-name-sub">Test skills</span>
+            </div>
+          </button>
+
+          <button class="tool-card" onclick="runTool('flashcards')">
+            <div class="tool-icon-circle bg-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            <div class="card-info">
+              <span class="tool-name-main">Flashcards</span>
+              <span class="tool-name-sub">Memory aids</span>
+            </div>
+          </button>
+
+          <button class="tool-card" onclick="runTool('podcast')">
+            <div class="tool-icon-circle bg-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+            <div class="card-info">
+              <span class="tool-name-main">Podcast</span>
+              <span class="tool-name-sub">Audio mode</span>
+            </div>
+          </button>
+
+          <button class="tool-card" onclick="openGenreModal()">
+            <div class="tool-icon-circle bg-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <div class="card-info">
+              <span class="tool-name-main">Music Studio</span>
+              <span class="tool-name-sub">Bake a song</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Sidebar AI Pal -->
+    <aside class="sketch-sidebar" id="sidebar">
+      <button class="sidebar-close" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      
+      <div class="ai-pal-dashboard">
+        <div class="ai-pal-window" id="panelBody">
+          <div class="ai-pal-intro">
+            <div class="pal-bot-icon">🤖</div>
+            <h3>AI Pal</h3>
+            <p>Ask me anything about your notes!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-sketch-wrap">
+        <div class="chat-pill">
+          <input type="text" placeholder="..." id="sideChatInput">
+          <button class="chat-btn-send">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Selection Tool -->
+  <div id="magicMenu" class="magic-menu" style="display:none;">
+    <button onclick="runTool('explain', getSelectedText())">Explain</button>
+    <button onclick="runTool('summarise', getSelectedText())">Summarise</button>
+  </div>
+
+  <div class="bottom-bookmark" onclick="jumpToPoint(event)">
+    <div class="bookmark-fill" id="progressFill"></div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <div class="toast" id="toast"></div>
 
 <script>
 const PAGES = {{ pages_json|safe }};
+const TOTAL = {{ total_pages }};
 const AJAX_URL = '{% url "learn_ajax" material.pk %}';
 const SAVE_URL = '{% url "flashcards_save" material.pk %}';
+const DECKS_URL = '{% url "flashcards_decks" material.pk %}';
+const LOAD_URL = '/materials/flashcards/{{ material.pk }}/decks/';
 const CSRF = '{{ csrf_token }}';
-const TOTAL = {{ total_pages }};
 let currentPage = 0;
-let panelOpen = true;
 
-// pending cards for save
-let pendingCards = [];
-let pendingLabel = '';
-
-// ── page rendering ─────────────────────────────────────────────
-function renderPage(n) {
-  currentPage = n;
-  const page = PAGES[n];
-  const text   = typeof page === 'string' ? page : (page.text || '');
-  const images = typeof page === 'string' ? [] : (page.images || []);
-  const label  = typeof page === 'string' ? `Page ${n+1} of ${TOTAL}` : (page.label ? `${page.label} · ${n+1} of ${TOTAL}` : `Page ${n+1} of ${TOTAL}`);
-
-  // Images
-  const imgWrap = document.getElementById('imgGrid');
-  if (images.length) {
-    const single = images.length === 1;
-    imgWrap.className = 'img-grid' + (single ? ' single' : '');
-    imgWrap.innerHTML = images.map(src =>
-      `<img src="${src}" alt="Slide image" loading="lazy" onclick="openLightbox('${src}')">`
-    ).join('');
-    imgWrap.style.display = 'grid';
-  } else {
-    imgWrap.style.display = 'none';
-    imgWrap.innerHTML = '';
-  }
-
-  document.getElementById('pageText').textContent = text;
-  document.getElementById('pageLabel').textContent = label;
-  document.getElementById('pageCounter').textContent = `${n+1} / ${TOTAL}`;
-  document.getElementById('panelPageNum').textContent = n+1;
-  document.getElementById('prevBtn').disabled = n === 0;
-  document.getElementById('nextBtn').disabled = n === TOTAL - 1;
-  const pct = TOTAL > 1 ? ((n+1) / TOTAL * 100) : 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('viewer').scrollTop = 0;
-  resetPanel(images.length ? 'slide' : 'page');
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
 }
 
-function resetPanel(unit='page') {
-  document.getElementById('panelBody').innerHTML = `
-    <div class="panel-idle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
-      Pick a tool above to get AI help for this ${unit}
-    </div>`;
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  pendingCards = [];
+function renderPage(n) {
+  currentPage = n;
+  const content = document.getElementById('viewerContent');
+  if (content) {
+    content.classList.remove('fade-in');
+    void content.offsetWidth;
+    content.classList.add('fade-in');
+  }
+
+  const page = PAGES[n] || {text:"", images:[], label:""};
+  const text = typeof page === 'string' ? page : (page.text || '');
+  const images = page.images || [];
+  
+  document.getElementById('pageText').textContent = text;
+  document.getElementById('pageCounter').textContent = `${n+1} / ${TOTAL}`;
+  document.getElementById('toolSlideNum').textContent = n+1;
+  document.getElementById('prevBtn').disabled = (n === 0);
+  document.getElementById('nextBtn').disabled = (n === TOTAL - 1);
+  
+  const pct = TOTAL > 1 ? (n / (TOTAL - 1)) * 100 : 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  const imgGrid = document.getElementById('imgGrid');
+  if (images.length) {
+    imgGrid.style.display = 'grid';
+    imgGrid.innerHTML = images.map((src, i) => {
+      const isSnapshot = (i === 0); // Our backend now puts the snapshot first
+      return `
+        <div class="img-wrap">
+          ${isSnapshot ? '<span class="img-badge">VISUAL SNAPSHOT</span>' : ''}
+          <img src="${src}" onclick="openLightbox(this.src)" style="cursor:zoom-in;">
+        </div>
+      `;
+    }).join('');
+  } else {
+    imgGrid.style.display = 'none';
+  }
 }
 
 function changePage(dir) {
@@ -372,261 +539,814 @@ function changePage(dir) {
   if (next >= 0 && next < TOTAL) renderPage(next);
 }
 
-// ── page jump ──────────────────────────────────────────────────
+function jumpToPoint(e) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const pct = x / rect.width;
+  renderPage(Math.round(pct * (TOTAL - 1)));
+}
+
+function handleSearch(e) {
+  if (e.key === 'Enter') {
+    const q = e.target.value.toLowerCase().trim();
+    if (!q) return;
+    const idx = PAGES.findIndex(p => (typeof p === 'string' ? p : p.text).toLowerCase().includes(q));
+    if (idx !== -1) renderPage(idx);
+    else showToast("No matches found!");
+  }
+}
+
 function openPageJump() {
-  document.getElementById('pageCounter').style.display = 'none';
   const wrap = document.getElementById('pageJumpWrap');
-  wrap.style.display = 'flex';
+  const span = document.getElementById('pageCounter');
+  span.style.display = 'none';
+  wrap.style.display = 'block';
   const input = document.getElementById('pageJumpInput');
   input.value = currentPage + 1;
   input.focus();
-  input.select();
 }
 function closePageJump() {
   document.getElementById('pageJumpWrap').style.display = 'none';
-  document.getElementById('pageCounter').style.display = '';
+  document.getElementById('pageCounter').style.display = 'block';
 }
 function handlePageJumpKey(e) {
   if (e.key === 'Enter') {
-    const val = parseInt(document.getElementById('pageJumpInput').value, 10);
-    if (!isNaN(val) && val >= 1 && val <= TOTAL) {
-      renderPage(val - 1);
-    }
-    closePageJump();
-  } else if (e.key === 'Escape') {
+    const val = parseInt(e.target.value);
+    if (val >= 1 && val <= TOTAL) renderPage(val - 1);
     closePageJump();
   }
 }
 
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(1);
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changePage(-1);
+document.addEventListener('mouseup', e => {
+  const sel = window.getSelection().toString().trim();
+  const menu = document.getElementById('magicMenu');
+  if (sel && sel.length > 5 && e.target.closest('#pageText')) {
+    const range = window.getSelection().getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    menu.style.display = 'flex';
+    menu.style.top = `${rect.top - 50 + window.scrollY}px`;
+    menu.style.left = `${rect.left + (rect.width/2) - 80}px`;
+  } else if (!e.target.closest('#magicMenu')) {
+    menu.style.display = 'none';
+  }
 });
 
-// ── lightbox ───────────────────────────────────────────────────
-function openLightbox(src) {
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightbox').classList.add('open');
-}
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.getElementById('lightboxImg').src = '';
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLightbox(); closeSaveModal(); } });
+function getSelectedText() { return window.getSelection().toString().trim(); }
 
-// ── panel toggle ───────────────────────────────────────────────
-function togglePanel() {
-  panelOpen = !panelOpen;
-  const panel = document.getElementById('sidePanel');
-  const btn   = document.getElementById('panelToggle');
-  panel.classList.toggle('hidden', !panelOpen);
-  btn.classList.toggle('active', panelOpen);
-}
-
-function openMobilePanel() {
-  document.getElementById('sidePanel').classList.add('mobile-open');
-}
-
-// ── toast ──────────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ── save deck modal ────────────────────────────────────────────
-function openSaveModal(cards, label) {
-  pendingCards = cards;
-  pendingLabel = label;
-  document.getElementById('deckNameInput').value = label;
-  document.getElementById('saveDeckModal').classList.add('open');
-  setTimeout(() => document.getElementById('deckNameInput').select(), 50);
-}
-function closeSaveModal() {
-  document.getElementById('saveDeckModal').classList.remove('open');
-}
-async function confirmSaveDeck() {
-  const name = document.getElementById('deckNameInput').value.trim() || pendingLabel;
-  closeSaveModal();
-  try {
-    const res = await fetch(SAVE_URL, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cards: pendingCards, name })
-    });
-    const data = await res.json();
-    if (data.success) showToast(`Deck "${data.name}" saved`);
-    else showToast('Save failed: ' + (data.error || 'unknown error'));
-  } catch(e) {
-    showToast('Network error saving deck');
+async function runTool(action, overrideText = null) {
+  if ((action === 'flashcards' || action === 'podcast') && overrideText === null) {
+    return action === 'flashcards' ? fetchFlashcardDecks() : fetchPodcastDecks();
   }
-}
-
-// ── AI tools ───────────────────────────────────────────────────
-async function runTool(action) {
-  const page = PAGES[currentPage];
-  const pageText  = typeof page === 'string' ? page : (page.text || '');
-  const pageLabel = typeof page === 'string' ? `Page ${currentPage+1}` : (page.label || `Page ${currentPage+1}`);
-  const body = document.getElementById('panelBody');
-
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  const labels = {summarise:'Summarise',explain:'Explain',quiz:'Quiz Me',flashcards:'Flashcards'};
-  document.querySelectorAll('.tool-btn').forEach(b => {
-    if (b.textContent.trim().startsWith(labels[action] || action)) b.classList.add('active');
-  });
-
-  body.innerHTML = `<div class="spin-wrap"><div class="spin"></div>Generating…</div>`;
+  if (action === 'music' && overrideText === null) {
+    return fetchSongDecks();
+  }
+  
+  const pg = PAGES[currentPage];
+  const pageText = (overrideText && overrideText !== 'FORCE_GENERATE') ? overrideText : (pg.text || pg);
+  const container = document.getElementById('panelBody');
+  
+  const isSong = (action === 'music' || action === 'song_generate');
+  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">${isSong ? 'Writing Lyrics & Baking Divine Vocals...' : 'Thinking...'}</p></div>`;
+  
+  if (window.innerWidth < 1200 && !document.getElementById('sidebar').classList.contains('open')) {
+    toggleSidebar();
+  }
 
   try {
     const res = await fetch(AJAX_URL, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, page_text: pageText, page_label: pageLabel })
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        action: action === 'music' ? 'song_generate' : action, 
+        page_text: pageText, 
+        page_label: `Slide ${currentPage+1}`, 
+        genre: window._currentGenre || 'Lofi' 
+      })
     });
     const data = await res.json();
+    if (data.success) {
+      if (action === 'flashcards') renderFlashcards(data.cards, container);
+      else if (action === 'quiz') renderQuiz(data.questions, container);
+      else if (action === 'podcast') {
+        PodcastPlayer.start(data.script_json, container, true);
+      }
+      else if (action === 'music' || action === 'song_generate') {
+        SongPlayer.start(data.lyrics_json, window._currentGenre || 'Lofi', container);
+      }
+      else {
+        let html = `<div class="ai-result fade-in" style="font-size:1.2rem;text-align:left;">${formatResult(data.result)}</div>`;
+        container.innerHTML = html;
+      }
+    } else {
+      showToast("Error: " + data.error);
+    }
+  } catch (e) { showToast("Network Error"); }
+}
 
-    if (!data.success) {
-      body.innerHTML = `<div style="color:#ef4444;font-size:.875rem;padding:1rem;">${data.error || 'Something went wrong.'}</div>`;
+const PodcastPlayer = {
+  fullScript: "",
+  queue: [],
+  index: 0,
+  isPlaying: false,
+  isLive: true,
+  voices: { Alex: null, Sam: null },
+  recognition: null,
+
+  init() {
+    const v = window.speechSynthesis.getVoices();
+    this.voices.Alex = v.find(x => x.name.includes('Male') || x.name.includes('David')) || v[0];
+    this.voices.Sam = v.find(x => x.name.includes('Female') || x.name.includes('Zira') || x.name.includes('Google US English')) || v[1];
+    
+    if ('webkitSpeechRecognition' in window) {
+      this.recognition = new webkitSpeechRecognition();
+      this.recognition.continuous = false;
+      this.recognition.onresult = (e) => this.handleCallResult(e.results[0][0].transcript);
+    }
+  },
+
+  async start(text, container, fromSaved = false) {
+    this.fullScript = text;
+    this.isLive = !fromSaved;
+    this.stop();
+    this.init();
+    
+    if (fromSaved) {
+      this.queue = typeof text === 'string' ? JSON.parse(text) : text;
+    } else {
+      this.queue = this.parseScript(text);
+    }
+    
+    this.index = 0;
+    this.isPlaying = true;
+    this.renderPlayerUI(container);
+    this.speakNext();
+  },
+
+  parseScript(text) {
+    const lines = text.split('\n').filter(l => l.trim());
+    return lines.map((l, i) => {
+      // 1. Identify Speaker
+      const m = l.match(/^(Alex|Sam|Host \d):\s*(.*)/i);
+      const speaker = m ? m[1] : 'Alex';
+      let rawContent = m ? m[2] : l;
+
+      // 2. Clean text for Voice & Display (remove ** and [stuff])
+      let cleanText = rawContent
+        .replace(/\*\*/g, '')           // Remove bold markers
+        .replace(/\[.*?\]/g, '')       // Remove stage directions like [Intro Music]
+        .replace(/^(Alex|Sam|Host \d):\s*/i, '') // Extra safety against nested names
+        .trim();
+
+      return { id: i, speaker: speaker, text: cleanText };
+    }).filter(seg => seg.text.length > 0); // Skip segments that were just music/stage directions
+  },
+
+  updateProgress() {
+    const fill = document.querySelector('.podcast-progress-fill');
+    if (fill) {
+      const pct = (this.index / this.queue.length) * 100;
+      fill.style.width = pct + '%';
+    }
+  },
+
+  toggleWave(active) {
+    const wf = document.getElementById('podcastWaveform');
+    if (wf) {
+      if (active) wf.classList.add('wave-active');
+      else wf.classList.remove('wave-active');
+    }
+  },
+
+  speakNext() {
+    if (!this.isPlaying || this.index >= this.queue.length) {
+      this.toggleWave(false);
       return;
     }
-
-    if (action === 'flashcards' && data.cards) {
-      renderFlashcards(data.cards, pageLabel, body);
-    } else if (action === 'quiz' && data.questions) {
-      renderQuiz(data.questions, body);
+    const seg = this.queue[this.index];
+    this.updateProgress();
+    
+    if (!this.isLive && seg.audio_url) {
+      const audio = new Audio(seg.audio_url);
+      audio.onplay = () => { this.highlight(seg.id); this.toggleWave(true); };
+      audio.onpause = () => this.toggleWave(false);
+      audio.onended = () => { if (this.isPlaying) { this.index++; this.speakNext(); } };
+      audio.play();
     } else {
-      body.innerHTML = `<div class="ai-result">${formatResult(data.result || '')}</div>`;
+      const msg = new SpeechSynthesisUtterance(seg.text);
+      msg.voice = seg.speaker.toLowerCase().includes('sam') ? this.voices.Sam : this.voices.Alex;
+      msg.onstart = () => { this.highlight(seg.id); this.toggleWave(true); };
+      msg.onend = () => { if (this.isPlaying) { this.toggleWave(false); this.index++; this.speakNext(); } };
+      window.speechSynthesis.speak(msg);
     }
-  } catch(e) {
-    body.innerHTML = `<div style="color:#ef4444;font-size:.875rem;padding:1rem;">Network error: ${e.message}</div>`;
+  },
+
+  highlight(id) {
+    document.querySelectorAll('.speaking-segment').forEach(el => el.classList.remove('speaking-segment'));
+    const target = document.querySelector(`[data-seg-id="${id}"]`);
+    if (target) {
+      target.classList.add('speaking-segment');
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  },
+
+  stop() {
+    this.isPlaying = false;
+    window.speechSynthesis.cancel();
+    this.toggleWave(false);
+    if (this.recognition) this.recognition.stop();
+    document.querySelectorAll('.speaking-segment').forEach(el => el.classList.remove('speaking-segment'));
+    const btn = document.getElementById('callInBtn');
+    if (btn) btn.style.display = 'none';
+  },
+
+  renderPlayerUI(container) {
+    let html = `
+    <div id="podcastDisplay" class="fade-in" style="padding-bottom:1.5rem;">
+      <div class="podcast-deck">
+        <div style="font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#666; margin-bottom:1rem; display:flex; justify-content:space-between;">
+          <span>Live Broadcast</span>
+          <span style="color:var(--accent-red);">â—ڈ REC</span>
+        </div>
+        
+        <div id="podcastWaveform" class="waveform">
+          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        </div>
+        
+        <div style="text-align:center;">
+          <div style="font-size:1.3rem; font-weight:900;">${esc(PAGES[currentPage].label || 'Current Section')}</div>
+          <div style="font-size:0.95rem; color:#666; font-family:'Inter', sans-serif;">Hosted by Alex & Sam</div>
+        </div>
+        
+        <div class="podcast-progress">
+          <div class="podcast-progress-fill"></div>
+        </div>
+      </div>
+    `;
+    this.queue.forEach(seg => {
+      // Show cleaned text without ** or stage directions
+      html += `<p data-seg-id="${seg.id}" style="margin-bottom:1rem; text-align:left; line-height:1.4;">
+        <span style="font-weight:900; color:var(--accent-blue);">${seg.speaker}:</span> ${esc(seg.text)}
+      </p>`;
+    });
+    html += `
+      <div class="podcast-controls" style="padding-top:1rem; border-top:2px dashed #000;">
+        <button id="callInBtn" class="btn-call-in" style="display:flex;" onclick="PodcastPlayer.triggerCall()">
+          ☎️ Ask a Question
+        </button>
+        ${this.isLive ? `<button id="btnSavePod" onclick="savePodcast(PodcastPlayer.fullScript)" style="width:100%; padding:.75rem; background:var(--accent-amber); border:3px solid #000; border-radius:12px; font-weight:800; margin-bottom:.5rem; cursor:pointer;">💾 Save Audio Broadcast</button>` : ''}
+        <button onclick="PodcastPlayer.stop(); fetchPodcastDecks();" style="width:100%; padding:.75rem; border:3px solid #000; border-radius:12px; font-weight:800; background:#fff; cursor:pointer;">🛑 Stop & Exit</button>
+      </div>
+    </div>`;
+    container.innerHTML = html;
+  },
+
+  triggerCall() {
+    window.speechSynthesis.cancel();
+    this.isPlaying = false;
+    const intro = new SpeechSynthesisUtterance("Wait, Sam, I think we have a caller! Go ahead, what's your question?");
+    intro.voice = this.voices.Alex;
+    intro.onend = () => {
+      showToast("Listening... 🎙️");
+      this.recognition.start();
+    };
+    window.speechSynthesis.speak(intro);
+  },
+
+  async handleCallResult(q) {
+    showToast(`" ${q} "`);
+    const container = document.getElementById('podcastDisplay');
+    const oldHtml = container.innerHTML;
+    container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Answering Caller...</p></div>`;
+    
+    try {
+      // Immediate "filler" to keep immersion while thinking
+      const filler = new SpeechSynthesisUtterance("Oh, that's a great point. Let me check the notes for a second, Sam...");
+      filler.voice = this.voices.Alex;
+      window.speechSynthesis.speak(filler);
+
+      const res = await fetch(AJAX_URL, {
+        method: "POST",
+        headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          action: 'podcast_question', 
+          question: q, 
+          conversation_context: this.fullScript,
+          page_text: PAGES[currentPage].text, 
+          page_label: `Slide ${currentPage+1}` 
+        })
+      });
+      const data = await res.json();
+      container.innerHTML = oldHtml;
+      
+      if (data.audio_url) {
+        const audio = new Audio(data.audio_url);
+        audio.onplay = () => this.toggleWave(true);
+        audio.onended = () => {
+          this.toggleWave(false);
+          this.isPlaying = true;
+          this.index++;
+          this.speakNext();
+        };
+        audio.play();
+      } else {
+        // Fallback for some reason
+        const ans = new SpeechSynthesisUtterance(data.result);
+        ans.voice = this.voices.Sam;
+        ans.onstart = () => this.toggleWave(true);
+        ans.onend = () => {
+          this.toggleWave(false);
+          this.isPlaying = true;
+          this.index++;
+          this.speakNext();
+        };
+        window.speechSynthesis.speak(ans);
+      }
+    } catch(e) { showToast("Error answering question."); this.isPlaying = true; this.speakNext(); }
+  }
+};
+
+async function fetchPodcastDecks() {
+  const container = document.getElementById('panelBody');
+  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Opening Broadcasts...</p></div>`;
+  if (window.innerWidth < 1200 && !document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+
+  try {
+    const res = await fetch(AJAX_URL, {
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ action: 'podcast_list' })
+    });
+    const data = await res.json();
+    let html = `
+      <div class="fade-in">
+        <h3 style="margin-bottom:1rem; font-size:1.8rem;">Broadcast Library</h3>
+        <button onclick="runTool('podcast', 'FORCE_GENERATE')" style="width:100%; padding:1.25rem; background:var(--accent-red); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-bottom:1.5rem; box-shadow:4px 4px 0 #000; cursor:pointer;">
+          📣 Generate New Podcast
+        </button>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+    `;
+    if (!data.podcasts || data.podcasts.length === 0) {
+      html += `<p style="text-align:center; color:#666;">No saved broadcasts yet.</p>`;
+    } else {
+      data.podcasts.forEach(p => {
+        html += `
+          <div onclick="loadPodcast(${p.id})" style="padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; box-shadow:4px 4px 0 #000; cursor:pointer; text-align:left;">
+            <div style="font-size:1.2rem; font-weight:800; margin-bottom:.2rem;">🎙️ ${esc(p.name)}</div>
+            <div style="font-size:0.85rem; color:#666;">Saved ${p.created_at}</div>
+          </div>
+        `;
+      });
+    }
+    html += `</div></div>`;
+    container.innerHTML = html;
+  } catch (e) { showToast("Error loading library."); }
+}
+
+async function loadPodcast(id) {
+  const container = document.getElementById('panelBody');
+  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Preparing Studio...</p></div>`;
+  try {
+    // We reuse learn_ajax or add a new detail view. For simplicity, let's assume podcast_list can provide data if tweaked, 
+    // but better to have a dedicated podcast_detail. Or just store in list for now if small? 
+    // I'll add 'podcast_detail' to the backend in the next step or assume it's there.
+    const res = await fetch(AJAX_URL, {
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ action: 'podcast_detail', podcast_id: id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      PodcastPlayer.start(data.script_json, container, true);
+    }
+  } catch(e) { showToast("Error loading podcast."); }
+}
+
+async function savePodcast(scriptData) {
+  const btn = document.getElementById('btnSavePod');
+  if (btn) { btn.innerHTML = 'Saving to Library... 💾'; btn.disabled = true; }
+  const name = prompt("Name your Broadcast:", `Podcast for ${PAGES[currentPage].label || 'Section'}`);
+  if (!name) { 
+    if (btn) { btn.innerHTML = '💾 Save Audio Broadcast'; btn.disabled = false; }
+    return; 
+  }
+
+  try {
+    const res = await fetch(AJAX_URL, {
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ action: 'podcast_save', script_json: scriptData, name: name })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast("Library Updated! 🎙️✅");
+      if (btn) btn.innerHTML = 'Saved! ✅';
+    } else {
+      showToast("Error: " + data.error);
+      if (btn) { btn.innerHTML = '💾 Save Audio Broadcast'; btn.disabled = false; }
+    }
+  } catch(e) { showToast("Network error during save."); }
+}
+
+async function fetchFlashcardDecks() {
+  const container = document.getElementById('panelBody');
+  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Fetching Decks...</p></div>`;
+  if (window.innerWidth < 1200 && !document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+  
+  try {
+    const res = await fetch(DECKS_URL);
+    const data = await res.json();
+    let html = `
+      <div class="fade-in">
+        <h3 style="margin-bottom:1rem; font-size:1.8rem;">Study Library</h3>
+        <button onclick="runTool('flashcards', 'FORCE_GENERATE')" style="width:100%; padding:1.25rem; background:var(--accent-blue); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-bottom:1.5rem; box-shadow:4px 4px 0 #000; cursor:pointer;">
+          ✨ New Cards for Current Slide
+        </button>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+    `;
+    
+    if (!data.decks || data.decks.length === 0) {
+      html += `<p style="text-align:center; color:#666;">No saved decks yet.</p>`;
+    } else {
+      data.decks.forEach(d => {
+        html += `
+          <div onclick="loadFlashcardDeck(${d.id})" style="padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; box-shadow:4px 4px 0 #000; cursor:pointer; text-align:left;">
+            <div style="font-size:1.25rem; font-weight:800; margin-bottom:.2rem;">${esc(d.name)}</div>
+            <div style="font-size:0.9rem; color:#666; font-family:'Inter', sans-serif;">${d.count} cards • ${d.created_at}</div>
+          </div>
+        `;
+      });
+    }
+    
+    html += `</div></div>`;
+    container.innerHTML = html;
+  } catch (e) { showToast("Failed to fetch decks."); }
+}
+
+async function loadFlashcardDeck(id) {
+  const container = document.getElementById('panelBody');
+  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Loading Deck...</p></div>`;
+  
+  try {
+    const res = await fetch(`${LOAD_URL}${id}/`);
+    const data = await res.json();
+    if (data.success) {
+      renderFlashcards(data.cards, container, true);
+    }
+  } catch (e) { showToast("Error loading deck."); }
+}
+
+function speakText(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.rate = 1.0;
+    msg.pitch = 1.0;
+    window.speechSynthesis.speak(msg);
+  } else {
+    showToast("Text-to-speech not supported.");
   }
 }
 
-// ── Flashcards renderer ────────────────────────────────────────
-function renderFlashcards(cards, label, container) {
-  let idx = 0;
-
+function renderFlashcards(cards, container, fromLibrary = false) {
+  let i = 0;
   function draw() {
-    const card = cards[idx];
-    container.innerHTML = `
-      <div class="fc-wrap">
-        <div class="fc-counter">${idx+1} / ${cards.length}</div>
-        <div class="fc-card" id="fcCard" onclick="this.classList.toggle('flipped')">
-          <div class="fc-inner">
-            <div class="fc-front">${esc(card.front)}</div>
-            <div class="fc-back">${esc(card.back)}</div>
+    const c = cards[i];
+    let html = `
+      <div style="width:100%;" class="fade-in">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="margin:0; font-size:1.5rem;">Flashcards (${i+1}/${cards.length})</h3>
+          ${fromLibrary ? `<button onclick="fetchFlashcardDecks()" style="background:none; border:none; color:#000; font-family:inherit; font-weight:800; text-decoration:underline; cursor:pointer;">&larr; Library</button>` : ''}
+        </div>
+        
+        <div class="fc-scene" onclick="this.querySelector('.fc-card').classList.toggle('is-flipped')">
+          <div class="fc-card">
+            <div class="fc-face fc-front">${esc(c.front)}</div>
+            <div class="fc-face fc-back">${esc(c.back)}</div>
           </div>
         </div>
-        <div class="fc-hint">Tap card to flip</div>
-        <div class="fc-nav">
-          <button class="fc-nav-btn" onclick="fcNav(-1)" ${idx===0?'disabled':''}>← Prev</button>
-          <button class="fc-nav-btn" onclick="fcNav(1)" ${idx===cards.length-1?'disabled':''}>Next →</button>
+
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button style="flex:1;padding:.75rem;border:3px solid #000;border-radius:12px;font-weight:800;" onclick="fcNav(-1)">Prev</button>
+          <button style="flex:1;padding:.75rem;border:3px solid #000;border-radius:12px;font-weight:800;" onclick="fcNav(1)">Next</button>
         </div>
-        <button class="fc-save-btn" onclick="openSaveModal(window._fcCards, window._fcLabel)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save Deck
+    `;
+    
+    if (!fromLibrary) {
+      html += `
+        <div style="margin-top:1.5rem; text-align:left;">
+          <label style="font-size:0.9rem; font-weight:800; color:#333; font-family:'Inter', sans-serif;">Name Your Deck</label>
+          <input type="text" id="fcDeckName" value="Deck for Slide ${i+1}" style="width:100%; padding:.75rem 1rem; border:3px solid #000; border-radius:12px; font-family:inherit; font-size:1.15rem; margin-top:.3rem; box-shadow:3px 3px 0 #000; outline:none;">
+        </div>
+
+        <button class="btn-save-deck" onclick="saveFlashcards(window.currentFlashcards)">
+          <svg style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save This Deck
         </button>
-      </div>`;
-    window._fcCards = cards;
-    window._fcLabel = label;
-    window._fcIdx = idx;
-    window._fcDraw = draw;
+      `;
+    }
+    
+    html += `</div>`;
+    container.innerHTML = html;
   }
-
-  window.fcNav = function(dir) {
-    idx = Math.max(0, Math.min(cards.length-1, idx+dir));
-    draw();
+  window.fcNav = (dir) => { 
+    i = Math.max(0, Math.min(cards.length-1, i+dir)); 
+    draw(); 
   };
-
+  window.currentFlashcards = cards;
   draw();
 }
 
-// ── Quiz renderer ──────────────────────────────────────────────
-function renderQuiz(questions, container) {
-  let qIdx = 0, score = 0;
+async function saveFlashcards(cards) {
+  if (!cards || !cards.length) return;
+  const nameInput = document.getElementById('fcDeckName');
+  const deckName = nameInput ? nameInput.value.trim() : `Deck for ${document.getElementById('paperTitle').textContent.trim()}`;
+  
+  const btn = document.querySelector('.btn-save-deck');
+  btn.innerHTML = 'Saving...';
+  btn.disabled = true;
 
-  function drawQ() {
-    const q = questions[qIdx];
-    const opts = Object.entries(q.opts || {});
+  try {
+    const res = await fetch(SAVE_URL, {
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ cards, name: deckName })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast("Deck Saved Successfully! 🗂️");
+      btn.innerHTML = 'Saved! ✅';
+    } else {
+      showToast("Error: " + data.error);
+      btn.innerHTML = 'Save This Deck';
+      btn.disabled = false;
+    }
+  } catch (e) { 
+    showToast("Network Error"); 
+    btn.disabled = false;
+  }
+}
+
+function renderQuiz(qs, container) {
+  let i = 0, score = 0;
+  function draw() {
+    const q = qs[i];
     container.innerHTML = `
-      <div class="qz-wrap">
-        <div class="qz-counter">Question ${qIdx+1} of ${questions.length}</div>
-        <div class="qz-q">${esc(q.q)}</div>
-        <div class="qz-opts" id="qzOpts">
-          ${opts.map(([k,v]) => `
-            <button class="qz-opt" onclick="pickAnswer('${k}','${q.ans}','${esc(q.explanation||'')}')">
-              <span class="qz-letter">${k}</span>${esc(v)}
-            </button>`).join('')}
+      <div class="fade-in" style="text-align:left;">
+        <h3 style="margin-bottom:.5rem;">Question ${i+1}/${qs.length}</h3>
+        <p style="font-size:1.2rem;font-weight:800;margin-bottom:1rem;">${esc(q.q)}</p>
+        <div style="display:flex;flex-direction:column;gap:.5rem;">
+          ${Object.entries(q.opts).map(([k,v]) => `<button onclick="pickAnswer('${k}','${q.ans}')" style="padding:.75rem 1rem;border:3px solid #000;border-radius:12px;background:#fff;text-align:left;font-weight:800;">${k}: ${esc(v)}</button>`).join('')}
         </div>
       </div>`;
-    window._qzScore = score;
-    window._qzIdx = qIdx;
-    window._qzQuestions = questions;
-    window._qzContainer = container;
   }
-
-  window.pickAnswer = function(chosen, correct, explanation) {
-    const opts = document.querySelectorAll('.qz-opt');
-    opts.forEach(btn => {
-      btn.disabled = true;
-      const letter = btn.querySelector('.qz-letter').textContent.trim();
-      if (letter === correct) btn.classList.add('correct');
-      else if (letter === chosen && chosen !== correct) btn.classList.add('wrong');
-    });
-    if (chosen === correct) score++;
-    window._qzScore = score;
-
-    const wrap = document.querySelector('.qz-wrap');
-    if (explanation) {
-      const expEl = document.createElement('div');
-      expEl.className = 'qz-explanation';
-      expEl.textContent = explanation;
-      wrap.appendChild(expEl);
-    }
-
-    const nextBtn = document.createElement('button');
-    nextBtn.className = 'qz-next-btn';
-    nextBtn.textContent = qIdx < questions.length-1 ? 'Next Question →' : 'See Results';
-    nextBtn.onclick = () => {
-      qIdx++;
-      if (qIdx < questions.length) drawQ();
-      else showScore();
-    };
-    wrap.appendChild(nextBtn);
+  window.pickAnswer = (chosen, ans) => {
+    if (chosen === ans) score++;
+    if (++i < qs.length) draw();
+    else container.innerHTML = `<div style="text-align:center;"><div class="pal-bot-icon">🏆</div><h2>Done! Score: ${score}/${qs.length}</h2><button onclick="runTool('quiz')" style="margin-top:1rem;padding:.5rem 1rem;border:3px solid #000;border-radius:10px;">Retry</button></div>`;
   };
+  draw();
+}
 
-  function showScore() {
-    const pct = Math.round(score / questions.length * 100);
-    container.innerHTML = `
-      <div class="qz-score">
-        <div class="qz-score-ring">${pct}%</div>
-        <div class="qz-score-label">${score} / ${questions.length} correct</div>
-        <div class="qz-score-sub">${pct>=80?'Great work!':pct>=50?'Good effort — review the section again':'Keep studying — you\'ve got this'}</div>
-        <button class="qz-retry-btn" onclick="renderQuiz(window._qzQuestions, window._qzContainer)">Try Again</button>
-      </div>`;
+function openGenreModal() {
+  const modal = document.createElement('div');
+  modal.id = 'genreModal';
+  modal.style = "position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9000;animation:sketchyFade .3s;";
+  modal.innerHTML = `
+    <div style="background:#fff;border:4px solid #000;border-radius:24px;padding:2rem;max-width:400px;width:90%;box-shadow:10px 10px 0 #000;text-align:center;">
+      <h2 style="margin-bottom:1.5rem;font-size:1.8rem;">Pick Your Vibe 🎵</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div onclick="selectGenre('Lofi')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#fefce8;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="font-size:2rem;">☕</div><div style="font-weight:900;margin-top:.5rem;">Lofi</div>
+        </div>
+        <div onclick="selectGenre('Pop')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#f0f9ff;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="font-size:2rem;">🌈</div><div style="font-weight:900;margin-top:.5rem;">Pop</div>
+        </div>
+        <div onclick="selectGenre('Hip Hop')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#f5f3ff;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="font-size:2rem;">🎤</div><div style="font-weight:900;margin-top:.5rem;">Hip Hop</div>
+        </div>
+        <div onclick="selectGenre('Rock')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#fef2f2;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="font-size:2rem;">🎸</div><div style="font-weight:900;margin-top:.5rem;">Rock</div>
+        </div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="margin-top:2rem;background:none;border:none;font-weight:900;text-decoration:underline;cursor:pointer;">Cancel</button>
+      <div style="margin-top:1rem;font-size:0.9rem;font-weight:800;color:var(--accent-red);cursor:pointer;" onclick="runTool('music', null)">Library &rarr;</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+window.selectGenre = (g) => {
+  window._currentGenre = g;
+  document.getElementById('genreModal')?.remove();
+  runTool('music', 'FORCE_GENERATE');
+};
+
+const SongPlayer = {
+  lyrics: [],
+  index: 0,
+  genre: 'Lofi',
+  isPlaying: false,
+  beat: null,
+  vocal: null,
+  
+  beats: {
+    'Lofi': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Raising_Frequency/Ketsa_-_04_-_Raising_Frequency.mp3',
+    'Pop': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    'Hip Hop': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Arps/Chad_Crouch_-_Algorithms.mp3',
+    'Rock': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
+  },
+
+  start(segments, genre, container) {
+    this.stop();
+    this.lyrics = segments;
+    this.genre = genre;
+    this.index = 0;
+    this.isPlaying = true;
+    
+    this.beat = new Audio(this.beats[genre] || this.beats['Lofi']);
+    this.beat.loop = true;
+    this.beat.volume = 0.3;
+    this.beat.play();
+    
+    this.renderStudio(container);
+    setTimeout(() => this.nextLine(), 2000);
+  },
+
+  stop() {
+    this.isPlaying = false;
+    if (this.beat) this.beat.pause();
+    if (this.vocal) this.vocal.pause();
+  },
+
+  nextLine() {
+    if (!this.isPlaying || this.index >= this.lyrics.length) {
+      this.stop();
+      return;
+    }
+    const line = this.lyrics[this.index];
+    this.vocal = new Audio(line.audio_url);
+    this.vocal.onplay = () => this.highlightLine(this.index);
+    this.vocal.onerror = () => {
+      console.warn("Vocal play failed, skipping line:", line.text);
+      if (this.isPlaying) {
+        this.index++;
+        setTimeout(() => this.nextLine(), 500);
+      }
+    };
+    this.vocal.onended = () => {
+      if (this.isPlaying) {
+        this.index++;
+        const delay = this.genre === 'Hip Hop' ? 100 : 500;
+        setTimeout(() => this.nextLine(), delay);
+      }
+    };
+    this.vocal.play();
+  },
+
+  highlightLine(idx) {
+    const pct = (idx / this.lyrics.length) * 100;
+    document.querySelectorAll('.lyric-line').forEach((el, i) => {
+      if (i === idx) el.classList.add('active-lyric');
+      else el.classList.remove('active-lyric');
+    });
+    const fill = document.getElementById('song-progress-fill');
+    if (fill) fill.style.width = pct + '%';
+  },
+
+  renderStudio(container) {
+    let html = `
+      <div class="music-studio fade-in" style="text-align:center;">
+        <div class="podcast-deck" style="background:#000; color:#fff; border-color:#fff;">
+          <div style="font-size:0.8rem; font-weight:900; color:#0f0; margin-bottom:.5rem; display:flex; justify-content:center; gap:0.5rem; align-items:center;">
+            <span>STUDIO MODE: ${this.genre.toUpperCase()}</span>
+            <span style="background:#0f0; color:#000; padding:2px 6px; border-radius:4px; font-size:0.65rem;">DIVINE QUALITY</span>
+          </div>
+          <div id="songVisualizer" class="waveform wave-active">
+            <div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div>
+          </div>
+          <div style="font-size:1.1rem; font-weight:900;">AI Study Beats</div>
+          <div class="podcast-progress" style="background:#333; border-color:#fff;">
+            <div class="podcast-progress-fill" id="song-progress-fill" style="background:#0f0;"></div>
+          </div>
+        </div>
+        
+        <div style="max-height:300px; overflow-y:auto; padding:1.5rem 0; border-top:2px dashed #000; margin-top:1rem;">
+    `;
+    this.lyrics.forEach((l, i) => {
+      // Clean display: remove Vocal:, Verse 1:, [Chorus], etc.
+      let displayLine = l.text.replace(/^(Vocal|Lyric|Verse \d?|Chorus|Intro|Outro|Bridge|Hook|\[.*?\]):\s*/i, "").trim();
+      displayLine = displayLine.replace(/^\[.*?\]\s*/i, ""); // Catch solo headers like [Verse 1]
+      
+      if (displayLine) {
+        html += `<div class="lyric-line" style="font-size:1.4rem; font-weight:800; margin-bottom:1.2rem; transition:.3s; opacity:0.35;">${esc(displayLine)}</div>`;
+      }
+    });
+    html += `
+        </div>
+        <button id="btnSaveSong" onclick="saveSong()" style="width:100%; padding:1rem; background:var(--accent-purple); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-top:1rem; box-shadow:4px 4px 0 #000; cursor:pointer;">💾 Save This Beat</button>
+        <button onclick="SongPlayer.stop(); openGenreModal();" style="width:100%; padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-top:1rem; cursor:pointer;">🛑 Stop & Exit</button>
+      </div>
+      <style>
+        .active-lyric { 
+          opacity: 1 !important; 
+          transform: scale(1.08) translateY(-2px); 
+          color: var(--accent-purple); 
+          text-decoration: underline; 
+          text-shadow: 0 0 15px rgba(167,139,250,0.4);
+        }
+      </style>
+    `;
+    container.innerHTML = html;
   }
+};
 
-  drawQ();
+async function saveSong() {
+  const btn = document.getElementById('btnSaveSong');
+  btn.innerHTML = 'Saving... 🎹'; btn.disabled = true;
+  const name = prompt("Name your Beat:", `My ${SongPlayer.genre} Study Beat`);
+  if (!name) { btn.innerHTML = '💾 Save This Beat'; btn.disabled = false; return; }
+
+  try {
+    const res = await fetch(AJAX_URL, {
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ action: 'song_save', lyrics_json: SongPlayer.lyrics, genre: SongPlayer.genre, name })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast("Beat Saved to Library! 🎵✅");
+      btn.innerHTML = 'Saved! ✅';
+    } else {
+      showToast("Error saving song.");
+      btn.innerHTML = '💾 Save This Beat'; btn.disabled = false;
+    }
+  } catch(e) { showToast("Network Error."); }
 }
 
-function esc(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+async function fetchSongDecks() {
+  const container = document.getElementById('panelBody');
+  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🎶</div><p style="margin-top:1rem;">Opening Music Library...</p></div>`;
+  try {
+    const res = await fetch(AJAX_URL, {
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ action: 'song_list' })
+    });
+    const data = await res.json();
+    let html = `
+      <div class="fade-in">
+        <h3 style="margin-bottom:1rem; font-size:1.8rem;">Saved Beats</h3>
+        <button onclick="openGenreModal()" style="width:100%; padding:1.25rem; background:var(--accent-red); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-bottom:1.5rem; box-shadow:4px 4px 0 #000; cursor:pointer;">
+          🎹 Compose New Beat
+        </button>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+    `;
+    if (!data.songs || data.songs.length === 0) {
+      html += `<p style="text-align:center; color:#666;">No saved beats yet.</p>`;
+    } else {
+      data.songs.forEach(s => {
+        html += `
+          <div onclick="loadSong(${s.id})" style="padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; box-shadow:4px 4px 0 #000; cursor:pointer; text-align:left;">
+            <div style="font-size:1.25rem; font-weight:800; margin-bottom:.2rem;">${esc(s.name)}</div>
+            <div style="font-size:0.9rem; color:#666; font-family:'Inter', sans-serif;">${s.genre} • ${s.created_at}</div>
+          </div>
+        `;
+      });
+    }
+    html += `</div></div>`;
+    container.innerHTML = html;
+  } catch(e) { showToast("Error loading library."); }
 }
 
-function formatResult(text) {
-  let html = text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*(.+?)\*\*/g,'$1')
-    .replace(/\n\n/g,'</p><p>')
-    .replace(/\n/g,'<br>');
-  html = html.replace(/^[•\-\*]\s+(.+)/gm, '<li>$1</li>');
-  if (html.includes('<li>')) html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-  return `<p>${html}</p>`;
+async function loadSong(id) {
+  const container = document.getElementById('panelBody');
+  try {
+    const res = await fetch(AJAX_URL, {
+      method: "POST",
+      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+      body: JSON.stringify({ action: 'song_detail', song_id: id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      SongPlayer.start(data.lyrics_json, data.genre, container);
+    }
+  } catch(e) { showToast("Error loading beat."); }
 }
+
+function formatResult(t) { return t.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function openLightbox(s) { document.getElementById('lightboxImg').src = s; document.getElementById('lightbox').classList.add('open'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') changePage(1);
+  if (e.key === 'ArrowLeft') changePage(-1);
+});
 
 renderPage(0);
 </script>
+<style> @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } } </style>
 </body>
 </html>

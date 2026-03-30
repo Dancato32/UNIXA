@@ -1,306 +1,215 @@
+{% extends "community/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Study Materials — NEXA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+{% block title %}Study Materials — NEXA{% endblock %}
+
+{% block content_scroll_class %}bg-light{% endblock %}
+{% block nav_upload %}active{% endblock %}
+
+{% block extra_css %}
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --bg:#f7f7f5;--sb:#fff;--bdr:#e8e8e4;
-  --t1:#1a1a1a;--t2:#555;--t3:#999;
-  --hov:#f0f0ec;--acc:#f97316;--acc2:#ea6c00;
+/* ── Refined Hand-Drawn Variables ── */
+:root {
+  --mat-bg: var(--bg);
+  --mat-surface: var(--surface);
+  --mat-bdr: var(--border);
+  --mat-text: var(--text);
+  --mat-sub: var(--text3);
+  --mat-shadow: var(--shadow);
+  --mat-shadow-hover: 4px 4px 0 rgba(0,0,0,0.05);
 }
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;}
-a{color:inherit;text-decoration:none;}
-button{font-family:inherit;cursor:pointer;}
 
-/* ── Shell ── */
-.shell{display:flex;height:100vh;overflow:hidden;}
 
-/* ── Sidebar ── */
-.nx-sidebar{width:220px;background:var(--sb);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;z-index:200;}
-.nx-sb-head{padding:.875rem 1rem .5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
-.nx-logo{font-size:.9375rem;font-weight:800;color:var(--t1);display:flex;align-items:center;gap:.375rem;}
-.nx-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#f97316,#fb923c);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.875rem;flex-shrink:0;}
-.nx-sb-close{display:none;width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:6px;align-items:center;justify-content:center;color:var(--t2);}
-.nx-sb-close svg{width:16px;height:16px;}
-.nx-nav{flex:1;overflow-y:auto;padding:.5rem 0;}
-.nx-nav-item{display:flex;align-items:center;gap:.625rem;padding:.45rem .875rem;border-radius:6px;color:var(--t2);font-size:.8375rem;font-weight:500;cursor:pointer;margin:1px .5rem;transition:all .12s;border:none;background:none;width:calc(100% - 1rem);text-align:left;text-decoration:none;font-family:inherit;}
-.nx-nav-item:hover{background:var(--hov);color:var(--t1);}
-.nx-nav-item.active{background:#fff3ed;color:#ea6c00;font-weight:600;}
-.nx-nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7;}
-.nx-nav-item.active svg{opacity:1;}
-.nx-nav-sep{height:1px;background:var(--bdr);margin:.375rem .75rem;}
-.nx-user{padding:.75rem 1rem;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:.625rem;}
-.nx-user-av{width:32px;height:32px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;overflow:hidden;color:#555;}
-.nx-user-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.nx-user-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1);}
-.nx-user-email{font-size:.6875rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.materials-page { padding: 1.5rem; max-width: 640px; margin: 0 auto; min-height: 100vh; background: var(--mat-bg); }
 
-/* ── Main ── */
-.nx-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:var(--bg);}
+/* Page Header */
+.mat-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 2.5rem; position: sticky; top: 0;
+  background: var(--mat-bg); padding: 1rem 0; z-index: 10;
+  border-bottom: 1px solid var(--mat-bdr);
+}
+.mat-title-main {
+  font-family: var(--font-display);
+  font-size: 1.875rem; font-weight: 400; color: var(--mat-text);
+  margin-right: .5rem; white-space: nowrap;
+}
+.mat-search-wrap { flex: 1; position: relative; }
+.mat-search-wrap svg { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--mat-sub); }
+.mat-search-input {
+  width: 100%; padding: .625rem 1rem .625rem 2.25rem;
+  border: 1px solid var(--mat-bdr); border-radius: 8px;
+  font-size: .875rem; background: var(--mat-surface);
+  font-family: var(--font-hand); outline: none; box-shadow: var(--mat-shadow);
+}
+.mat-search-input:focus { box-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
+.mat-upload-btn {
+  background: var(--mat-text); color: #fff;
+  font-weight: 800; font-size: .8125rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: .625rem 1rem; border-radius: 4px; border: 2px solid var(--mat-bdr);
+  display: flex; align-items: center; gap: .5rem; flex-shrink: 0;
+  box-shadow: var(--mat-shadow); transition: transform .12s, box-shadow .12s;
+}
+.mat-upload-btn:hover { transform: translate(-2px,-2px); box-shadow: var(--mat-shadow-hover); }
 
-/* ── Top bar ── */
-.nx-topbar{height:52px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.5rem;gap:.75rem;flex-shrink:0;}
-.nx-mob-menu{display:none;width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:8px;align-items:center;justify-content:center;color:var(--t2);}
-.nx-mob-menu svg{width:20px;height:20px;}
-.nx-topbar-title{font-size:.9375rem;font-weight:700;color:var(--t1);}
-.nx-topbar-right{margin-left:auto;display:flex;align-items:center;gap:.625rem;}
-.nx-search-wrap{position:relative;}
-.nx-search-wrap svg{position:absolute;left:.625rem;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--t3);}
-.nx-search-input{padding:.375rem .75rem .375rem 2rem;font-size:.8125rem;border:1px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--t1);width:200px;outline:none;font-family:inherit;transition:all .2s;}
-.nx-search-input:focus{border-color:#ccc;background:#fff;width:240px;}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 2.25rem; font-weight: 400; color: var(--mat-text);
+  margin-bottom: .25rem;
+}
+.section-count { font-family: var(--font-hand); font-size: 1rem; color: var(--mat-sub); margin-bottom: 2rem; }
 
-/* ── Content ── */
-.nx-scroll{flex:1;overflow-y:auto;padding:2rem;}
-.nx-content{max-width:860px;margin:0 auto;}
+/* Material Card */
+.mat-card {
+  background: var(--mat-surface); border: 1px solid var(--mat-bdr); border-radius: 12px;
+  padding: 1.5rem; margin-bottom: 1.25rem; position: relative;
+  box-shadow: var(--mat-shadow);
+  transition: transform .12s, box-shadow .12s;
+  background-image: radial-gradient(var(--mat-bdr) 0.5px, transparent 0.5px);
+  background-size: 20px 20px; background-attachment: local;
+}
+.mat-card:hover { transform: translateY(-2px); box-shadow: 4px 4px 10px rgba(0,0,0,0.05); }
 
-/* ── Page header ── */
-.pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;}
-.pg-title{font-size:1.375rem;font-weight:800;color:var(--t1);}
-.pg-actions{display:flex;gap:.5rem;}
+.mat-card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.mat-icon-box {
+  width: 52px; height: 52px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; flex-shrink: 0;
+  border: 1px solid var(--mat-bdr); background: var(--surface2);
+}
+.mat-info { flex: 1; min-width: 0; }
+.mat-name { font-size: 1rem; font-weight: 800; color: var(--mat-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-tags { display: flex; align-items: center; gap: .5rem; margin-top: .25rem; }
+.mat-tag {
+  font-size: .6875rem; font-weight: 900; padding: .125rem .5rem;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
+  border: 1.5px solid var(--mat-bdr); background: #fff; color: var(--mat-text);
+}
+.mat-tag-user { color: var(--mat-sub); font-weight: 600; text-transform: lowercase; font-style: italic; font-size: .75rem; border: none; }
+.mat-date { font-size: .8125rem; color: var(--mat-sub); margin-top: .5rem; font-style: italic; }
 
-/* ── Buttons ── */
-.btn{display:inline-flex;align-items:center;gap:.375rem;padding:.5rem 1rem;border-radius:8px;font-size:.875rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;text-decoration:none;}
-.btn-primary{background:#1a1a1a;color:#fff;}
-.btn-primary:hover{background:#333;}
-.btn-outline{background:#fff;color:var(--t1);border:1px solid var(--bdr);}
-.btn-outline:hover{background:var(--hov);}
-.btn-danger{background:#ef4444;color:#fff;}
-.btn-danger:hover{background:#dc2626;}
-.btn-sm{padding:.35rem .75rem;font-size:.8125rem;}
-.btn svg{width:15px;height:15px;}
+.mat-card-actions {
+  position: absolute; top: 1rem; right: 1rem;
+  display: flex; gap: 4px; background: #f9f9f7;
+  padding: 4px; border-radius: 12px; border: 1px solid var(--mat-bdr);
+}
+.mat-action-btn {
+  width: 34px; height: 34px; border-radius: 8px; border: none; box-shadow: none;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--mat-sub); background: transparent; transition: all .2s;
+}
+.mat-action-btn:hover {
+  background: #fff; color: var(--mat-text); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+.mat-action-btn.del { color: #d32f2f; }
+.mat-action-btn.del:hover { background: #fee2e2; color: #b91c1c; box-shadow: 0 3px 6px rgba(220,38,38,0.1); }
+
+/* Study Tools Row */
+.mat-study-tools { display: flex; flex-wrap: wrap; gap: .75rem; padding-top: 1.25rem; border-top: 1px solid var(--surface2); }
+.study-btn {
+  background: var(--surface2); border: none; border-radius: 8px;
+  padding: .5rem 1rem; font-size: .8125rem; font-weight: 600;
+  display: flex; align-items: center; gap: .5rem; color: var(--mat-text2);
+  transition: .15s; font-family: var(--font-hand);
+}
+.study-btn:hover { background: var(--mat-text); color: #fff; transform: translateY(-1px); }
 </style>
-</head>
-<body>
-<!-- Mobile overlay -->
-<div id="nx-overlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;"></div>
+{% endblock %}
 
-<div class="shell">
-  <!-- Sidebar -->
-  <div class="nx-sidebar" id="nx-sidebar">
-    <div class="nx-sb-head">
-      <a href="{% url 'community:community_home' %}" class="nx-logo">
-        <div class="nx-logo-icon">✦</div>Nexa
-      </a>
-      <button class="nx-sb-close" id="nx-sb-close" onclick="closeSidebar()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="nx-nav">
-      <a class="nx-nav-item" href="{% url 'community:community_home' %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
-      </a>
-      <a class="nx-nav-item active" href="{% url 'list_materials' %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Study Materials
-      </a>
-      <a class="nx-nav-item" href="{% url 'upload_material' %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>Upload Material
-      </a>
-      <div class="nx-nav-sep"></div>
-      <a class="nx-nav-item" href="{% url 'ai_community:hub' %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Nexa Chat
-      </a>
-      <a class="nx-nav-item" href="{% url 'ai_chat' %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>AI Tutor
-      </a>
-      <a class="nx-nav-item" href="{% url 'community:community_home' %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community
-      </a>
-    </div>
-    <div class="nx-user">
-      <div class="nx-user-av">{{ request.user.username|slice:":1"|upper }}</div>
-      <div style="flex:1;min-width:0;">
-        <div class="nx-user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-        <div class="nx-user-email">{{ request.user.email }}</div>
-      </div>
-    </div>
+{% block content %}
+<div class="materials-page">
+  <div class="mat-header">
+    <div class="mat-title-main">Study Materials</div>
+    <button class="mat-upload-btn" onclick="document.getElementById('mFile').click()">+ Upload</button>
+    <input type="file" id="mFile" hidden onchange="doUp(this)">
   </div>
 
-  <!-- Main -->
-  <div class="nx-main">
-    <div class="nx-topbar">
-      <button class="nx-mob-menu" id="nx-mob-menu" onclick="openSidebar()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <span class="nx-topbar-title">Study Materials</span>
-      <div class="nx-topbar-right">
-        <div class="nx-search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input class="nx-search-input" type="text" placeholder="Search materials…" id="search-input" oninput="filterMaterials(this.value)">
+  <div class="section-title">My Study Materials</div>
+  <div class="section-count">{{ materials|length }} materials</div>
+
+  <div class="mat-list">
+    {% for m in materials %}
+    <div class="mat-card">
+      <div class="mat-card-top">
+        <div class="mat-icon-box {% if m.material_type == 'PDF' %}mat-icon-pdf{% else %}mat-icon-word{% endif %}">
+          {% if m.material_type == 'PDF' %}📄{% else %}📝{% endif %}
         </div>
-        <a href="{% url 'upload_material' %}" class="btn btn-primary">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Upload
-        </a>
+        <div class="mat-info">
+          <div class="mat-name">{{ m.title }}</div>
+          <div class="mat-tags">
+            <span class="mat-tag {% if m.material_type == 'PDF' %}mat-tag-pdf{% else %}mat-tag-word{% endif %}">{{ m.material_type }}</span>
+            {% if m.subject %}<span class="mat-tag mat-tag-user">{{ m.subject }}</span>{% endif %}
+          </div>
+          <div class="mat-date">{{ m.uploaded_at|date:"M d, Y" }}</div>
+        </div>
       </div>
-    </div>
 
-    <div class="nx-scroll">
-      <div class="nx-content">
-        <div class="pg-head">
-          <div>
-            <div class="pg-title">My Study Materials</div>
-            <div style="font-size:.875rem;color:var(--t3);margin-top:.25rem;">{{ materials.paginator.count }} material{{ materials.paginator.count|pluralize }}</div>
-          </div>
-          <div class="pg-actions">
-            <a href="{% url 'upload_material' %}" class="btn btn-primary">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-              Upload New
-            </a>
-          </div>
-        </div>
+      <div class="mat-card-actions">
+        <a href="{% url 'learn_material' m.id %}" class="mat-action-btn" title="View"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg></a>
 
-        {% if messages %}
-          {% for message in messages %}
-          <div style="padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.875rem;background:{% if message.tags == 'success' %}#f0fdf4{% elif message.tags == 'error' %}#fef2f2{% else %}#eff6ff{% endif %};color:{% if message.tags == 'success' %}#166534{% elif message.tags == 'error' %}#991b1b{% else %}#1e40af{% endif %};border:1px solid {% if message.tags == 'success' %}#bbf7d0{% elif message.tags == 'error' %}#fecaca{% else %}#bfdbfe{% endif %};">
-            {{ message }}
-          </div>
-          {% endfor %}
-        {% endif %}
-
-        {% if materials %}
-        <div id="materials-list" style="display:flex;flex-direction:column;gap:.625rem;">
-          {% for material in materials %}
-          <div class="mat-card" data-title="{{ material.title|lower }}" data-subject="{{ material.subject|lower }}">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
-              <div style="display:flex;align-items:center;gap:.875rem;flex:1;min-width:0;">
-                <!-- File icon -->
-                <div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem;
-                  {% if material.material_type == 'PDF' %}background:#fef2f2;{% elif material.material_type == 'Word' %}background:#eff6ff;{% elif material.material_type == 'PowerPoint' %}background:#fff7ed;{% else %}background:#f5f3ff;{% endif %}">
-                  {% if material.material_type == 'PDF' %}📄{% elif material.material_type == 'Word' %}📝{% elif material.material_type == 'PowerPoint' %}📊{% else %}🗂️{% endif %}
-                </div>
-                <div style="flex:1;min-width:0;">
-                  <div style="font-size:.9375rem;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ material.title }}</div>
-                  <div style="display:flex;align-items:center;gap:.75rem;margin-top:.25rem;flex-wrap:wrap;">
-                    <span style="font-size:.75rem;font-weight:600;padding:.15rem .5rem;border-radius:20px;
-                      {% if material.material_type == 'PDF' %}background:#fef2f2;color:#dc2626;{% elif material.material_type == 'Word' %}background:#eff6ff;color:#2563eb;{% elif material.material_type == 'PowerPoint' %}background:#fff7ed;color:#ea580c;{% else %}background:#f5f3ff;color:#7c3aed;{% endif %}">
-                      {{ material.material_type }}
-                    </span>
-                    {% if material.subject %}<span style="font-size:.75rem;color:var(--t3);">{{ material.subject }}</span>{% endif %}
-                    <span style="font-size:.75rem;color:var(--t3);">{{ material.uploaded_at|date:"M d, Y" }}</span>
-                  </div>
-                </div>
-              </div>
-              <!-- Actions -->
-              <div style="display:flex;align-items:center;gap:.375rem;flex-shrink:0;">
-                <a href="{% url 'learn_material' material.pk %}" class="btn btn-outline btn-sm" title="View">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  <span class="btn-label">View</span>
-                </a>
-                <a href="{% url 'summarize_material' material.pk %}" class="btn btn-outline btn-sm" title="Summarise" style="color:var(--acc);">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                  <span class="btn-label">Summarise</span>
-                </a>
-                <a href="{% url 'delete_material' material.pk %}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" title="Delete">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                </a>
-              </div>
-            </div>
-            <!-- Feature links -->
-            <div style="display:flex;gap:.5rem;margin-top:.875rem;padding-top:.75rem;border-top:1px solid var(--bdr);flex-wrap:wrap;">
-              <a href="{% url 'material_detail' material.pk %}" class="feat-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat with AI
-              </a>
-              <a href="{% url 'summarize_material' material.pk %}" class="feat-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Summarise
-              </a>
-              <a href="{% url 'quiz_material' material.pk %}" class="feat-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Quiz Me
-              </a>
-              <a href="{% url 'flashcards_material' material.pk %}" class="feat-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Flashcards
-              </a>
-              <a href="{% url 'podcast_view' material.pk %}" class="feat-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>Podcast
-              </a>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <!-- Pagination -->
-        {% if materials.has_other_pages %}
-        <div style="display:flex;justify-content:center;gap:.375rem;margin-top:2rem;">
-          {% if materials.has_previous %}
-          <a href="?page={{ materials.previous_page_number }}" class="pg-btn">←</a>
-          {% endif %}
-          {% for num in materials.paginator.page_range %}
-            {% if materials.number == num %}
-            <span class="pg-btn active">{{ num }}</span>
-            {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
-            <a href="?page={{ num }}" class="pg-btn">{{ num }}</a>
-            {% endif %}
-          {% endfor %}
-          {% if materials.has_next %}
-          <a href="?page={{ materials.next_page_number }}" class="pg-btn">→</a>
-          {% endif %}
-        </div>
-        {% endif %}
-
-        {% else %}
-        <!-- Empty state -->
-        <div style="text-align:center;padding:5rem 2rem;background:#fff;border-radius:16px;border:1px solid var(--bdr);">
-          <div style="width:72px;height:72px;background:#fff3ed;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:2rem;">📚</div>
-          <div style="font-size:1.125rem;font-weight:700;color:var(--t1);margin-bottom:.5rem;">No materials yet</div>
-          <div style="font-size:.875rem;color:var(--t3);margin-bottom:1.5rem;">Upload your first PDF, Word doc, or PowerPoint to get started.</div>
-          <a href="{% url 'upload_material' %}" class="btn btn-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-            Upload Material
-          </a>
-        </div>
-        {% endif %}
-
+        <a href="{% url 'delete_material' m.id %}" class="mat-action-btn del" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
       </div>
+
     </div>
+    {% endfor %}
   </div>
 </div>
 
-<style>
-.mat-card{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:1rem 1.125rem;transition:all .15s;}
-.mat-card:hover{border-color:#ccc;box-shadow:0 2px 12px rgba(0,0,0,.06);}
-.feat-btn{display:inline-flex;align-items:center;gap:.375rem;padding:.3rem .75rem;background:var(--bg);border:1px solid var(--bdr);border-radius:20px;font-size:.75rem;font-weight:500;color:var(--t2);transition:all .15s;white-space:nowrap;}
-.feat-btn:hover{background:var(--hov);border-color:#ccc;color:var(--t1);}
-.feat-btn svg{width:13px;height:13px;flex-shrink:0;}
-.pg-btn{padding:.375rem .75rem;font-size:.8125rem;color:var(--t1);background:#fff;border:1px solid var(--bdr);border-radius:6px;text-decoration:none;transition:all .1s;display:inline-flex;align-items:center;}
-.pg-btn:hover{background:var(--hov);}
-.pg-btn.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff;}
-@media(max-width:768px){
-  .nx-sidebar{position:fixed;top:0;left:0;bottom:0;width:min(280px,85vw);transform:translateX(-100%);transition:transform .28s cubic-bezier(.32,.72,0,1);box-shadow:4px 0 24px rgba(0,0,0,.12);}
-  .nx-sidebar.open{transform:translateX(0);}
-  .nx-sb-close{display:flex!important;}
-  .nx-mob-menu{display:flex!important;}
-  .nx-search-input{width:140px;}
-  .nx-search-input:focus{width:160px;}
-  .btn-label{display:none;}
-  .nx-scroll{padding:1rem;}
-  .pg-head{flex-direction:column;align-items:flex-start;}
-  .pg-actions{display:none;}
-}
-@media(max-width:480px){
-  .nx-topbar{padding:0 .875rem;}
-  .feat-btn span{display:none;}
-}
-</style>
 <script>
-function openSidebar(){
-  document.getElementById('nx-sidebar').classList.add('open');
-  document.getElementById('nx-overlay').style.display='block';
+// Upload with loading state + proper error feedback
+async function doUp(input) {
+  if (!input.files[0]) return;
+  const file = input.files[0];
+  const btn = document.querySelector('.mat-upload-btn');
+  const origText = btn.innerHTML;
+
+  // Show loading
+  btn.innerHTML = '⏳ Uploading...';
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('title', file.name.replace(/\.[^.]+$/, ''));
+
+  try {
+    const res = await fetch("{% url 'upload_material_ajax' %}", {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      body: fd
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.innerHTML = '✅ Done!';
+      setTimeout(() => window.location.reload(), 400);
+    } else {
+      // Collect all error messages
+      let msg = 'Upload failed.';
+      if (data.errors) {
+        const msgs = Object.values(data.errors).flat();
+        if (msgs.length) msg = msgs.join(' ');
+      }
+      alert('❌ ' + msg);
+      btn.innerHTML = origText;
+      btn.disabled = false;
+    }
+  } catch (e) {
+    alert('❌ Network error — please try again.');
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  }
+  // Reset file input so same file can be re-selected if needed
+  input.value = '';
 }
-function closeSidebar(){
-  document.getElementById('nx-sidebar').classList.remove('open');
-  document.getElementById('nx-overlay').style.display='none';
-}
-function filterMaterials(q){
-  q=q.toLowerCase();
-  document.querySelectorAll('.mat-card').forEach(c=>{
-    const match=c.dataset.title.includes(q)||c.dataset.subject.includes(q);
-    c.style.display=match?'':'none';
+
+// Live search filter
+document.querySelector('.mat-search-input')?.addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.mat-card').forEach(card => {
+    const name = card.querySelector('.mat-name')?.textContent.toLowerCase() || '';
+    card.style.display = name.includes(q) ? '' : 'none';
   });
-}
+});
 </script>
-</body>
-</html>
+
+{% endblock %}

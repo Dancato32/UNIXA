@@ -284,21 +284,25 @@ Return ONLY valid JSON."""
 
 # â”€â”€ Workspace AI Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-def analyze_project_files(files_data, workspace_name, members):
+def analyze_project_files(files_data, prompt_text, workspace_name, members):
     """
-    Analyze uploaded workspace files and return a full project brief.
+    Analyze uploaded workspace files and/or user text prompt, returning a full project brief.
     files_data: list of {name, content_preview}
-    Returns {title, objectives, deliverables, deadline_hint, tasks, risks}
+    prompt_text: optional string describing the project
+    Returns {title, objectives, deliverables, deadline_hint, tasks, risks, summary}
     """
     files_text = '\n\n'.join(
         f"FILE: {f['name']}\n{f['content_preview'][:800]}" for f in files_data
-    )
+    ) if files_data else "No files uploaded."
+    
+    prompt_context = f"USER INSTRUCTIONS:\n{prompt_text}\n" if prompt_text else ""
     members_list = ', '.join(m['username'] for m in members)
-    prompt = f"""You are an AI Project Manager analyzing academic project files for a university team.
+    prompt = f"""You are an AI Project Manager analyzing academic project requirements.
 
 Workspace: {workspace_name}
 Team members: {members_list}
 
+{prompt_context}
 Uploaded files:
 {files_text}
 
@@ -679,13 +683,13 @@ Return ONLY valid JSON."""
 def review_task_submission(task_title, task_description, submission, workspace_name, files_context):
     """
     AI reviews a member's task submission.
-    Returns {status: 'approved'|'revision', feedback, score, suggestions}
+    Returns {status: 'approved'|'revision', feedback: '...', strengths: [], suggestions: []}
     """
     files_text = '\n\n'.join(
         f"FILE: {f['name']}\n{f['content_preview']}" for f in files_context
     ) if files_context else 'No project files available.'
 
-    prompt = f"""You are an AI project reviewer for a university group project.
+    prompt = f"""You are an AI teacher/reviewer evaluating a university student's worksheet submission.
 
 Project: {workspace_name}
 Task: {task_title}

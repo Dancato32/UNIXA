@@ -6,7 +6,7 @@
     <title>{% block title %}NEXA - Learning Platform{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/mobile-fix.css' %}">
     <style>
@@ -17,42 +17,42 @@
         }
         
         :root {
-            /* Modern Color Palette */
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --secondary: #8b5cf6;
-            --accent: #ec4899;
+            /* Hand-Drawn Paper Palette */
+            --primary: #0f0e0c;
+            --primary-dark: #3d3b36;
+            --primary-light: #7a7770;
+            --secondary: #7a7770;
+            --accent: #0f0e0c;
             
-            /* Neutrals */
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
+            /* Paper Neutrals */
+            --gray-50: #faf9f6;
+            --gray-100: #f5f3ef;
+            --gray-200: #eeece8;
+            --gray-300: #e2dfd8;
+            --gray-400: #a09c95;
+            --gray-500: #7a7770;
+            --gray-600: #5a5751;
+            --gray-700: #3d3b36;
+            --gray-800: #252320;
+            --gray-900: #0f0e0c;
             
-            /* Semantic Colors */
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --info: #3b82f6;
+            /* Semantic Colors (subtle, ink-based) */
+            --success: #166534;
+            --warning: #78350f;
+            --error: #991b1b;
+            --info: #0f0e0c;
             
-            /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            /* Hard Ink Shadows (no blur) */
+            --shadow-sm: 2px 2px 0 #0f0e0c;
+            --shadow: 4px 4px 0 #0f0e0c;
+            --shadow-md: 4px 4px 0 #0f0e0c;
+            --shadow-lg: 6px 6px 0 #0f0e0c;
+            --shadow-xl: 8px 8px 0 #0f0e0c;
             
-            /* Gradients */
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            /* No gradients in hand-drawn */
+            --gradient-primary: #0f0e0c;
+            --gradient-secondary: #3d3b36;
+            --gradient-success: #166534;
         }
         
         body {
@@ -63,6 +63,8 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+        /* Caveat display helper */
+        .display-title { font-family: 'Caveat', cursive; font-weight: 700; }
         
         /* Utility Classes */
         .container {
@@ -77,41 +79,43 @@
             justify-content: center;
             gap: 0.5rem;
             padding: 0.625rem 1.25rem;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 800;
+            border-radius: 4px;
             text-decoration: none;
             cursor: pointer;
-            border: none;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #0f0e0c;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
             white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            box-shadow: 3px 3px 0 #0f0e0c;
         }
         
         .btn-primary {
-            background: var(--gradient-primary);
+            background: #0f0e0c;
             color: white;
-            box-shadow: var(--shadow);
         }
         
         .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-lg);
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 #0f0e0c;
         }
         
         .btn-secondary {
             background-color: white;
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
+            color: #0f0e0c;
         }
         
         .btn-secondary:hover {
-            background-color: var(--gray-50);
-            border-color: var(--gray-400);
+            background-color: #f5f3ef;
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 #0f0e0c;
         }
         
         .btn-lg {
             padding: 0.875rem 1.75rem;
-            font-size: 1.0625rem;
+            font-size: 1rem;
         }
         
         /* Animations */

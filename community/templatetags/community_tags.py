@@ -1,3 +1,4 @@
+import os
 from django import template
 from community.models import CommunityProfile
 
@@ -14,3 +15,11 @@ def community_avatar(user):
     except (CommunityProfile.DoesNotExist, AttributeError):
         pass
     return None
+
+
+@register.filter
+def basename(value):
+    """Extract file name from a path or name."""
+    if not value:
+        return ''
+    return os.path.basename(str(value))

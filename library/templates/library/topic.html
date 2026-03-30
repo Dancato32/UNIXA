@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{{ topic_name }} — Nexa Library</title>
+<title>{{ topic_name }} â€” Nexa Library</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -170,7 +170,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
 </head>
 <body>
 <nav class="topnav">
-  <a href="{% url 'dashboard' %}" class="brand"><span class="brand-dot">N</span>NEXA</a>
+  <a href="{% url 'community:community_home' %}" class="brand"><span class="brand-dot">N</span>NEXA</a>
   {% if level_slug %}
   <a href="{% url 'library_level' subject_key level_slug %}" class="back-btn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -189,12 +189,12 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
     <h1 class="topic-title">{{ topic_name }}</h1>
     <div class="mode-cards">
       <div class="mode-card selected" id="card-ai" onclick="selectMode('ai')">
-        <div class="mode-card-icon" style="background:#ffffff15;color:#fff">🤖</div>
+        <div class="mode-card-icon" style="background:#ffffff15;color:#fff">ðŸ¤–</div>
         <div class="mode-card-title">AI Teach</div>
         <div class="mode-card-desc">AI teaches this topic from its own knowledge, step by step.</div>
       </div>
       <div class="mode-card" id="card-book" onclick="selectMode('book')">
-        <div class="mode-card-icon" style="background:#3b82f615;color:#3b82f6">📚</div>
+        <div class="mode-card-icon" style="background:#3b82f615;color:#3b82f6">ðŸ“š</div>
         <div class="mode-card-title">Learn from Book</div>
         <div class="mode-card-desc">AI teaches using an uploaded book as the source material.</div>
       </div>
@@ -204,7 +204,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
       <select class="book-select" id="bookSelect">
         <option value="">-- Choose a book --</option>
         {% for book in books %}
-        <option value="{{ book.pk }}">{{ book.title }}{% if book.author %} — {{ book.author }}{% endif %}</option>
+        <option value="{{ book.pk }}">{{ book.title }}{% if book.author %} â€” {{ book.author }}{% endif %}</option>
         {% endfor %}
       </select>
       {% if not books %}
@@ -256,10 +256,10 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
       <!-- Hidden audio element for iOS/Android reliable playback -->
       <audio id="podcast-audio-el" playsinline preload="none" style="display:none"></audio>
       <div class="podcast-header">
-        <div class="podcast-icon">🎙</div>
+        <div class="podcast-icon">ðŸŽ™</div>
         <div>
-          <div class="podcast-title">Nexa Podcast — {{ topic_name }}</div>
-          <div class="podcast-meta" id="podcastMeta">Generating your episode…</div>
+          <div class="podcast-title">Nexa Podcast â€” {{ topic_name }}</div>
+          <div class="podcast-meta" id="podcastMeta">Generating your episodeâ€¦</div>
         </div>
         <button class="btn btn-secondary" id="podcastDownloadBtn" style="margin-left:auto;display:none" onclick="downloadPodcast()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -268,7 +268,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
       </div>
       <div class="podcast-generating" id="podcastGenerating">
         <div class="podcast-spinner"></div>
-        <div class="podcast-gen-text">Generating your podcast episode…<br><span style="color:#555;font-size:.8125rem">This may take 30–60 seconds</span></div>
+        <div class="podcast-gen-text">Generating your podcast episodeâ€¦<br><span style="color:#555;font-size:.8125rem">This may take 30â€“60 seconds</span></div>
       </div>
       <div id="podcastPlayer" style="display:none">
         <div class="podcast-controls">
@@ -314,18 +314,120 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#f0f0
       </div>
     </div>
     <div class="ai-input-wrap">
-      <textarea class="ai-input" id="aiInput" placeholder="Ask a follow-up question…" rows="1" onkeydown="handleKey(event)"></textarea>
+      <textarea class="ai-input" id="aiInput" placeholder="Ask a follow-up questionâ€¦" rows="1" onkeydown="handleKey(event)"></textarea>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
     </div>
   </div>
 </div>
-<nav class="bottom-nav">
-  <a href="{% url 'dashboard' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
-  <a href="{% url 'library_home' %}" class="bn-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Library</a>
-  <a href="{% url 'ai_chat' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Tutor</a>
-  <a href="{% url 'community:feed' %}" class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Community</a>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #0b0b0f !important;
+  border-top: 1px solid #1e1e2c !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 100 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.375rem 0.5rem;
+  color: #8a8a93;
+  border-radius: 12px;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.15s;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
+.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
+.bn-unified-item:active svg { transform: scale(1.05); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<style>
+/* Unified Bottom Nav Styles */
+.bottom-nav-unified {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: var(--surface, #ffffff) !important;
+  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
+  padding: 0 0.5rem !important;
+  padding-bottom: env(safe-area-inset-bottom, 0) !important;
+  z-index: 2000 !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  height: 60px !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
+}
+.bn-unified-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.35rem 0.25rem;
+  color: var(--text3, #8a8a93);
+  text-decoration: none;
+  flex: 1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
+.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
+.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
+.bn-unified-item:active svg { transform: scale(0.9); }
+
+@media (min-width: 900px) {
+  .bottom-nav-unified { display: none !important; }
+}
+</style>
+<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-unified-label">Feed</span>
+  </a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="bn-unified-label">Tutor</span>
+  </a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="bn-unified-label">Workspace</span>
+  </a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="bn-unified-label">Tools</span>
+  </a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="bn-unified-label">Upload</span>
+  </a>
 </nav>
 <script>
 const SUBJECT = "{{ subject_label }}";
@@ -342,7 +444,7 @@ function selectMode(mode) {
   document.getElementById("bookSelector").classList.toggle("visible", mode === "book");
 }
 
-// ── BoardRender ──
+// â”€â”€ BoardRender â”€â”€
 const BoardRender = {
   render(text) {
     // Pre-process: extract code blocks before line splitting
@@ -398,7 +500,7 @@ const BoardRender = {
         html+='<pre class="br-code">'+this.escHtml(code.replace(/^\n/,"").replace(/\n$/,""))+'</pre>';
         continue;
       }
-      // Bullet points: •, -, *
+      // Bullet points: â€¢, -, *
       if (/^[\u2022\-\*]\s/.test(t)) {
         if(inNumbered){html+="</ol>";inNumbered=false;}
         if(!inBullets){html+='<ul class="br-bullets">';inBullets=true;}
@@ -432,7 +534,7 @@ function renderKatex(el) {
   }
 }
 
-// ── Chat helpers ──
+// â”€â”€ Chat helpers â”€â”€
 function appendMsg(role, rawText) {
   const wrap = document.getElementById("aiMessages");
   const div = document.createElement("div"); div.className="msg msg-"+role;
@@ -456,7 +558,7 @@ function appendMsgStream(role, onDone) {
   const label = document.createElement("div"); label.className="msg-label";
   label.textContent = "Nexa"; div.appendChild(label);
   const body = document.createElement("div"); body.className="board-render";
-  body.innerHTML = '<span class="stream-cursor">▋</span>';
+  body.innerHTML = '<span class="stream-cursor">â–‹</span>';
   div.appendChild(body);
   wrap.appendChild(div);
   wrap.scrollTop = wrap.scrollHeight;
@@ -467,7 +569,7 @@ function appendMsgStream(role, onDone) {
     function next() {
       if (i < words.length) {
         built += (i > 0 ? ' ' : '') + words[i++];
-        body.innerHTML = BoardRender.render(built) + '<span class="stream-cursor">▋</span>';
+        body.innerHTML = BoardRender.render(built) + '<span class="stream-cursor">â–‹</span>';
         wrap.scrollTop = wrap.scrollHeight;
         setTimeout(next, 28);
       } else {
@@ -552,7 +654,7 @@ function renderQuiz(quiz) {
     html+='<div class="q-card" id="th-card-'+i+'">';
     html+='<div class="q-num">Theory '+(i+1)+' of '+(quiz.theory.length)+'</div>';
     html+='<div class="q-text" id="th-q-'+i+'">'+ escHtml(q.q) +'</div>';
-    html+='<textarea class="theory-textarea" id="th-ans-'+i+'" placeholder="Write your answer here…"></textarea>';
+    html+='<textarea class="theory-textarea" id="th-ans-'+i+'" placeholder="Write your answer hereâ€¦"></textarea>';
     html+='<div class="q-feedback" id="th-fb-'+i+'"></div>';
     html+='</div>';
   });
@@ -633,7 +735,7 @@ function showResults(result) {
     if(card) card.classList.add(r.score>=r.out_of*0.5?"correct":"wrong");
     if(fb){
       fb.className="q-feedback visible fb-theory";
-      fb.textContent=r.score+"/"+r.out_of+" — "+r.feedback;
+      fb.textContent=r.score+"/"+r.out_of+" â€” "+r.feedback;
       renderKatex(fb);
     }
   });
@@ -684,7 +786,7 @@ async function sendMessage() {
 
 function handleKey(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}
 
-// ── Podcast ──
+// â”€â”€ Podcast â”€â”€
 let podcastScript = '';
 let podcastPlaying = false;
 let podcastPaused = false;
@@ -696,7 +798,7 @@ function getPodcastAudioEl() {
   return document.getElementById('podcast-audio-el');
 }
 
-// Unlock audio on user gesture — must be called synchronously in a click handler
+// Unlock audio on user gesture â€” must be called synchronously in a click handler
 function unlockAudio() {
   const el = getPodcastAudioEl();
   if (!el || el._unlocked) return;
@@ -731,7 +833,7 @@ function getPreferredVoice() {
       || null;
 }
 
-// Split text into ~150-word chunks — small enough for both iOS and Android Chrome
+// Split text into ~150-word chunks â€” small enough for both iOS and Android Chrome
 function splitIntoChunks(text, wordsPerChunk = 150) {
   const words = text.split(/\s+/);
   const chunks = [];
@@ -749,13 +851,13 @@ let _chunkStartTime = 0;
 function startWatchdog(index) {
   clearTimeout(_watchdogTimer);
   _chunkStartTime = Date.now();
-  // Each 150-word chunk at 0.95 rate ≈ ~60s max, but Android stalls at ~14s.
+  // Each 150-word chunk at 0.95 rate â‰ˆ ~60s max, but Android stalls at ~14s.
   // Poll every 2s; if speechSynthesis is no longer speaking but we haven't
   // received onend, advance manually.
   _watchdogTimer = setInterval(() => {
     if (!podcastPlaying) { clearInterval(_watchdogTimer); return; }
     if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
-      // Speech stopped without onend — Android bug. Advance chunk.
+      // Speech stopped without onend â€” Android bug. Advance chunk.
       clearInterval(_watchdogTimer);
       podcastChunkIndex = index + 1;
       setTimeout(() => speakChunk(podcastChunkIndex), 150);
@@ -776,7 +878,7 @@ async function generatePodcast() {
   document.getElementById("podcastGenerating").style.display = "flex";
   document.getElementById("podcastPlayer").style.display = "none";
   document.getElementById("podcastScriptToggle").style.display = "none";
-  document.getElementById("podcastMeta").textContent = "Generating your episode…";
+  document.getElementById("podcastMeta").textContent = "Generating your episodeâ€¦";
   wrap.scrollIntoView({behavior:"smooth"});
   appendMsg("user", "Generate a podcast episode about: " + TOPIC);
 
@@ -798,7 +900,7 @@ async function generatePodcast() {
     document.getElementById("podcastGenerating").style.display = "none";
     document.getElementById("podcastPlayer").style.display = "block";
     document.getElementById("podcastScriptToggle").style.display = "block";
-    document.getElementById("podcastMeta").textContent = data.duration_estimate + " · " + (data.word_count||0) + " words";
+    document.getElementById("podcastMeta").textContent = data.duration_estimate + " Â· " + (data.word_count||0) + " words";
     document.getElementById("podcastScript").textContent = podcastScript;
 
     // Use Resemble.ai audio if available, else fall back to browser TTS
@@ -834,7 +936,7 @@ function podcastPlay() {
     // Resume if paused
     if (podcastPaused) {
       audioEl.play().catch(() => {
-        // play() blocked — shouldn't happen since user just clicked, but fallback
+        // play() blocked â€” shouldn't happen since user just clicked, but fallback
         podcastAudioUrl = null;
         podcastPlay();
       });

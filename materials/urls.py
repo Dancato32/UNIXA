@@ -2,6 +2,7 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
+    path('slides/<int:pk>/', views.material_slides_api, name='material_slides_api'),
     path('upload/', views.upload_material, name='upload_material'),
     path('upload/ajax/', views.upload_material_ajax, name='upload_material_ajax'),
     path('list/', views.list_materials, name='list_materials'),
