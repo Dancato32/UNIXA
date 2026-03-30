@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 SUBJECTS = [
     ('mathematics', 'Mathematics'),
@@ -470,3 +471,18 @@ class Resource(models.Model):
 
     def __str__(self):
         return f"{self.get_subject_display()} — {self.title}"
+
+class SavedTopic(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    subject = models.CharField(max_length=50, choices=SUBJECTS)
+    topic = models.CharField(max_length=255)
+    notes_json = models.JSONField(help_text="Saved step-by-step notes", null=True, blank=True)
+    podcast_segments = models.JSONField(null=True, blank=True, help_text="Saved podcast segments metadata")
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'subject', 'topic')
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.username} — {self.topic}"

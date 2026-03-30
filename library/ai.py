@@ -222,49 +222,87 @@ def quiz_resource(subject, topic, content):
     return generate_quiz(subject, topic, book_text=content)
 
 
-def generate_podcast_script(subject, topic, level=None):
+def generate_topic_notes(subject, topic):
     """
-    Generate a full ~20-minute spoken podcast script.
-    Returns plain spoken text — no markdown, no LaTeX, no symbols.
-    ~2500 words = approx 18-22 mins at natural speaking pace.
+    Generate detailed step-by-step notes for a topic, structured as 'slides'.
+    Returns a list of dicts: [{'title': '...', 'content': '...'}]
+    """
+    prompt = f"""You are a master teacher. Create a comprehensive, deep-dive set of step-by-step learning notes for the topic "{topic}" in {subject}.
+Break the topic down into at least 8-12 logical steps or slides.
+
+STRICT CONTENT RULES:
+1. Provide a depth of explanation suitable for a high-performing SHS student.
+2. Include at least 2 steps specifically dedicated to "Worked Examples" or "Solved Problems".
+3. For math/science, explicitly walk through each calculation step by step using LaTeX ($expression$).
+4. For non-math, use real-world case studies or detailed analogies.
+
+Each step MUST have:
+1. A clear, punchy title.
+2. 4-6 sentences of deep, clear explanation.
+3. Relevant LaTeX math, code blocks, or text-based diagrams.
+
+Respond with ONLY a valid JSON array of objects, no markdown fences:
+[
+  {{
+    "title": "...",
+    "content": "..."
+  }},
+  ...
+]"""
+    client = get_openai_client()
+    response = client.chat.completions.create(
+        model="openai/gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a professional educational content creator. Respond only with a raw JSON array of objects."},
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=3500,
+        temperature=0.7,
+    )
+    import json as _json
+    raw = response.choices[0].message.content.strip()
+    # Robust JSON extraction
+    try:
+        if "[" in raw and "]" in raw:
+            json_str = raw[raw.find("["):raw.rfind("]")+1]
+            return _json.loads(json_str)
+        return _json.loads(raw)
+    except Exception as e:
+        print(f"Notes Generation Error: {e}")
+        return [{"title": "Error", "content": f"Could not generate structured notes correctly: {str(e)}. Please click Start Learning again."}]
+
+
+def generate_podcast_script(subject, topic, level=None, context=None):
+    """
+    Generate a conversational podcast script for Alex and Sam.
+    Returns a script with 'Alex:' and 'Sam:' prefixes.
     """
     level_context = f" at the {level} level" if level else ""
-    prompt = f"""Write a full 20-minute educational podcast episode script about "{topic}" in {subject}{level_context}.
-
-The podcast is called "Nexa Learning" — hosted by a single engaging host named Nexa.
+    ctx_str = f"\nUse these notes as context for the discussion:\n{context}\n" if context else ""
+    prompt = f"""Create a conversational, engaging podcast script explaining "{topic}" in {subject}{level_context}.{ctx_str}
+The script should be for two hosts, Alex (male, enthusiastic) and Sam (female, analytical), discussing the topic in a way that is easy to follow by listening.
 
 STRICT RULES:
-- Write ONLY what the host says out loud — pure spoken English
-- NO markdown, NO bullet points, NO asterisks, NO headers
-- NO math symbols like $, \\frac, ^, \\sqrt — write math in words: "x squared", "the square root of x", "one half"
-- Write naturally as if speaking to a student — warm, clear, engaging
-- Use transitions: "Now let's talk about...", "Here's the interesting part...", "Think of it this way..."
-- Include real examples, analogies, and a worked example where relevant
-- End with a summary and 3 quick practice questions read aloud
-- Target: approximately 2500 words
+- Start every line with "Alex: " or "Sam: "
+- Keep it educational but conversational — use analogies, banter, and clear explanations.
+- Include an Intro, Core Concepts, a Worked Example, and a Summary.
+- NO markdown, NO bullet points, NO symbols besides Alex:/Sam:
+- Target: about 8-10 minutes of speaking time (~1500 words).
 
-STRUCTURE:
-Intro — hook the listener and say what you will cover today
-Background and context — why this topic matters
-Core concept explained clearly with analogies
-Worked example or case study walked through step by step
-Common mistakes students make and how to avoid them
-Real-world applications of this topic
-Summary of the key points covered
-Three practice questions read aloud with brief answers
-Outro — encourage the student and sign off
-
-Write only the spoken words. No stage directions, no speaker labels, no formatting."""
+Example:
+Alex: Hey everyone, welcome back! Today we're diving into something fascinating: {topic}.
+Sam: That's right, Alex. It's a foundational concept in {subject}, and it's actually cooler than people think.
+"""
 
     client = get_openai_client()
     response = client.chat.completions.create(
         model="openai/gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a professional educational podcast scriptwriter. Write only natural spoken words — no formatting, no markdown, no symbols."},
+            {"role": "system", "content": "You are a professional educational podcast scriptwriter. Write only Alex/Sam dialogue."},
             {"role": "user", "content": prompt},
         ],
-        max_tokens=3500,
-        temperature=0.75,
+        max_tokens=3000,
+        temperature=0.7,
     )
     return response.choices[0].message.content
 

@@ -2,10 +2,12 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
+from uuid import uuid4
 import io
 
-from .models import SubjectBook, Resource, SUBJECTS, SUBJECT_TOPICS, SUBJECT_LEVELS
-from .ai import ai_teach_topic, book_teach_topic, generate_quiz, grade_quiz, generate_podcast_script
+from .models import SubjectBook, Resource, SUBJECTS, SUBJECT_TOPICS, SUBJECT_LEVELS, SavedTopic
+from .ai import ai_teach_topic, book_teach_topic, generate_quiz, grade_quiz, generate_podcast_script, generate_topic_notes
+from materials.audio_utils import generate_podcast_segments
 
 SUBJECT_META = {
     'mathematics':  {'icon': '∑',   'color': '#3b82f6', 'desc': 'Algebra, Calculus, Statistics & more'},
@@ -23,20 +25,6 @@ SUBJECT_META = {
 }
 
 
-def _extract_pdf_text(file_field):
-    """Extract text from a PDF FileField. Returns empty string on failure."""
-    try:
-        import PyPDF2
-        file_field.seek(0)
-        reader = PyPDF2.PdfReader(io.BytesIO(file_field.read()))
-        pages = []
-        for page in reader.pages[:30]:  # cap at 30 pages
-            text = page.extract_text()
-            if text:
-                pages.append(text)
-        return '\n'.join(pages)
-    except Exception:
-        return ''
 
 
 @login_required
@@ -66,7 +54,6 @@ def subject_page(request, subject_key):
         raise Http404
     subject_label = subject_dict[subject_key]
     levels = SUBJECT_LEVELS.get(subject_key, {})
-    books = SubjectBook.objects.filter(subject=subject_key)
     meta = SUBJECT_META.get(subject_key, {})
     # Build level summary for display
     level_list = []
@@ -80,7 +67,6 @@ def subject_page(request, subject_key):
         'subject_key': subject_key,
         'subject_label': subject_label,
         'level_list': level_list,
-        'books': books,
         'meta': meta,
     })
 
@@ -105,7 +91,6 @@ def level_page(request, subject_key, level_slug):
     if level_name is None:
         from django.http import Http404
         raise Http404
-    books = SubjectBook.objects.filter(subject=subject_key)
     meta = SUBJECT_META.get(subject_key, {})
     # Build topic list with pre-computed slugs
     topic_list_with_slugs = []
@@ -119,7 +104,6 @@ def level_page(request, subject_key, level_slug):
         'level_slug': level_slug,
         'topics': topics,
         'topic_list': topic_list_with_slugs,
-        'books': books,
         'meta': meta,
     })
 
@@ -146,7 +130,6 @@ def topic_page(request, subject_key, topic_slug):
             level_name = name
             level_slug = name.lower().replace(' ', '-').replace('(', '').replace(')', '').replace('/', '-')
             break
-    books = SubjectBook.objects.filter(subject=subject_key)
     meta = SUBJECT_META.get(subject_key, {})
     return render(request, 'library/topic.html', {
         'subject_key': subject_key,
@@ -155,7 +138,6 @@ def topic_page(request, subject_key, topic_slug):
         'topic_slug': topic_slug,
         'level_name': level_name,
         'level_slug': level_slug,
-        'books': books,
         'meta': meta,
     })
 
@@ -244,52 +226,103 @@ def api_grade(request):
 
 
 @login_required
-def api_podcast(request):
-    """Generate a full podcast script and Resemble.ai audio as base64 data URL."""
+def api_topic_notes(request):
+    """Generate detailed step-by-step notes for a topic."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
     try:
-        import os, requests as req, base64
+        data = json.loads(request.body)
+        subject = data.get('subject', '')
+        topic = data.get('topic', '')
+        notes = generate_topic_notes(subject, topic)
+        return JsonResponse({'success': True, 'notes': notes})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def api_podcast(request):
+    """Generate a multi-host conversational podcast with audio segments."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        from materials.audio_utils import generate_podcast_segments
 
         data = json.loads(request.body)
         subject = data.get('subject', '')
         topic = data.get('topic', '')
-        level = data.get('level', None)
+        notes_context = data.get('notes_context', '')
+        # We use a unique ID for library podcasts to avoid folder collisions
+        dummy_id = f"lib_{subject}_{topic.replace(' ', '_')}_{uuid4().hex[:8]}"
 
-        script = generate_podcast_script(subject, topic, level=level)
-
-        word_count = len(script.split())
-        duration_mins = round(word_count / 130)
-
-        # Generate Resemble.ai audio — return as base64 data URL (no file system needed)
-        audio_url = None
-        try:
-            api_key = os.environ.get('RESEMBLE_API_KEY', '')
-            if api_key:
-                voice_uuid = 'f644f59c'  # My Custom Voice NEXA
-                resp = req.post(
-                    'https://f.cluster.resemble.ai/synthesize',
-                    headers={'Authorization': 'Bearer ' + api_key, 'Content-Type': 'application/json'},
-                    json={'voice_uuid': voice_uuid, 'data': script[:2000], 'output_format': 'mp3'},
-                    timeout=120
-                )
-                if resp.status_code == 200:
-                    audio_b64 = resp.json().get('audio_content')
-                    if audio_b64:
-                        audio_url = f'data:audio/mpeg;base64,{audio_b64}'
-                        print('[RESEMBLE] library podcast audio ready as data URL')
-                else:
-                    print(f'[RESEMBLE] Error {resp.status_code}: {resp.text[:200]}')
-        except Exception as e:
-            print(f'[RESEMBLE] library podcast exception: {e}')
+        script = generate_podcast_script(subject, topic, context=notes_context)
+        
+        # Generate audio segments (Alex & Sam)
+        segments = generate_podcast_segments(script, dummy_id)
 
         return JsonResponse({
             'success': True,
-            'script': script,
-            'audio_url': audio_url,
-            'duration_estimate': f'~{duration_mins} minutes',
-            'word_count': word_count,
+            'script_json': segments,
+            'topic': topic,
         })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def api_podcast_question(request):
+    """Answer questions during the library podcast."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        from ai_tutor.ai_utils import ask_ai
+
+        data = json.loads(request.body)
+        question = data.get('question', '').strip()
+        context = data.get('context', '')
+        topic = data.get('topic', '')
+
+        prompt = f"""You are Sam and Alex, hosts of a study podcast. A student just "called in" with a question about "{topic}".
+        
+Podcast Discussion Context:
+{context}
+
+Student's Question: "{question}"
+
+Respond as Sam or Alex in a friendly, conversational way. Answer quickly and accurately. 
+End with: "Alright, back to the show!"
+"""
+        response = ask_ai(prompt, user=request.user, use_rag=False)
+        segments = generate_podcast_segments(response, f"q_{uuid4().hex[:8]}")
+        audio_url = segments[0]['audio_url'] if segments else None
+
+        return JsonResponse({
+            'success': True,
+            'response': response,
+            'audio_url': audio_url
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def api_save_topic(request):
+    """Save notes and/or podcast for a topic."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        subject = data.get('subject')
+        topic = data.get('topic')
+        notes = data.get('notes')
+        podcast = data.get('podcast')
+
+        obj, created = SavedTopic.objects.update_or_create(
+            user=request.user, subject=subject, topic=topic,
+            defaults={'notes_json': notes, 'podcast_segments': podcast}
+        )
+
+        return JsonResponse({'success': True, 'saved': True})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 

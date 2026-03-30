@@ -8,6 +8,9 @@ urlpatterns = [
     path('api/quiz/', views.api_quiz, name='api_quiz'),
     path('api/grade/', views.api_grade, name='api_grade'),
     path('api/podcast/', views.api_podcast, name='api_podcast'),
+    path('api/podcast-question/', views.api_podcast_question, name='api_podcast_question'),
+    path('api/topic-notes/', views.api_topic_notes, name='api_topic_notes'),
+    path('api/save-topic/', views.api_save_topic, name='api_save_topic'),
     path('api/teach/', views.api_teach, name='api_teach'),
     # Pages
     path('', views.library_home, name='library_home'),
