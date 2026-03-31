@@ -5,170 +5,159 @@
 
 {% block content_scroll_class %}bg-light{% endblock %}
 {% block nav_upload %}active{% endblock %}
+{% block fab %}{% endblock %}
 
 {% block extra_css %}
 <style>
-/* ── Paw Materials Variables ── */
+/* ── Paw Materials Hand-Drawn Transformation ── */
 :root {
-  --mat-bg: var(--bg);
-  --mat-surface: var(--surface);
-  --mat-bdr: var(--border);
-  --mat-text: var(--text);
-  --mat-sub: var(--text3);
-  --mat-shadow: var(--shadow-sm);
-  --mat-shadow-hover: var(--shadow);
+  --mat-bg: #fff;
+  --mat-surface: #fff;
+  --mat-ink: #000;
+  --mat-sub: #666;
+  --mat-border-width: 2.5px;
 }
 
-.materials-page { padding: 1.5rem; max-width: 680px; margin: 0 auto; min-height: 100vh; background: var(--mat-bg); }
+.materials-page { 
+  padding: 2rem 1.5rem 6rem; 
+  max-width: 800px; 
+  margin: 0 auto; 
+  min-height: 100vh; 
+  background: var(--mat-bg);
+}
 
-/* Page Header */
+/* Page Header - Hand Drawn */
 .mat-header {
-  display: flex; align-items: center; gap: 1rem;
-  margin-bottom: 2rem; position: sticky; top: 0;
-  background: var(--mat-bg); padding: 1rem 0; z-index: 10;
-  border-bottom: 1px solid var(--mat-bdr);
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 3rem; padding-bottom: 1.5rem;
+  border-bottom: var(--mat-border-width) solid var(--mat-ink);
 }
+
+.mat-title-group { display: flex; flex-direction: column; gap: 0.25rem; }
 .mat-title-main {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.375rem; font-weight: 700; color: var(--mat-text);
-  margin-right: .5rem; white-space: nowrap; letter-spacing: -0.02em;
+  font-size: 2.25rem; font-weight: 800; color: var(--mat-ink);
+  letter-spacing: -0.04em; line-height: 1; text-transform: uppercase;
 }
-.mat-search-wrap { flex: 1; position: relative; }
-.mat-search-wrap svg { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--mat-sub); }
-.mat-search-input {
-  width: 100%; padding: .625rem 1rem .625rem 2.25rem;
-  border: 1.5px solid var(--mat-bdr); border-radius: var(--radius);
-  font-size: .875rem; background: var(--mat-surface);
-  outline: none; transition: border-color .2s, box-shadow .2s;
-}
-.mat-search-input:focus { border-color: #F59E0B; box-shadow: 0 0 0 3px rgba(245,158,11,.1); }
-.mat-upload-btn {
-  background: #F59E0B; color: #fff;
-  font-weight: 600; font-size: .875rem;
-  padding: .625rem 1.125rem; border-radius: var(--radius); border: none;
-  display: flex; align-items: center; gap: .5rem; flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(245,158,11,.3); transition: all .2s; cursor: pointer;
-}
-.mat-upload-btn:hover { background: #D97706; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(245,158,11,.4); }
+.mat-subtitle { font-size: 0.9375rem; font-weight: 600; color: var(--mat-sub); }
 
+.mat-upload-btn {
+  background: var(--mat-ink); color: #fff;
+  font-weight: 800; font-size: 0.875rem; text-transform: uppercase;
+  padding: 0.75rem 1.5rem; border-radius: 12px; border: var(--mat-border-width) solid var(--mat-ink);
+  display: flex; align-items: center; gap: 0.625rem; transition: all 0.2s;
+  box-shadow: 4px 4px 0px rgba(0,0,0,1);
+}
+.mat-upload-btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0px rgba(0,0,0,1); }
+.mat-upload-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px rgba(0,0,0,1); }
+
+/* Section Title */
+.section-title-wrap { margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
 .section-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.25rem; font-weight: 700; color: var(--mat-text);
-  margin-bottom: .25rem; letter-spacing: -0.02em;
+  font-size: 1.125rem; font-weight: 800; color: var(--mat-ink);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding-bottom: 4px; border-bottom: 3px solid #F59E0B;
 }
-.section-count { font-size: .875rem; color: var(--mat-sub); margin-bottom: 1.5rem; }
+.section-count { font-size: 0.8125rem; font-weight: 700; color: #fff; background: var(--mat-ink); padding: 2px 8px; border-radius: 6px; }
 
-/* Material Card */
+/* Hand-Drawn Material Card */
 .mat-card {
-  background: var(--mat-surface); border: 1px solid var(--mat-bdr); border-radius: var(--radius-lg);
-  padding: 1.375rem; margin-bottom: 1rem; position: relative;
-  box-shadow: var(--mat-shadow);
-  transition: transform .2s, box-shadow .2s;
+  background: #fff; border: var(--mat-border-width) solid var(--mat-ink); border-radius: 20px;
+  padding: 1.5rem; margin-bottom: 1.5rem; position: relative;
+  box-shadow: 6px 6px 0px rgba(0,0,0,0.05);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.mat-card:hover { transform: translateY(-2px); box-shadow: var(--mat-shadow-hover); }
+.mat-card:hover { transform: translateY(-4px); box-shadow: 10px 10px 0px rgba(0,0,0,0.08); }
 
-.mat-card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.mat-card-top { display: flex; align-items: center; gap: 1.25rem; }
 .mat-icon-box {
-  width: 48px; height: 48px; border-radius: 12px;
+  width: 60px; height: 60px; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.375rem; flex-shrink: 0;
-  background: rgba(245,158,11,.1);
+  font-size: 1.75rem; flex-shrink: 0;
+  border: var(--mat-border-width) solid var(--mat-ink);
+  background: #fff;
 }
+.mat-icon-box.mat-icon-pdf { background: #fee2e2; }
+.mat-icon-box.mat-icon-word { background: #e0f2fe; }
+
 .mat-info { flex: 1; min-width: 0; }
-.mat-name { font-size: .9375rem; font-weight: 700; color: var(--mat-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mat-tags { display: flex; align-items: center; gap: .5rem; margin-top: .25rem; }
+.mat-name { 
+  font-size: 1.125rem; font-weight: 800; color: var(--mat-ink); 
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: 'Poppins', sans-serif; letter-spacing: -0.01em;
+}
+.mat-meta { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem; }
 .mat-tag {
-  font-size: .6875rem; font-weight: 600; padding: .2rem .625rem;
-  border-radius: 20px;
-  border: 1px solid var(--mat-bdr); background: var(--surface2); color: var(--mat-text);
+  font-size: 0.625rem; font-weight: 800; text-transform: uppercase;
+  padding: 2px 8px; border: 1.5px solid var(--mat-ink); border-radius: 4px;
 }
-.mat-tag-user { color: var(--mat-sub); font-weight: 500; font-size: .75rem; border: none; background: none; }
-.mat-date { font-size: .8125rem; color: var(--mat-sub); margin-top: .375rem; }
+.mat-date { font-size: 0.75rem; font-weight: 600; color: var(--mat-sub); }
 
+/* Actions */
 .mat-card-actions {
-  position: absolute; top: 1rem; right: 1rem;
-  display: flex; gap: 4px; background: var(--surface2);
-  padding: 4px; border-radius: 10px; border: 1px solid var(--mat-bdr);
+  display: flex; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.25rem;
+  border-top: 1.5px dashed #ddd;
 }
-.mat-action-btn {
-  width: 32px; height: 32px; border-radius: 8px; border: none;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--mat-sub); background: transparent; transition: all .2s; cursor: pointer;
+.mat-pill-btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; border-radius: 10px;
+  font-size: 0.8125rem; font-weight: 700; text-transform: uppercase;
+  border: var(--mat-border-width) solid var(--mat-ink);
+  background: #fff; color: var(--mat-ink);
+  transition: all 0.2s; cursor: pointer;
 }
-.mat-action-btn:hover {
-  background: var(--surface); color: var(--mat-text); box-shadow: var(--shadow-sm);
-}
-.mat-action-btn.del { color: #EF4444; }
-.mat-action-btn.del:hover { background: rgba(239,68,68,.1); color: #DC2626; }
-
-/* Study Tools Row */
-.mat-study-tools { display: flex; flex-wrap: wrap; gap: .625rem; padding-top: 1rem; border-top: 1px solid var(--surface2); }
-.study-btn {
-  background: var(--surface2); border: 1px solid var(--mat-bdr); border-radius: 8px;
-  padding: .4375rem .875rem; font-size: .8125rem; font-weight: 600;
-  display: flex; align-items: center; gap: .375rem; color: var(--text2);
-  transition: all .2s; cursor: pointer;
-}
-.study-btn:hover { background: #F59E0B; color: #fff; border-color: #F59E0B; transform: translateY(-1px); }
+.mat-pill-btn:hover { background: var(--mat-ink); color: #fff; }
+.mat-pill-btn.del { border-color: #EF4444; color: #EF4444; }
+.mat-pill-btn.del:hover { background: #EF4444; color: #fff; }
 
 /* ── Upload Overlay ── */
 .upload-overlay {
-  position: fixed; inset: 0; background: rgba(255,255,255,.8);
-  backdrop-filter: blur(10px); z-index: 9999;
+  position: fixed; inset: 0; background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(8px); z-index: 9999;
   display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 1.5rem;
-  opacity: 0; pointer-events: none; transition: opacity .4s cubic-bezier(.4, 0, .2, 1);
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
 }
 .upload-overlay.active { opacity: 1; pointer-events: all; }
-
 .upload-modal {
-  background: #fff; padding: 2.5rem; border-radius: 24px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.1);
+  background: #fff; padding: 3rem; border: 4px solid var(--mat-ink); border-radius: 30px;
+  box-shadow: 12px 12px 0px rgba(0,0,0,1);
   display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
-  transform: scale(.9) translateY(20px); transition: all .5s cubic-bezier(.34, 1.56, .64, 1);
+  max-width: 90%;
 }
-.upload-overlay.active .upload-modal { transform: scale(1) translateY(0); }
-
-.loader-container { position: relative; width: 80px; height: 80px; }
-
-/* Circle Spinner */
+.loader-container { position: relative; width: 100px; height: 100px; }
 .circle-loader {
-  border: 4px solid #f3f3f3; border-top: 4px solid #F59E0B;
-  border-radius: 50%; width: 80px; height: 80px;
-  animation: spin 1s linear infinite; transition: all .4s ease;
+  border: 6px solid #f3f3f3; border-top: 6px solid var(--mat-ink);
+  border-radius: 50%; width: 100px; height: 100px; animation: spin 1s linear infinite;
 }
-.circle-loader.load-complete {
-  animation: none; border-color: #22C55E;
-}
+.circle-loader.load-complete { animation: none; border-color: #22C55E; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* Checkmark */
 .checkmark { display: none; }
 .checkmark.draw:after {
   animation-duration: 800ms; animation-timing-function: ease;
   animation-name: checkmark; transform: scaleX(-1) rotate(135deg);
 }
 .checkmark:after {
-  opacity: 1; height: 40px; width: 22px;
-  transform-origin: left top; border-right: 4px solid #22C55E;
-  border-top: 4px solid #22C55E; content: '';
-  left: 18px; top: 42px; position: absolute;
+  opacity: 1; height: 50px; width: 25px;
+  transform-origin: left top; border-right: 6px solid #22C55E;
+  border-top: 6px solid #22C55E; content: '';
+  left: 20px; top: 55px; position: absolute;
 }
 @keyframes checkmark {
   0% { height: 0; width: 0; opacity: 1; }
-  20% { height: 0; width: 22px; opacity: 1; }
-  40% { height: 40px; width: 22px; opacity: 1; }
-  100% { height: 40px; width: 22px; opacity: 1; }
+  20% { height: 0; width: 25px; opacity: 1; }
+  40% { height: 50px; width: 25px; opacity: 1; }
+  100% { height: 50px; width: 25px; opacity: 1; }
 }
-
 .upload-status-text {
-  font-family: 'Poppins', sans-serif; font-size: 1.125rem; font-weight: 700;
-  color: var(--mat-text); letter-spacing: -0.01em;
+  font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 800;
+  color: var(--mat-ink); text-transform: uppercase; letter-spacing: -0.02em;
 }
 
 /* ── Theme Overrides ── */
-.mat-icon-pdf { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
-.mat-icon-word { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+.mat-icon-pdf { background: #fee2e2 !important; }
+.mat-icon-word { background: #e0f2fe !important; }
 </style>
 {% endblock %}
 
@@ -186,42 +175,63 @@
 
 <div class="materials-page">
   <div class="mat-header">
-    <div class="mat-title-main">Study Materials</div>
-    <div class="mat-search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" class="mat-search-input" placeholder="Search your materials...">
+    <div class="mat-title-group">
+      <div class="mat-title-main">Material Library</div>
+      <div class="mat-subtitle">Your academic archive & AI study tools</div>
     </div>
-    <button class="mat-upload-btn" onclick="document.getElementById('mFile').click()">+ Upload</button>
+    <button class="mat-upload-btn" onclick="document.getElementById('mFile').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:18px;height:18px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload New
+    </button>
     <input type="file" id="mFile" hidden onchange="doUp(this)">
   </div>
 
-  <div class="section-title">My Study Materials</div>
-  <div class="section-count">{{ materials|length }} materials</div>
+  <div class="section-title-wrap">
+    <div class="section-title">My Materials</div>
+    <div class="section-count">{{ materials|length }}</div>
+  </div>
 
   <div class="mat-list">
     {% for m in materials %}
     <div class="mat-card">
       <div class="mat-card-top">
         <div class="mat-icon-box {% if m.material_type == 'PDF' %}mat-icon-pdf{% else %}mat-icon-word{% endif %}">
-          {% if m.material_type == 'PDF' %}📄{% else %}📝{% endif %}
+          {% if m.material_type == 'PDF' %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:30px;height:30px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          {% else %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:30px;height:30px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+          {% endif %}
         </div>
         <div class="mat-info">
           <div class="mat-name">{{ m.title }}</div>
-          <div class="mat-tags">
-            <span class="mat-tag {% if m.material_type == 'PDF' %}mat-tag-pdf{% else %}mat-tag-word{% endif %}">{{ m.material_type }}</span>
-            {% if m.subject %}<span class="mat-tag mat-tag-user">{{ m.subject }}</span>{% endif %}
+          <div class="mat-meta">
+            <span class="mat-tag">{{ m.material_type }}</span>
+            <span class="mat-date">{{ m.uploaded_at|date:"M d, Y" }}</span>
           </div>
-          <div class="mat-date">{{ m.uploaded_at|date:"M d, Y" }}</div>
         </div>
       </div>
 
       <div class="mat-card-actions">
-        <a href="{% url 'learn_material' m.id %}" class="mat-action-btn" title="View"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg></a>
-        <a href="{% url 'delete_material' m.id %}" class="mat-action-btn del" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
+        <a href="{% url 'learn_material' m.id %}" class="mat-pill-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Study Studio
+        </a>
+        <a href="{% url 'delete_material' m.id %}" class="mat-pill-btn del">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Remove
+        </a>
       </div>
     </div>
     {% endfor %}
   </div>
+
+  {% if not materials %}
+  <div style="text-align:center;padding:5rem 2rem;border:3px dashed #ddd;border-radius:24px;background:#fcfcfc;">
+    <div style="font-size:3rem;margin-bottom:1rem;">📂</div>
+    <div style="font-family:'Poppins',sans-serif;font-size:1.25rem;font-weight:800;color:var(--mat-ink);text-transform:uppercase;">No materials yet</div>
+    <p style="color:var(--mat-sub);margin-top:0.5rem;font-size:0.9375rem;">Upload your first PDF or document to start learning with AI.</p>
+  </div>
+  {% endif %}
 </div>
 
 <script>
@@ -278,13 +288,5 @@ async function doUp(input) {
   }
   input.value = '';
 }
-
-document.querySelector('.mat-search-input')?.addEventListener('input', function() {
-  const q = this.value.toLowerCase();
-  document.querySelectorAll('.mat-card').forEach(card => {
-    const name = card.querySelector('.mat-name')?.textContent.toLowerCase() || '';
-    card.style.display = name.includes(q) ? '' : 'none';
-  });
-});
 </script>
 {% endblock %}

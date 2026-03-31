@@ -2,243 +2,488 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ resource.title }} â€” Nexa Library</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{{ resource.title }} — Paw Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',-apple-system,sans-serif;background:#F8FAFC;color:#111827;min-height:100vh}
-.topnav{height:52px;background:#ffffff;border-bottom:1.5px solid #E5E7EB;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;position:sticky;top:0;z-index:100}
-.brand{font-weight:700;font-size:1rem;color:#fff;text-decoration:none;display:flex;align-items:center;gap:.5rem}
-.brand-dot{width:22px;height:22px;background:#fff;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#000;font-weight:800}
-.back-btn{color:#6B7280;text-decoration:none;font-size:.875rem;display:flex;align-items:center;gap:.375rem;margin-left:auto}
-.back-btn:hover{color:#fff}
-.back-btn svg{width:16px;height:16px}
-/* layout */
-.layout{display:grid;grid-template-columns:1fr 420px;height:calc(100vh - 52px);overflow:hidden}
-/* reading pane */
-.reading-pane{overflow-y:auto;padding:2rem}
-.resource-meta{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap}
-.badge{padding:.25rem .75rem;border-radius:999px;font-size:.75rem;font-weight:600;background:#F1F5F9;color:#6B7280;border:1.5px solid #E5E7EB}
-.resource-title{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.5rem}
-.resource-source{font-size:.8125rem;color:#6B7280;margin-bottom:2rem}
-.resource-content{font-size:.9375rem;line-height:1.8;color:#374151;white-space:pre-wrap;word-break:break-word}
-/* action buttons */
-.action-bar{display:flex;gap:.75rem;margin-bottom:2rem;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.125rem;border-radius:8px;font-size:.875rem;font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none}
-.btn-primary{background:#fff;color:#000}
-.btn-primary:hover{background:#e0e0e0}
-.btn-secondary{background:#F1F5F9;color:#111827;border:1.5px solid #E5E7EB}
-.btn-secondary:hover{background:#222;border-color:#333}
-.btn svg{width:16px;height:16px}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-/* AI pane */
-.ai-pane{background:#ffffff;border-left:1.5px solid #E5E7EB;display:flex;flex-direction:column;overflow:hidden}
-.ai-header{padding:1rem 1.25rem;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:.625rem}
-.ai-header-title{font-weight:600;font-size:.9375rem}
-.ai-header-sub{font-size:.75rem;color:#6B7280;margin-left:auto}
-.ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:1rem}
-.msg{padding:.875rem 1rem;border-radius:10px;font-size:.875rem;line-height:1.7;white-space:pre-wrap;word-break:break-word}
-.msg-user{background:#F1F5F9;color:#111827;align-self:flex-end;max-width:85%;border:1.5px solid #E5E7EB}
-.msg-ai{background:#ffffff;color:#374151;align-self:flex-start;max-width:100%;border:1.5px solid #E5E7EB}
-.msg-label{font-size:.6875rem;font-weight:600;color:#6B7280;margin-bottom:.375rem;text-transform:uppercase;letter-spacing:.05em}
-.ai-input-wrap{padding:1rem;border-top:1.5px solid #E5E7EB;display:flex;gap:.625rem}
-.ai-input{flex:1;background:#ffffff;border:1.5px solid #E5E7EB;border-radius:8px;padding:.625rem .875rem;color:#111827;font-size:.875rem;font-family:inherit;resize:none;outline:none;transition:border-color .15s;min-height:44px;max-height:120px}
-.ai-input:focus{border-color:#9CA3AF}
-.send-btn{width:40px;height:40px;background:#fff;color:#000;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
-.send-btn:hover{background:#e0e0e0}
-.send-btn:disabled{opacity:.4;cursor:not-allowed}
-.send-btn svg{width:18px;height:18px}
-.typing{display:flex;gap:4px;align-items:center;padding:.5rem 0}
-.typing span{width:6px;height:6px;background:#444;border-radius:50%;animation:bounce .8s infinite}
-.typing span:nth-child(2){animation-delay:.15s}
-.typing span:nth-child(3){animation-delay:.3s}
-@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
-/* mobile */
-@media(max-width:900px){
-  .layout{grid-template-columns:1fr;height:auto}
-  .ai-pane{height:500px;border-left:none;border-top:1.5px solid #E5E7EB}
-  body{padding-bottom:70px}
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#F8FAFC;--surface:#fff;--surface2:#F1F5F9;--border:#E5E7EB;
+  --text:#111827;--text2:#374151;--text3:#6B7280;--text4:#9CA3AF;
+  --primary:#0F172A;--accent:#F59E0B;--accent-h:#D97706;
+  --accent-s:rgba(245,158,11,.1);--accent-g:rgba(245,158,11,.25);
+  --r:10px;--sh-sm:0 1px 3px rgba(0,0,0,.08);--sh:0 4px 12px rgba(0,0,0,.08);
 }
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#ffffff;border-top:1.5px solid #E5E7EB;padding:.5rem;z-index:100}
-@media(max-width:768px){.bottom-nav{display:flex;justify-content:space-around}}
-.bn-item{display:flex;flex-direction:column;align-items:center;gap:.2rem;color:#6B7280;text-decoration:none;font-size:.625rem;padding:.4rem .6rem;border-radius:8px}
-.bn-item.active,.bn-item:hover{color:#fff;background:#F1F5F9}
-.bn-item svg{width:20px;height:20px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ── Topbar ── */
+.topbar{
+  height:52px;background:var(--primary);
+  display:flex;align-items:center;padding:0 1rem;gap:.75rem;
+  flex-shrink:0;z-index:200;
+}
+.brand{display:flex;align-items:center;gap:.5rem;font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;color:#fff;}
+.brand-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#fff;flex-shrink:0;}
+.page-counter{display:flex;align-items:center;gap:.375rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.3rem .75rem;font-size:.8125rem;font-weight:600;color:#F1F5F9;}
+.page-counter svg{width:14px;height:14px;color:#94A3B8;}
+.search-bar{
+  flex:1;max-width:360px;display:flex;align-items:center;gap:.5rem;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:8px;padding:.375rem .875rem;transition:all .2s;
+}
+.search-bar:focus-within{background:rgba(255,255,255,.12);border-color:rgba(245,158,11,.5);}
+.search-bar svg{width:15px;height:15px;color:#94A3B8;flex-shrink:0;}
+.search-bar input{background:none;border:none;outline:none;color:#F1F5F9;font-size:.875rem;font-family:inherit;flex:1;}
+.search-bar input::placeholder{color:#64748B;}
+.topbar-right{display:flex;align-items:center;gap:.5rem;margin-left:auto;}
+.tb-btn{
+  width:34px;height:34px;border-radius:8px;border:none;
+  background:rgba(255,255,255,.08);color:#94A3B8;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;flex-shrink:0;
+}
+.tb-btn:hover{background:rgba(255,255,255,.14);color:#F1F5F9;}
+.tb-btn svg{width:16px;height:16px;}
+.tb-btn.active{background:rgba(245,158,11,.2);color:#F59E0B;}
+
+/* ── Main Shell ── */
+.shell{flex:1;display:flex;overflow:hidden;}
+
+/* ── Viewer Pane ── */
+.viewer-pane{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  background:#E2E8F0;position:relative;
+}
+.viewer-toolbar{
+  height:44px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 .875rem;gap:.5rem;flex-shrink:0;
+  box-shadow:var(--sh-sm);
+}
+.nav-btn{
+  width:32px;height:32px;border-radius:7px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;flex-shrink:0;
+}
+.nav-btn:hover{background:var(--accent-s);border-color:rgba(245,158,11,.3);color:var(--accent-h);}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+.nav-btn svg{width:14px;height:14px;}
+.page-input-wrap{display:flex;align-items:center;gap:.375rem;font-size:.8125rem;color:var(--text3);}
+.page-input{
+  width:48px;text-align:center;padding:.25rem .375rem;
+  border:1.5px solid var(--border);border-radius:6px;
+  font-size:.8125rem;font-family:inherit;color:var(--text);
+  background:var(--surface);outline:none;transition:border-color .2s;
+}
+.page-input:focus{border-color:var(--accent);}
+.toolbar-sep{width:1px;height:20px;background:var(--border);margin:0 .25rem;}
+.zoom-btn{
+  width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;font-size:.875rem;font-weight:700;
+}
+.zoom-btn:hover{background:var(--accent-s);border-color:rgba(245,158,11,.3);color:var(--accent-h);}
+.zoom-level{font-size:.75rem;font-weight:600;color:var(--text3);min-width:36px;text-align:center;}
+.toolbar-actions{margin-left:auto;display:flex;gap:.375rem;}
+.action-btn{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.3rem .75rem;border-radius:7px;font-size:.8125rem;font-weight:600;
+  border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);
+  cursor:pointer;transition:all .2s;
+}
+.action-btn:hover{background:var(--accent-s);border-color:rgba(245,158,11,.3);color:var(--accent-h);}
+.action-btn svg{width:13px;height:13px;}
+.action-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.action-btn.primary:hover{background:var(--accent-h);}
+
+/* ── Viewer Content ── */
+.viewer-content{
+  flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;
+  padding:1.5rem;gap:0;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.viewer-content::-webkit-scrollbar{width:6px;}
+.viewer-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.page-display{
+  background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.15);
+  border-radius:4px;overflow:hidden;
+  transition:transform .2s;transform-origin:top center;
+  max-width:100%;
+}
+.page-display img{display:block;width:100%;height:auto;}
+.page-display .text-page{
+  padding:3rem 3.5rem;min-height:600px;
+  font-size:.9375rem;line-height:1.8;color:var(--text2);
+  white-space:pre-wrap;word-break:break-word;
+  font-family:'Georgia',serif;
+}
+.page-display .text-page h1,.page-display .text-page h2,.page-display .text-page h3{
+  font-family:'Poppins',sans-serif;color:var(--text);margin-bottom:.75rem;margin-top:1.5rem;
+}
+
+/* ── AI Pane ── */
+.ai-pane{
+  width:360px;flex-shrink:0;background:var(--surface);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+}
+.ai-pane.hidden{transform:translateX(100%);}
+.ai-header{
+  padding:.875rem 1.125rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:.5rem;flex-shrink:0;
+  background:var(--primary);
+}
+.ai-header-title{font-weight:700;font-size:.875rem;color:#F1F5F9;}
+.ai-header-sub{font-size:.75rem;color:#64748B;margin-left:.25rem;}
+.ai-close{
+  margin-left:auto;width:28px;height:28px;border-radius:6px;
+  background:rgba(255,255,255,.08);border:none;color:#94A3B8;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .15s;
+}
+.ai-close:hover{background:rgba(255,255,255,.14);color:#F1F5F9;}
+.ai-close svg{width:14px;height:14px;}
+
+/* Quick prompts */
+.quick-prompts{padding:.75rem;border-bottom:1px solid var(--border);display:flex;gap:.375rem;flex-wrap:wrap;flex-shrink:0;}
+.qp{
+  padding:.25rem .625rem;border-radius:20px;font-size:.75rem;font-weight:600;
+  border:1.5px solid var(--border);background:var(--surface2);color:var(--text3);
+  cursor:pointer;transition:all .2s;
+}
+.qp:hover{background:var(--accent-s);border-color:rgba(245,158,11,.3);color:var(--accent-h);}
+
+.ai-messages{flex:1;overflow-y:auto;padding:.875rem;display:flex;flex-direction:column;gap:.75rem;background:#FAFBFC;scrollbar-width:thin;}
+.ai-messages::-webkit-scrollbar{width:4px;}
+.ai-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.msg{padding:.75rem .875rem;border-radius:10px;font-size:.875rem;line-height:1.7;word-break:break-word;}
+.msg-user{background:var(--primary);color:#F1F5F9;align-self:flex-end;max-width:88%;border-radius:10px 10px 3px 10px;}
+.msg-ai{background:var(--surface);color:var(--text2);align-self:flex-start;max-width:100%;border:1px solid var(--border);border-radius:3px 10px 10px 10px;box-shadow:var(--sh-sm);}
+.msg-label{font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem;opacity:.6;}
+.typing-dots{display:flex;gap:4px;align-items:center;padding:.25rem 0;}
+.typing-dots span{width:6px;height:6px;background:var(--text4);border-radius:50%;animation:tdot 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,80%,100%{transform:scale(0);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+
+.ai-input-wrap{
+  padding:.75rem;border-top:1px solid var(--border);
+  display:flex;gap:.5rem;align-items:flex-end;flex-shrink:0;background:var(--surface);
+}
+.ai-input{
+  flex:1;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:8px;padding:.5rem .75rem;color:var(--text);
+  font-size:.875rem;font-family:inherit;resize:none;outline:none;
+  transition:border-color .2s,box-shadow .2s;min-height:38px;max-height:100px;
+}
+.ai-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,158,11,.1);}
+.ai-input::placeholder{color:var(--text4);}
+.send-btn{
+  width:36px;height:36px;background:var(--accent);color:#fff;
+  border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:all .2s;
+  box-shadow:0 2px 6px var(--accent-g);
+}
+.send-btn:hover{background:var(--accent-h);}
+.send-btn:disabled{opacity:.4;cursor:not-allowed;}
+.send-btn svg{width:16px;height:16px;}
+
+/* ── Search Results Overlay ── */
+.search-overlay{
+  display:none;position:absolute;top:44px;left:0;right:0;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  max-height:280px;overflow-y:auto;z-index:100;
+  box-shadow:var(--sh);
+}
+.search-overlay.open{display:block;}
+.search-result{
+  padding:.625rem 1rem;cursor:pointer;border-bottom:1px solid var(--border);
+  font-size:.875rem;transition:background .15s;
+}
+.search-result:hover{background:var(--accent-s);}
+.search-result-page{font-size:.75rem;color:var(--accent-h);font-weight:600;margin-bottom:.125rem;}
+.search-result-text{color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.search-empty{padding:1.5rem;text-align:center;color:var(--text4);font-size:.875rem;}
+
+/* ── Mobile overlay ── */
+.ai-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:299;backdrop-filter:blur(4px);}
+.ai-overlay.open{display:block;}
+
+/* ── Bottom Nav ── */
+.bottom-nav-unified{display:flex!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;background:#fff!important;border-top:1px solid var(--border)!important;padding:0 .5rem!important;padding-bottom:env(safe-area-inset-bottom,0)!important;z-index:300!important;justify-content:space-around!important;align-items:center!important;height:60px!important;box-shadow:0 -4px 16px rgba(0,0,0,.06)!important;}
+.bn-unified-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:.375rem .5rem;color:var(--text3);text-decoration:none;flex:1;transition:color .2s;min-width:0;background:none;border:none;cursor:pointer;}
+.bn-unified-item svg{width:22px;height:22px;stroke-width:2px;}
+.bn-unified-label{font-size:.625rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+.bn-unified-item.active,.bn-unified-item:hover{color:#D97706;}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  body{overflow:auto;}
+  .shell{flex-direction:column;overflow:visible;}
+  .viewer-pane{height:calc(100vh - 52px - 60px);overflow:hidden;}
+  .ai-pane{
+    position:fixed;top:0;right:0;bottom:0;z-index:300;
+    transform:translateX(100%);width:min(360px,92vw);
+  }
+  .ai-pane.open{transform:translateX(0);}
+  .ai-overlay.open{display:block;}
+}
+@media(min-width:900px){
+  .bottom-nav-unified{display:none!important;}
+  .ai-overlay{display:none!important;}
+}
+@media(max-width:600px){
+  .topbar{padding:0 .75rem;gap:.5rem;}
+  .search-bar{max-width:none;flex:1;}
+  .page-counter{display:none;}
+  .viewer-toolbar{padding:0 .625rem;gap:.375rem;}
+  .toolbar-actions .action-btn span{display:none;}
+}
 </style>
+
 </head>
 <body>
-<nav class="topnav">
-  <a href="{% url 'community:community_home' %}" class="brand"><span class="brand-dot">N</span>Paw</a>
-  <a href="{% url 'library_subject' resource.subject %}" class="back-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    {{ resource.get_subject_display }}
+<!-- Topbar -->
+<nav class="topbar">
+  <a href="{% url 'library_subject' resource.subject %}" class="brand">
+    <div class="brand-icon">🐾</div>
+    <span>Paw</span>
   </a>
+  <div class="page-counter" id="pageCounter">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span id="topPageNum">1</span> / <span id="topPageTotal">—</span>
+  </div>
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search slides…" autocomplete="off" oninput="handleSearch(this.value)">
+  </div>
+  <div class="topbar-right">
+    <button class="tb-btn" id="aiToggleBtn" onclick="toggleAI()" title="AI Tutor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+  </div>
 </nav>
 
-<div class="layout">
-  <!-- Reading pane -->
-  <div class="reading-pane">
-    <div class="resource-meta">
-      <span class="badge">{{ resource.get_subject_display }}</span>
-      <span class="badge">{{ resource.topic }}</span>
-    </div>
-    <h1 class="resource-title">{{ resource.title }}</h1>
-    <div class="resource-source">Source: {{ resource.source }}</div>
-
-    <div class="action-bar">
-      <button class="btn btn-primary" id="learnBtn" onclick="startLearn()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        Learn with AI
+<div class="shell">
+  <!-- Viewer Pane -->
+  <div class="viewer-pane">
+    <!-- Toolbar -->
+    <div class="viewer-toolbar">
+      <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled title="Previous page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <button class="btn btn-secondary" id="quizBtn" onclick="generateQuiz()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Generate Quiz
+      <div class="page-input-wrap">
+        <input type="number" class="page-input" id="pageInput" value="1" min="1" onchange="goToPage(this.value)" onkeydown="if(event.key==='Enter')goToPage(this.value)">
+        <span>/ <span id="totalPages">—</span></span>
+      </div>
+      <button class="nav-btn" id="nextBtn" onclick="changePage(1)" title="Next page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
+      <div class="toolbar-sep"></div>
+      <button class="zoom-btn" onclick="changeZoom(-10)" title="Zoom out">−</button>
+      <span class="zoom-level" id="zoomLevel">100%</span>
+      <button class="zoom-btn" onclick="changeZoom(10)" title="Zoom in">+</button>
+      <div class="toolbar-sep"></div>
+      <div class="toolbar-actions">
+        <button class="action-btn primary" onclick="startLearn()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Learn with AI</span>
+        </button>
+        <button class="action-btn" onclick="generateQuiz()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Quiz</span>
+        </button>
+      </div>
     </div>
 
-    <div class="resource-content">{{ resource.content }}</div>
+    <!-- Search results overlay -->
+    <div class="search-overlay" id="searchOverlay"></div>
+
+    <!-- Page display -->
+    <div class="viewer-content" id="viewerContent">
+      <div class="page-display" id="pageDisplay" style="width:min(700px,100%);">
+        <div class="text-page" id="pageText">
+          <div style="display:flex;align-items:center;justify-content:center;height:400px;color:#9CA3AF;flex-direction:column;gap:1rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <div style="font-size:.9375rem;font-weight:600;">Loading content…</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- AI pane -->
-  <div class="ai-pane">
+  <!-- AI Overlay (mobile) -->
+  <div class="ai-overlay" id="aiOverlay" onclick="toggleAI()"></div>
+
+  <!-- AI Pane -->
+  <div class="ai-pane" id="aiPane">
     <div class="ai-header">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span class="ai-header-title">AI Tutor</span>
-      <span class="ai-header-sub">Ask anything about this topic</span>
+      <span class="ai-header-sub">— {{ resource.title|truncatechars:24 }}</span>
+      <button class="ai-close" onclick="toggleAI()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="quick-prompts">
+      <button class="qp" onclick="quickPrompt('Summarize this page')">Summarize</button>
+      <button class="qp" onclick="quickPrompt('Explain the key concepts')">Key Concepts</button>
+      <button class="qp" onclick="quickPrompt('Give me 3 exam questions')">Exam Qs</button>
+      <button class="qp" onclick="quickPrompt('Explain in simple terms')">Simplify</button>
     </div>
     <div class="ai-messages" id="aiMessages">
       <div class="msg msg-ai">
-        <div class="msg-label">Nexa</div>
-        Hi! I'm ready to help you learn about "{{ resource.title }}". Click "Learn with AI" to get started, or ask me anything below.
+        <div class="msg-label">Paw AI</div>
+        Hi! I'm ready to help you with <strong>{{ resource.title }}</strong>. Use the quick prompts above or ask me anything about this material.
       </div>
     </div>
     <div class="ai-input-wrap">
-      <textarea class="ai-input" id="aiInput" placeholder="Ask a questionâ€¦" rows="1" onkeydown="handleKey(event)"></textarea>
+      <textarea class="ai-input" id="aiInput" placeholder="Ask about this content…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
     </div>
   </div>
 </div>
 
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: #ffffff !important;
-  border-top: 1.5px solid #E5E7EB !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 100 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0.375rem 0.5rem;
-  color: #6B7280;
-  border-radius: 12px;
-  text-decoration: none;
-  flex: 1;
-  transition: color 0.15s;
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
-.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #D97706; }
-.bn-unified-item:active svg { transform: scale(1.05); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #6B7280);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
-.bn-unified-item:active svg { transform: scale(0.9); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
+<!-- Bottom Nav -->
+<nav class="bottom-nav-unified">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bn-unified-label">Feed</span></a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><span class="bn-unified-label">Tutor</span></a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span class="bn-unified-label">Workspace</span></a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="bn-unified-label">Tools</span></a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="bn-unified-label">Upload</span></a>
 </nav>
 
 <script>
 const RESOURCE_ID = {{ resource.pk }};
 const CSRF = '{{ csrf_token }}';
+const RAW_CONTENT = `{{ resource.content|escapejs }}`;
+
+// ── Page / Slide system ──
+let pages = [];
+let currentPage = 1;
+let zoomPct = 100;
+let aiOpen = false;
+
+function buildPages() {
+  if (!RAW_CONTENT || !RAW_CONTENT.trim()) {
+    pages = ['No content available for this resource.'];
+    return;
+  }
+  // Split by form-feed, then by triple newline, then chunk by ~1200 chars
+  const byFF = RAW_CONTENT.split(/\f/).map(s => s.trim()).filter(s => s.length > 5);
+  if (byFF.length > 1) { pages = byFF; return; }
+  const paras = RAW_CONTENT.split(/\n{2,}/);
+  let chunk = '', result = [];
+  paras.forEach(p => {
+    if ((chunk + '\n\n' + p).length > 1200 && chunk.length > 0) {
+      result.push(chunk.trim()); chunk = p;
+    } else { chunk = chunk ? chunk + '\n\n' + p : p; }
+  });
+  if (chunk.trim()) result.push(chunk.trim());
+  pages = result.length ? result : [RAW_CONTENT.trim()];
+}
+
+function renderPage() {
+  const el = document.getElementById('pageText');
+  const content = pages[currentPage - 1] || '';
+  el.innerHTML = '<div style="white-space:pre-wrap;word-break:break-word;">' + escHtml(content) + '</div>';
+  // Update counters
+  document.getElementById('pageInput').value = currentPage;
+  document.getElementById('topPageNum').textContent = currentPage;
+  document.getElementById('totalPages').textContent = pages.length;
+  document.getElementById('topPageTotal').textContent = pages.length;
+  // Nav buttons
+  document.getElementById('prevBtn').disabled = currentPage <= 1;
+  document.getElementById('nextBtn').disabled = currentPage >= pages.length;
+  // Apply zoom
+  document.getElementById('pageDisplay').style.transform = `scale(${zoomPct/100})`;
+}
+
+function changePage(delta) {
+  const next = currentPage + delta;
+  if (next < 1 || next > pages.length) return;
+  currentPage = next;
+  renderPage();
+  document.getElementById('viewerContent').scrollTop = 0;
+}
+
+function goToPage(val) {
+  const n = parseInt(val);
+  if (isNaN(n) || n < 1 || n > pages.length) return;
+  currentPage = n;
+  renderPage();
+}
+
+function changeZoom(delta) {
+  zoomPct = Math.max(50, Math.min(200, zoomPct + delta));
+  document.getElementById('zoomLevel').textContent = zoomPct + '%';
+  document.getElementById('pageDisplay').style.transform = `scale(${zoomPct/100})`;
+  document.getElementById('pageDisplay').style.transformOrigin = 'top center';
+}
+
+// ── Search ──
+function handleSearch(q) {
+  const overlay = document.getElementById('searchOverlay');
+  if (!q.trim()) { overlay.classList.remove('open'); return; }
+  const results = [];
+  pages.forEach((p, i) => {
+    const idx = p.toLowerCase().indexOf(q.toLowerCase());
+    if (idx !== -1) {
+      const snippet = p.substring(Math.max(0, idx - 30), idx + 80).replace(/\n/g, ' ');
+      results.push({ page: i + 1, snippet });
+    }
+  });
+  if (!results.length) {
+    overlay.innerHTML = '<div class="search-empty">No results found for "' + escHtml(q) + '"</div>';
+  } else {
+    overlay.innerHTML = results.slice(0, 12).map(r =>
+      `<div class="search-result" onclick="goToPage(${r.page});document.getElementById('searchOverlay').classList.remove('open');document.getElementById('searchInput').value='';">
+        <div class="search-result-page">Page ${r.page}</div>
+        <div class="search-result-text">…${escHtml(r.snippet)}…</div>
+      </div>`
+    ).join('');
+  }
+  overlay.classList.add('open');
+}
+
+// Close search on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-bar') && !e.target.closest('.search-overlay')) {
+    document.getElementById('searchOverlay').classList.remove('open');
+  }
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changePage(-1);
+});
+
+// ── AI Pane ──
+function toggleAI() {
+  aiOpen = !aiOpen;
+  document.getElementById('aiPane').classList.toggle('open', aiOpen);
+  document.getElementById('aiOverlay').classList.toggle('open', aiOpen);
+  document.getElementById('aiToggleBtn').classList.toggle('active', aiOpen);
+}
+
+// ── AI Chat ──
+function escHtml(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
 
 function appendMsg(role, text) {
   const wrap = document.getElementById('aiMessages');
   const div = document.createElement('div');
   div.className = 'msg msg-' + role;
-  div.innerHTML = '<div class="msg-label">' + (role === 'user' ? 'You' : 'Nexa') + '</div>' + escHtml(text);
+  div.innerHTML = '<div class="msg-label">' + (role === 'user' ? 'You' : 'Paw AI') + '</div>' + escHtml(text);
   wrap.appendChild(div);
   wrap.scrollTop = wrap.scrollHeight;
   return div;
@@ -247,73 +492,73 @@ function appendMsg(role, text) {
 function showTyping() {
   const wrap = document.getElementById('aiMessages');
   const div = document.createElement('div');
-  div.className = 'msg msg-ai';
-  div.id = 'typingIndicator';
-  div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
-  wrap.appendChild(div);
-  wrap.scrollTop = wrap.scrollHeight;
+  div.className = 'msg msg-ai'; div.id = 'typingDot';
+  div.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  wrap.appendChild(div); wrap.scrollTop = wrap.scrollHeight;
 }
-
-function removeTyping() {
-  const t = document.getElementById('typingIndicator');
-  if (t) t.remove();
-}
-
-function escHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
+function removeTyping() { const t = document.getElementById('typingDot'); if (t) t.remove(); }
 
 function setLoading(on) {
   document.getElementById('sendBtn').disabled = on;
-  document.getElementById('learnBtn').disabled = on;
-  document.getElementById('quizBtn').disabled = on;
 }
 
-async function postAI(url, body) {
-  setLoading(true);
-  showTyping();
+async function callAI(url, body) {
+  setLoading(true); showTyping();
   try {
-    const res = await fetch(url, {
+    const r = await fetch(url, {
       method: 'POST',
-      headers: {'Content-Type':'application/json','X-CSRFToken': CSRF},
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
       body: JSON.stringify(body)
     });
-    const data = await res.json();
+    const d = await r.json();
     removeTyping();
-    return data;
-  } catch(e) {
-    removeTyping();
-    return {error: 'Network error'};
-  } finally {
-    setLoading(false);
-  }
+    return d;
+  } catch(e) { removeTyping(); return {error:'Network error. Please try again.'}; }
+  finally { setLoading(false); }
 }
 
 async function startLearn() {
-  appendMsg('user', 'Teach me this topic');
-  const data = await postAI('{% url "api_teach" %}', {resource_id: RESOURCE_ID, question: 'Teach me this topic in detail'});
-  appendMsg('ai', data.response || data.error || 'Something went wrong.');
+  if (!aiOpen) toggleAI();
+  appendMsg('user', 'Teach me about this topic');
+  const d = await callAI('{% url "api_teach" %}', {resource_id: RESOURCE_ID, question: 'Teach me this topic in detail with examples'});
+  appendMsg('ai', d.response || d.error || 'Something went wrong.');
 }
 
 async function generateQuiz() {
+  if (!aiOpen) toggleAI();
   appendMsg('user', 'Generate a quiz for this topic');
-  const data = await postAI('{% url "api_quiz" %}', {resource_id: RESOURCE_ID});
-  appendMsg('ai', data.quiz || data.error || 'Something went wrong.');
+  const d = await callAI('{% url "api_quiz" %}', {resource_id: RESOURCE_ID});
+  appendMsg('ai', d.quiz || d.error || 'Something went wrong.');
 }
 
 async function sendMessage() {
   const input = document.getElementById('aiInput');
   const q = input.value.trim();
   if (!q) return;
-  input.value = '';
+  input.value = ''; input.style.height = '';
   appendMsg('user', q);
-  const data = await postAI('{% url "api_teach" %}', {resource_id: RESOURCE_ID, question: q});
-  appendMsg('ai', data.response || data.error || 'Something went wrong.');
+  const d = await callAI('{% url "api_teach" %}', {resource_id: RESOURCE_ID, question: q});
+  appendMsg('ai', d.response || d.error || 'Something went wrong.');
+}
+
+function quickPrompt(text) {
+  if (!aiOpen) toggleAI();
+  document.getElementById('aiInput').value = text;
+  sendMessage();
 }
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// ── Init ──
+buildPages();
+renderPage();
 </script>
 </body>
 </html>

@@ -554,6 +554,7 @@ img{display:block;}
 </head>
 <body>
   <!-- ── Global Post FAB ── -->
+  {% block fab %}
   <a href="{% url 'community:post_create' %}" class="nx-global-fab" aria-label="Create Post">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:24px;height:24px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </a>
@@ -579,6 +580,7 @@ img{display:block;}
     .nx-global-fab:hover { transform: translateY(-2px) scale(1.05) !important; box-shadow: 0 8px 28px rgba(245,158,11,0.5) !important; }
     .nx-global-fab:active { transform: scale(0.94) !important; }
   </style>
+  {% endblock %}
 
 <div class="shell">
   <!-- -- Sidebar (Mobile Overlay) ------------------------------------------ -->

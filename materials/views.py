@@ -1142,69 +1142,45 @@ Score X/5, what to review, ask if they want another topic."""
 
 @login_required
 def learn_view(request, pk):
-    """Full material viewer with side-panel AI tools â€” shows text + images per slide/page."""
+    """The High-Performance Study Studio. Renders a shell immediately, deferring slide extraction."""
     material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
-
     ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
-    pages = []
-
-    # Try to get the local file path
-    file_path = None
-    try:
-        file_path = material.file.path
-        if not os.path.exists(file_path):
-            file_path = None
-    except Exception:
-        file_path = None
-
-    if file_path and ext == '.pptx':
-        pages = _extract_pptx_pages(file_path)
-    elif file_path and ext == '.pdf':
-        pages = _extract_pdf_pages(file_path)
-    elif file_path and ext in ('.docx', '.doc'):
-        pages = _extract_docx_pages(file_path)
-    else:
-        # Fallback: split extracted_text into text-only pages
-        text = material.extracted_text or ''
-        if text:
-            paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
-            current, size = [], 0
-            for para in paragraphs:
-                current.append(para)
-                size += len(para)
-                if size >= 800:
-                    pages.append({'text': '\n\n'.join(current), 'images': []})
-                    current, size = [], 0
-            if current:
-                pages.append({'text': '\n\n'.join(current), 'images': []})
-
-    if not pages:
-        pages = [{'text': 'No content could be extracted from this material.', 'images': []}]
-
+    
+    # We pass placeholders initially to avoid HUGE HTML blobs. 
+    # Frontend will fetch actual data via AJAX.
     return render(request, 'materials/viewer.html', {
         'material': material,
-        'pages_json': json.dumps(pages),
-        'total_pages': len(pages),
-        'title': f'View: {material.title}',
+        'pages_json': '[]', # Defer loading
+        'total_pages': 0, # Update via AJAX
+        'title': f'Study Studio: {material.title}',
         'file_ext': ext,
+        'defer_load': True
     })
 
 
 @login_required
 def material_slides_api(request, pk):
-    """JSON API: returns extracted pages/slides for the list-page slide viewer."""
+    """JSON API with caching: returns processed slides for the Study Studio."""
     material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    
+    # Return from cache if we have it!
+    if material.extracted_pages_json:
+        return JsonResponse({
+            'success': True,
+            'pages': material.extracted_pages_json,
+            'total': len(material.extracted_pages_json),
+            'cached': True
+        })
 
+    # First time? Extract and cache.
     ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
     pages = []
-
+    
     file_path = None
     try:
         file_path = material.file.path
-        if not os.path.exists(file_path):
-            file_path = None
-    except Exception:
-        file_path = None
+        if not os.path.exists(file_path): file_path = None
+    except Exception: file_path = None
 
     if file_path and ext == '.pptx':
         pages = _extract_pptx_pages(file_path)
@@ -1213,6 +1189,7 @@ def material_slides_api(request, pk):
     elif file_path and ext in ('.docx', '.doc'):
         pages = _extract_docx_pages(file_path)
     else:
+        # Text-only fallback for text/markdown or where extraction failed
         text = material.extracted_text or ''
         if text:
             paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
@@ -1221,26 +1198,24 @@ def material_slides_api(request, pk):
                 current.append(para)
                 size += len(para)
                 if size >= 600:
-                    pages.append({'text': '\n\n'.join(current), 'images': []})
+                    pages.append({'text': '\n\n'.join(current), 'images': [], 'label': f'Section {len(pages)+1}'})
                     current, size = [], 0
             if current:
-                pages.append({'text': '\n\n'.join(current), 'images': []})
+                pages.append({'text': '\n\n'.join(current), 'images': [], 'label': f'Section {len(pages)+1}'})
 
     if not pages:
-        pages = [{'text': 'No content could be extracted from this file.', 'images': []}]
+        pages = [{'text': 'No content could be extracted from this file.', 'images': [], 'label': 'Error'}]
 
-    for i, p in enumerate(pages):
-        if 'label' not in p:
-            p['label'] = ('Slide' if ext == '.pptx' else 'Page') + f' {i + 1}'
+    # Cache it for next time!
+    material.extracted_pages_json = pages
+    material.save(update_fields=['extracted_pages_json'])
 
     return JsonResponse({
         'success': True,
         'title': material.title,
-        'material_type': material.material_type,
-        'file_url': material.file.url if material.file else '',
-        'file_ext': ext,
         'pages': pages,
         'total': len(pages),
+        'cached': False
     })
 
     ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
@@ -1262,35 +1237,6 @@ def material_slides_api(request, pk):
         pages = _extract_docx_pages(file_path)
     else:
         text = material.extracted_text or ''
-        if text:
-            paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
-            current, size = [], 0
-            for para in paragraphs:
-                current.append(para)
-                size += len(para)
-                if size >= 600:
-                    pages.append({'text': '\n\n'.join(current), 'images': []})
-                    current, size = [], 0
-            if current:
-                pages.append({'text': '\n\n'.join(current), 'images': []})
-
-    if not pages:
-        pages = [{'text': 'No content could be extracted from this file.', 'images': []}]
-
-    for i, p in enumerate(pages):
-        if 'label' not in p:
-            p['label'] = ('Slide' if ext == '.pptx' else 'Page') + f' {i + 1}'
-
-    return JsonResponse({
-        'success': True,
-        'title': material.title,
-        'material_type': material.material_type,
-        'file_url': material.file.url if material.file else '',
-        'file_ext': ext,
-        'pages': pages,
-        'total': len(pages),
-    })
-
 
 def _extract_pptx_pages(file_path):
     """Extract each slide as a page with text + images (base64). Recursive for groups."""
@@ -1357,20 +1303,20 @@ def _extract_pdf_pages(file_path):
             text = page.get_text('text').strip()
             images = []
             
-            # --- 1. A whole-page visual snapshot (Great for complex diagrams and layouts!) ---
-            try:
-                pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5)) # 1.5x zoom for high fidelity
-                img_data = pix.tobytes("png")
-                b64_snap = base64.b64encode(img_data).decode('utf-8')
-                images.append(f'data:image/png;base64,{b64_snap}')
-            except Exception: pass
+            # --- Extract Text and Individual Diagrams Only ---
+            # (Redundant whole-page visual snapshot removed for a cleaner experience)
 
-            # --- 2. Individual sub-images from the layer ---
+            # --- 2. Significant Diagrams only (skip small fragments/icons) ---
             for img_index, img in enumerate(page.get_images(full=True)):
                 try:
                     xref = img[0]
                     base_image = doc.extract_image(xref)
                     if base_image:
+                        # Professional filter: skip very small fragments (signatures, decorative boxes)
+                        width = base_image.get('width', 0)
+                        height = base_image.get('height', 0)
+                        if width < 120 or height < 120: continue
+                        
                         img_bytes = base_image['image']
                         img_ext = base_image.get('ext', 'png')
                         b64 = base64.b64encode(img_bytes).decode('utf-8')
@@ -1513,6 +1459,36 @@ def learn_ajax(request, pk):
         if action == 'summarise':
             prompt = f'Summarise this section titled "{page_label}" in 4-6 clear bullet points. Start each bullet with "â€¢ ". Plain text only, no markdown bold.\n\n{page_text}'
             raw = ask_ai(prompt, user=request.user, use_rag=False)
+            return JsonResponse({'success': True, 'action': action, 'result': raw})
+
+        elif action == 'chat':
+            user_msg = data.get('message', '').strip()
+            images = data.get('images', []) # Pass current slide images for visual reasoning
+            
+            prompt = f'''You are AI Pal, a friendly but genius tutor. A student is looking at this section titled "{page_label}".
+            
+            Section Content:
+            {page_text}
+            
+            User Question: "{user_msg}"
+            
+            Guidelines:
+            1. Use the provided section text as your primary source of truth.
+            2. If images are provided in the context, you can reference them to explain diagrams or visual concepts.
+            3. Be encouraging, concise, and smart. 
+            4. If the student asks something unrelated to the material, gently bring them back to the topic.
+            '''
+            
+            # If we have images, we use chat_with_image logic (needs gpt-4o-mini)
+            if images:
+                # We reuse the existing chat_with_image logic if possible or just call OpenAI directly here
+                from .openai_utils import chat_with_image
+                # Combine all images into the request for context
+                context_image = images[0] # Usually the most important snapshot
+                raw = chat_with_image(user_msg, context_image, system_prompt=prompt)
+            else:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                
             return JsonResponse({'success': True, 'action': action, 'result': raw})
 
         elif action == 'explain':

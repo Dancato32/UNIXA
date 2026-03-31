@@ -27,6 +27,7 @@ class StudyMaterial(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     subject = models.CharField(max_length=255, blank=True, default='')
     extracted_text = models.TextField(blank=True, default='', help_text='Extracted text from the file for AI/RAG integration')
+    extracted_pages_json = models.JSONField(blank=True, null=True, help_text='Cache for extracted slides (text + images)')
     
     class Meta:
         ordering = ['-uploaded_at']

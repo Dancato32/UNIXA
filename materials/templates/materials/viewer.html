@@ -5,456 +5,316 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>{{ material.title }} — NEXA Study</title>
-<link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Gochi+Hand&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --sketch-bg: #fffefe;
-  --sketch-border: #000;
-  --sketch-shadow: #000;
-  --accent-blue: #3b82f6;
-  --accent-purple: #a855f7;
-  --accent-red: #ef4444;
-  --accent-amber: #f59e0b;
-  --paper-line: #e5e7eb;
+  --primary: #6366f1;
+  --bg-main: #f1f5f9;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-sub: #64748b;
+  --header-h: 70px;
+  --soft-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  --deep-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-body {
-  font-family: 'Schoolbell', cursive;
-  background: var(--sketch-bg);
-  color: #000;
-  overflow: hidden;
+body { 
+  font-family: 'Inter', sans-serif; 
+  background: var(--bg-main); 
+  color: var(--text-main); 
+  overflow: hidden; 
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* --- Topbar --- */
+/* --- Modern Glass Header --- */
 .topbar {
-  height: 72px; background: #fff; border-bottom: 3.5px solid var(--sketch-border);
+  height: var(--header-h); background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 1.5rem; flex-shrink: 0; z-index: 100;
+  padding: 0 2rem; flex-shrink: 0; z-index: 2000;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.topbar-left, .topbar-right { display: flex; align-items: center; gap: 1.25rem; flex: 1; }
+.topbar-left, .topbar-right { display: flex; align-items: center; gap: 1rem; flex: 1; }
 .topbar-center { flex: 1.5; display: flex; justify-content: center; }
 
-.sketchy-search {
-  position: relative; width: 100%; max-width: 440px;
-}
+.sketchy-search { position: relative; width: 100%; max-width: 440px; }
 .sketchy-search input {
-  width: 100%; height: 48px; border: 3.5px solid var(--sketch-border); border-radius: 12px;
-  padding: 0 1rem 0 3rem; font-family: inherit; font-size: 1.15rem;
-  box-shadow: 4px 4px 0 var(--sketch-shadow); background: #fff;
+  width: 100%; height: 44px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+  padding: 0 1rem 0 3.25rem; font-family: inherit; font-size: 0.95rem;
+  background: #fff; outline: none; transition: .2s;
 }
+.sketchy-search input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
 .sketchy-search svg {
-  position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
-  width: 20px; height: 20px; color: #000; stroke-width: 3;
+  position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; stroke: #94a3b8; stroke-width: 2.5;
 }
 
 .page-pill {
-  background: #000; color: #fff; padding: .6rem 1.25rem; border-radius: 100px;
-  font-weight: 800; font-size: 1rem; border: 3px solid #000; cursor: pointer;
-  display: flex; align-items: center; gap: .5rem; transition: .2s;
+  background: #fff; color: var(--text-main); padding: .5rem 1rem; border: 1.5px solid #e2e8f0;
+  border-radius: 100px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem;
+  cursor: pointer; transition: .2s;
 }
-.page-pill:hover { transform: scale(1.05); }
+.page-pill:hover { border-color: var(--primary); box-shadow: var(--soft-shadow); }
 
 .top-icon-btn {
-  width: 48px; height: 48px; border: 3px solid #000; border-radius: 50%;
+  width: 42px; height: 42px; border: 1.5px solid #e2e8f0; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  background: #fff; box-shadow: 3px 3px 0 #000; cursor: pointer; transition: .1s;
+  background: #fff; cursor: pointer; transition: .2s; color: var(--text-sub);
 }
-.top-icon-btn:hover { transform: translate(1px,1px); box-shadow: 1px 1px 0 #000; }
-.top-icon-btn svg { width: 22px; height: 22px; color: #000; stroke-width: 2.5; }
+.top-icon-btn:hover { border-color: var(--primary); color: var(--primary); }
 
-.settings-btn {
-  display: flex; align-items: center; gap: .75rem; background: #fff;
-  border: 3.5px solid #000; border-radius: 12px; padding: .6rem 1rem;
-  font-weight: 800; font-size: 1rem; box-shadow: 4px 4px 0 #000; cursor: pointer;
-}
+/* --- Split Layout Engine --- */
+.main-shell { display: flex; flex: 1; overflow: hidden; height: calc(100vh - var(--header-h)); background: var(--bg-main); padding: 2rem; gap: 2rem; }
 
-.ai-mobile-toggle {
-  display: none; align-items: center; gap: .5rem; background: #000; color: #fff;
-  border: none; border-radius: 12px; padding: .6rem 1rem; font-weight: 800; font-family: inherit;
-}
+/* Left Pane: Slides + Tools */
+.left-pane { flex: 1.6; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding-right: 1rem; }
 
-/* --- Body Layout --- */
-.main-shell { display: flex; flex: 1; overflow: hidden; }
-.main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 2rem; position: relative; }
-
-/* Notebook / Viewer */
-.notebook-stage {
-  position: relative; margin: 0 auto 3rem; width: 100%; max-width: 900px;
-  display: flex; align-items: center; gap: 2rem;
+.slide-frame {
+  position: relative; background: var(--card-bg); border-radius: 20px;
+  box-shadow: var(--soft-shadow); min-height: 500px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 3rem; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 2rem;
 }
-.notebook-frame {
-  flex: 1; background: #fff; border: 4px solid #000; border-radius: 12px;
-  box-shadow: 8px 8px 0 #000; min-height: 480px; position: relative;
-  background-image: linear-gradient(var(--paper-line) 1px, transparent 1px);
-  background-size: 100% 2.4rem; padding-top: .4rem;
+.slide-frame-nav {
+  position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between;
+  padding: 0 1.5rem; transform: translateY(-50%); pointer-events: none; z-index: 10;
 }
-.notebook-inner { padding: 1.5rem 2rem; }
-.notebook-title {
-  font-size: 2rem; font-weight: 900; margin-bottom: 1.5rem; border-bottom: 2.5px dashed #ddd;
-  padding-bottom: .5rem; line-height: 1.2; word-break: break-word;
-}
-.page-text { 
-  font-size: 1.35rem; line-height: 1.6; color: #222; white-space: pre-wrap; 
-  word-break: break-word; min-height: 200px;
-}
-
-/* Large Nav Buttons */
 .nav-circle {
-  width: 72px; height: 72px; border: 4.5px solid #000; border-radius: 50%;
-  background: #fef08a; display: flex; align-items: center; justify-content: center;
-  box-shadow: 6px 6px 0 #000; cursor: pointer; z-index: 10; transition: .15s;
+  width: 50px; height: 50px; border-radius: 50%; box-shadow: var(--soft-shadow);
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; border: 1px solid #f1f5f9; pointer-events: auto;
 }
-.nav-circle:hover:not(:disabled) { transform: translate(2px, 2px); box-shadow: 3px 3px 0 #000; }
+.nav-circle svg { width: 22px; height: 22px; stroke: var(--text-main); stroke-width: 2.5; }
+.nav-circle:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--primary); color: var(--primary); }
+.nav-circle:hover:not(:disabled) svg { stroke: var(--primary); }
 .nav-circle:disabled { opacity: 0.3; cursor: default; }
-.nav-circle svg { width: 32px; height: 32px; color: #000; stroke-width: 4; }
 
-/* Tools Section */
-.tools-wrap { max-width: 900px; margin: 0 auto; width: 100%; }
-.tools-header { font-size: 1.8rem; margin-bottom: 2rem; position: relative; display: inline-block; }
-.tools-header::after {
-  content: ""; position: absolute; bottom: -10px; left: 0; width: 110%; height: 8px;
-  background: var(--accent-red); clip-path: polygon(0 50%, 5% 40%, 10% 60%, 15% 40%, 20% 60%, 25% 40%, 30% 60%, 35% 40%, 40% 60%, 45% 40%, 50% 60%, 55% 40%, 60% 60%, 65% 40%, 70% 60%, 75% 40%, 80% 60%, 85% 40%, 90% 60%, 95% 40%, 100% 50%, 100% 100%, 0 100%);
+.slide-counter-pill {
+  position: absolute; bottom: 1.5rem; right: 1.5rem; background: rgba(15,23,42,0.8);
+  color: #fff; padding: 0.4rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem;
+  backdrop-filter: blur(5px);
 }
 
-.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.notebook-inner { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 800px; }
+.notebook-title { font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 800; margin-bottom: 2rem; color: var(--text-main); text-align: center; }
+.page-text { font-size: 1.15rem; line-height: 1.8; font-weight: 400; white-space: pre-wrap; word-break: break-word; color: #334155; }
+
+/* Square Tool Cards */
+.tools-wrap { padding-bottom: 3rem; }
+.tools-header { font-family: 'Poppins', sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+.tool-grid { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; }
 .tool-card {
-  background: #fff; border: 3.5px solid #000; border-radius: 16px; padding: 1.25rem;
-  display: flex; align-items: center; gap: 1.25rem; box-shadow: 6px 6px 0 #000;
-  transition: .15s; cursor: pointer; text-align: left;
+  flex: 1; min-width: 140px; background: #fff; border-radius: 20px; border: 1px solid #f1f5f9;
+  padding: 1.5rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: .2s; cursor: pointer; aspect-ratio: 1;
 }
-.tool-card:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 #000; }
-.tool-icon-circle {
-  width: 54px; height: 54px; border: 3px solid #000; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.tool-icon-circle svg { width: 26px; height: 26px; color: #fff; stroke-width: 2.5; }
-.tool-name-main { display: block; font-size: 1.4rem; font-weight: 800; margin-bottom: .1rem; }
-.tool-name-sub { font-size: .95rem; color: #666; font-family: 'Inter', sans-serif; font-weight: 600; }
+.tool-card:hover { transform: translateY(-4px); box-shadow: var(--soft-shadow); border-color: var(--primary); }
+.tool-icon-circle { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.tool-icon-circle svg { width: 26px; height: 26px; stroke-width: 2; }
+.tool-name-main { font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--text-main); }
 
-.bg-blue { background: var(--accent-blue); }
-.bg-purple { background: var(--accent-purple); }
-.bg-red { background: var(--accent-red); }
-.bg-amber { background: var(--accent-amber); }
+/* Right Pane: AI Tutor Dashboard */
+.right-pane {
+  flex: 1; min-width: 350px; max-width: 450px; background: #fff; border-radius: 24px;
+  border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--soft-shadow);
+  display: flex; flex-direction: column; overflow: hidden; height: 100%;
+}
+.ai-pal-dashboard { flex: 1; padding: 1.5rem; display: flex; flex-direction: column; min-height: 0; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 24px 24px; }
+.ai-pal-window { flex: 1; border-radius: 16px; overflow-y: auto; padding: 1.5rem; position: relative; }
+.pal-bot-icon { width: 70px; height: 70px; background: #f8fafc; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+.chat-sketch-wrap { padding: 1.25rem; border-top: 1px solid rgba(0,0,0,0.05); background: #fff; }
+.chat-pill { display: flex; align-items: center; gap: .75rem; background: #f8fafc; border-radius: 24px; padding: 0.5rem 0.5rem 0.5rem 1.25rem; border: 1px solid #e2e8f0; }
+.chat-pill input { flex: 1; border: none; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 500; background: none; outline: none; }
+.chat-btn-send { width: 44px; height: 44px; background: #3b82f6; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: .2s; color: #fff; margin-left: auto; }
+.chat-btn-send:hover { background: #2563eb; transform: scale(1.05); }
 
-.podcast-deck { background:#f9f9f9; border:3.5px solid #000; border-radius:20px; padding:1.25rem; margin-bottom:1.5rem; box-shadow:6px 6px 0 #000; position:relative; overflow:hidden; }
-.podcast-progress { width:100%; height:10px; background:#ddd; border-radius:5px; margin-top:.8rem; overflow:hidden; border:2.5px solid #000; }
-.podcast-progress-fill { height:100%; width:0%; background:var(--accent-red); transition:width 0.4s ease; }
-.waveform { display:flex; align-items:flex-end; gap:4px; height:32px; margin-bottom:1rem; justify-content:center; }
-.wave-bar { width:5px; height:10px; background:var(--accent-blue); border:1.5px solid #000; border-radius:3px; }
-.wave-active .wave-bar { animation: bar-pulse 0.8s infinite ease-in-out; }
-@keyframes bar-pulse { 0%, 100% { height: 10px; } 50% { height: 30px; } }
-.wave-bar:nth-child(2) { animation-delay: 0.1s; }
-.wave-bar:nth-child(3) { animation-delay: 0.2s; }
-.wave-bar:nth-child(4) { animation-delay: 0.3s; }
-.wave-bar:nth-child(5) { animation-delay: 0.4s; }
-.wave-bar:nth-child(6) { animation-delay: 0.5s; }
-.wave-bar:nth-child(7) { animation-delay: 0.6s; }
+/* Premium Studio Overlays (Global Modal) */
+.tool-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px);
+  z-index: 3000; display: flex; align-items: center; justify-content: center;
+  padding: 2rem; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.tool-overlay.open { opacity: 1; pointer-events: auto; }
+.tool-overlay-dialog {
+  background: var(--card-bg); border-radius: 24px; padding: 3rem; width: 100%; max-width: 800px;
+  max-height: 90vh; overflow-y: auto; position: relative;
+  box-shadow: var(--deep-shadow); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.tool-overlay.open .tool-overlay-dialog { transform: scale(1); }
+.overlay-close {
+  position: absolute; top: 1.5rem; right: 1.5rem; width: 44px; height: 44px;
+  background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s; border: none; font-size: 1.2rem; z-index: 101; color: var(--text-sub);
+}
+.overlay-close:hover { background: #fee2e2; color: #ef4444; transform: rotate(90deg); }
 
-/* Sidebar */
-.sketch-sidebar {
-  width: 440px; border-left: 3.5px solid #000; background: #fff;
-  display: flex; flex-direction: column; height: 100%; position: relative;
+/* Interactive Flashcards Styles */
+.flashcard-stage { perspective: 1000px; width: 450px; height: 300px; cursor: pointer; margin-bottom: 2rem; }
+.flashcard-inner {
+  position: relative; width: 100%; height: 100%; text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;
 }
-.ai-pal-dashboard {
-  flex: 1; padding: 0 1.25rem 1.25rem; display: flex; flex-direction: column;
-  min-height: 0; /* Critical for inner scrolling */
+.flashcard-stage.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-face {
+  position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center; padding: 2rem;
+  border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid #f1f5f9;
+  background: #fff; border-bottom: 6px solid #e2e8f0;
 }
-.ai-pal-window {
-  flex: 1; background: #fafafa; border: 3.5px solid #000; border-radius: 20px;
-  background-image: radial-gradient(#ddd 1.5px, transparent 1.5px);
-  background-size: 1.8rem 1.8rem; overflow-y: auto; padding: 1.25rem;
-  text-align: left; position: relative;
-}
-.ai-pal-intro {
-  height: 100%; display: flex; flex-direction: column; 
-  align-items: center; justify-content: center; text-align: center;
-}
-.ai-pal-intro h3 { font-size: 2.2rem; margin: 1rem 0 .5rem; }
-.ai-pal-intro p { color: #666; font-size: 1.15rem; font-weight: 500; }
-.pal-bot-icon {
-  width: 88px; height: 88px; background: #fff; border: 3px solid #000;
-  border-radius: 50%; margin: 0 auto; display: flex; align-items: center;
-  justify-content: center; font-size: 3.5rem; box-shadow: 4px 4px 0 #000;
-}
-
-.chat-sketch-wrap { padding: 1.5rem; border-top: 3.5px solid #000; }
-.chat-pill {
-  display: flex; align-items: center; gap: .75rem; background: #fff;
-  border: 3.5px solid #000; border-radius: 100px; padding: .6rem 1.25rem;
-  box-shadow: 5px 5px 0 #000;
-}
-.chat-pill input { flex: 1; border: none; font-family: inherit; font-size: 1.3rem; background: none; outline: none; }
-.chat-btn-send {
-  width: 48px; height: 48px; background: var(--accent-blue); border: 2.5px solid #000;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: 3px 3px 0 #000;
-}
-.chat-btn-send svg { width: 22px; height: 22px; color: #fff; stroke-width: 0; }
-
-/* Progress */
-.bottom-bookmark { position: fixed; bottom: 0; left: 0; right: 0; height: 16px; background: #eee; border-top: 3.5px solid #000; cursor: pointer; z-index: 200; }
-.bookmark-fill { height: 100%; background: #000; width: 0%; transition: width .3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.flashcard-back { transform: rotateY(180deg); background: #fdfdfd; border-color: var(--primary); color: var(--primary); }
+.fc-text { font-size: 1.5rem; font-weight: 700; line-height: 1.4; color: var(--text-main); }
 
 /* Components */
-.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-.img-grid img { width: 100%; border: 3.5px solid #000; border-radius: 12px; cursor: zoom-in; box-shadow: 4px 4px 0 #000; background: #fff; }
-.img-wrap { position: relative; }
-.img-badge {
-  position: absolute; top: 10px; left: 10px; background: #000; color: #fff;
-  padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 900;
-  pointer-events: none; z-index: 5; border: 2px solid #fff;
-}
-
-.magic-menu {
-  position: fixed; background: #000; color: #fff; padding: 6px; border-radius: 14px;
-  display: flex; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2000;
-}
-.magic-menu button {
-  background: none; border: none; color: #fff; padding: 10px 20px;
-  font-family: inherit; font-size: 1.1rem; font-weight: 800; border-radius: 10px;
-}
-.magic-menu button:hover { background: rgba(255,255,255,0.2); }
-
-.sidebar-close {
-  display: none; position: absolute; top: 1rem; left: 1rem;
-  width: 44px; height: 44px; border: 3px solid #000; border-radius: 50%;
-  background: #fff; align-items: center; justify-content: center;
-  z-index: 1100; box-shadow: 3px 3px 0 #000; cursor: pointer;
-}
-.sidebar-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900;
-  display: none; animation: sketchyFade .2s ease-out;
-}
-.sidebar-overlay.open { display: block; }
+.img-grid { display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 2rem; scrollbar-width: thin; }
+.img-wrap img { height: 350px; width: auto; border-radius: 16px; box-shadow: var(--soft-shadow); }
 
 .fade-in { animation: sketchyFade .4s ease-out forwards; }
 @keyframes sketchyFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Responsive Layouts */
-@media (max-width: 1200px) {
-  .sketch-sidebar {
-    position: fixed; right: 0; top: 0; bottom: 0; width: 100%; max-width: 420px;
-    z-index: 1000; box-shadow: -10px 0 50px rgba(0,0,0,0.3);
-    transform: translateX(100%); transition: transform .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .sketch-sidebar.open { transform: translateX(0); }
-  .sidebar-close { display: flex !important; }
-}
-
-/* --- Flashcards 3D --- */
-.fc-scene {
-  width: 100%; height: 220px; perspective: 1000px; margin-bottom: 1.5rem;
-}
-.fc-card {
-  width: 100%; height: 100%; position: relative; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform-style: preserve-3d; cursor: pointer;
-}
-.fc-card.is-flipped { transform: rotateY(180deg); }
-
-.fc-face {
-  position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
-  border: 3.5px solid #000; border-radius: 16px; background: #fff;
-  box-shadow: 6px 6px 0 #000; text-align: center; font-size: 1.4rem; font-weight: 800;
-}
-.fc-back { transform: rotateY(180deg); background: #fefce8; }
-
-.btn-save-deck {
-  width: 100%; padding: .85rem; background: var(--accent-amber); border: 3px solid #000;
-  border-radius: 12px; font-weight: 800; font-family: inherit; font-size: 1.1rem;
-  box-shadow: 4px 4px 0 #000; cursor: pointer; display: flex; align-items: center;
-  justify-content: center; gap: .5rem; transition: .15s; margin-top: 1rem;
-}
-.btn-save-deck:hover { transform: scale(1.02); }
-
-/* --- Podcast Player --- */
-.speaking-segment {
-  background: rgba(255, 255, 0, 0.4); border-radius: 4px; border-bottom: 2px dashed #000;
-  transition: .3s; padding: 2px 4px; font-weight: 800;
-}
-.podcast-controls {
-  margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;
-}
-.btn-call-in {
-  width: 100%; padding: 1rem; background: var(--accent-blue); color: #fff;
-  border: 4px solid #000; border-radius: 16px; font-weight: 900; font-size: 1.3rem;
-  box-shadow: 6px 6px 0 #000; cursor: pointer; display: none; /* Only show while playing */
-  align-items: center; justify-content: center; gap: .75rem; animation: pulse 2s infinite;
-}
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-
-@media (max-width: 768px) {
-  .topbar { height: 60px; padding: 0 .75rem; }
-  .sketchy-search { display: none; }
-  .topbar-center { display: none; }
-  .topbar-right { gap: .5rem; }
-  .settings-btn { display: none; }
-  .ai-mobile-toggle { display: flex !important; }
-
-  .main-content { padding: 1rem 1rem 10rem; } /* Extra bottom padding for floating nav */
-  .notebook-stage { flex-direction: column; gap: 1rem; margin-bottom: 5rem; }
-  .notebook-frame { border-width: 2.5px; box-shadow: 4px 4px 0 #000; min-height: 380px; }
-  .notebook-inner { padding: 1.25rem; }
-  .notebook-title { font-size: 1.75rem; margin-bottom: 1.25rem; }
-  .page-text { font-size: 1.15rem; line-height: 1.5; }
-
-  .nav-circle {
-    position: fixed; bottom: 3rem; width: 62px; height: 62px;
-    box-shadow: 4px 4px 0 #000; border-width: 3.5px; z-index: 100;
-  }
-  #prevBtn { left: 1.5rem; }
-  #nextBtn { right: 1.5rem; }
-
-  .tool-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .tool-card { padding: 1rem; box-shadow: 4px 4px 0 #000; border-width: 3px; z-index: 50; }
-  .tool-name-main { font-size: 1.2rem; }
-  
-  .bottom-bookmark { height: 10px; border-width: 2.5px; }
-}
-
 /* Lightbox */
-.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 2rem; }
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: none; align-items: center; justify-content: center; padding: 2rem; }
 .lightbox.open { display: flex; }
-.lightbox img { max-width: 100%; max-height: 90vh; border: 4px solid #fff; border-radius: 8px; }
+.lightbox img { max-width: 100%; max-height: 90vh; border: 2px solid rgba(255,255,255,0.1); border-radius: 8px; }
 
 /* Toast */
-.toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: #000; color: #fff; padding: 1rem 2rem; border-radius: 100px; font-weight: 800; z-index: 4000; display: none; }
+.toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 1rem 2rem; border-radius: 100px; font-weight: 700; z-index: 5000; display: none; box-shadow: var(--deep-shadow); }
 .toast.show { display: block; }
+
+/* Responsive Layout */
+@media (max-width: 1024px) {
+  .main-shell { flex-direction: column; height: auto; padding: 1rem; overflow-y: auto; }
+  .left-pane { flex: none; overflow-y: visible; padding-right: 0; }
+  .right-pane { flex: none; height: 600px; }
+  body { overflow-y: auto; }
+}
+
+@media (max-width: 768px) {
+  .topbar { height: 60px; padding: 0 1rem; border: none; box-shadow: var(--soft-shadow); }
+  .topbar-center, .sketchy-search { display: none; }
+  .topbar-left, .topbar-right { flex: none; width: auto; }
+  
+  .slide-frame { padding: 1.5rem; min-height: 380px; }
+  .notebook-title { font-size: 1.6rem; margin-bottom: 1.5rem; text-align: center; }
+  .page-text { font-size: 1.05rem; line-height: 1.6; }
+
+  .tool-grid { padding-bottom: 0.5rem; }
+  .tool-card { min-width: 120px; padding: 1rem; }
+
+  .tool-overlay { padding: 1.5rem; }
+  .tool-overlay-dialog { padding: 2rem 1.5rem; border-radius: 16px; }
+  .overlay-close { top: 1rem; right: 1rem; width: 36px; height: 36px; }
+  .flashcard-stage { width: 100%; height: 220px; }
+}
 </style>
 </head>
 <body>
-
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
   <!-- Topbar -->
   <header class="topbar">
     <div class="topbar-left">
       <a href="{% url 'list_materials' %}" class="top-icon-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
       </a>
-      <div class="page-pill" onclick="openPageJump()">
+      <div class="page-pill" onclick="renderPage(Math.max(0, currentPage-1))">
         <span id="pageCounter">1 / {{ total_pages }}</span>
-        <div id="pageJumpWrap" style="display:none;">
-          <input type="number" id="pageJumpInput" min="1" max="{{ total_pages }}" onkeydown="handlePageJumpKey(event)" onblur="closePageJump()">
-        </div>
       </div>
     </div>
 
     <div class="topbar-center">
       <div class="sketchy-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="Search my sketches..." onkeyup="handleSearch(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search notes, lectures, or texts...">
       </div>
     </div>
 
-    <div class="topbar-right">
-      <button class="ai-mobile-toggle" onclick="toggleSidebar()">
-        AI Pal 🤖
-      </button>
-      <div class="top-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-      <button class="settings-btn">
-        Settings
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0  1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
+    <div class="topbar-right" style="justify-content: flex-end;">
+      <a href="{% url 'list_materials' %}" style="background:none; color:var(--text-main); border:none; border-left: 1px solid #e2e8f0; padding-left: 1rem; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:0.5rem;">
+         Library <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </a>
     </div>
   </header>
 
   <div class="main-shell">
     
-    <!-- Main Content Area -->
-    <main class="main-content">
+    <!-- LEFT PANE -->
+    <main class="left-pane">
       
-      <div class="notebook-stage">
-        <button class="nav-circle" id="prevBtn" onclick="changePage(-1)" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-
-        <div class="notebook-frame">
-          <div class="notebook-inner" id="viewerContent">
-            <h1 class="notebook-title" id="paperTitle">{{ material.title }}</h1>
-            <div id="imgGrid" class="img-grid" style="display:none;"></div>
-            <div class="page-text" id="pageText"></div>
-          </div>
+      <div class="slide-frame">
+        <div class="slide-frame-nav">
+          <button class="nav-circle" id="prevBtn" onclick="changePage(-1)" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="nav-circle" id="nextBtn" onclick="changePage(1)" {% if total_pages <= 1 %}disabled{% endif %}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
         </div>
 
-        <button class="nav-circle" id="nextBtn" onclick="changePage(1)" {% if total_pages <= 1 %}disabled{% endif %}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
+        <div class="notebook-inner" id="viewerContent">
+          <h1 class="notebook-title" id="paperTitle">{{ material.title }}</h1>
+          <div id="imgGrid" class="img-grid" style="display:none;"></div>
+          <div class="page-text" id="pageText"></div>
+        </div>
+
+        <div class="slide-counter-pill" id="pageCounterPill">1 / {{ total_pages }}</div>
       </div>
 
+      <!-- Action Tools (Square Grid) -->
       <div class="tools-wrap">
-        <h2 class="tools-header">Magic Tools for Slide <span id="toolSlideNum">1</span></h2>
+        <h2 class="tools-header"><span style="color:#3b82f6;">✨</span> Study Actions</h2>
         
         <div class="tool-grid">
-          <button class="tool-card" onclick="runTool('summarise')">
-            <div class="tool-icon-circle bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
-            <div class="card-info">
-              <span class="tool-name-main">Summarize</span>
-              <span class="tool-name-sub">Quick notes</span>
-            </div>
-          </button>
-
-          <button class="tool-card" onclick="runTool('quiz')">
+          <div class="tool-card" onclick="runTool('summarise')">
+            <div class="tool-icon-circle bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div class="tool-name-main">Summarize</div>
+          </div>
+          
+          <div class="tool-card" onclick="runTool('quiz')">
             <div class="tool-icon-circle bg-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="card-info">
-              <span class="tool-name-main">Quiz Me</span>
-              <span class="tool-name-sub">Test skills</span>
-            </div>
-          </button>
+            <div class="tool-name-main">Quiz</div>
+          </div>
 
-          <button class="tool-card" onclick="runTool('flashcards')">
-            <div class="tool-icon-circle bg-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-            <div class="card-info">
-              <span class="tool-name-main">Flashcards</span>
-              <span class="tool-name-sub">Memory aids</span>
-            </div>
-          </button>
+          <div class="tool-card" onclick="runTool('flashcards')">
+            <div class="tool-icon-circle bg-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            <div class="tool-name-main">Flashcards</div>
+          </div>
 
-          <button class="tool-card" onclick="runTool('podcast')">
-            <div class="tool-icon-circle bg-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
-            <div class="card-info">
-              <span class="tool-name-main">Podcast</span>
-              <span class="tool-name-sub">Audio mode</span>
-            </div>
-          </button>
+          <div class="tool-card" onclick="runTool('podcast')">
+            <div class="tool-icon-circle bg-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+            <div class="tool-name-main">Podcast</div>
+          </div>
 
-          <button class="tool-card" onclick="openGenreModal()">
-            <div class="tool-icon-circle bg-purple">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-            </div>
-            <div class="card-info">
-              <span class="tool-name-main">Music Studio</span>
-              <span class="tool-name-sub">Bake a song</span>
-            </div>
-          </button>
+          <div class="tool-card" onclick="openGenreModal()">
+            <div class="tool-icon-circle bg-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+            <div class="tool-name-main">Music</div>
+          </div>
         </div>
       </div>
-
     </main>
 
-    <!-- Sidebar AI Pal -->
-    <aside class="sketch-sidebar" id="sidebar">
-      <button class="sidebar-close" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      
-      <div class="ai-pal-dashboard">
-        <div class="ai-pal-window" id="panelBody">
-          <div class="ai-pal-intro">
+    <!-- RIGHT PANE: Permanent AI Tutor Sidebar -->
+    <aside class="right-pane">
+      <div style="padding:1.5rem; text-align:center; border-bottom:1px dashed #e2e8f0;">
+         <a href="#" style="color:#64748b; font-weight:700; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Lecture</a>
+      </div>
+      <div class="ai-pal-dashboard" id="panelBody">
+        <div class="ai-pal-window">
+          <div class="ai-pal-intro" style="text-align:center;">
             <div class="pal-bot-icon">🤖</div>
-            <h3>AI Pal</h3>
-            <p>Ask me anything about your notes!</p>
+            <h3 style="font-family:'Poppins', sans-serif; font-weight:800; font-size:1.4rem; margin-top:1rem; color:#94a3b8;">AI Tutor</h3>
+            <p style="font-weight:600; font-size:0.95rem; color:#94a3b8; margin-top:0.5rem;">Ask me to explain concepts from your notes.</p>
           </div>
         </div>
       </div>
 
       <div class="chat-sketch-wrap">
         <div class="chat-pill">
-          <input type="text" placeholder="..." id="sideChatInput">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" style="width:20px;height:20px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          <input type="text" placeholder="Type a question..." id="sideChatInput">
           <button class="chat-btn-send">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px; height:20px; margin-right:2px; margin-top:2px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
       </div>
@@ -462,891 +322,477 @@ body {
 
   </div>
 
-  <!-- Selection Tool -->
-  <div id="magicMenu" class="magic-menu" style="display:none;">
-    <button onclick="runTool('explain', getSelectedText())">Explain</button>
-    <button onclick="runTool('summarise', getSelectedText())">Summarise</button>
-  </div>
-
-  <div class="bottom-bookmark" onclick="jumpToPoint(event)">
-    <div class="bookmark-fill" id="progressFill"></div>
-  </div>
-
-  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-    <img id="lightboxImg" src="" alt="">
+  <!-- Global Tool Modal -->
+  <div id="toolOverlay" class="tool-overlay">
+    <div class="tool-overlay-dialog">
+      <button class="overlay-close" onclick="closeOverlay()">✕</button>
+      <div id="overlayContent" style="width:100%;"></div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
-<script>
-const PAGES = {{ pages_json|safe }};
-const TOTAL = {{ total_pages }};
-const AJAX_URL = '{% url "learn_ajax" material.pk %}';
-const SAVE_URL = '{% url "flashcards_save" material.pk %}';
-const DECKS_URL = '{% url "flashcards_decks" material.pk %}';
-const LOAD_URL = '/materials/flashcards/{{ material.pk }}/decks/';
-const CSRF = '{{ csrf_token }}';
-let currentPage = 0;
+  <!-- Data Hub -->
+  <script type="application/json" id="data-config">
+    {
+      "pages": {{ pages_json|safe }},
+      "total": {{ total_pages }},
+      "async": {{ defer_load|yesno:"true,false" }},
+      "urls": {
+        "slides": "{% url "material_slides_api" material.pk %}",
+        "ajax": "{% url "learn_ajax" material.pk %}"
+      },
+      "csrf": "{{ csrf_token }}"
+    }
+  </script>
 
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('open');
+<script>
+const CONFIG = JSON.parse(document.getElementById('data-config').textContent);
+let PAGES = CONFIG.pages;
+let TOTAL = CONFIG.total;
+const ASYNC_LOAD = CONFIG.async;
+const SLIDES_API_URL = CONFIG.urls.slides;
+const AJAX_URL = CONFIG.urls.ajax;
+const CSRF = CONFIG.csrf;
+
+let currentPage = 0;
+let isLoaded = !ASYNC_LOAD;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const chatInput = document.getElementById('sideChatInput');
+    const chatBtn = document.querySelector('.chat-btn-send');
+    if (chatInput && chatBtn) {
+        chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleChat(); });
+        chatBtn.addEventListener('click', handleChat);
+    }
+    if (ASYNC_LOAD) loadSlidesAsync(); else renderPage(0);
+});
+
+async function loadSlidesAsync() {
+    const loaderHtml = `
+        <div id="studioLoader" style="height:400px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+            <div class="pal-bot-icon" style="margin-bottom:1.5rem; animation: sketchyPulse 2s infinite;">🤖</div>
+            <h2 style="font-size:2rem; font-weight:900; margin-bottom:1rem;">Scanning pages & sketching diagrams...</h2>
+            <div style="width:240px; height:8px; background:#eee; border:3px solid #000; border-radius:10px; overflow:hidden;">
+                <div style="height:100%; width:40%; background:var(--accent-blue); animation: progressMove 2s infinite linear;"></div>
+            </div>
+            <style>
+                @keyframes progressMove { 0% { transform:translateX(-120%); } 100% { transform:translateX(250%); } }
+                @keyframes sketchyPulse { 0% { transform:scale(1); } 50% { transform:scale(1.1) rotate(5deg); } 100% { transform:scale(1); } }
+            </style>
+        </div>
+    `;
+    document.getElementById('viewerContent').innerHTML = loaderHtml;
+
+    try {
+        const res = await fetch(SLIDES_API_URL);
+        const data = await res.json();
+        if (data.success) {
+            PAGES = data.pages; TOTAL = data.total; isLoaded = true; renderPage(0);
+        } else {
+            showToast("Visual mode unavailable. Using text fallback.");
+            isLoaded = true; renderPage(0);
+        }
+    } catch(e) { showToast("Connection error."); }
 }
 
 function renderPage(n) {
-  currentPage = n;
-  const content = document.getElementById('viewerContent');
-  if (content) {
-    content.classList.remove('fade-in');
-    void content.offsetWidth;
-    content.classList.add('fade-in');
-  }
+    if (!isLoaded) return;
+    currentPage = n;
+    const content = document.getElementById('viewerContent');
+    const isCover = (n === 0);
 
-  const page = PAGES[n] || {text:"", images:[], label:""};
-  const text = typeof page === 'string' ? page : (page.text || '');
-  const images = page.images || [];
-  
-  document.getElementById('pageText').textContent = text;
-  document.getElementById('pageCounter').textContent = `${n+1} / ${TOTAL}`;
-  document.getElementById('toolSlideNum').textContent = n+1;
-  document.getElementById('prevBtn').disabled = (n === 0);
-  document.getElementById('nextBtn').disabled = (n === TOTAL - 1);
-  
-  const pct = TOTAL > 1 ? (n / (TOTAL - 1)) * 100 : 100;
-  document.getElementById('progressFill').style.width = pct + '%';
+    const pageData = PAGES[n] || {text:"", images:[], label:""};
+    const text = typeof pageData === 'string' ? pageData : (pageData.text || '');
+    const images = pageData.images || [];
+    
+    // Strict Filter: Remove any image that is likely a page-fragment or tiny icon
+    // (Backend already filters <120px, this is an extra safety layer)
+    const filteredImages = images.filter(src => {
+        if (src.includes('snapshot')) return false;
+        if (src.length < 2000) return false; // Likely a tiny icon/bullet point
+        return true;
+    });
 
-  const imgGrid = document.getElementById('imgGrid');
-  if (images.length) {
-    imgGrid.style.display = 'grid';
-    imgGrid.innerHTML = images.map((src, i) => {
-      const isSnapshot = (i === 0); // Our backend now puts the snapshot first
-      return `
-        <div class="img-wrap">
-          ${isSnapshot ? '<span class="img-badge">VISUAL SNAPSHOT</span>' : ''}
-          <img src="${src}" onclick="openLightbox(this.src)" style="cursor:zoom-in;">
-        </div>
-      `;
-    }).join('');
-  } else {
-    imgGrid.style.display = 'none';
-  }
+    if (isCover) {
+        content.innerHTML = `
+            <div style="text-align:center; padding:2rem 0; animation: sketchyFade .6s;">
+                <h1 style="font-family:'Poppins'; font-size:3.5rem; font-weight:900; margin-bottom:1rem; line-height:1.1;">{{ material.title|escapejs }}</h1>
+                <p style="font-size:1.4rem; font-weight:800; color:#666; margin-bottom:3rem;">Interactive Study Guide</p>
+                <div style="width:100%; max-width:480px; margin:0 auto; aspect-ratio:3/4; background:#fff; border-radius:12px; box-shadow:var(--soft-shadow); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+                    ${filteredImages.length ? `<img src="${filteredImages[0]}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="font-size:6rem;">📘</div>`}
+                    <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.8); color:#fff; padding:1.5rem; text-align:left; backdrop-filter:blur(10px);">
+                        <h2 style="font-size:1.1rem; font-weight:700;">NEXA PREMIUM EDITION</h2>
+                        <p style="font-size:0.8rem; font-weight:700; opacity:0.8;">Full Extraction Complete</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        content.innerHTML = `
+            <h1 class="notebook-title" id="paperTitle">{{ material.title|escapejs }}</h1>
+            <div id="imgGrid" class="img-grid" style="display:none;"></div>
+            <div class="page-text" id="pageText"></div>
+        `;
+
+        const textEl = document.getElementById('pageText');
+        textEl.textContent = text;
+        
+        const grid = document.getElementById('imgGrid');
+        if (filteredImages.length) {
+            grid.style.display = 'flex';
+            grid.innerHTML = filteredImages.map(src => `<div class="img-wrap"><img src="${src}" onclick="openLightbox(this.src)"></div>`).join('');
+        } else {
+            grid.style.display = 'none';
+        }
+    }
+
+    document.getElementById('pageCounter').textContent = `${n+1} / ${TOTAL}`;
+    document.getElementById('pageCounterPill').textContent = `${n+1} / ${TOTAL}`;
+    document.getElementById('prevBtn').disabled = (n === 0);
+    document.getElementById('nextBtn').disabled = (n === TOTAL - 1 || TOTAL === 0);
 }
 
 function changePage(dir) {
-  const next = currentPage + dir;
-  if (next >= 0 && next < TOTAL) renderPage(next);
+    const next = currentPage + dir;
+    if (next >= 0 && next < TOTAL) renderPage(next);
 }
 
-function jumpToPoint(e) {
-  const rect = e.currentTarget.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const pct = x / rect.width;
-  renderPage(Math.round(pct * (TOTAL - 1)));
-}
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
-function handleSearch(e) {
-  if (e.key === 'Enter') {
-    const q = e.target.value.toLowerCase().trim();
-    if (!q) return;
-    const idx = PAGES.findIndex(p => (typeof p === 'string' ? p : p.text).toLowerCase().includes(q));
-    if (idx !== -1) renderPage(idx);
-    else showToast("No matches found!");
-  }
-}
-
-function openPageJump() {
-  const wrap = document.getElementById('pageJumpWrap');
-  const span = document.getElementById('pageCounter');
-  span.style.display = 'none';
-  wrap.style.display = 'block';
-  const input = document.getElementById('pageJumpInput');
-  input.value = currentPage + 1;
-  input.focus();
-}
-function closePageJump() {
-  document.getElementById('pageJumpWrap').style.display = 'none';
-  document.getElementById('pageCounter').style.display = 'block';
-}
-function handlePageJumpKey(e) {
-  if (e.key === 'Enter') {
-    const val = parseInt(e.target.value);
-    if (val >= 1 && val <= TOTAL) renderPage(val - 1);
-    closePageJump();
-  }
-}
-
-document.addEventListener('mouseup', e => {
-  const sel = window.getSelection().toString().trim();
-  const menu = document.getElementById('magicMenu');
-  if (sel && sel.length > 5 && e.target.closest('#pageText')) {
-    const range = window.getSelection().getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    menu.style.display = 'flex';
-    menu.style.top = `${rect.top - 50 + window.scrollY}px`;
-    menu.style.left = `${rect.left + (rect.width/2) - 80}px`;
-  } else if (!e.target.closest('#magicMenu')) {
-    menu.style.display = 'none';
-  }
-});
-
-function getSelectedText() { return window.getSelection().toString().trim(); }
-
-async function runTool(action, overrideText = null) {
-  if ((action === 'flashcards' || action === 'podcast') && overrideText === null) {
-    return action === 'flashcards' ? fetchFlashcardDecks() : fetchPodcastDecks();
-  }
-  if (action === 'music' && overrideText === null) {
-    return fetchSongDecks();
-  }
-  
-  const pg = PAGES[currentPage];
-  const pageText = (overrideText && overrideText !== 'FORCE_GENERATE') ? overrideText : (pg.text || pg);
-  const container = document.getElementById('panelBody');
-  
-  const isSong = (action === 'music' || action === 'song_generate');
-  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">${isSong ? 'Writing Lyrics & Baking Divine Vocals...' : 'Thinking...'}</p></div>`;
-  
-  if (window.innerWidth < 1200 && !document.getElementById('sidebar').classList.contains('open')) {
-    toggleSidebar();
-  }
-
-  try {
-    const res = await fetch(AJAX_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        action: action === 'music' ? 'song_generate' : action, 
-        page_text: pageText, 
-        page_label: `Slide ${currentPage+1}`, 
-        genre: window._currentGenre || 'Lofi' 
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      if (action === 'flashcards') renderFlashcards(data.cards, container);
-      else if (action === 'quiz') renderQuiz(data.questions, container);
-      else if (action === 'podcast') {
-        PodcastPlayer.start(data.script_json, container, true);
-      }
-      else if (action === 'music' || action === 'song_generate') {
-        SongPlayer.start(data.lyrics_json, window._currentGenre || 'Lofi', container);
-      }
-      else {
-        let html = `<div class="ai-result fade-in" style="font-size:1.2rem;text-align:left;">${formatResult(data.result)}</div>`;
-        container.innerHTML = html;
-      }
-    } else {
-      showToast("Error: " + data.error);
-    }
-  } catch (e) { showToast("Network Error"); }
-}
-
-const PodcastPlayer = {
-  fullScript: "",
-  queue: [],
-  index: 0,
-  isPlaying: false,
-  isLive: true,
-  voices: { Alex: null, Sam: null },
-  recognition: null,
-
-  init() {
-    const v = window.speechSynthesis.getVoices();
-    this.voices.Alex = v.find(x => x.name.includes('Male') || x.name.includes('David')) || v[0];
-    this.voices.Sam = v.find(x => x.name.includes('Female') || x.name.includes('Zira') || x.name.includes('Google US English')) || v[1];
+async function handleChat() {
+    const input = document.getElementById('sideChatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    const container = document.getElementById('panelBody');
     
-    if ('webkitSpeechRecognition' in window) {
-      this.recognition = new webkitSpeechRecognition();
-      this.recognition.continuous = false;
-      this.recognition.onresult = (e) => this.handleCallResult(e.results[0][0].transcript);
-    }
-  },
-
-  async start(text, container, fromSaved = false) {
-    this.fullScript = text;
-    this.isLive = !fromSaved;
-    this.stop();
-    this.init();
-    
-    if (fromSaved) {
-      this.queue = typeof text === 'string' ? JSON.parse(text) : text;
-    } else {
-      this.queue = this.parseScript(text);
-    }
-    
-    this.index = 0;
-    this.isPlaying = true;
-    this.renderPlayerUI(container);
-    this.speakNext();
-  },
-
-  parseScript(text) {
-    const lines = text.split('\n').filter(l => l.trim());
-    return lines.map((l, i) => {
-      // 1. Identify Speaker
-      const m = l.match(/^(Alex|Sam|Host \d):\s*(.*)/i);
-      const speaker = m ? m[1] : 'Alex';
-      let rawContent = m ? m[2] : l;
-
-      // 2. Clean text for Voice & Display (remove ** and [stuff])
-      let cleanText = rawContent
-        .replace(/\*\*/g, '')           // Remove bold markers
-        .replace(/\[.*?\]/g, '')       // Remove stage directions like [Intro Music]
-        .replace(/^(Alex|Sam|Host \d):\s*/i, '') // Extra safety against nested names
-        .trim();
-
-      return { id: i, speaker: speaker, text: cleanText };
-    }).filter(seg => seg.text.length > 0); // Skip segments that were just music/stage directions
-  },
-
-  updateProgress() {
-    const fill = document.querySelector('.podcast-progress-fill');
-    if (fill) {
-      const pct = (this.index / this.queue.length) * 100;
-      fill.style.width = pct + '%';
-    }
-  },
-
-  toggleWave(active) {
-    const wf = document.getElementById('podcastWaveform');
-    if (wf) {
-      if (active) wf.classList.add('wave-active');
-      else wf.classList.remove('wave-active');
-    }
-  },
-
-  speakNext() {
-    if (!this.isPlaying || this.index >= this.queue.length) {
-      this.toggleWave(false);
-      return;
-    }
-    const seg = this.queue[this.index];
-    this.updateProgress();
-    
-    if (!this.isLive && seg.audio_url) {
-      const audio = new Audio(seg.audio_url);
-      audio.onplay = () => { this.highlight(seg.id); this.toggleWave(true); };
-      audio.onpause = () => this.toggleWave(false);
-      audio.onended = () => { if (this.isPlaying) { this.index++; this.speakNext(); } };
-      audio.play();
-    } else {
-      const msg = new SpeechSynthesisUtterance(seg.text);
-      msg.voice = seg.speaker.toLowerCase().includes('sam') ? this.voices.Sam : this.voices.Alex;
-      msg.onstart = () => { this.highlight(seg.id); this.toggleWave(true); };
-      msg.onend = () => { if (this.isPlaying) { this.toggleWave(false); this.index++; this.speakNext(); } };
-      window.speechSynthesis.speak(msg);
-    }
-  },
-
-  highlight(id) {
-    document.querySelectorAll('.speaking-segment').forEach(el => el.classList.remove('speaking-segment'));
-    const target = document.querySelector(`[data-seg-id="${id}"]`);
-    if (target) {
-      target.classList.add('speaking-segment');
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  },
-
-  stop() {
-    this.isPlaying = false;
-    window.speechSynthesis.cancel();
-    this.toggleWave(false);
-    if (this.recognition) this.recognition.stop();
-    document.querySelectorAll('.speaking-segment').forEach(el => el.classList.remove('speaking-segment'));
-    const btn = document.getElementById('callInBtn');
-    if (btn) btn.style.display = 'none';
-  },
-
-  renderPlayerUI(container) {
-    let html = `
-    <div id="podcastDisplay" class="fade-in" style="padding-bottom:1.5rem;">
-      <div class="podcast-deck">
-        <div style="font-size:0.85rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#666; margin-bottom:1rem; display:flex; justify-content:space-between;">
-          <span>Live Broadcast</span>
-          <span style="color:var(--accent-red);">â—ڈ REC</span>
+    // User message
+    container.innerHTML += `
+        <div style="margin-bottom:1.5rem; text-align:right; animation:sketchyFade .3s;">
+            <div style="display:inline-block; background:var(--primary); color:#fff; padding:0.8rem 1.2rem; border-radius:18px 18px 0 18px; font-weight:600; box-shadow:0 4px 10px rgba(99,102,241,0.2);">${esc(msg)}</div>
         </div>
-        
-        <div id="podcastWaveform" class="waveform">
-          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-        </div>
-        
-        <div style="text-align:center;">
-          <div style="font-size:1.3rem; font-weight:900;">${esc(PAGES[currentPage].label || 'Current Section')}</div>
-          <div style="font-size:0.95rem; color:#666; font-family:'Inter', sans-serif;">Hosted by Alex & Sam</div>
-        </div>
-        
-        <div class="podcast-progress">
-          <div class="podcast-progress-fill"></div>
-        </div>
-      </div>
     `;
-    this.queue.forEach(seg => {
-      // Show cleaned text without ** or stage directions
-      html += `<p data-seg-id="${seg.id}" style="margin-bottom:1rem; text-align:left; line-height:1.4;">
-        <span style="font-weight:900; color:var(--accent-blue);">${seg.speaker}:</span> ${esc(seg.text)}
-      </p>`;
-    });
-    html += `
-      <div class="podcast-controls" style="padding-top:1rem; border-top:2px dashed #000;">
-        <button id="callInBtn" class="btn-call-in" style="display:flex;" onclick="PodcastPlayer.triggerCall()">
-          ☎️ Ask a Question
-        </button>
-        ${this.isLive ? `<button id="btnSavePod" onclick="savePodcast(PodcastPlayer.fullScript)" style="width:100%; padding:.75rem; background:var(--accent-amber); border:3px solid #000; border-radius:12px; font-weight:800; margin-bottom:.5rem; cursor:pointer;">💾 Save Audio Broadcast</button>` : ''}
-        <button onclick="PodcastPlayer.stop(); fetchPodcastDecks();" style="width:100%; padding:.75rem; border:3px solid #000; border-radius:12px; font-weight:800; background:#fff; cursor:pointer;">🛑 Stop & Exit</button>
-      </div>
-    </div>`;
-    container.innerHTML = html;
-  },
+    container.scrollTop = container.scrollHeight;
 
-  triggerCall() {
-    window.speechSynthesis.cancel();
-    this.isPlaying = false;
-    const intro = new SpeechSynthesisUtterance("Wait, Sam, I think we have a caller! Go ahead, what's your question?");
-    intro.voice = this.voices.Alex;
-    intro.onend = () => {
-      showToast("Listening... 🎙️");
-      this.recognition.start();
-    };
-    window.speechSynthesis.speak(intro);
-  },
+    const botId = 'bot-' + Date.now();
+    container.innerHTML += `
+        <div id="${botId}" style="margin-bottom:1.5rem; text-align:left; animation:sketchyFade .4s;">
+            <div style="display:inline-block; background:#fff; padding:0.8rem 1.2rem; border-radius:18px 18px 18px 0; font-weight:600; border:1px solid #f1f5f9; box-shadow:var(--soft-shadow);">Thinking... 🧠</div>
+        </div>
+    `;
+    container.scrollTop = container.scrollHeight;
 
-  async handleCallResult(q) {
-    showToast(`" ${q} "`);
-    const container = document.getElementById('podcastDisplay');
-    const oldHtml = container.innerHTML;
-    container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Answering Caller...</p></div>`;
+    try {
+        const pg = PAGES[currentPage] || {text:"", images:[]};
+        const res = await fetch(AJAX_URL, {
+            method: "POST",
+            headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
+            body: JSON.stringify({ action: 'chat', message: msg, page_text: pg.text || pg, images: pg.images || [] })
+        });
+        const data = await res.json();
+        const display = document.getElementById(botId).querySelector('div');
+        display.style.fontWeight = '500';
+        display.innerHTML = data.success ? formatResult(data.result) : "Sorry, I hit a snag!";
+        container.scrollTop = container.scrollHeight;
+    } catch(e) { showToast("Connection failed."); }
+}
+
+function closeOverlay() {
+    const ov = document.getElementById('toolOverlay');
+    ov.classList.remove('open');
+    PodcastPlayer.stop();
+    SongPlayer.stop();
+}
+
+async function runTool(action) {
+    if (action === 'music' || action === 'song_generate') { openGenreModal(); return; }
+    
+    showToast(`NEXA Intelligence: Initializing ${action.toUpperCase()}...`);
+    const overlay = document.getElementById('toolOverlay');
+    const container = document.getElementById('overlayContent');
+    overlay.classList.add('open');
+    container.innerHTML = `<div style="text-align:center; padding:4rem;"><div style="width:40px;height:40px;border:4px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1.5rem;"></div><p style="font-weight:700; color:var(--text-sub);">Extracting insights from this page...</p></div>`;
+
+    const page = PAGES[currentPage] || {text:"", label:"Current Page"};
+    const body = { action, page_text: page.text, page_label: page.label, genre: window._currentGenre || 'Lofi' };
     
     try {
-      // Immediate "filler" to keep immersion while thinking
-      const filler = new SpeechSynthesisUtterance("Oh, that's a great point. Let me check the notes for a second, Sam...");
-      filler.voice = this.voices.Alex;
-      window.speechSynthesis.speak(filler);
+        const resp = await fetch(AJAX_URL, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        if (!data.success) { 
+            container.innerHTML = `<div style="text-align:center; color:#ef4444; font-weight:800;">${data.error || 'Intelligence extraction failed.'}</div>`; 
+            return; 
+        }
 
-      const res = await fetch(AJAX_URL, {
-        method: "POST",
-        headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          action: 'podcast_question', 
-          question: q, 
-          conversation_context: this.fullScript,
-          page_text: PAGES[currentPage].text, 
-          page_label: `Slide ${currentPage+1}` 
-        })
-      });
-      const data = await res.json();
-      container.innerHTML = oldHtml;
-      
-      if (data.audio_url) {
-        const audio = new Audio(data.audio_url);
-        audio.onplay = () => this.toggleWave(true);
-        audio.onended = () => {
-          this.toggleWave(false);
-          this.isPlaying = true;
-          this.index++;
-          this.speakNext();
-        };
-        audio.play();
-      } else {
-        // Fallback for some reason
-        const ans = new SpeechSynthesisUtterance(data.result);
-        ans.voice = this.voices.Sam;
-        ans.onstart = () => this.toggleWave(true);
-        ans.onend = () => {
-          this.toggleWave(false);
-          this.isPlaying = true;
-          this.index++;
-          this.speakNext();
-        };
-        window.speechSynthesis.speak(ans);
-      }
-    } catch(e) { showToast("Error answering question."); this.isPlaying = true; this.speakNext(); }
-  }
+        if (action === 'summarise') renderSummary(data.result, container);
+        else if (action === 'quiz') QuizPlayer.start(data.questions, container);
+        else if (action === 'flashcards') FlashcardManager.start(data.cards, container);
+        else if (action === 'podcast') PodcastPlayer.start(data.script_json, container);
+        else if (action === 'music' || action === 'song_generate') SongPlayer.start(data.lyrics_json, window._currentGenre || 'Lofi', container);
+    } catch(e) { 
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; font-weight:800;">Connection timeout.</div>`;
+    }
+}
+
+function renderSummary(rawText, container) {
+    container.innerHTML = `
+        <div class="fade-in">
+            <h2 style="font-family:'Poppins'; font-size:2rem; font-weight:800; margin-bottom:1.5rem; text-align:center;">✨ Smart Briefing</h2>
+            <div style="font-size:1.15rem; line-height:1.8; color:var(--text-main); font-weight:400; padding:2rem; background:#f8fafc; border-radius:24px;">${rawText.replace(/\n/g, '<br>')}</div>
+            <button onclick="closeOverlay()" style="width:100%; margin-top:2.5rem; padding:1.25rem; background:var(--primary); color:#fff; border-radius:100px; font-weight:800; border:none; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3);">Alright, thanks!</button>
+        </div>
+    `;
+}
+
+const FlashcardManager = {
+    cards: [], index: 0,
+    start(cards, container) { this.cards = cards; this.index = 0; this.renderUI(container); },
+    renderUI(container) {
+        const card = this.cards[this.index];
+        container.innerHTML = `
+            <div class="fade-in" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+                <h2 style="font-family:'Poppins'; font-weight:800; margin-bottom:2rem; font-size:2rem;">🧠 Smart Flashcards</h2>
+                
+                <div class="flashcard-stage" onclick="this.classList.toggle('flipped')">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-face">
+                            <div class="fc-text">${esc(card.front)}</div>
+                        </div>
+                        <div class="flashcard-face flashcard-back">
+                            <div class="fc-text">${esc(card.back)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:2.5rem; margin-top:2rem;">
+                    <button onclick="FlashcardManager.prev()" class="nav-circle" style="width:50px; height:50px;" ${this.index===0?'disabled':''}>←</button>
+                    <div style="font-weight:700; color:var(--text-sub); align-self:center;">Card ${this.index+1} / ${this.cards.length}</div>
+                    <button onclick="FlashcardManager.next()" class="nav-circle" style="width:50px; height:50px;" ${this.index===this.cards.length-1?'disabled':''}>→</button>
+                </div>
+
+                <div style="margin-top:4rem; display:flex; gap:1.5rem; width:100%; max-width:600px;">
+                    <button onclick="FlashcardManager.saveDeck()" style="flex:1; padding:1.1rem; border:2px solid var(--primary); color:var(--primary); font-weight:800; border-radius:100px; background:none; cursor:pointer; transition:.2s;">💾 Save to Library</button>
+                    <button onclick="closeOverlay()" style="flex:1; padding:1.1rem; background:#f1f5f9; border-radius:100px; font-weight:700; border:none; cursor:pointer; color:var(--text-sub);">Dismiss</button>
+                </div>
+            </div>
+        `;
+    },
+    next() { if(this.index<this.cards.length-1){this.index++; this.renderUI(document.getElementById('overlayContent'));} },
+    prev() { if(this.index>0){this.index--; this.renderUI(document.getElementById('overlayContent'));} },
+    async saveDeck() {
+        const btn = event.target;
+        btn.disabled = true; btn.textContent = 'Storing...';
+        try {
+            await fetch('{% url "flashcards_save" material.pk %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cards: this.cards, name: `Library Deck - ${PAGES[currentPage].label || 'Study Section'}` })
+            });
+            btn.textContent = '✅ Stored in Library';
+            showToast('Flashcard deck successfully attached to your library!');
+        } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
+    }
 };
 
-async function fetchPodcastDecks() {
-  const container = document.getElementById('panelBody');
-  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Opening Broadcasts...</p></div>`;
-  if (window.innerWidth < 1200 && !document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-
-  try {
-    const res = await fetch(AJAX_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ action: 'podcast_list' })
-    });
-    const data = await res.json();
-    let html = `
-      <div class="fade-in">
-        <h3 style="margin-bottom:1rem; font-size:1.8rem;">Broadcast Library</h3>
-        <button onclick="runTool('podcast', 'FORCE_GENERATE')" style="width:100%; padding:1.25rem; background:var(--accent-red); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-bottom:1.5rem; box-shadow:4px 4px 0 #000; cursor:pointer;">
-          📣 Generate New Podcast
-        </button>
-        <div style="display:flex; flex-direction:column; gap:1rem;">
-    `;
-    if (!data.podcasts || data.podcasts.length === 0) {
-      html += `<p style="text-align:center; color:#666;">No saved broadcasts yet.</p>`;
-    } else {
-      data.podcasts.forEach(p => {
-        html += `
-          <div onclick="loadPodcast(${p.id})" style="padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; box-shadow:4px 4px 0 #000; cursor:pointer; text-align:left;">
-            <div style="font-size:1.2rem; font-weight:800; margin-bottom:.2rem;">🎙️ ${esc(p.name)}</div>
-            <div style="font-size:0.85rem; color:#666;">Saved ${p.created_at}</div>
-          </div>
+const QuizPlayer = {
+    qs: [], index: 0, score: 0,
+    start(qs, container) { this.qs = qs; this.index = 0; this.score = 0; this.renderUI(container); },
+    renderUI(container) {
+        const q = this.qs[this.index];
+        container.innerHTML = `
+            <div class="fade-in" style="max-width:650px; margin:0 auto;">
+                <div style="font-weight:700; color:var(--primary); margin-bottom:1rem; text-align:center; font-size:0.9rem; letter-spacing:0.05em;">PROGRESS: ${this.index+1} OF ${this.qs.length}</div>
+                <h2 style="font-size:1.8rem; font-weight:800; margin-bottom:2.5rem; line-height:1.3; text-align:center;">${esc(q.q)}</h2>
+                <div class="quiz-opts" style="display:grid; gap:1.25rem;">
+                    ${Object.entries(q.opts).map(([k,v]) => `<button onclick="QuizPlayer.answer('${k}')" style="padding:1.5rem; border:1px solid #e2e8f0; border-radius:18px; text-align:left; font-weight:600; cursor:pointer; transition:.2s; background:#fff; font-size:1.05rem; box-shadow:0 2px 4px rgba(0,0,0,0.02);"><b>${k}</b> &nbsp;&nbsp; ${esc(v)}</button>`).join('')}
+                </div>
+            </div>
         `;
-      });
-    }
-    html += `</div></div>`;
-    container.innerHTML = html;
-  } catch (e) { showToast("Error loading library."); }
-}
-
-async function loadPodcast(id) {
-  const container = document.getElementById('panelBody');
-  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Preparing Studio...</p></div>`;
-  try {
-    // We reuse learn_ajax or add a new detail view. For simplicity, let's assume podcast_list can provide data if tweaked, 
-    // but better to have a dedicated podcast_detail. Or just store in list for now if small? 
-    // I'll add 'podcast_detail' to the backend in the next step or assume it's there.
-    const res = await fetch(AJAX_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ action: 'podcast_detail', podcast_id: id })
-    });
-    const data = await res.json();
-    if (data.success) {
-      PodcastPlayer.start(data.script_json, container, true);
-    }
-  } catch(e) { showToast("Error loading podcast."); }
-}
-
-async function savePodcast(scriptData) {
-  const btn = document.getElementById('btnSavePod');
-  if (btn) { btn.innerHTML = 'Saving to Library... 💾'; btn.disabled = true; }
-  const name = prompt("Name your Broadcast:", `Podcast for ${PAGES[currentPage].label || 'Section'}`);
-  if (!name) { 
-    if (btn) { btn.innerHTML = '💾 Save Audio Broadcast'; btn.disabled = false; }
-    return; 
-  }
-
-  try {
-    const res = await fetch(AJAX_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ action: 'podcast_save', script_json: scriptData, name: name })
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast("Library Updated! 🎙️✅");
-      if (btn) btn.innerHTML = 'Saved! ✅';
-    } else {
-      showToast("Error: " + data.error);
-      if (btn) { btn.innerHTML = '💾 Save Audio Broadcast'; btn.disabled = false; }
-    }
-  } catch(e) { showToast("Network error during save."); }
-}
-
-async function fetchFlashcardDecks() {
-  const container = document.getElementById('panelBody');
-  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Fetching Decks...</p></div>`;
-  if (window.innerWidth < 1200 && !document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-  
-  try {
-    const res = await fetch(DECKS_URL);
-    const data = await res.json();
-    let html = `
-      <div class="fade-in">
-        <h3 style="margin-bottom:1rem; font-size:1.8rem;">Study Library</h3>
-        <button onclick="runTool('flashcards', 'FORCE_GENERATE')" style="width:100%; padding:1.25rem; background:var(--accent-blue); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-bottom:1.5rem; box-shadow:4px 4px 0 #000; cursor:pointer;">
-          ✨ New Cards for Current Slide
-        </button>
-        <div style="display:flex; flex-direction:column; gap:1rem;">
-    `;
-    
-    if (!data.decks || data.decks.length === 0) {
-      html += `<p style="text-align:center; color:#666;">No saved decks yet.</p>`;
-    } else {
-      data.decks.forEach(d => {
-        html += `
-          <div onclick="loadFlashcardDeck(${d.id})" style="padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; box-shadow:4px 4px 0 #000; cursor:pointer; text-align:left;">
-            <div style="font-size:1.25rem; font-weight:800; margin-bottom:.2rem;">${esc(d.name)}</div>
-            <div style="font-size:0.9rem; color:#666; font-family:'Inter', sans-serif;">${d.count} cards • ${d.created_at}</div>
-          </div>
+    },
+    answer(val) {
+        const q = this.qs[this.index];
+        const isCorrect = val === q.ans;
+        if(isCorrect) this.score++;
+        document.getElementById('overlayContent').innerHTML = `
+            <div class="fade-in" style="text-align:center; padding:2rem;">
+                <div style="font-size:4.5rem; margin-bottom:1.5rem;">${isCorrect?'✨':'💡'}</div>
+                <h2 style="font-weight:800; margin-bottom:1.25rem; font-size:2rem;">${isCorrect?'Excellent Work!':'Keep Learning.'}</h2>
+                <div style="font-size:1.1rem; color:var(--text-sub); margin-bottom:3rem; padding:1.5rem; background:#f8fafc; border-radius:18px; line-height:1.6;">${esc(q.explanation)}</div>
+                <button onclick="${this.index<this.qs.length-1?'QuizPlayer.next()':'QuizPlayer.finish()'}" style="width:100%; max-width:400px; padding:1.25rem; background:var(--primary); color:#fff; border-radius:100px; font-weight:800; border:none; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.2);">Next Question</button>
+            </div>
         `;
-      });
+    },
+    next() { this.index++; this.renderUI(document.getElementById('overlayContent')); },
+    finish() {
+        document.getElementById('overlayContent').innerHTML = `
+            <div class="fade-in" style="text-align:center;">
+                <div style="font-size:5rem; margin-bottom:1rem;">📓</div>
+                <h2 style="font-size:2.5rem; font-weight:900; margin-bottom:1rem;">Study Session Complete</h2>
+                <div style="font-size:1.6rem; font-weight:700; margin-bottom:3rem; color:var(--text-sub);">Final Score: <span style="color:var(--primary);">${this.score} / ${this.qs.length}</span></div>
+                <button onclick="closeOverlay()" style="padding:1.25rem 4rem; background:var(--primary); color:#fff; border-radius:100px; border:none; font-weight:800; cursor:pointer; box-shadow:0 10px 25px rgba(99,102,241,0.3);">Return to Content</button>
+            </div>
+        `;
     }
-    
-    html += `</div></div>`;
-    container.innerHTML = html;
-  } catch (e) { showToast("Failed to fetch decks."); }
-}
-
-async function loadFlashcardDeck(id) {
-  const container = document.getElementById('panelBody');
-  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🤖</div><p style="margin-top:1rem;">Loading Deck...</p></div>`;
-  
-  try {
-    const res = await fetch(`${LOAD_URL}${id}/`);
-    const data = await res.json();
-    if (data.success) {
-      renderFlashcards(data.cards, container, true);
-    }
-  } catch (e) { showToast("Error loading deck."); }
-}
-
-function speakText(text) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.rate = 1.0;
-    msg.pitch = 1.0;
-    window.speechSynthesis.speak(msg);
-  } else {
-    showToast("Text-to-speech not supported.");
-  }
-}
-
-function renderFlashcards(cards, container, fromLibrary = false) {
-  let i = 0;
-  function draw() {
-    const c = cards[i];
-    let html = `
-      <div style="width:100%;" class="fade-in">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-          <h3 style="margin:0; font-size:1.5rem;">Flashcards (${i+1}/${cards.length})</h3>
-          ${fromLibrary ? `<button onclick="fetchFlashcardDecks()" style="background:none; border:none; color:#000; font-family:inherit; font-weight:800; text-decoration:underline; cursor:pointer;">&larr; Library</button>` : ''}
-        </div>
-        
-        <div class="fc-scene" onclick="this.querySelector('.fc-card').classList.toggle('is-flipped')">
-          <div class="fc-card">
-            <div class="fc-face fc-front">${esc(c.front)}</div>
-            <div class="fc-face fc-back">${esc(c.back)}</div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
-          <button style="flex:1;padding:.75rem;border:3px solid #000;border-radius:12px;font-weight:800;" onclick="fcNav(-1)">Prev</button>
-          <button style="flex:1;padding:.75rem;border:3px solid #000;border-radius:12px;font-weight:800;" onclick="fcNav(1)">Next</button>
-        </div>
-    `;
-    
-    if (!fromLibrary) {
-      html += `
-        <div style="margin-top:1.5rem; text-align:left;">
-          <label style="font-size:0.9rem; font-weight:800; color:#333; font-family:'Inter', sans-serif;">Name Your Deck</label>
-          <input type="text" id="fcDeckName" value="Deck for Slide ${i+1}" style="width:100%; padding:.75rem 1rem; border:3px solid #000; border-radius:12px; font-family:inherit; font-size:1.15rem; margin-top:.3rem; box-shadow:3px 3px 0 #000; outline:none;">
-        </div>
-
-        <button class="btn-save-deck" onclick="saveFlashcards(window.currentFlashcards)">
-          <svg style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save This Deck
-        </button>
-      `;
-    }
-    
-    html += `</div>`;
-    container.innerHTML = html;
-  }
-  window.fcNav = (dir) => { 
-    i = Math.max(0, Math.min(cards.length-1, i+dir)); 
-    draw(); 
-  };
-  window.currentFlashcards = cards;
-  draw();
-}
-
-async function saveFlashcards(cards) {
-  if (!cards || !cards.length) return;
-  const nameInput = document.getElementById('fcDeckName');
-  const deckName = nameInput ? nameInput.value.trim() : `Deck for ${document.getElementById('paperTitle').textContent.trim()}`;
-  
-  const btn = document.querySelector('.btn-save-deck');
-  btn.innerHTML = 'Saving...';
-  btn.disabled = true;
-
-  try {
-    const res = await fetch(SAVE_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ cards, name: deckName })
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast("Deck Saved Successfully! 🗂️");
-      btn.innerHTML = 'Saved! ✅';
-    } else {
-      showToast("Error: " + data.error);
-      btn.innerHTML = 'Save This Deck';
-      btn.disabled = false;
-    }
-  } catch (e) { 
-    showToast("Network Error"); 
-    btn.disabled = false;
-  }
-}
-
-function renderQuiz(qs, container) {
-  let i = 0, score = 0;
-  function draw() {
-    const q = qs[i];
-    container.innerHTML = `
-      <div class="fade-in" style="text-align:left;">
-        <h3 style="margin-bottom:.5rem;">Question ${i+1}/${qs.length}</h3>
-        <p style="font-size:1.2rem;font-weight:800;margin-bottom:1rem;">${esc(q.q)}</p>
-        <div style="display:flex;flex-direction:column;gap:.5rem;">
-          ${Object.entries(q.opts).map(([k,v]) => `<button onclick="pickAnswer('${k}','${q.ans}')" style="padding:.75rem 1rem;border:3px solid #000;border-radius:12px;background:#fff;text-align:left;font-weight:800;">${k}: ${esc(v)}</button>`).join('')}
-        </div>
-      </div>`;
-  }
-  window.pickAnswer = (chosen, ans) => {
-    if (chosen === ans) score++;
-    if (++i < qs.length) draw();
-    else container.innerHTML = `<div style="text-align:center;"><div class="pal-bot-icon">🏆</div><h2>Done! Score: ${score}/${qs.length}</h2><button onclick="runTool('quiz')" style="margin-top:1rem;padding:.5rem 1rem;border:3px solid #000;border-radius:10px;">Retry</button></div>`;
-  };
-  draw();
-}
+};
 
 function openGenreModal() {
-  const modal = document.createElement('div');
-  modal.id = 'genreModal';
-  modal.style = "position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9000;animation:sketchyFade .3s;";
-  modal.innerHTML = `
-    <div style="background:#fff;border:4px solid #000;border-radius:24px;padding:2rem;max-width:400px;width:90%;box-shadow:10px 10px 0 #000;text-align:center;">
-      <h2 style="margin-bottom:1.5rem;font-size:1.8rem;">Pick Your Vibe 🎵</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-        <div onclick="selectGenre('Lofi')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#fefce8;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          <div style="font-size:2rem;">☕</div><div style="font-weight:900;margin-top:.5rem;">Lofi</div>
+    const overlay = document.getElementById('toolOverlay');
+    const container = document.getElementById('overlayContent');
+    overlay.classList.add('open');
+    container.innerHTML = `
+        <div class="fade-in" style="text-align:center; max-width:550px; margin:0 auto;">
+            <h2 style="margin-bottom:2.5rem; font-size:2.2rem; font-family:'Poppins'; font-weight:800;">Choose Your Study Vibe 🎵</h2>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                ${['Lofi','Pop','Hip Hop','Rock'].map(g => `
+                    <div onclick="selectGenre('${g}')" style="cursor:pointer; padding:2rem; border:1px solid #f1f5f9; border-radius:24px; background:#fff; box-shadow:var(--soft-shadow); transition:.3s; transform:scale(1);" onmouseover="this.style.transform='scale(1.03)'; this.style.borderColor='var(--primary)'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#f1f5f9'">
+                        <div style="font-size:2.5rem; margin-bottom:0.75rem;">${g==='Lofi'?'☕':g==='Pop'?'🌈':g==='Hip Hop'?'🎤':'🎸'}</div>
+                        <div style="font-weight:800; font-size:1.2rem;">${g}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <button onclick="closeOverlay()" style="margin-top:3rem; background:none; border:none; font-weight:700; color:var(--text-sub); text-decoration:underline; cursor:pointer;">Nevermind</button>
         </div>
-        <div onclick="selectGenre('Pop')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#f0f9ff;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          <div style="font-size:2rem;">🌈</div><div style="font-weight:900;margin-top:.5rem;">Pop</div>
-        </div>
-        <div onclick="selectGenre('Hip Hop')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#f5f3ff;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          <div style="font-size:2rem;">🎤</div><div style="font-weight:900;margin-top:.5rem;">Hip Hop</div>
-        </div>
-        <div onclick="selectGenre('Rock')" style="cursor:pointer;padding:1.5rem;border:3.5px solid #000;border-radius:18px;background:#fef2f2;box-shadow:4px 4px 0 #000;transition:.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          <div style="font-size:2rem;">🎸</div><div style="font-weight:900;margin-top:.5rem;">Rock</div>
-        </div>
-      </div>
-      <button onclick="this.parentElement.parentElement.remove()" style="margin-top:2rem;background:none;border:none;font-weight:900;text-decoration:underline;cursor:pointer;">Cancel</button>
-      <div style="margin-top:1rem;font-size:0.9rem;font-weight:800;color:var(--accent-red);cursor:pointer;" onclick="runTool('music', null)">Library &rarr;</div>
-    </div>
-  `;
-  document.body.appendChild(modal);
+    `;
 }
+window.selectGenre = (g) => { window._currentGenre = g; runTool('song_generate'); };
 
-window.selectGenre = (g) => {
-  window._currentGenre = g;
-  document.getElementById('genreModal')?.remove();
-  runTool('music', 'FORCE_GENERATE');
+const PodcastPlayer = {
+  queue: [], index: 0, isPlaying: false,
+  voices: { Alex: null, Sam: null },
+  init() {
+    const v = window.speechSynthesis.getVoices();
+    this.voices.Alex = v.find(x => x.name.includes('Male')) || v[0];
+    this.voices.Sam = v.find(x => x.name.includes('Female')) || v[1];
+  },
+  async start(input, container) {
+    this.stop(); this.init();
+    this.queue = Array.isArray(input) ? input : [];
+    this.index = 0; this.isPlaying = true;
+    this.renderUI(container); this.speakNext();
+  },
+  speakNext() {
+    if (!this.isPlaying || this.index >= this.queue.length) { this.toggleWave(false); return; }
+    const seg = this.queue[this.index];
+    if (seg.audio_url) {
+      const audio = new Audio(seg.audio_url); window._curAud = audio;
+      audio.onplay = () => { this.highlight(this.index); this.toggleWave(true); };
+      audio.onended = () => { if (this.isPlaying) { this.index++; this.speakNext(); } };
+      audio.play();
+    } else { this.index++; this.speakNext(); }
+    this.updateProgress();
+  },
+  highlight(idx) {
+    document.querySelectorAll('.speaking-segment').forEach(el => el.classList.remove('speaking-segment'));
+    const t = document.querySelector(`[data-seg-idx="${idx}"]`);
+    if (t) { t.classList.add('speaking-segment'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  },
+  updateProgress() {
+    const bar = document.querySelector('.podcast-progress-fill');
+    if (bar) bar.style.width = ((this.index / this.queue.length) * 100) + '%';
+  },
+  toggleWave(active) {
+    const wf = document.getElementById('podWave');
+    if (wf) active ? wf.classList.add('wave-active') : wf.classList.remove('wave-active');
+  },
+  stop() { this.isPlaying = false; if(window._curAud) window._curAud.pause(); window.speechSynthesis.cancel(); },
+  renderUI(container) {
+    container.innerHTML = `
+      <div id="podPlayer" class="fade-in" style="max-width:700px; margin:0 auto;">
+        <div style="background:#fff; border-radius:24px; padding:2rem; box-shadow:var(--soft-shadow); border:1px solid #f1f5f9; margin-bottom:2rem;">
+          <div id="podWave" class="waveform"><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div></div>
+          <h2 style="font-family:'Poppins'; font-weight:800; text-align:center; font-size:1.5rem; margin-bottom:1.5rem;">📡 NEXA Live Intelligence Broadcast</h2>
+          <div class="podcast-progress"><div class="podcast-progress-fill"></div></div>
+        </div>
+        <div style="max-height:350px; overflow-y:auto; padding-right:1rem;">
+          ${this.queue.map((s,i) => `<p data-seg-idx="${i}" style="margin-bottom:1.25rem; line-height:1.6; font-size:1.05rem; padding:0.75rem; border-radius:12px; transition:.3s;"><b>${s.speaker}:</b> ${esc(s.text)}</p>`).join('')}
+        </div>
+        <button onclick="closeOverlay()" style="width:100%; margin-top:2.5rem; padding:1.25rem; background:#f1f5f9; border-radius:100px; font-weight:700; border:none; cursor:pointer; color:var(--text-sub);">Stop Broadcast</button>
+      </div>`;
+  }
 };
 
 const SongPlayer = {
-  lyrics: [],
-  index: 0,
-  genre: 'Lofi',
-  isPlaying: false,
-  beat: null,
-  vocal: null,
-  
-  beats: {
-    'Lofi': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Raising_Frequency/Ketsa_-_04_-_Raising_Frequency.mp3',
-    'Pop': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-    'Hip Hop': 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Arps/Chad_Crouch_-_Algorithms.mp3',
-    'Rock': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
-  },
-
-  start(segments, genre, container) {
-    this.stop();
-    this.lyrics = segments;
-    this.genre = genre;
-    this.index = 0;
-    this.isPlaying = true;
-    
-    this.beat = new Audio(this.beats[genre] || this.beats['Lofi']);
-    this.beat.loop = true;
-    this.beat.volume = 0.3;
-    this.beat.play();
-    
-    this.renderStudio(container);
-    setTimeout(() => this.nextLine(), 2000);
-  },
-
-  stop() {
-    this.isPlaying = false;
-    if (this.beat) this.beat.pause();
-    if (this.vocal) this.vocal.pause();
-  },
-
-  nextLine() {
-    if (!this.isPlaying || this.index >= this.lyrics.length) {
-      this.stop();
-      return;
+    lyrics: [], index: 0, 
+    start(lyrics, genre, container) {
+        this.lyrics = lyrics; this.index = 0;
+        this.renderUI(container, genre);
+        this.play();
+    },
+    async play() {
+        if (this.index >= this.lyrics.length) return;
+        const line = this.lyrics[this.index];
+        if (line.audio_url) {
+            const aud = new Audio(line.audio_url); window._curAud = aud;
+            aud.onplay = () => { this.highlight(this.index); };
+            aud.onended = () => { this.index++; this.play(); };
+            aud.play();
+        } else { this.index++; this.play(); }
+    },
+    highlight(idx) {
+        document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active-lyric'));
+        const el = document.querySelector(`[data-lyric-idx="${idx}"]`);
+        if (el) { el.classList.add('active-lyric'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    },
+    stop() { if(window._curAud) window._curAud.pause(); },
+    renderUI(container, genre) {
+        container.innerHTML = `
+            <div class="fade-in" style="text-align:center;">
+                <h2 style="font-family:'Poppins'; font-weight:800; margin-bottom:1rem; font-size:2rem;">🎧 ${genre} Study Studio</h2>
+                <p style="color:var(--text-sub); font-weight:600; margin-bottom:3rem;">AI Vocals synchronized with ${genre} beats</p>
+                <div style="background:#0f172a; color:#fff; padding:3rem; border-radius:32px; box-shadow:0 30px 60px rgba(0,0,0,0.2); max-height:400px; overflow-y:auto;">
+                    ${this.lyrics.map((l,i) => `<div class="lyric-line" data-lyric-idx="${i}" style="margin-bottom:1.5rem; font-size:1.3rem; font-weight:700; opacity:0.3; transition:.4s;">${esc(l.text)}</div>`).join('')}
+                </div>
+                <button onclick="closeOverlay()" style="margin-top:3rem; padding:1.25rem 4rem; background:var(--primary); color:#fff; border-radius:100px; border:none; font-weight:800; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.3);">Exit Studio</button>
+            </div>
+        `;
     }
-    const line = this.lyrics[this.index];
-    this.vocal = new Audio(line.audio_url);
-    this.vocal.onplay = () => this.highlightLine(this.index);
-    this.vocal.onerror = () => {
-      console.warn("Vocal play failed, skipping line:", line.text);
-      if (this.isPlaying) {
-        this.index++;
-        setTimeout(() => this.nextLine(), 500);
-      }
-    };
-    this.vocal.onended = () => {
-      if (this.isPlaying) {
-        this.index++;
-        const delay = this.genre === 'Hip Hop' ? 100 : 500;
-        setTimeout(() => this.nextLine(), delay);
-      }
-    };
-    this.vocal.play();
-  },
-
-  highlightLine(idx) {
-    const pct = (idx / this.lyrics.length) * 100;
-    document.querySelectorAll('.lyric-line').forEach((el, i) => {
-      if (i === idx) el.classList.add('active-lyric');
-      else el.classList.remove('active-lyric');
-    });
-    const fill = document.getElementById('song-progress-fill');
-    if (fill) fill.style.width = pct + '%';
-  },
-
-  renderStudio(container) {
-    let html = `
-      <div class="music-studio fade-in" style="text-align:center;">
-        <div class="podcast-deck" style="background:#000; color:#fff; border-color:#fff;">
-          <div style="font-size:0.8rem; font-weight:900; color:#0f0; margin-bottom:.5rem; display:flex; justify-content:center; gap:0.5rem; align-items:center;">
-            <span>STUDIO MODE: ${this.genre.toUpperCase()}</span>
-            <span style="background:#0f0; color:#000; padding:2px 6px; border-radius:4px; font-size:0.65rem;">DIVINE QUALITY</span>
-          </div>
-          <div id="songVisualizer" class="waveform wave-active">
-            <div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div><div class="wave-bar" style="background:#0f0;"></div>
-          </div>
-          <div style="font-size:1.1rem; font-weight:900;">AI Study Beats</div>
-          <div class="podcast-progress" style="background:#333; border-color:#fff;">
-            <div class="podcast-progress-fill" id="song-progress-fill" style="background:#0f0;"></div>
-          </div>
-        </div>
-        
-        <div style="max-height:300px; overflow-y:auto; padding:1.5rem 0; border-top:2px dashed #000; margin-top:1rem;">
-    `;
-    this.lyrics.forEach((l, i) => {
-      // Clean display: remove Vocal:, Verse 1:, [Chorus], etc.
-      let displayLine = l.text.replace(/^(Vocal|Lyric|Verse \d?|Chorus|Intro|Outro|Bridge|Hook|\[.*?\]):\s*/i, "").trim();
-      displayLine = displayLine.replace(/^\[.*?\]\s*/i, ""); // Catch solo headers like [Verse 1]
-      
-      if (displayLine) {
-        html += `<div class="lyric-line" style="font-size:1.4rem; font-weight:800; margin-bottom:1.2rem; transition:.3s; opacity:0.35;">${esc(displayLine)}</div>`;
-      }
-    });
-    html += `
-        </div>
-        <button id="btnSaveSong" onclick="saveSong()" style="width:100%; padding:1rem; background:var(--accent-purple); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-top:1rem; box-shadow:4px 4px 0 #000; cursor:pointer;">💾 Save This Beat</button>
-        <button onclick="SongPlayer.stop(); openGenreModal();" style="width:100%; padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-top:1rem; cursor:pointer;">🛑 Stop & Exit</button>
-      </div>
-      <style>
-        .active-lyric { 
-          opacity: 1 !important; 
-          transform: scale(1.08) translateY(-2px); 
-          color: var(--accent-purple); 
-          text-decoration: underline; 
-          text-shadow: 0 0 15px rgba(167,139,250,0.4);
-        }
-      </style>
-    `;
-    container.innerHTML = html;
-  }
 };
 
-async function saveSong() {
-  const btn = document.getElementById('btnSaveSong');
-  btn.innerHTML = 'Saving... 🎹'; btn.disabled = true;
-  const name = prompt("Name your Beat:", `My ${SongPlayer.genre} Study Beat`);
-  if (!name) { btn.innerHTML = '💾 Save This Beat'; btn.disabled = false; return; }
-
-  try {
-    const res = await fetch(AJAX_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ action: 'song_save', lyrics_json: SongPlayer.lyrics, genre: SongPlayer.genre, name })
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast("Beat Saved to Library! 🎵✅");
-      btn.innerHTML = 'Saved! ✅';
-    } else {
-      showToast("Error saving song.");
-      btn.innerHTML = '💾 Save This Beat'; btn.disabled = false;
-    }
-  } catch(e) { showToast("Network Error."); }
+function formatResult(text) {
+    return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+               .replace(/\n/g, '<br>');
+}
+function esc(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+}
+function showToast(m) {
+    const t = document.getElementById('toast');
+    t.textContent = m; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-async function fetchSongDecks() {
-  const container = document.getElementById('panelBody');
-  container.innerHTML = `<div style="padding:2rem;text-align:center;"><div class="pal-bot-icon" style="animation: bounce 1s infinite;">🎶</div><p style="margin-top:1rem;">Opening Music Library...</p></div>`;
-  try {
-    const res = await fetch(AJAX_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ action: 'song_list' })
-    });
-    const data = await res.json();
-    let html = `
-      <div class="fade-in">
-        <h3 style="margin-bottom:1rem; font-size:1.8rem;">Saved Beats</h3>
-        <button onclick="openGenreModal()" style="width:100%; padding:1.25rem; background:var(--accent-red); color:#fff; border:3px solid #000; border-radius:14px; font-weight:800; margin-bottom:1.5rem; box-shadow:4px 4px 0 #000; cursor:pointer;">
-          🎹 Compose New Beat
-        </button>
-        <div style="display:flex; flex-direction:column; gap:1rem;">
-    `;
-    if (!data.songs || data.songs.length === 0) {
-      html += `<p style="text-align:center; color:#666;">No saved beats yet.</p>`;
-    } else {
-      data.songs.forEach(s => {
-        html += `
-          <div onclick="loadSong(${s.id})" style="padding:1rem; background:#fff; border:3px solid #000; border-radius:14px; box-shadow:4px 4px 0 #000; cursor:pointer; text-align:left;">
-            <div style="font-size:1.25rem; font-weight:800; margin-bottom:.2rem;">${esc(s.name)}</div>
-            <div style="font-size:0.9rem; color:#666; font-family:'Inter', sans-serif;">${s.genre} • ${s.created_at}</div>
-          </div>
-        `;
-      });
-    }
-    html += `</div></div>`;
-    container.innerHTML = html;
-  } catch(e) { showToast("Error loading library."); }
-}
-
-async function loadSong(id) {
-  const container = document.getElementById('panelBody');
-  try {
-    const res = await fetch(AJAX_URL, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-      body: JSON.stringify({ action: 'song_detail', song_id: id })
-    });
-    const data = await res.json();
-    if (data.success) {
-      SongPlayer.start(data.lyrics_json, data.genre, container);
-    }
-  } catch(e) { showToast("Error loading beat."); }
-}
-
-function formatResult(t) { return t.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function openLightbox(s) { document.getElementById('lightboxImg').src = s; document.getElementById('lightbox').classList.add('open'); }
-function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
-function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return;
-  if (e.key === 'ArrowRight') changePage(1);
-  if (e.key === 'ArrowLeft') changePage(-1);
+document.addEventListener('DOMContentLoaded', () => {
+    const chatInput = document.getElementById('sideChatInput');
+    if (chatInput) chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleChat(); });
+    renderPage(0);
 });
-
-renderPage(0);
 </script>
-<style> @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } } </style>
+
+<div id="lightbox" class="lightbox" onclick="this.classList.remove('open')">
+    <img id="lightboxImg">
+</div>
+
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.fade-in { animation: sketchyFade 0.5s ease-out forwards; }
+@keyframes sketchyFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Lightbox Premium */
+.lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000;
+    display: none; align-items: center; justify-content: center; padding: 2rem;
+    backdrop-filter: blur(10px);
+}
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 95%; max-height: 95%; border-radius: 12px; box-shadow: 0 50px 100px rgba(0,0,0,0.5); }
+</style>
+
 </body>
 </html>
