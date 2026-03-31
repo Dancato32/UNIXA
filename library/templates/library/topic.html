@@ -870,14 +870,45 @@ function hideQuiz() {
 }
 
 // --- Podcast Logic (Alex & Sam) ---
+// Pre-load voices (they load asynchronously on most browsers)
+let _voices = [];
+function loadVoices() {
+  _voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+}
+if (window.speechSynthesis) {
+  loadVoices();
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  // Some browsers need a small delay
+  setTimeout(loadVoices, 500);
+}
+
+function getVoiceFor(speaker) {
+  if (!_voices.length) loadVoices();
+  if (speaker.toLowerCase() === 'alex') {
+    return _voices.find(v => /david|daniel|male|james|guy|mark/i.test(v.name))
+      || _voices.find(v => /en/i.test(v.lang))
+      || _voices[0] || null;
+  } else {
+    return _voices.find(v => /zira|samantha|female|fiona|karen|google.*female/i.test(v.name))
+      || _voices.find(v => /en/i.test(v.lang) && v !== getVoiceFor('alex'))
+      || _voices[1] || _voices[0] || null;
+  }
+}
+
 const PodcastPlayer = {
   queue: [],
   index: 0,
   isPlaying: false,
-  currentAudio: null,
   topic: TOPIC,
   
   async generate() {
+    if (!window.speechSynthesis) {
+      alert("Your browser doesn't support text-to-speech. Try Chrome or Edge on desktop.");
+      return;
+    }
+    
     document.getElementById("notesWrap").style.display = "none";
     document.getElementById("quizWrap").style.display = "none";
     document.getElementById("infoBox").style.display = "none";
@@ -887,17 +918,22 @@ const PodcastPlayer = {
     document.getElementById("podcastMeta").textContent = "Creating script...";
     
     try {
-      // Direct script fetch (no audio bake) for instant start
       const res = await callAPI("{% url 'api_ai_teach' %}", {
         subject: SUBJECT,
         topic: TOPIC,
-        question: "Write an engaging 'Alex & Sam' podcast script for this topic. Alex is male, Sam is female. Start every line with 'Alex:' or 'Sam:'. Skip all intro/outro markers, just give dialogue."
+        question: "Write a short 'Alex & Sam' podcast script about this topic (~500 words). Alex is enthusiastic, Sam is analytical. Start every line with 'Alex:' or 'Sam:'. Just dialogue, no stage directions."
       });
       const lines = (res.response||"").split('\n').filter(l => l.trim());
       this.queue = lines.map(l => {
         const m = l.match(/^(Alex|Sam):\s*(.*)/i);
         return { speaker: m?m[1]:'Alex', text: m?m[2]:l };
       }).filter(s => s.text.trim());
+      
+      if (!this.queue.length) {
+        alert("Could not generate podcast script. Please try again.");
+        document.getElementById("podcastWrap").style.display = "none";
+        return;
+      }
       
       this.renderTranscript();
       this.start();
@@ -918,12 +954,20 @@ const PodcastPlayer = {
   },
   
   start() {
+    // Ensure voices are loaded before speaking
+    loadVoices();
+    
     document.getElementById("podcastGenerating").style.display = "none";
     document.getElementById("podcastPlayerBody").style.display = "block";
     document.getElementById("podcastMeta").textContent = "Alex & Sam are live!";
     this.index = 0;
     this.isPlaying = true;
-    this.playNext();
+    
+    // Cancel any prior speech
+    window.speechSynthesis.cancel();
+    
+    // Small delay to ensure cancel completes
+    setTimeout(() => this.playNext(), 200);
   },
   
   playNext() {
@@ -936,20 +980,28 @@ const PodcastPlayer = {
     this.highlight(this.index);
     this.setWave(true);
     
-    const utter = new SpeechSynthesisUtterance(seg.text);
-    const voices = window.speechSynthesis.getVoices();
-    if (seg.speaker.toLowerCase() === 'alex') {
-      utter.voice = voices.find(v => v.name.includes('Male') || v.name.includes('Microsoft David') || v.name.includes('Daniel')) || voices[0];
-      utter.pitch = 0.9;
-    } else {
-      utter.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Microsoft Zira') || v.name.includes('Google US English') || v.name.includes('Zira')) || voices[1];
-      utter.pitch = 1.1;
-    }
-    utter.rate = 1.0;
+    // Chrome has a bug where utterances > ~15s get cut off.
+    // Workaround: break long text into sentences.
+    const text = seg.text;
+    const utter = new SpeechSynthesisUtterance(text);
+    
+    const voice = getVoiceFor(seg.speaker);
+    if (voice) utter.voice = voice;
+    utter.pitch = seg.speaker.toLowerCase() === 'alex' ? 0.9 : 1.1;
+    utter.rate = 1.05;
     
     utter.onend = () => {
       this.index++;
-      this.playNext();
+      // Chrome bug fix: cancel and re-speak to prevent hanging
+      window.speechSynthesis.cancel();
+      setTimeout(() => this.playNext(), 100);
+    };
+    
+    utter.onerror = (e) => {
+      console.warn("Speech error:", e);
+      // Skip this segment and move on
+      this.index++;
+      setTimeout(() => this.playNext(), 100);
     };
     
     window.speechSynthesis.speak(utter);

@@ -693,27 +693,38 @@ def generate_answer_audio_host(answer_text, material_id):
         import uuid
         import random
         import asyncio
+        import concurrent.futures
         import edge_tts
         from django.conf import settings
-        
+
         text = answer_text[:1000]
         if not text:
             return None
-            
+
         audio_dir = os.path.join(settings.MEDIA_ROOT, 'podcast_answers')
         os.makedirs(audio_dir, exist_ok=True)
-        
+
         filename = f"answer_{material_id}_{uuid.uuid4().hex[:8]}.mp3"
         filepath = os.path.join(audio_dir, filename)
-        
+
         # Randomly choose between Alex's and Sam's actual Edge TTS voice
         voice = random.choice(['en-US-AndrewNeural', 'en-US-AvaNeural'])
-        
+
         async def _bake_answer():
             await edge_tts.Communicate(text, voice).save(filepath)
-            
-        asyncio.run(_bake_answer())
-        
+
+        # Use a dedicated thread with a fresh event loop — safe on Gunicorn/production
+        def _runner():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(_bake_answer())
+            finally:
+                loop.close()
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            pool.submit(_runner).result()
+
         return filename
     except Exception as e:
         print(f"Host answer TTS Exception: {e}")
