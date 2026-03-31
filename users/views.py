@@ -9,16 +9,16 @@ User = get_user_model()
 
 
 def landing_view(request):
-    """Landing page view - redirect to community feed if logged in."""
+    """Landing page view - redirect to community home if logged in."""
     if request.user.is_authenticated:
-        return redirect('community:feed') 
+        return redirect('community:community_home') 
     return render(request, 'users/landing_final.html')
 
 
 def login_view(request):
-    """User login view - redirects to community feed after login."""
+    """User login view - redirects to community home after login."""
     if request.user.is_authenticated:
-        return redirect('community:feed') 
+        return redirect('community:community_home') 
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -28,7 +28,7 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('community:feed')
+                return redirect('community:community_home')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -112,8 +112,8 @@ def register_view(request):
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
 
-            # Redirect to community feed after signup
-            return redirect('community:feed')
+            # Redirect to community home (with onboarding) after signup
+            return redirect('community:community_home')
 
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')

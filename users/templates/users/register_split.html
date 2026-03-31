@@ -3,604 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - NEXA</title>
+    <title>{% if request.path == '/login/' %}Sign In{% else %}Create Account{% endif %} – Paw AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            /* ── Paw Amber & Indigo Palette ── */
+            --bg: #0A0F1E;
+            --surface: #131A2D;
+            --border: rgba(255,255,255,0.08);
+            --text: #F8FAFC;
+            --text-muted: #94A3B8;
+            --accent: #F59E0B;
+            --accent-glow: rgba(245, 158, 11, 0.3);
+            --white: #ffffff;
         }
-        
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow-x: hidden;
+            position: relative;
         }
-        
-        .split-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 100%;
-            max-width: 1400px;
-            min-height: 100vh;
-            background: white;
-            box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
+
+        /* ── Floating Background ── */
+        .moving-background {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+            background-color: var(--bg);
         }
-        
-        /* Left Side - Form */
+        .paw-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%23F59E0B'%3E%3Cpath d='M30,35c3.3,0,6-3.1,6-7s-2.7-7-6-7s-6,3.1-6,7S26.7,35,30,35z'/%3E%3Cpath d='M44,25c3.3,0,6-3.1,6-7s-2.7-7-6-7c-3.3,0-6,3.1-6,7S40.7,25,44,25z'/%3E%3Cpath d='M58,25c3.3,0,6-3.1,6-7s-2.7-7-6-7c-3.3,0-6,3.1-6,7S54.7,25,58,25z'/%3E%3Cpath d='M72,35c3.3,0,6-3.1,6-7s-2.7-7-6-7s-6,3.1-6,7S68.7,35,72,35z'/%3E%3Cpath d='M51.1,42c-10,0-18,6.1-18,13.7c0,5.6,3.8,10.6,9.5,12.7c1.4,4.2,5.2,7,8.5,7c3.3,0,7.1-2.8,8.5-7c5.8-2.1,9.5-7.1,9.5-12.7C69.1,48.1,61.1,42,51.1,42z'/%3E%3C/svg%3E");
+            background-size: 100px 100px;
+            animation: pattern-drift 120s linear infinite;
+        }
+        @keyframes pattern-drift {
+            from { background-position: 0 0; }
+            to { background-position: 1000px 1000px; }
+        }
+        .orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            animation: move linear infinite 25s;
+        }
+        .orb-1 { top: -100px; left: -100px; }
+        .orb-2 { bottom: -100px; right: -100px; animation-direction: reverse; }
+        @keyframes move { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(50px, 80px); } }
+
+        /* ── Form Section ── */
         .form-side {
-            padding: 4rem 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background: white;
+            width: 100%;
+            max-width: 380px;
+            padding: 1.75rem 2rem;
+            position: relative;
+            z-index: 10;
+            background: rgba(10, 15, 30, 0.7);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+            margin: 1.5rem;
+            animation: fadeIn 0.6s ease-out;
         }
-        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
         .logo-section {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.75rem;
-            margin-bottom: 4rem;
+            margin-bottom: 1.25rem;
+            text-decoration: none;
         }
-        
+
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: #1a1a1a;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), #FBBF24);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 800;
-            font-size: 1.25rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
-        
+
         .logo-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 1.5rem;
-            font-weight: 700;
-            color: #1a1a1a;
+            font-weight: 800;
+            color: var(--white);
+            letter-spacing: -0.04em;
         }
-        
-        .form-content {
-            max-width: 440px;
-            margin: 0 auto;
+
+        .form-content { width: 100%; }
+        .form-header { text-align: center; margin-bottom: 1.25rem; }
+        .form-header h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; color: #fff; }
+        .form-header p { color: var(--text-muted); font-size: 0.8125rem; }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* ── Action Buttons ── */
+        .btn-google {
             width: 100%;
-        }
-        
-        .form-header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-header p {
-            color: #6b7280;
-            font-size: 0.9375rem;
-            margin-bottom: 2.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        
-        .form-label {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             font-size: 0.875rem;
             font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
         }
-        
-        .input-wrapper {
-            position: relative;
-        }
-        
-        .input-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            width: 20px;
-            height: 20px;
-        }
-        
+        .btn-google:hover { border-color: var(--accent); background: #1E293B; transform: translateY(-2px); }
+
+        .divider { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .divider span { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.375rem; text-transform: uppercase; letter-spacing: 0.12em; }
         .form-input {
             width: 100%;
-            padding: 0.875rem 1rem 0.875rem 3rem;
-            font-size: 0.9375rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background-color: white;
-            color: #1a1a1a;
-            transition: all 0.2s;
+            padding: 0.625rem 0.875rem;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.875rem;
+            transition: 0.2s;
         }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #1a1a1a;
-            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-        }
-        
-        .form-input::placeholder {
-            color: #9ca3af;
-        }
-        
-        .form-hint {
-            font-size: 0.8125rem;
-            color: #6b7280;
-            margin-top: 0.375rem;
-        }
-        
-        .btn-signup {
+        .form-input:focus { outline: none; border-color: var(--accent); background: #1E293B; }
+
+        .btn-primary {
             width: 100%;
             padding: 0.875rem;
-            background: #1a1a1a;
+            background: var(--accent);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 1.5rem;
-        }
-        
-        .btn-signup:hover {
-            background: #2d2d2d;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(26, 26, 26, 0.2);
-        }
-        
-        .form-options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1rem;
-        }
-        
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .remember-me input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-        
-        .remember-me label {
-            font-size: 0.875rem;
-            color: #374151;
-            cursor: pointer;
-        }
-        
-        .forgot-password {
-            font-size: 0.875rem;
-            color: #1a1a1a;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .forgot-password:hover {
-            text-decoration: underline;
-        }
-        
-        .btn-signin {
-            width: 100%;
-            padding: 0.875rem;
-            background: #1a1a1a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 1.5rem;
-        }
-        
-        .btn-signin:hover {
-            background: #2d2d2d;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(26, 26, 26, 0.2);
-        }
-        
-        .signin-link {
-            text-align: center;
-            margin-top: 2rem;
-            color: #6b7280;
+            border-radius: 12px;
             font-size: 0.9375rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.25s;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
-        
-        .signin-link a {
-            color: #1a1a1a;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .signin-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .alert {
-            padding: 0.875rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-        }
-        
-        .alert ul {
-            margin: 0;
-            padding-left: 1.25rem;
-        }
-        
-        .alert li {
-            margin-bottom: 0.25rem;
-        }
-        
-        /* Right Side - Testimonial */
-        .testimonial-side {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            padding: 4rem 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .testimonial-side::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
-            background-size: cover;
-            opacity: 0.3;
-        }
-        
-        .testimonial-content {
-            max-width: 500px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .testimonial-content h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 2rem;
-        }
-        
-        .quote-icon {
-            font-size: 4rem;
-            opacity: 0.3;
-            margin-bottom: 1rem;
-        }
-        
-        .testimonial-text {
-            font-size: 1.125rem;
-            line-height: 1.7;
-            margin-bottom: 2.5rem;
-            opacity: 0.95;
-        }
-        
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .author-avatar {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .author-info h4 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-        
-        .author-info p {
-            font-size: 0.875rem;
-            opacity: 0.8;
-        }
-        
-        .stats-section {
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            text-align: center;
-        }
-        
-        .stat-item h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-        
-        .stat-item p {
-            font-size: 0.875rem;
-            opacity: 0.8;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .split-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .testimonial-side {
-                display: none;
-            }
-            
-            .form-side {
-                padding: 3rem 2rem;
-            }
-        }
-        
-        @media (max-width: 640px) {
-            .form-side {
-                padding: 2rem 1.5rem;
-            }
-            
-            .form-header h1 {
-                font-size: 1.75rem;
-            }
-            
-            .logo-section {
-                margin-bottom: 3rem;
-            }
+        .btn-primary:hover { background: #D97706; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245, 158, 11, 0.4); }
+
+        .switch-link { text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem; }
+        .switch-link a { color: var(--accent); text-decoration: none; font-weight: 700; }
+
+        @media (max-width: 480px) {
+            .form-side { padding: 2rem; margin: 1rem; border: none; background: transparent; box-shadow: none; }
         }
     </style>
 </head>
 <body>
-    <div class="split-container">
-        <!-- Left Side - Form -->
-        <div class="form-side">
-            <div class="logo-section">
-                <div class="logo-icon">N</div>
-                <span class="logo-text">NEXA</span>
+    <div class="moving-background">
+        <div class="paw-pattern"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="form-side">
+        <a href="/" class="logo-section">
+            <div class="logo-icon">P</div>
+            <span class="logo-text">PAW</span>
+        </a>
+
+        <div class="form-content">
+            {% if request.path == '/login/' %}
+            <div class="form-header">
+                <h1>Welcome back</h1>
+                <p>Access your Paw Workspace</p>
             </div>
+            {% if messages %}<div class="alert">{% for m in messages %}{{ m }}{% endfor %}</div>{% endif %}
             
-            <div class="form-content">
-                {% if request.path == '/login/' %}
-                <div class="form-header">
-                    <h1>Welcome back</h1>
-                    <p>Sign in to your account to continue learning.</p>
-                </div>
-                
-                {% if messages %}
-                    <div class="alert">
-                        <ul>
-                            {% for message in messages %}
-                                <li>{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-                
-                <form method="POST" action="{% url 'login' %}">
-                    {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label for="username" class="form-label">Username</label>
-                        <div class="input-wrapper">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            <input 
-                                type="text" 
-                                class="form-input" 
-                                id="username" 
-                                name="username" 
-                                required 
-                                autofocus 
-                                placeholder="Enter your username"
-                            >
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-wrapper">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <input 
-                                type="password" 
-                                class="form-input" 
-                                id="password" 
-                                name="password" 
-                                required 
-                                placeholder="Enter your password"
-                            >
-                        </div>
-                    </div>
-                    
-                    <div class="form-options">
-                        <div class="remember-me">
-                            <input type="checkbox" id="remember" name="remember">
-                            <label for="remember">Remember me</label>
-                        </div>
-                        <a href="#" class="forgot-password">Forgot password?</a>
-                    </div>
-                    
-                    <button type="submit" class="btn-signin">Sign In</button>
-                </form>
-                
-                <div class="signup-link">
-                    Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
-                </div>
-                {% else %}
-                <div class="form-header">
-                    <h1>Create an account</h1>
-                    <p>Start your learning journey with NEXA today.</p>
-                </div>
-                
-                {% if messages %}
-                    <div class="alert">
-                        <ul>
-                            {% for message in messages %}
-                                <li>{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-                
-                <form method="POST" action="{% url 'register' %}">
-                    {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label for="username" class="form-label">Username</label>
-                        <div class="input-wrapper">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            <input 
-                                type="text" 
-                                class="form-input" 
-                                id="username" 
-                                name="username" 
-                                required 
-                                autofocus 
-                                placeholder="Choose a username"
-                            >
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email</label>
-                        <div class="input-wrapper">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                <polyline points="22,6 12,13 2,6"/>
-                            </svg>
-                            <input 
-                                type="email" 
-                                class="form-input" 
-                                id="email" 
-                                name="email" 
-                                required 
-                                placeholder="your@email.com"
-                            >
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-wrapper">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <input 
-                                type="password" 
-                                class="form-input" 
-                                id="password" 
-                                name="password" 
-                                required 
-                                placeholder="Create a strong password"
-                            >
-                        </div>
-                        <div class="form-hint">Must be at least 8 characters</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confirm_password" class="form-label">Confirm Password</label>
-                        <div class="input-wrapper">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <input 
-                                type="password" 
-                                class="form-input" 
-                                id="confirm_password" 
-                                name="confirm_password" 
-                                required 
-                                placeholder="Confirm your password"
-                            >
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-signup">Create Account</button>
-                </form>
-                
-                <div class="signin-link">
-                    Already have an account? <a href="{% url 'login' %}">Sign In</a>
-                </div>
-                {% endif %}
+            <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn-google">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Continue with Google
+            </a>
+            <div class="divider"><span>or details</span></div>
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" name="username" required autofocus></div>
+                <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" name="password" required></div>
+                <button type="submit" class="btn-primary">Signed In to Paw</button>
+            </form>
+            <div class="switch-link">New? <a href="{% url 'register' %}">Create account</a></div>
+            {% else %}
+            <div class="form-header">
+                <h1>Intelligence starts here</h1>
+                <p>Create your Paw account today</p>
             </div>
-        </div>
-        
-        <!-- Right Side - Testimonial -->
-        <div class="testimonial-side">
-            <div class="testimonial-content">
-                <h2>Join Thousands of Learners Achieving Their Goals</h2>
-                
-                <div class="quote-icon">"</div>
-                
-                <p class="testimonial-text">
-                    "NEXA has completely transformed how I study. The AI tutor is incredibly helpful, and having all my materials organized in one place has made learning so much more efficient."
-                </p>
-                
-                <div class="testimonial-author">
-                    <div class="author-avatar">SC</div>
-                    <div class="author-info">
-                        <h4>Sarah Chen</h4>
-                        <p>Computer Science Student</p>
-                    </div>
-                </div>
-                
-                <div class="stats-section">
-                    <div class="stat-item">
-                        <h3>10K+</h3>
-                        <p>Active Students</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>50K+</h3>
-                        <p>Materials</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>98%</h3>
-                        <p>Satisfaction</p>
-                    </div>
-                </div>
-            </div>
+            {% if messages %}<div class="alert">{% for m in messages %}{{ m }}{% endfor %}</div>{% endif %}
+            
+            <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn-google">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Sign up with Google
+            </a>
+            <div class="divider"><span>or details</span></div>
+            <form method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
+                <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" name="username" required></div>
+                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" name="email" required></div>
+                <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" name="password" required></div>
+                <div class="form-group"><label class="form-label">Confirm</label><input type="password" class="form-input" name="confirm_password" required></div>
+                <button type="submit" class="btn-primary">Join the Paw Community</button>
+            </form>
+            <div class="switch-link">Member? <a href="{% url 'login' %}">Sign in</a></div>
+            {% endif %}
         </div>
     </div>
 </body>

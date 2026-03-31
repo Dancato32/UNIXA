@@ -39,3 +39,6 @@ cloudinary==1.40.0
 django-cloudinary-storage==0.3.0
 
 edge-tts
+
+# Google OAuth
+social-auth-app-django==5.4.2

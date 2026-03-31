@@ -37,6 +37,9 @@ from community.models import (
     SchoolCommunity,
     SkillOffer,
     Startup,
+    Story,
+    StoryView,
+    StoryLike,
     WorkspaceFile,
     WorkspaceMember,
     WorkspaceMessage,
@@ -58,6 +61,16 @@ def community_home(request):
     Shows feed preview, communities, quick actions, and user's workspaces.
     This is the new post-login landing page â€” the old dashboard remains at /dashboard/.
     """
+    if getattr(request.user, 'onboarding_complete', False):
+        return redirect('community:feed')
+    
+    # Auto-detect if they've already set up (self-healing flag)
+    from community.models import CommunityProfile
+    profile, _ = CommunityProfile.objects.get_or_create(user=request.user)
+    if profile.display_name:
+        request.user.onboarding_complete = True
+        request.user.save(update_fields=['onboarding_complete'])
+        return redirect('community:feed')
     from community.services.feed import get_personalized_feed
 
     # Recent feed posts (top 8)
@@ -226,6 +239,11 @@ def onboarding_save_profile(request):
     if 'avatar' in request.FILES:
         profile.avatar = request.FILES['avatar']
     profile.save()
+
+    # If they've reached this far, mark onboarding as mostly done to avoid loops
+    request.user.onboarding_complete = True
+    request.user.save(update_fields=['onboarding_complete'])
+    
     return JsonResponse({'ok': True})
 
 
@@ -318,6 +336,17 @@ def onboarding_suggested_users(request):
 
 @login_required
 def feed(request):
+    # Enforce onboarding first
+    if not getattr(request.user, 'onboarding_complete', False):
+        # Auto-heal: if they already have info, mark as done
+        from community.models import CommunityProfile
+        profile, _ = CommunityProfile.objects.get_or_create(user=request.user)
+        if profile.display_name or profile.bio or profile.avatar:
+            request.user.onboarding_complete = True
+            request.user.save(update_fields=['onboarding_complete'])
+        # We NO LONGER redirect here to break any potential loops. 
+        # The onboarding overlay is mostly handled on the community_home landing.
+            
     from django.utils.dateparse import parse_datetime
     from community.models import Follow
     cursor = request.GET.get('cursor')
@@ -4719,3 +4748,28 @@ def story_like(request, story_id):
         liked = True
     story.save(update_fields=['like_count'])
     return JsonResponse({'success': True, 'liked': liked})
+
+
+@login_required
+def story_list_api(request, user_id):
+    """Returns a list of active stories for a user as JSON."""
+    from django.utils import timezone
+    stories = Story.objects.filter(
+        author_id=user_id, 
+        is_deleted=False, 
+        expires_at__gt=timezone.now()
+    ).order_by('created_at')
+    
+    data = []
+    for s in stories:
+        data.append({
+            'id': str(s.id),
+            'type': s.media_type,
+            'url': s.media.url if s.media else None,
+            'text': s.text,
+            'bg_color': s.bg_color,
+            'created_at': s.created_at.isoformat(),
+            'like_count': s.like_count,
+            'view_count': s.view_count
+        })
+    return JsonResponse({'success': True, 'stories': data})

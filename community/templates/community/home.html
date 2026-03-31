@@ -348,23 +348,155 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   .bn-item span{font-size:.5625rem;font-weight:600;letter-spacing:.02em;}
 }
 
-/* ── FAB ── */
-.feed-fab {
-  position: fixed; 
-  bottom: 85px; 
-  right: 20px;
-  width: 52px; height: 52px; border-radius: 14px;
-  background: var(--acc); color: #fff; border: none;
+/* ── Onboarding Overlay ── */
+.onboarding-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px rgba(245,158,11,.4); cursor: pointer;
-  transition: transform .2s, box-shadow .2s; z-index: 4000; text-decoration: none;
+  animation: ob-fade-in .5s ease both;
 }
-.feed-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,.5); }
-.feed-fab:active { transform: scale(.94); }
-.feed-fab svg { width: 22px; height: 22px; }
+@keyframes ob-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Hide shell while onboarding is active */
+body.onboarding-active .shell { display: none !important; }
+body.onboarding-active .feed-fab { display: none !important; }
+body.onboarding-active .bottom-nav-unified { display: none !important; }
+
+.ob-card {
+  width: 100%; max-width: 480px; padding: 2.5rem;
+  background: var(--sb); border: 1px solid var(--bdr); border-radius: 28px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+  position: relative; overflow: hidden;
+  display: none;
+}
+.ob-card.active { display: block; animation: ob-slide-up .6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes ob-slide-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+.ob-progress {
+  display: flex; gap: 6px; margin-bottom: 2rem;
+}
+.ob-step-dot {
+  flex: 1; height: 4px; background: var(--bdr); border-radius: 2px; transition: .3s;
+}
+.ob-step-dot.active { background: var(--acc); }
+
+.ob-title { font-family: 'Poppins', sans-serif; font-size: 1.75rem; font-weight: 800; color: var(--t1); margin-bottom: 0.75rem; }
+.ob-desc { font-size: 0.9375rem; color: var(--t3); line-height: 1.6; margin-bottom: 2rem; }
+
+.ob-input-group { margin-bottom: 1.5rem; }
+.ob-label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--t3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.625rem; }
+.ob-input { width: 100%; padding: 0.875rem 1rem; border: 1.5px solid var(--bdr); border-radius: 12px; font-size: 0.9375rem; transition: .2s; }
+.ob-input:focus { border-color: var(--acc); outline: none; }
+
+.ob-interests { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2rem; }
+.ob-interest-tag {
+  padding: 0.625rem 1.125rem; border: 1px solid var(--bdr); border-radius: 100px;
+  font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: .2s;
+}
+.ob-interest-tag.active { background: var(--acc); border-color: var(--acc); color: #fff; }
+
+.ob-avatar-picker { display: flex; justify-content: center; margin: 2rem 0; }
+.ob-avatar-circle {
+  width: 100px; height: 100px; border-radius: 50%; background: var(--card2);
+  display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+  cursor: pointer; border: 2px dashed var(--bdr); transition: .2s;
+}
+.ob-avatar-circle:hover { border-color: var(--acc); }
+
+.ob-btn {
+  width: 100%; padding: 1rem; background: var(--acc); color: #fff; border-radius: 14px;
+  font-size: 1rem; font-weight: 800; transition: .2s; box-shadow: 0 4px 12px rgba(245,158,11,0.25);
+}
+.ob-btn:hover { background: #D97706; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,0.4); }
+
+.ob-bg-blobs { position: absolute; inset: 0; z-index: -1; opacity: 0.1; pointer-events: none; }
+.ob-blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(60px); animation: ob-drift 20s infinite alternate linear; }
+.ob-blob-1 { background: var(--acc); top: -100px; left: -100px; }
+.ob-blob-2 { background: var(--cyan); bottom: -100px; right: -100px; }
+@keyframes ob-drift { from { transform: translate(0,0); } to { transform: translate(40px, 60px); } }
+
+/* Transition animation for the shell reveal */
+@keyframes shell-reveal {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+.shell-reveal { animation: shell-reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 </style>
 </head>
-<body>
+<body {% if show_onboarding %}class="onboarding-active"{% endif %}>
+{% if show_onboarding %}
+<div class="onboarding-overlay" id="ob-overlay">
+  <div class="ob-bg-blobs">
+    <div class="ob-blob ob-blob-2"></div>
+  </div>
+
+  <div style="position: absolute; bottom: 2rem; width: 100%; display: flex; justify-content: center; z-index: 100000;">
+      <button type="button" onclick="obFinish()" style="background:none; border:none; color:var(--t3); font-size:0.875rem; text-decoration:underline; cursor:pointer; opacity:0.7;">Already been here? Skip to Feed</button>
+  </div>
+
+  <!-- Step 1: Welcome -->
+  <div class="ob-card active" id="ob-step-1">
+    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot"></div><div class="ob-step-dot"></div><div class="ob-step-dot"></div></div>
+    <div class="sb-logo-icon" style="margin-bottom: 2rem; width: 64px; height: 64px; border-radius: 18px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:36px; height:36px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+    <h1 class="ob-title">Welcome to Paw</h1>
+    <p class="ob-desc">You're joining a community of students who use next-gen intelligence to master their studies. Let's set up your profile.</p>
+    <button class="ob-btn" onclick="obNext(1)">Start Journey</button>
+  </div>
+
+  <!-- Step 2: Basic Info -->
+  <div class="ob-card" id="ob-step-2">
+    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot"></div><div class="ob-step-dot"></div></div>
+    <h1 class="ob-title">Introduce yourself</h1>
+    <p class="ob-desc">Help your future study buddies find you.</p>
+    <div class="ob-avatar-picker">
+        <label for="ob-avatar-input" class="ob-avatar-circle" id="ob-avatar-preview">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </label>
+        <input type="file" id="ob-avatar-input" style="display:none" accept="image/*" onchange="obPreviewAvatar(this)">
+    </div>
+    <div class="ob-input-group">
+      <label class="ob-label">Display Name</label>
+      <input type="text" class="ob-input" id="ob-display-name" placeholder="How should we call you?" value="{{ user.username }}">
+    </div>
+    <div class="ob-input-group">
+      <label class="ob-label">Bio (Optional)</label>
+      <input type="text" class="ob-input" id="ob-bio" placeholder="E.g. Computer Science Junior @ NY">
+    </div>
+    <button class="ob-btn" onclick="obNext(2)">Continue</button>
+  </div>
+
+  <!-- Step 3: Interests -->
+  <div class="ob-card" id="ob-step-3">
+    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot"></div></div>
+    <h1 class="ob-title">Finding Friends</h1>
+    <p class="ob-desc">Pick your study interests. We'll use these to connect you with relevant classmates and content.</p>
+    <div class="ob-interests" id="ob-interest-list">
+        {% for tag in ob_interest_tags %}
+        <span class="ob-interest-tag" onclick="this.classList.toggle('active')">{{ tag }}</span>
+        {% endfor %}
+    </div>
+    <button class="ob-btn" onclick="obNext(3)">Find My Community</button>
+  </div>
+
+  <!-- Step 4: Finalize -->
+  <div class="ob-card" id="ob-step-4">
+    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div></div>
+    <h1 class="ob-title">Ready to Explore?</h1>
+    <p class="ob-desc">We've personalized your feed and AI Tutor based on your choices. You're ready to start learning with Paw.</p>
+    <div style="background: var(--card2); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
+            <svg width="20" height="20" color="var(--green)" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:0.9rem; font-weight:700;">AI Tutor Personalized</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+            <svg width="20" height="20" color="var(--green)" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:0.9rem; font-weight:700;">Intelligence Tools Active</span>
+        </div>
+    </div>
+    <button class="ob-btn" onclick="obFinish()">Enter Workspace</button>
+  </div>
+</div>
+{% endif %}
 <div class="shell">
 
   <!-- ── Sidebar ── -->
@@ -768,6 +900,80 @@ function sharePost(id) {
       alert("Link copied to clipboard!");
     });
   }
+}
+
+/* ── Onboarding JS ── */
+let obCurrentStep = 1;
+function obNext(step) {
+    if(step === 2) {
+        // Save first set of data
+        obSaveStep2();
+    }
+    if(step === 3) {
+        // Save interests
+        obSaveStep3();
+    }
+    document.getElementById('ob-step-' + step).classList.remove('active');
+    obCurrentStep = step + 1;
+    document.getElementById('ob-step-' + obCurrentStep).classList.add('active');
+}
+
+function obPreviewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('ob-avatar-preview').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function obSaveStep2() {
+    const fd = new FormData();
+    fd.append('display_name', document.getElementById('ob-display-name').value);
+    fd.append('bio', document.getElementById('ob-bio').value);
+    const files = document.getElementById('ob-avatar-input').files;
+    if(files.length) fd.append('avatar', files[0]);
+    
+    fetch('/community/onboarding/save-profile/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrfToken()},
+        body: fd
+    });
+}
+
+function obSaveStep3() {
+    const tags = Array.from(document.querySelectorAll('.ob-interest-tag.active')).map(t => t.textContent);
+    const fd = new FormData();
+    fd.append('interests', tags.join(', '));
+    
+    fetch('/community/onboarding/save-profile/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrfToken()},
+        body: fd
+    });
+}
+
+function obFinish() {
+    console.log("Finalizing onboarding...");
+    fetch('/community/onboarding/follow-users/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
+        body: JSON.stringify({ usernames: [] })
+    }).then(r => {
+        if(!r.ok) throw new Error("Save error");
+        return r.json();
+    }).then(() => {
+        console.log("Onboarding marked as complete in database.");
+        localStorage.setItem('paw_needs_tutorial', 'true');
+        document.getElementById('ob-overlay').style.opacity = '0';
+        setTimeout(() => {
+            window.location.href = "{% url 'community:feed' %}";
+        }, 500);
+    }).catch(e => {
+        console.warn("Retrying direct redirect as backup...", e);
+        window.location.href = "{% url 'community:feed' %}";
+    });
 }
 </script>
 </body>

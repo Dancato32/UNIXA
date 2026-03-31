@@ -29,6 +29,7 @@ urlpatterns = [
     path('nexa-library/', include('library.urls')),
     path('community/', include('community.urls')),
     path('community/ai/', include('ai_community.urls', namespace='ai_community')),
+    path('auth/', include('social_django.urls', namespace='social')),
 ]
 
 # Serve media files in development

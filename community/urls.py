@@ -224,6 +224,7 @@ urlpatterns = [
     path('help/<uuid:beacon_id>/resolve/', views.help_beacon_resolve, name='help_beacon_resolve'),
     # Stories
     path('stories/create/', views.story_create, name='story_create'),
+    path('stories/list/<int:user_id>/', views.story_list_api, name='story_list_api'),
     path('stories/<uuid:story_id>/view/', views.story_view, name='story_view'),
     path('stories/<uuid:story_id>/like/', views.story_like, name='story_like'),
 ]
