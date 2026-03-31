@@ -97,11 +97,14 @@ GOAL: Help the student understand concepts deeply, maintain conversation continu
     if is_vision:
         system_message += """
 
-VISION ANALYSIS ENABLED:
-1. INTERNAL OBSERVATION: First, silently observe every detail in the image - text, diagrams, handwritten notes, numbers, and layout.
-2. OCR AND EXTRACTION: If the image contains a problem statement or text, extract it accurately.
-3. INVESTIGATIVE ANALYSIS: Don't just answer; explain what you SEE. For example, "I see a quadratic equation on the board..." or "In the diagram you shared, the forces are shown acting on..."
-4. MULTI-MODAL REASONING: Use the visual evidence in the image to inform your step-by-step tutoring. If a student shared a graph, refer to specific coordinates or trends."""
+VISION ANALYSIS ENABLED (NEXA EYES ON):
+1. INITIAL OBSERVATION: First, silently observe every detail in the image—text, handwritten notes, complex equations, diagrams, and formatting.
+2. OCR & EXTRACTION: If the image contains a problem, question, or text, extract it accurately before solving. 
+3. EXPLORATORY REASONING: Explain what you SEE to the student. "I'm looking at the calculus problem you shared..." or "In this biology diagram, I see..."
+4. SOLVING THROUGH VISION: If a student asks to 'solve' or 'explain' the image, treat the visual information as the primary subject. 
+   - Extract the problem.
+   - Set up the steps using Step Mode.
+   - Reference specific visual cues (e.g., "The red line in your graph indicates...", "Looking at the third line of your handwriting...")."""
 
 
 

@@ -10,6 +10,40 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
+        /* ── Paw Social Studio Overwrite ── */
+        :root {
+            --bg: #0F172A;
+            --surface: #1E293B;
+            --sidebar-bg: #0b0f1d;
+            --border: rgba(255,255,255,0.08);
+            --text: #F1F5F9;
+            --text2: #94A3B8;
+            --accent: #F59E0B;
+            --msg-user-bg: #F59E0B;
+            --msg-ai-bg: rgba(30, 41, 59, 0.7);
+            --radius: 20px;
+            --shadow-premium: 0 20px 40px -10px rgba(0,0,0,0.5);
+            --font-display: 'Poppins', sans-serif;
+            --font-main: 'Inter', sans-serif;
+        }
+        body { font-family: var(--font-main); background: var(--bg); color: var(--text); }
+        .main { background: var(--bg); }
+        .chat-area { background: radial-gradient(circle at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%); }
+        .topbar { background: rgba(15,23,42,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
+        .welcome-hero { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.04em; filter: drop-shadow(0 0 20px rgba(245,158,11,0.2)); }
+        .sug-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .sug-card:hover { transform: translateY(-5px) scale(1.05); background: rgba(245,158,11,0.15); border-color: var(--accent); box-shadow: 0 15px 35px rgba(245,158,11,0.2); }
+        .msg-user .msg-body { background: var(--accent); color: #000; font-weight: 700; box-shadow: 0 8px 25px rgba(245,158,11,0.3); }
+        .msg-ai .msg-body { background: var(--msg-ai-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); box-shadow: var(--shadow-premium); border-radius: 4px 24px 24px 24px; padding: 24px; }
+        .input-box { background: rgba(30,41,59,0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); margin-bottom: 20px; }
+        .input-box:focus-within { border-color: var(--accent); box-shadow: 0 25px 70px rgba(245,158,11,0.1); }
+        
+        @media (max-width: 768px) {
+            .chat-inner { padding: 80px 16px 160px; }
+            .input-zone { bottom: 80px; width: 94%; }
+            .welcome-hero { font-size: 2.5rem; }
+        }
+
         *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             /* ── Black & White Hand-Drawn Professional ── */
@@ -105,8 +139,12 @@
         .mode-pill { display: none; }
 
         /* ── CHAT AREA ── */
-        .chat-area { flex: 1; overflow-y: auto; padding: 0; min-height: 0; z-index: 5; }
-        .chat-inner { max-width: 860px; width: 100%; margin: 0 auto; padding: 24px 32px 140px; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 0; min-height: 0; z-index: 5; background-image: radial-gradient(circle at 10% 20%, rgba(245,158,11,0.03) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(15,23,42,0.02) 0%, transparent 40%); }
+        .chat-inner { max-width: 900px; width: 100%; margin: 0 auto; padding: 32px 24px 160px; }
+
+        @media (max-width: 900px) {
+            .chat-inner { padding: 24px 16px 180px; }
+        }
 
         /* ── WELCOME ── */
         .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 160px); text-align: center; padding: 40px 24px; width: 100%; }
@@ -114,11 +152,25 @@
         .welcome-title strong { font-weight: 700; color: var(--text); }
         .welcome-hero { font-size: 36px; font-weight: 700; color: var(--text); font-family: 'Poppins', sans-serif; line-height: 1.2; margin-bottom: 32px; letter-spacing: -0.03em; }
         
-        .suggestion-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 600px; width: 100%; }
-        .sug-card { display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 20px; cursor: pointer; text-align: center; transition: all 0.2s; box-shadow: var(--shadow-sm); }
-        .sug-card:hover { background: var(--surface2); transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(245,158,11,.3); }
-        .sug-text { font-size: 14px; font-weight: 500; color: var(--text2); }
-        .sug-icon, .sug-desc, .sug-plus { display: none; }
+        .suggestion-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 700px; width: 100%; perspective: 1000px; }
+        .sug-card { 
+            display: flex; align-items: center; justify-content: center; 
+            background: var(--surface); color: var(--text); border: 1px solid var(--border); 
+            border-radius: 12px; padding: 12px 24px; cursor: pointer; text-align: center; 
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: var(--shadow); 
+            animation: sugIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+        @keyframes sugIn { from { opacity: 0; transform: translateY(10px) rotateX(-5deg); } to { opacity: 1; transform: translateY(0) rotateX(0); } }
+        .sug-card:nth-child(1) { animation-delay: 0.1s; }
+        .sug-card:nth-child(2) { animation-delay: 0.2s; }
+        .sug-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .sug-card:hover { 
+            background: var(--surface); border-color: var(--accent); 
+            transform: translateY(-4px) scale(1.02); box-shadow: 0 10px 25px -5px rgba(245,158,11,0.2); 
+        }
+        .sug-text { font-size: 14px; font-weight: 600; color: var(--text2); transition: color 0.2s; }
+        .sug-card:hover .sug-text { color: var(--text); }
 
         /* ── MESSAGES ── */
         .msg-wrap { padding: 18px 0; }
@@ -127,12 +179,17 @@
         .msg-body { min-width: 0; }
         
         .msg-user { justify-content: flex-end; width: 100%; }
-        .msg-user .msg-body { flex: 0 1 auto; background: #0F172A; color: #F1F5F9; padding: 14px 18px; max-width: 85%; border-radius: 16px 16px 4px 16px; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
-        .msg-user .msg-text { color: #F1F5F9; font-size: 15px; line-height: 1.6; }
+        .msg-user .msg-body { flex: 0 1 auto; background: var(--msg-user-bg); color: #F1F5F9; padding: 14px 20px; max-width: 80%; border-radius: 20px 20px 4px 20px; box-shadow: 0 4px 15px rgba(15,23,42,0.1); }
+        .msg-user .msg-text { color: #F1F5F9; font-size: 15px; line-height: 1.6; font-weight: 500; }
         
-        .msg-ai { justify-content: flex-start; width: 100%; }
-        .msg-ai .msg-body { flex: 1; min-width: 0; background: transparent; padding: 0; }
-        .msg-text { font-size: 15px; line-height: 1.75; font-family: 'Inter', sans-serif; word-break: break-word; font-weight: 400; color: var(--text); }
+        .msg-ai { justify-content: flex-start; width: 100%; margin-bottom: 8px; }
+        .msg-ai .msg-body { 
+            flex: 1; min-width: 0; background: var(--msg-ai-bg); 
+            padding: 20px; border-radius: 4px 20px 20px 20px;
+            border: 1px solid var(--border-light); backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .msg-text { font-size: 15px; line-height: 1.75; font-family: var(--font-main); word-break: break-word; font-weight: 400; color: var(--text); }
         .msg-ai .msg-text { color: var(--text); position: relative; }
         
         /* Shimmer for streaming text */
@@ -158,7 +215,20 @@
 
         /* Board render (AI structured output) */
         .board-render { font-size: 14px; }
-        .stream-cursor { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--text); margin-left: 4px; vertical-align: baseline; animation: blink 1s infinite; }
+        .stream-cursor { 
+            display: inline-block; 
+            width: 2px; 
+            height: 18px; 
+            background: #F59E0B; 
+            margin-left: 2px; 
+            vertical-align: middle; 
+            animation: chatCursorBlink 0.8s infinite;
+            box-shadow: 0 0 8px rgba(245,158,11,0.5);
+        }
+        @keyframes chatCursorBlink {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
         .br-check { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: #22c55e; border-radius: 4px; font-size: 10px; color: #fff; flex-shrink: 0; }
         
         /* Smooth Typing & Content Reveal */
@@ -166,23 +236,8 @@
             from { opacity: 0; transform: translateX(-6px); filter: blur(4px); }
             to { opacity: 1; transform: translateX(0); filter: blur(0); }
         }
-        .board-render > * { animation: revealText 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        .board-render > * { transition: opacity 0.3s ease; }
         
-        .stream-cursor { 
-            display: inline-block; 
-            width: 12px; 
-            height: 12px; 
-            border-radius: 50%; 
-            background: #60a5fa; 
-            margin-left: 6px; 
-            vertical-align: middle; 
-            box-shadow: 0 0 15px #60a5fa, 0 0 5px #fff;
-            animation: cursorPulse 1s infinite alternate cubic-bezier(0.4, 0, 0.6, 1);
-        }
-        @keyframes cursorPulse {
-            0% { transform: scale(0.8); opacity: 0.5; box-shadow: 0 0 5px #60a5fa; }
-            100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 20px #60a5fa, 0 0 8px #fff; }
-        }
         
         /* Message Entrance */
         @keyframes msgInLeft {
@@ -600,13 +655,16 @@
                 <h1 class="welcome-hero">HOW CAN I ASSIST<br>YOU TODAY?</h1>
                 
                 <div class="suggestion-grid">
-                    <div class="sug-card" onclick="NexaChat.send('Suggest me some events')">
-                        <div class="sug-text">Suggest me some events</div>
+                     <div class="sug-card" style="animation-delay: 0.1s;" onclick="NexaChat.send('Help me summarize my today\'s notes')">
+                        <div class="sug-text">Summarize my notes</div>
                     </div>
-                    <div class="sug-card" onclick="NexaChat.send('Suggest me match')">
-                        <div class="sug-text">Suggest me match</div>
+                    <div class="sug-card" style="animation-delay: 0.2s;" onclick="NexaChat.send('Create a study plan for my exam')">
+                        <div class="sug-text">Create a study plan</div>
                     </div>
-                    <div class="sug-card" onclick="NexaChat.send('Ask Me For Advice')">
+                    <div class="sug-card" style="animation-delay: 0.3s;" onclick="NexaChat.send('Explain a complex topic simply')">
+                        <div class="sug-text">Explain a topic</div>
+                    </div>
+                    <div class="sug-card" style="animation-delay: 0.4s;" onclick="NexaChat.send('Ask Me For Advice')">
                         <div class="sug-text">Ask Me For Advice</div>
                     </div>
                 </div>
@@ -971,6 +1029,10 @@ const NexaChat = {
     isSending: false,
     pendingImage: null,
     webSearchMode: false,
+    typeQueue: [],
+    typingInterval: null,
+    currentStreamText: '',
+    currentStreamUI: null,
 
     toggleAttachMenu(e) {
         e.stopPropagation();
@@ -1021,6 +1083,38 @@ const NexaChat = {
         } catch(e) { console.error(e); }
     },
 
+    startTypingSystem(el) {
+        this.currentStreamUI = el;
+        this.currentStreamText = '';
+        this.typeQueue = [];
+        if (this.typingInterval) clearInterval(this.typingInterval);
+        
+        this.typingInterval = setInterval(() => {
+            if (this.typeQueue.length > 0) {
+                // Take 1 character (or a small chunk to keep up if queue is huge)
+                const take = this.typeQueue.length > 30 ? 3 : 1;
+                for(let i=0; i<take && this.typeQueue.length > 0; i++){
+                    this.currentStreamText += this.typeQueue.shift();
+                }
+                
+                if (this.currentStreamUI) {
+                    this.currentStreamUI.innerHTML = NexaChat.renderBoardHTML(this.currentStreamText) + '<span class="stream-cursor"></span>';
+                    NexaUI.scrollToBottom();
+                }
+            }
+        }, 30); // 30ms per character - very natural "live" feel
+    },
+
+    stopTypingSystem() {
+        if (this.typingInterval) clearInterval(this.typingInterval);
+        this.typingInterval = null;
+        if (this.currentStreamUI && this.typeQueue.length > 0) {
+            this.currentStreamText += this.typeQueue.join('');
+            this.currentStreamUI.innerHTML = NexaChat.renderBoardHTML(this.currentStreamText);
+            this.typeQueue = [];
+        }
+    },
+
     async send(message) {
         if (this.isSending) return;
         const msg = message || NexaUI.elements.chatInput.value.trim();
@@ -1033,8 +1127,9 @@ const NexaChat = {
         document.getElementById('attach-menu').classList.remove('open');
         try {
             if (this.pendingImage) {
+                const useRag = NexaUI.elements.useRag?.checked ?? true;
                 this.addUserMessage(msg, this.pendingImage);
-                await this.sendImageStreaming(msg, this.pendingImage);
+                await this.sendImageStreaming(msg, this.pendingImage, useRag);
                 this.clearImage();
             } else if (this.webSearchMode) {
                 this.addUserMessage('🌐 ' + msg);
@@ -1057,7 +1152,7 @@ const NexaChat = {
         }
     },
 
-    async sendImageStreaming(message, imageFile) {
+    async sendImageStreaming(message, imageFile, useRag = true) {
         const msgId = 'ai-msg-' + Date.now();
         const html = `
             <div class="msg-wrap" id="wrap-${msgId}">
@@ -1090,12 +1185,25 @@ const NexaChat = {
             const formData = new FormData();
             formData.append('message', message || 'Analyze this image');
             formData.append('image', imageFile);
+            formData.append('use_rag', useRag);
             formData.append('csrfmiddlewaretoken', NexaAI.csrfToken);
 
             const res = await fetch('{% url "ai_chat_image" %}', {
                 method: 'POST',
+                headers: { 'X-CSRFToken': NexaAI.csrfToken },
                 body: formData
             });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                el.innerHTML = '<span style="color:#ef4444">Server Error: ' + (errData.error || res.statusText) + '</span>';
+                wrap.querySelector('.msg-ai').classList.remove('streaming');
+                this.isSending = false;
+                NexaUI.hideLoading();
+                return;
+            }
+
+            this.startTypingSystem(el);
 
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
@@ -1113,17 +1221,19 @@ const NexaChat = {
                         if (payload.error) { el.innerHTML = '<span style="color:#ef4444">Error: ' + payload.error + '</span>'; return; }
                         if (payload.done) break;
                         if (payload.token) {
-                            fullText += payload.token;
-                            el.innerHTML = NexaChat.renderBoardHTML(fullText) + '<span class="stream-cursor"></span>';
-                            NexaUI.scrollToBottom();
+                            // Queue characters for natural typing
+                            for(const char of payload.token) this.typeQueue.push(char);
                         }
                     } catch(e) {}
                 }
             }
-            wrap.querySelector('.msg-ai').classList.remove('streaming');
-            el.innerHTML = NexaChat.renderBoardHTML(fullText);
-            if (wrap) wrap.dataset.plain = fullText;
-            document.getElementById('actions-' + msgId).style.display = '';
+            // Give queue a moment to finish or force finish
+            setTimeout(() => {
+                this.stopTypingSystem();
+                wrap.querySelector('.msg-ai').classList.remove('streaming');
+                if (wrap) wrap.dataset.plain = this.currentStreamText;
+                document.getElementById('actions-' + msgId).style.display = '';
+            }, 500);
         } catch(e) {
             wrap.querySelector('.msg-ai').classList.remove('streaming');
             el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
@@ -1173,6 +1283,8 @@ const NexaChat = {
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
                 body: JSON.stringify({ message, use_rag: useRag })
             });
+            this.startTypingSystem(el);
+
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
@@ -1189,13 +1301,18 @@ const NexaChat = {
                         if (payload.error) { el.innerHTML = '<span style="color:#ef4444">Error: ' + payload.error + '</span>'; return; }
                         if (payload.done) break;
                         if (payload.token) {
-                            fullText += payload.token;
-                            el.innerHTML = NexaChat.renderBoardHTML(fullText) + '<span class="stream-cursor"></span>';
-                            NexaUI.scrollToBottom();
+                            for(const char of payload.token) this.typeQueue.push(char);
                         }
                     } catch(e) {}
                 }
             }
+            setTimeout(() => {
+                this.stopTypingSystem();
+                if (wrap) wrap.dataset.plain = this.currentStreamText;
+                document.getElementById('actions-' + msgId).style.display = '';
+                wrap.querySelector('.msg-ai').classList.remove('streaming');
+                NexaUI.scrollToBottom();
+            }, 500);
             wrap.querySelector('.msg-ai').classList.remove('streaming');
         } catch(e) {
             wrap.querySelector('.msg-ai').classList.remove('streaming');

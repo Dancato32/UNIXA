@@ -296,35 +296,45 @@ def delete_essay(request, essay_id):
 
 @login_required
 def chat_with_image(request):
-    """SSE streaming endpoint: send a message + image to the AI and stream the response."""
+    """SSE streaming endpoint for Multi-Modal vision and problem solving."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     try:
-        message = request.POST.get('message', '').strip() or 'What is in this image? Explain it as a tutor.'
+        message = request.POST.get('message', '').strip() or 'Explain this image step by step.'
         image_file = request.FILES.get('image')
+        use_rag = request.POST.get('use_rag', 'true').lower() == 'true'
 
         if not image_file:
-            return JsonResponse({'error': 'No image provided'}, status=400)
+            return JsonResponse({'error': 'Please select an image first.'}, status=400)
+            
+        if image_file.size > 4 * 1024 * 1024:
+            return JsonResponse({'error': 'Image is too large (max 4MB).'}, status=400)
 
         import base64
+        import traceback
         from .ai_utils import get_openai_client, build_system_prompt
         from django.http import StreamingHttpResponse
 
-        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
-        history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
+        # Resolve History
+        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:20]
+        # Evaluate QuerySet to avoid any late evaluation issues in the generator
+        history_list = list(reversed(recent))
+        history = [{'message': c.message, 'response': c.response} for c in history_list]
 
+        # Reset pointer and read
+        image_file.seek(0)
         image_data = base64.b64encode(image_file.read()).decode('utf-8')
         mime = image_file.content_type or 'image/jpeg'
 
         client = get_openai_client()
-        # Use is_vision=True for the enhanced prompt
-        system_message = build_system_prompt(use_rag, request.user, is_vision=True)
+        system_message = build_system_prompt(use_rag=use_rag, user=request.user, is_vision=True)
         
         messages_list = [{"role": "system", "content": system_message}]
         for h in history:
-            messages_list.append({"role": "user", "content": h['message']})
-            messages_list.append({"role": "assistant", "content": h['response']})
+            text_context = str(h['message'] or '').replace('[Image Analysis] ', '').replace('[Web Search] ', '')
+            messages_list.append({"role": "user", "content": text_context})
+            messages_list.append({"role": "assistant", "content": str(h['response'] or '')})
             
         messages_list.append({
             "role": "user",
@@ -337,37 +347,40 @@ def chat_with_image(request):
         def event_stream():
             full_response = []
             try:
+                # Switching back to gpt-4o-mini as it is the standard vision model on OpenRouter
                 stream = client.chat.completions.create(
                     model="openai/gpt-4o-mini",
                     messages=messages_list,
-                    max_tokens=1000,
+                    max_tokens=2000,
                     stream=True,
                 )
                 for chunk in stream:
+                    if not chunk.choices: continue
                     token = chunk.choices[0].delta.content or ''
                     if token:
                         full_response.append(token)
                         yield f"data: {json.dumps({'token': token})}\n\n"
 
-                # Save conversation with a specific marker
                 complete = ''.join(full_response)
-                Conversation.objects.create(
-                    user=request.user,
-                    message=f"[Image Analysis] {message}",
-                    response=complete
-                )
+                if complete:
+                    Conversation.objects.create(
+                        user=request.user,
+                        message=f"[Image Analysis] {message}",
+                        response=complete
+                    )
                 yield f"data: {json.dumps({'done': True})}\n\n"
-            except Exception as e:
-                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            except Exception as stream_err:
+                yield f"data: {json.dumps({'error': str(stream_err)})}\n\n"
 
         response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
         response['Cache-Control'] = 'no-cache, no-transform'
         response['X-Accel-Buffering'] = 'no'
-        response['Transfer-Encoding'] = 'chunked'
         return response
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import traceback
+        print(f"Vision Error: {str(e)}\n{traceback.format_exc()}")
+        return JsonResponse({'error': f"Processing failed: {str(e)}"}, status=500)
 
 
 @login_required
@@ -583,7 +596,6 @@ def chat_stream(request):
         response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
         response['Cache-Control'] = 'no-cache, no-transform'
         response['X-Accel-Buffering'] = 'no'
-        response['Transfer-Encoding'] = 'chunked'
         return response
 
     except Exception as e:

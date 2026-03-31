@@ -110,13 +110,87 @@
   transition: all .2s; cursor: pointer;
 }
 .study-btn:hover { background: #F59E0B; color: #fff; border-color: #F59E0B; transform: translateY(-1px); }
+
+/* ── Upload Overlay ── */
+.upload-overlay {
+  position: fixed; inset: 0; background: rgba(255,255,255,.8);
+  backdrop-filter: blur(10px); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1.5rem;
+  opacity: 0; pointer-events: none; transition: opacity .4s cubic-bezier(.4, 0, .2, 1);
+}
+.upload-overlay.active { opacity: 1; pointer-events: all; }
+
+.upload-modal {
+  background: #fff; padding: 2.5rem; border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.1);
+  display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+  transform: scale(.9) translateY(20px); transition: all .5s cubic-bezier(.34, 1.56, .64, 1);
+}
+.upload-overlay.active .upload-modal { transform: scale(1) translateY(0); }
+
+.loader-container { position: relative; width: 80px; height: 80px; }
+
+/* Circle Spinner */
+.circle-loader {
+  border: 4px solid #f3f3f3; border-top: 4px solid #F59E0B;
+  border-radius: 50%; width: 80px; height: 80px;
+  animation: spin 1s linear infinite; transition: all .4s ease;
+}
+.circle-loader.load-complete {
+  animation: none; border-color: #22C55E;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Checkmark */
+.checkmark { display: none; }
+.checkmark.draw:after {
+  animation-duration: 800ms; animation-timing-function: ease;
+  animation-name: checkmark; transform: scaleX(-1) rotate(135deg);
+}
+.checkmark:after {
+  opacity: 1; height: 40px; width: 22px;
+  transform-origin: left top; border-right: 4px solid #22C55E;
+  border-top: 4px solid #22C55E; content: '';
+  left: 18px; top: 42px; position: absolute;
+}
+@keyframes checkmark {
+  0% { height: 0; width: 0; opacity: 1; }
+  20% { height: 0; width: 22px; opacity: 1; }
+  40% { height: 40px; width: 22px; opacity: 1; }
+  100% { height: 40px; width: 22px; opacity: 1; }
+}
+
+.upload-status-text {
+  font-family: 'Poppins', sans-serif; font-size: 1.125rem; font-weight: 700;
+  color: var(--mat-text); letter-spacing: -0.01em;
+}
+
+/* ── Theme Overrides ── */
+.mat-icon-pdf { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+.mat-icon-word { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Upload Overlay -->
+<div id="upOverlay" class="upload-overlay">
+  <div class="upload-modal">
+    <div class="loader-container">
+      <div id="upCircle" class="circle-loader"></div>
+      <div id="upCheck" class="checkmark"></div>
+    </div>
+    <div id="upStatus" class="upload-status-text">Uploading...</div>
+  </div>
+</div>
+
 <div class="materials-page">
   <div class="mat-header">
     <div class="mat-title-main">Study Materials</div>
+    <div class="mat-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="mat-search-input" placeholder="Search your materials...">
+    </div>
     <button class="mat-upload-btn" onclick="document.getElementById('mFile').click()">+ Upload</button>
     <input type="file" id="mFile" hidden onchange="doUp(this)">
   </div>
@@ -143,26 +217,29 @@
 
       <div class="mat-card-actions">
         <a href="{% url 'learn_material' m.id %}" class="mat-action-btn" title="View"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg></a>
-
         <a href="{% url 'delete_material' m.id %}" class="mat-action-btn del" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></a>
       </div>
-
     </div>
     {% endfor %}
   </div>
 </div>
 
 <script>
-// Upload with loading state + proper error feedback
 async function doUp(input) {
   if (!input.files[0]) return;
   const file = input.files[0];
-  const btn = document.querySelector('.mat-upload-btn');
-  const origText = btn.innerHTML;
+  
+  const overlay = document.getElementById('upOverlay');
+  const circle = document.getElementById('upCircle');
+  const check = document.getElementById('upCheck');
+  const status = document.getElementById('upStatus');
 
-  // Show loading
-  btn.innerHTML = '⏳ Uploading...';
-  btn.disabled = true;
+  // Show Overlay
+  overlay.classList.add('active');
+  circle.classList.remove('load-complete');
+  check.style.display = 'none';
+  check.classList.remove('draw');
+  status.innerText = 'Uploading your study material...';
 
   const fd = new FormData();
   fd.append('file', file);
@@ -176,29 +253,32 @@ async function doUp(input) {
     });
     const data = await res.json();
     if (data.success) {
-      btn.innerHTML = '✅ Done!';
-      setTimeout(() => window.location.reload(), 400);
+      // Success State
+      circle.classList.add('load-complete');
+      check.style.display = 'block';
+      check.classList.add('draw');
+      status.innerText = 'Done!';
+      
+      // Wait for animation to finish then reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1800);
     } else {
-      // Collect all error messages
+      overlay.classList.remove('active');
       let msg = 'Upload failed.';
       if (data.errors) {
         const msgs = Object.values(data.errors).flat();
         if (msgs.length) msg = msgs.join(' ');
       }
       alert('❌ ' + msg);
-      btn.innerHTML = origText;
-      btn.disabled = false;
     }
   } catch (e) {
+    overlay.classList.remove('active');
     alert('❌ Network error — please try again.');
-    btn.innerHTML = origText;
-    btn.disabled = false;
   }
-  // Reset file input so same file can be re-selected if needed
   input.value = '';
 }
 
-// Live search filter
 document.querySelector('.mat-search-input')?.addEventListener('input', function() {
   const q = this.value.toLowerCase();
   document.querySelectorAll('.mat-card').forEach(card => {
@@ -207,5 +287,4 @@ document.querySelector('.mat-search-input')?.addEventListener('input', function(
   });
 });
 </script>
-
 {% endblock %}
