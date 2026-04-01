@@ -68,8 +68,7 @@ def community_home(request):
     from community.models import CommunityProfile
     profile, _ = CommunityProfile.objects.get_or_create(user=request.user)
     if profile.display_name:
-        request.user.onboarding_complete = True
-        request.user.save(update_fields=['onboarding_complete'])
+        User.objects.filter(id=request.user.id).update(onboarding_complete=True)
         return redirect('community:feed')
     from community.services.feed import get_personalized_feed
 
@@ -241,8 +240,7 @@ def onboarding_save_profile(request):
     profile.save()
 
     # If they've reached this far, mark onboarding as mostly done to avoid loops
-    request.user.onboarding_complete = True
-    request.user.save(update_fields=['onboarding_complete'])
+    User.objects.filter(id=request.user.id).update(onboarding_complete=True)
     
     return JsonResponse({'ok': True})
 
@@ -263,8 +261,7 @@ def onboarding_follow_users(request):
         except User.DoesNotExist:
             pass
     # Mark onboarding done regardless of whether they followed anyone
-    request.user.onboarding_complete = True
-    request.user.save(update_fields=['onboarding_complete'])
+    User.objects.filter(id=request.user.id).update(onboarding_complete=True)
     return JsonResponse({'ok': True})
 
 
@@ -342,8 +339,7 @@ def feed(request):
         from community.models import CommunityProfile
         profile, _ = CommunityProfile.objects.get_or_create(user=request.user)
         if profile.display_name or profile.bio or profile.avatar:
-            request.user.onboarding_complete = True
-            request.user.save(update_fields=['onboarding_complete'])
+            User.objects.filter(id=request.user.id).update(onboarding_complete=True)
         # We NO LONGER redirect here to break any potential loops. 
         # The onboarding overlay is mostly handled on the community_home landing.
             

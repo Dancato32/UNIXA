@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>{{ material.title }} — NEXA Study</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Patrick+Hand&family=Gochi+Hand&display=swap" rel="stylesheet">
 <style>
 :root {
   --primary: #6366f1;
@@ -67,54 +67,132 @@ body {
 .top-icon-btn:hover { border-color: var(--primary); color: var(--primary); }
 
 /* --- Split Layout Engine --- */
-.main-shell { display: flex; flex: 1; overflow: hidden; height: calc(100vh - var(--header-h)); background: var(--bg-main); padding: 2rem; gap: 2rem; }
+.main-shell { display: flex; flex: 1; height: calc(100vh - var(--header-h)); background: #e2e8f0; padding: 1.5rem; gap: 2rem; position: relative; }
 
 /* Left Pane: Slides + Tools */
-.left-pane { flex: 1.6; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding-right: 1rem; }
+.left-pane { flex: 1.6; display: flex; flex-direction: column; overflow-y: auto; height: 100%; padding-right: 1.5rem; scrollbar-width: thin; }
 
 .slide-frame {
-  position: relative; background: var(--card-bg); border-radius: 20px;
-  box-shadow: var(--soft-shadow); min-height: 500px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 3rem; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 2rem;
+  position: relative; 
+  background: #fff; 
+  border-radius: 4px;
+  box-shadow: 2px 2px 0 #cbd5e1, 4px 4px 0 #94a3b8, 10px 10px 40px rgba(0,0,0,0.15);
+  min-height: 850px; 
+  height: auto; 
+  width: 100%; 
+  max-width: 900px; 
+  margin: 0 auto 3rem auto;
+  display: flex; 
+  flex-direction: column; 
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  overflow: visible;
+  flex-shrink: 0; /* Critical for flex growth */
 }
+
+.binder-rings {
+    position: absolute; 
+    left: -18px; 
+    top: 40px; 
+    height: calc(100% - 80px); /* Stretch to fit content */
+    width: 36px;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-around; 
+    z-index: 100;
+}
+.binder-ring {
+    width: 44px; 
+    height: 14px; 
+    background: linear-gradient(to bottom, #94a3b8, #f1f5f9, #94a3b8);
+    border-radius: 10px; 
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+
+.notebook-page { 
+    padding: 3rem 4rem 5rem 110px; 
+    flex: 1; 
+    position: relative; 
+    width: 100%; 
+    background-image: 
+        linear-gradient(90deg, transparent 79px, #fecaca 79px, #fecaca 81px, transparent 81px),
+        linear-gradient(#f1f5f9 .1em, transparent .1em);
+    background-size: 100% 1.8rem;
+    background-attachment: local;
+    background-color: #fff; /* Ensure white background grows with page */
+    border-radius: inherit;
+}
+
+.marginalia {
+    position: fixed; /* Keep it relative to the viewport if needed, or relative to page */
+    left: calc(50% - 440px); /* Adjust based on notebook width */
+    top: 150px; 
+    width: 90px; 
+    padding: 0 5px;
+    font-family: 'Gochi Hand', cursive; 
+    font-size: 0.95rem; 
+    color: #3b82f6;
+    line-height: 1.2; 
+    transform: rotate(-10deg); 
+    pointer-events: none; 
+    opacity: 0.8;
+    z-index: 1000;
+}
+
+/* Paper Texture (Real life touch) */
+.slide-frame::before {
+    content: ""; position: absolute; inset: 0; background-image: url('https://www.transparenttextures.com/patterns/notebook.png'); opacity: 0.05; pointer-events: none; z-index: 5;
+}
+
+.highlight { background: rgba(253, 224, 71, 0.4); padding: 0 2px; border-radius: 2px; }
+
+/* Tactile Flip Regions */
+.flip-region {
+    position: absolute; bottom: 0; width: 100px; height: 100px; cursor: pointer; z-index: 1000;
+}
+.flip-next { right: 0; cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'), auto; }
+.flip-prev { left: 0; cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>'), auto; }
+
+
 .slide-frame-nav {
-  position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between;
-  padding: 0 1.5rem; transform: translateY(-50%); pointer-events: none; z-index: 10;
+  position: absolute; top: 50%; width: calc(100% + 140px); left: -70px; display: flex; justify-content: space-between;
+  transform: translateY(-50%); pointer-events: none; z-index: 200;
 }
 .nav-circle {
-  width: 50px; height: 50px; border-radius: 50%; box-shadow: var(--soft-shadow);
-  background: #fff; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: .2s; border: 1px solid #f1f5f9; pointer-events: auto;
+  width: 56px; height: 56px; border-radius: 50%; box-shadow: var(--deep-shadow);
+  background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .3s cubic-bezier(0.4, 0, 0.2, 1); border: none; pointer-events: auto;
 }
-.nav-circle svg { width: 22px; height: 22px; stroke: var(--text-main); stroke-width: 2.5; }
-.nav-circle:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--primary); color: var(--primary); }
-.nav-circle:hover:not(:disabled) svg { stroke: var(--primary); }
-.nav-circle:disabled { opacity: 0.3; cursor: default; }
+.nav-circle svg { width: 28px; height: 28px; stroke: #fff; stroke-width: 3; }
+.nav-circle:hover:not(:disabled) { transform: scale(1.15) rotate(5deg); background: #4f46e5; }
 
-.slide-counter-pill {
-  position: absolute; bottom: 1.5rem; right: 1.5rem; background: rgba(15,23,42,0.8);
-  color: #fff; padding: 0.4rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem;
-  backdrop-filter: blur(5px);
+.notebook-inner { width: 100%; max-width: 100%; overflow: hidden; }
+.notebook-title { font-family: 'Gochi Hand', cursive; font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 400; margin-bottom: 2.5rem; color: #1e293b; text-align: left; }
+.page-text { font-family: 'Patrick Hand', cursive; font-size: 1.45rem; line-height: 1.8rem; font-weight: 400; white-space: pre-wrap; word-break: break-word; color: #334155; width: 100%; }
+
+/* Index Tool Tabs */
+.tool-tabs {
+    position: absolute; right: -2px; top: 100px; display: flex; flex-direction: column; gap: 4px; z-index: 500;
 }
-
-.notebook-inner { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 800px; }
-.notebook-title { font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 800; margin-bottom: 2rem; color: var(--text-main); text-align: center; }
-.page-text { font-size: 1.15rem; line-height: 1.8; font-weight: 400; white-space: pre-wrap; word-break: break-word; color: #334155; }
-
-/* Square Tool Cards */
-.tools-wrap { padding-bottom: 3rem; }
-.tools-header { font-family: 'Poppins', sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-.tool-grid { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; }
-.tool-card {
-  flex: 1; min-width: 140px; background: #fff; border-radius: 20px; border: 1px solid #f1f5f9;
-  padding: 1.5rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: .2s; cursor: pointer; aspect-ratio: 1;
+.tool-tab {
+    width: 65px; height: 100px; background: var(--primary); color: #fff;
+    border-radius: 0 12px 12px 0; display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl; text-orientation: mixed;
+    font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.1em;
+    cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    border: none; outline: none; transform: translateX(-10px);
 }
-.tool-card:hover { transform: translateY(-4px); box-shadow: var(--soft-shadow); border-color: var(--primary); }
-.tool-icon-circle { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.tool-icon-circle svg { width: 26px; height: 26px; stroke-width: 2; }
-.tool-name-main { font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--text-main); }
+.tool-tab:hover { transform: translateX(0); width: 85px; }
+.tab-summary { background: #f59e0b; }
+.tab-quiz { background: #10b981; }
+.tab-flash { background: #ef4444; }
+.tab-audio { background: #3b82f6; }
+.tab-music { background: #ec4899; }
+
+
+/* Minimalist Icon Colors */
+.bg-blue svg, .bg-purple svg, .bg-amber svg, .bg-red svg, .bg-orange svg { stroke: #0f172a; }
 
 /* Right Pane: AI Tutor Dashboard */
 .right-pane {
@@ -183,31 +261,71 @@ body {
 .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 1rem 2rem; border-radius: 100px; font-weight: 700; z-index: 5000; display: none; box-shadow: var(--deep-shadow); }
 .toast.show { display: block; }
 
-/* Responsive Layout */
+/* Responsive Design System */
+@media (max-width: 1200px) {
+  .slide-frame { max-width: 100%; }
+}
+
 @media (max-width: 1024px) {
-  .main-shell { flex-direction: column; height: auto; padding: 1rem; overflow-y: auto; }
-  .left-pane { flex: none; overflow-y: visible; padding-right: 0; }
-  .right-pane { flex: none; height: 600px; }
-  body { overflow-y: auto; }
+  body { overflow-y: auto !important; height: auto !important; }
+  .main-shell { padding: 0.75rem; gap: 1rem; flex-direction: column; height: auto; overflow: visible; }
+  .left-pane { padding-right: 0; width: 100%; flex: none; overflow: visible; }
+  .right-pane { 
+    position: fixed; top: 0; right: -100%; width: 90%; max-width: 400px; height: 100vh;
+    z-index: 4000; border-radius: 0; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+  }
+  .right-pane.open { right: 0; }
+  
+  .slide-frame { min-height: 500px; padding-bottom: 5rem; }
+  .slide-frame-nav { width: 100%; left: 0; top: auto; bottom: 1rem; padding: 0 1rem; transform: none; }
+  .nav-circle { width: 50px; height: 50px; }
+
+  /* Mobile Tool Bar */
+  .tool-tabs {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    flex-direction: row; right: auto; top: auto; background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px); padding: 0.5rem; border-radius: 100px;
+    box-shadow: var(--deep-shadow); border: 1px solid rgba(0,0,0,0.05); gap: 8px; width: fit-content;
+  }
+  .tool-tab {
+    width: 50px; height: 50px; writing-mode: horizontal-tb; text-orientation: initial;
+    border-radius: 50% !important; transform: none !important; font-size: 0.7rem;
+    padding: 0; display: flex; flex-direction: column; justify-content: center;
+  }
+  .tool-tab:hover { width: 50px; transform: scale(1.1) !important; }
 }
 
 @media (max-width: 768px) {
-  .topbar { height: 60px; padding: 0 1rem; border: none; box-shadow: var(--soft-shadow); }
-  .topbar-center, .sketchy-search { display: none; }
-  .topbar-left, .topbar-right { flex: none; width: auto; }
+  .topbar { padding: 0 1rem; }
+  .sketchy-search { display: none; }
+  .topbar-center { display: none; }
   
-  .slide-frame { padding: 1.5rem; min-height: 380px; }
-  .notebook-title { font-size: 1.6rem; margin-bottom: 1.5rem; text-align: center; }
-  .page-text { font-size: 1.05rem; line-height: 1.6; }
+  .binder-rings { display: none; } /* Hide clutter on small screens */
+  .notebook-page { padding: 2rem 1.5rem 6rem 1.5rem; }
+  .notebook-page::before { left: 0; }
+  
+  .notebook-title { font-size: 2.2rem; }
+  .page-text { font-size: 1.2rem; line-height: 1.6; }
 
-  .tool-grid { padding-bottom: 0.5rem; }
-  .tool-card { min-width: 120px; padding: 1rem; }
-
-  .tool-overlay { padding: 1.5rem; }
-  .tool-overlay-dialog { padding: 2rem 1.5rem; border-radius: 16px; }
-  .overlay-close { top: 1rem; right: 1rem; width: 36px; height: 36px; }
-  .flashcard-stage { width: 100%; height: 220px; }
+  .tool-overlay { padding: 1rem; }
+  .tool-overlay-dialog { padding: 1.5rem; }
+  .flashcard-stage { width: 100%; height: 260px; }
+  .fc-text { font-size: 1.2rem; }
+  
+  /* Mobile Bottom Nav */
+  .slide-counter-pill { bottom: -4rem; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #eee; }
 }
+
+/* Sidebar Toggle Trigger (Mobile only) */
+.sidebar-trigger {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; width: 56px; height: 56px;
+  background: var(--primary); border-radius: 50%; color: #fff;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: var(--deep-shadow); border: none; cursor: pointer; z-index: 3500;
+}
+@media (max-width: 1024px) { .sidebar-trigger { display: flex; } }
+@media (max-width: 768px) { .marginalia { display: none; } }
 </style>
 </head>
 <body>
@@ -243,6 +361,9 @@ body {
     <main class="left-pane">
       
       <div class="slide-frame">
+        <div class="binder-rings">
+            <div class="binder-ring"></div><div class="binder-ring"></div><div class="binder-ring"></div><div class="binder-ring"></div><div class="binder-ring"></div><div class="binder-ring"></div>
+        </div>
         <div class="slide-frame-nav">
           <button class="nav-circle" id="prevBtn" onclick="changePage(-1)" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
@@ -252,50 +373,26 @@ body {
           </button>
         </div>
 
-        <div class="notebook-inner" id="viewerContent">
-          <h1 class="notebook-title" id="paperTitle">{{ material.title }}</h1>
-          <div id="imgGrid" class="img-grid" style="display:none;"></div>
-          <div class="page-text" id="pageText"></div>
-        </div>
-
-        <div class="slide-counter-pill" id="pageCounterPill">1 / {{ total_pages }}</div>
-      </div>
-
-      <!-- Action Tools (Square Grid) -->
-      <div class="tools-wrap">
-        <h2 class="tools-header"><span style="color:#3b82f6;">✨</span> Study Actions</h2>
+        <div class="notebook-page" id="viewerContent"></div>
         
-        <div class="tool-grid">
-          <div class="tool-card" onclick="runTool('summarise')">
-            <div class="tool-icon-circle bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-            <div class="tool-name-main">Summarize</div>
-          </div>
-          
-          <div class="tool-card" onclick="runTool('quiz')">
-            <div class="tool-icon-circle bg-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="tool-name-main">Quiz</div>
-          </div>
+        <div class="slide-counter-pill" id="pageCounterPill">1 / {{ total_pages }}</div>
 
-          <div class="tool-card" onclick="runTool('flashcards')">
-            <div class="tool-icon-circle bg-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-            <div class="tool-name-main">Flashcards</div>
-          </div>
-
-          <div class="tool-card" onclick="runTool('podcast')">
-            <div class="tool-icon-circle bg-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
-            <div class="tool-name-main">Podcast</div>
-          </div>
-
-          <div class="tool-card" onclick="openGenreModal()">
-            <div class="tool-icon-circle bg-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-            <div class="tool-name-main">Music</div>
-          </div>
+        <!-- SIDE TABS (Floating Bar on Mobile) -->
+        <div class="tool-tabs">
+            <div class="tool-tab tab-summary" onclick="runTool('summarise')" title="Summary">BRIEF</div>
+            <div class="tool-tab tab-quiz" onclick="runTool('quiz')" title="Quiz">QUIZ</div>
+            <div class="tool-tab tab-flash" onclick="runTool('flashcards')" title="Flashcards">CARDS</div>
+            <div class="tool-tab tab-audio" onclick="runTool('podcast')" title="Podcast">AUDIO</div>
+            <div class="tool-tab tab-music" onclick="runTool('music')" title="Music">MUSIC</div>
         </div>
       </div>
     </main>
 
-    <!-- RIGHT PANE: Permanent AI Tutor Sidebar -->
-    <aside class="right-pane">
+    <!-- RIGHT PANE: Permanent Sidebar (Drawer on Mobile) -->
+    <aside class="right-pane" id="aiSidebar">
+      <div style="padding:1rem; display:flex; justify-content:flex-end;" class="mobile-only-header">
+        <button onclick="toggleSidebar()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">✕</button>
+      </div>
       <div style="padding:1.5rem; text-align:center; border-bottom:1px dashed #e2e8f0;">
          <a href="#" style="color:#64748b; font-weight:700; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Lecture</a>
       </div>
@@ -320,6 +417,10 @@ body {
       </div>
     </aside>
 
+    <button class="sidebar-trigger" onclick="toggleSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:24px;height:24px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+
   </div>
 
   <!-- Global Tool Modal -->
@@ -335,6 +436,7 @@ body {
   <!-- Data Hub -->
   <script type="application/json" id="data-config">
     {
+      "title": "{{ material.title|escapejs }}",
       "pages": {{ pages_json|safe }},
       "total": {{ total_pages }},
       "async": {{ defer_load|yesno:"true,false" }},
@@ -366,14 +468,39 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBtn.addEventListener('click', handleChat);
     }
     if (ASYNC_LOAD) loadSlidesAsync(); else renderPage(0);
+    initSwipeSupport();
 });
+
+function initSwipeSupport() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const thresh = 60; // minimum distance for swipe
+    
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, {passive: true});
+
+    document.addEventListener('touchend', e => {
+        const x = e.changedTouches[0].screenX;
+        const y = e.changedTouches[0].screenY;
+        const dx = x - touchStartX;
+        const dy = y - touchStartY;
+        
+        // If swipe is primarily horizontal and exceeds threshold
+        if (Math.abs(dx) > thresh && Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0) changePage(-1); // Swipe Right -> Previous
+            else changePage(1);         // Swipe Left -> Next
+        }
+    }, {passive: true});
+}
 
 async function loadSlidesAsync() {
     const loaderHtml = `
-        <div id="studioLoader" style="height:400px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+        <div id="studioLoader" style="height:400px; width: 100%; max-width: 500px; margin: 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 1.5rem; overflow: hidden;">
             <div class="pal-bot-icon" style="margin-bottom:1.5rem; animation: sketchyPulse 2s infinite;">🤖</div>
-            <h2 style="font-size:2rem; font-weight:900; margin-bottom:1rem;">Scanning pages & sketching diagrams...</h2>
-            <div style="width:240px; height:8px; background:#eee; border:3px solid #000; border-radius:10px; overflow:hidden;">
+            <h2 style="font-size: clamp(1.25rem, 5vw, 2rem); font-weight:900; margin-bottom:1.5rem; line-height: 1.25; word-break: break-word; width: 100%;">Scanning pages & sketching diagrams...</h2>
+            <div style="width:100%; max-width:240px; height:8px; background:#eee; border:2px solid #000; border-radius:10px; overflow:hidden;">
                 <div style="height:100%; width:40%; background:var(--accent-blue); animation: progressMove 2s infinite linear;"></div>
             </div>
             <style>
@@ -416,35 +543,32 @@ function renderPage(n) {
 
     if (isCover) {
         content.innerHTML = `
-            <div style="text-align:center; padding:2rem 0; animation: sketchyFade .6s;">
-                <h1 style="font-family:'Poppins'; font-size:3.5rem; font-weight:900; margin-bottom:1rem; line-height:1.1;">{{ material.title|escapejs }}</h1>
-                <p style="font-size:1.4rem; font-weight:800; color:#666; margin-bottom:3rem;">Interactive Study Guide</p>
-                <div style="width:100%; max-width:480px; margin:0 auto; aspect-ratio:3/4; background:#fff; border-radius:12px; box-shadow:var(--soft-shadow); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
-                    ${filteredImages.length ? `<img src="${filteredImages[0]}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="font-size:6rem;">📘</div>`}
-                    <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.8); color:#fff; padding:1.5rem; text-align:left; backdrop-filter:blur(10px);">
-                        <h2 style="font-size:1.1rem; font-weight:700;">NEXA PREMIUM EDITION</h2>
-                        <p style="font-size:0.8rem; font-weight:700; opacity:0.8;">Full Extraction Complete</p>
-                    </div>
+            <div style="text-align:left; animation: sketchyFade .6s;">
+                <h1 class="notebook-title" style="font-size: 3.5rem; margin-top: 2rem;">${CONFIG.title}</h1>
+                <p style="font-family:'Patrick Hand'; font-size: 1.5rem; color:#64748b; margin-top: -1.5rem; margin-bottom: 4rem;">Lecture Series: Study Journal</p>
+                <div style="border-top: 2px solid #e2e8f0; padding-top: 2rem;">
+                    <p style="font-family:'Patrick Hand'; font-size: 1.2rem; color: #94a3b8; letter-spacing: 0.1em; font-weight: 800;">PROPERTY OF NEXA STUDIO</p>
                 </div>
             </div>
         `;
     } else {
+        // Only show chapter title if it's not the default placeholder
+        const showTitle = pageData.chapter_title && pageData.chapter_title !== 'General Notes' && pageData.chapter_title !== 'Overview' && pageData.chapter_title !== 'General Overview';
+        
         content.innerHTML = `
-            <h1 class="notebook-title" id="paperTitle">{{ material.title|escapejs }}</h1>
-            <div id="imgGrid" class="img-grid" style="display:none;"></div>
+            ${showTitle ? `
+                <div style="font-family:'Gochi Hand'; font-size:1.8rem; color:var(--primary); margin-bottom:1.5rem; border-bottom:1px dashed #cbd5e1; padding-bottom:1rem; animation:sketchyFade .4s;">
+                    ${pageData.chapter_title}
+                </div>
+            ` : ''}
             <div class="page-text" id="pageText"></div>
         `;
 
         const textEl = document.getElementById('pageText');
-        textEl.textContent = text;
         
-        const grid = document.getElementById('imgGrid');
-        if (filteredImages.length) {
-            grid.style.display = 'flex';
-            grid.innerHTML = filteredImages.map(src => `<div class="img-wrap"><img src="${src}" onclick="openLightbox(this.src)"></div>`).join('');
-        } else {
-            grid.style.display = 'none';
-        }
+        // Exceptional Touch: Smart Highlighting
+        const highlightedText = text.length > 50 ? text.replace(/(important|key|note|remember|focus|result|conclusion)/gi, '<span class="highlight">$1</span>') : text;
+        textEl.innerHTML = highlightedText;
     }
 
     document.getElementById('pageCounter').textContent = `${n+1} / ${TOTAL}`;
@@ -458,7 +582,10 @@ function changePage(dir) {
     if (next >= 0 && next < TOTAL) renderPage(next);
 }
 
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function toggleSidebar() { 
+    const sidebar = document.getElementById('aiSidebar');
+    sidebar.classList.toggle('open');
+}
 
 async function handleChat() {
     const input = document.getElementById('sideChatInput');
@@ -508,14 +635,21 @@ function closeOverlay() {
 async function runTool(action) {
     if (action === 'music' || action === 'song_generate') { openGenreModal(); return; }
     
-    showToast(`NEXA Intelligence: Initializing ${action.toUpperCase()}...`);
+    showToast(`NEXA Intelligence: Analyzing this chapter...`);
     const overlay = document.getElementById('toolOverlay');
     const container = document.getElementById('overlayContent');
     overlay.classList.add('open');
-    container.innerHTML = `<div style="text-align:center; padding:4rem;"><div style="width:40px;height:40px;border:4px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1.5rem;"></div><p style="font-weight:700; color:var(--text-sub);">Extracting insights from this page...</p></div>`;
+    container.innerHTML = `<div style="text-align:center; padding:4rem;"><div style="width:40px;height:40px;border:4px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1.5rem;"></div><p style="font-weight:700; color:var(--text-sub);">Extracting insights from the current chapter...</p></div>`;
 
-    const page = PAGES[currentPage] || {text:"", label:"Current Page"};
-    const body = { action, page_text: page.text, page_label: page.label, genre: window._currentGenre || 'Lofi' };
+    const currentPageData = PAGES[currentPage];
+    const chapterTitle = currentPageData.chapter_title;
+    
+    // Batch processing: Use all pages in the same chapter
+    const chapterPages = PAGES.filter(p => (p.chapter_title === chapterTitle || (!p.chapter_title && !chapterTitle)));
+    const chapterText = chapterPages.map(p => typeof p === 'string' ? p : p.text).join('\n\n');
+    const chapterLabel = chapterTitle || "Current Section";
+
+    const body = { action, page_text: chapterText, page_label: chapterLabel, genre: window._currentGenre || 'Lofi' };
     
     try {
         const resp = await fetch(AJAX_URL, {

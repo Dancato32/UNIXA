@@ -11,6 +11,7 @@ from ai_tutor.ai_utils import ask_ai
 import os
 import json
 import uuid
+import re
 
 
 def extract_text_from_file(file_path, file_extension):
@@ -1172,7 +1173,7 @@ def material_slides_api(request, pk):
             'cached': True
         })
 
-    # First time? Extract and cache.
+    # First time? Extract
     ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
     pages = []
     
@@ -1206,6 +1207,30 @@ def material_slides_api(request, pk):
     if not pages:
         pages = [{'text': 'No content could be extracted from this file.', 'images': [], 'label': 'Error'}]
 
+    # Post-process to detect chapters/modules and assign titles
+    current_chapter = None
+    default_chapter = "Overview"
+    
+    # regex for common lecture/chapter markers
+    chapter_pattern = re.compile(r'^(?:Chapter|Module|Lecture|Session|Topic|Unit|Lesson|Part)\b', re.IGNORECASE)
+    
+    for page in pages:
+        text = page.get('text', '')
+        lines = text.split('\n')
+        # Check first few lines for a chapter heading
+        for line in lines[:5]:
+            line = line.strip()
+            if not line: continue
+            
+            if chapter_pattern.match(line):
+                current_chapter = line
+                break
+        
+        if not current_chapter:
+            current_chapter = default_chapter
+        
+        page['chapter_title'] = current_chapter
+
     # Cache it for next time!
     material.extracted_pages_json = pages
     material.save(update_fields=['extracted_pages_json'])
@@ -1217,26 +1242,6 @@ def material_slides_api(request, pk):
         'total': len(pages),
         'cached': False
     })
-
-    ext = os.path.splitext(material.file.name)[1].lower() if material.file else ''
-    pages = []
-
-    file_path = None
-    try:
-        file_path = material.file.path
-        if not os.path.exists(file_path):
-            file_path = None
-    except Exception:
-        file_path = None
-
-    if file_path and ext == '.pptx':
-        pages = _extract_pptx_pages(file_path)
-    elif file_path and ext == '.pdf':
-        pages = _extract_pdf_pages(file_path)
-    elif file_path and ext in ('.docx', '.doc'):
-        pages = _extract_docx_pages(file_path)
-    else:
-        text = material.extracted_text or ''
 
 def _extract_pptx_pages(file_path):
     """Extract each slide as a page with text + images (base64). Recursive for groups."""

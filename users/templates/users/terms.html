@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service — Paw</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0A0F1E; 
+            --surface: #131A2D;
+            --surface-alt: #1E293B;
+            --border: rgba(255,255,255,0.06);
+            --border-strong: rgba(255,255,255,0.12);
+            --text: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --accent: #F59E0B; 
+            --accent-glow: rgba(245, 158, 11, 0.3);
+            --accent-surface: rgba(245, 158, 11, 0.08);
+            --white: #ffffff;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, .brand { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 10; }
+
+        .moving-background { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .orb { position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(140px); opacity: 0.08; animation: move linear infinite; }
+        .orb-1 { background: var(--accent); top: -200px; left: -100px; animation-duration: 25s; }
+        .orb-2 { background: #3B82F6; bottom: -200px; right: -100px; animation-duration: 30s; animation-direction: reverse; }
+        @keyframes move { 0% { transform: translate(0, 0) rotate(0deg); } 33% { transform: translate(100px, 150px) rotate(120deg); } 66% { transform: translate(-50px, 250px) rotate(240deg); } 100% { transform: translate(0, 0) rotate(360deg); } }
+
+        /* Navigation */
+        nav { padding: 1.5rem 0; background: rgba(10, 15, 30, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; font-size: 1.35rem; font-weight: 800; color: var(--white); }
+        .brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #FBBF24); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; }
+        .nav-link { text-decoration: none; color: var(--text-muted); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 2rem; }
+        .nav-link:hover { color: var(--accent); }
+
+        /* Content */
+        .legal-header { margin: 6rem 0 3rem; text-align: center; }
+        .legal-header h1 { font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; }
+        .legal-header p { color: var(--text-muted); font-size: 1.125rem; }
+
+        .legal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 3rem 4rem; max-width: 900px; margin: 0 auto 6rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .legal-content h2 { margin-top: 2rem; margin-bottom: 1rem; color: var(--white); font-size: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        .legal-content p, .legal-content li { color: var(--text-muted); margin-bottom: 1rem; font-size: 1.05rem; }
+        .legal-content ul { padding-left: 2rem; margin-bottom: 1.5rem; }
+        .legal-content a { color: var(--accent); text-decoration: none; }
+        .legal-content a:hover { text-decoration: underline; }
+
+        /* Footer */
+        footer { padding: 4rem 0 2rem; border-top: 1px solid var(--border); background: #050810; }
+        .footer-grid { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 4rem; margin-bottom: 2rem; }
+        .footer-col h5 { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+        .footer-list { list-style: none; }
+        .footer-list li { margin-bottom: 0.75rem; }
+        .footer-list a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+        .footer-list a:hover { color: var(--white); }
+
+        @media (max-width: 768px) {
+            .legal-content { padding: 2rem; }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="moving-background">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <nav>
+        <div class="container nav-inner">
+            <a href="{% url 'landing' %}" class="brand">
+                <div class="brand-icon">P</div><span>PAW</span>
+            </a>
+            <div>
+                <a href="{% url 'landing' %}" class="nav-link">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="legal-header">
+            <h1>Terms of Service</h1>
+            <p>Last updated: March 2026</p>
+        </div>
+        
+        <div class="legal-content">
+            <p>Welcome to Paw. By using our services, website, tools, and mobile applications, you agree to comply with and be bound by the following Terms of Service. Please review them carefully.</p>
+
+            <h2>1. Service Overview</h2>
+            <p>Paw provides interactive, AI-driven educational software including audio generation, contextual chat bots, collaborative workspaces, quiz generation, and content briefing. These tools are strictly intended for personal, educational, and non-commercial studying purposes.</p>
+
+            <h2>2. User Accounts</h2>
+            <p>You must register an account to access the primary suite of tools. You are responsible for maintaining the confidentiality of your account credentials. You agree that the information you provide during onboarding is accurate, up-to-date, and strictly regarding your real academic identity.</p>
+
+            <h2>3. Content Ownership and Uploads</h2>
+            <ul>
+                <li><strong>Your Content:</strong> You retain ownership over all the files, PDFs, slides, and text you upload. You are strictly prohibited from uploading copyrighted materials without permission, or materials not affiliated with your education.</li>
+                <li><strong>Generated Content:</strong> Podcasts, quizzes, and summaries generated by Paw's AI from your uploads are licensed back to you for personal studying.</li>
+                <li><strong>Prohibited Activity:</strong> You shall not upload illegal, harmful, threatening, or sexually explicit content. Doing so will result in an immediate permanent ban.</li>
+            </ul>
+
+            <h2>4. AI Service Limitations and Reliability</h2>
+            <p>Paw utilizes state-of-the-art Generative AI. While we strive for absolute accuracy, our AI tools can occasionally output incorrect or misleading information ("hallucinations"). You agree to verify the generated learning materials against your course syllabus. Paw is not liable for academic performance, grades, or examinations.</p>
+
+            <h2>5. Social and Community Guidelines</h2>
+            <p>Paw is a social learning network. You agree to treat all classmates and community members with respect. Hate speech, bullying, spamming, and academic dishonesty (e.g., using Paw to cheat on an active exam) are forbidden. We reserve the right to remove any post, chat message, or user account.</p>
+
+            <h2>6. Termination</h2>
+            <p>We may suspend or terminate your account at any time, with or without notice, explicitly for conducting behavior that violates these Terms or harms the Paw ecosystem.</p>
+
+            <h2>7. Contact</h2>
+            <p>For any legal inquiries regarding these Terms, contact legal@nexa-paw.com.</p>
+        </div>
+    </main>
+
+    <footer style="position: relative; z-index: 9999;">
+        <div class="container footer-grid">
+            <div>
+                <a href="{% url 'landing' %}" class="brand"><div class="brand-icon">P</div><span>PAW</span></a>
+                <p style="color: var(--text-dim); margin-top: 1rem;">The standard in AI learning.</p>
+            </div>
+            <div class="footer-col">
+                <h5>Legal</h5>
+                <ul class="footer-list">
+                    <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                    <li><a href="{% url 'terms' %}">Terms of Service</a></li>
+                    <li><a href="{% url 'security' %}">Security</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

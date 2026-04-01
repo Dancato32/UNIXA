@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security — Paw</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0A0F1E; 
+            --surface: #131A2D;
+            --surface-alt: #1E293B;
+            --border: rgba(255,255,255,0.06);
+            --border-strong: rgba(255,255,255,0.12);
+            --text: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --accent: #F59E0B; 
+            --accent-glow: rgba(245, 158, 11, 0.3);
+            --accent-surface: rgba(245, 158, 11, 0.08);
+            --white: #ffffff;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, .brand { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 10; }
+
+        .moving-background { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .orb { position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(140px); opacity: 0.08; animation: move linear infinite; }
+        .orb-1 { background: var(--accent); top: -200px; left: -100px; animation-duration: 25s; }
+        .orb-2 { background: #3B82F6; bottom: -200px; right: -100px; animation-duration: 30s; animation-direction: reverse; }
+        @keyframes move { 0% { transform: translate(0, 0) rotate(0deg); } 33% { transform: translate(100px, 150px) rotate(120deg); } 66% { transform: translate(-50px, 250px) rotate(240deg); } 100% { transform: translate(0, 0) rotate(360deg); } }
+
+        /* Navigation */
+        nav { padding: 1.5rem 0; background: rgba(10, 15, 30, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; font-size: 1.35rem; font-weight: 800; color: var(--white); }
+        .brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #FBBF24); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; }
+        .nav-link { text-decoration: none; color: var(--text-muted); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 2rem; }
+        .nav-link:hover { color: var(--accent); }
+
+        /* Content */
+        .legal-header { margin: 6rem 0 3rem; text-align: center; }
+        .legal-header h1 { font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; }
+        .legal-header p { color: var(--text-muted); font-size: 1.125rem; }
+
+        .legal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 3rem 4rem; max-width: 900px; margin: 0 auto 6rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .legal-content h2 { margin-top: 2rem; margin-bottom: 1rem; color: var(--white); font-size: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        .legal-content p, .legal-content li { color: var(--text-muted); margin-bottom: 1rem; font-size: 1.05rem; }
+        .legal-content ul { padding-left: 2rem; margin-bottom: 1.5rem; }
+        .legal-content a { color: var(--accent); text-decoration: none; }
+        .legal-content a:hover { text-decoration: underline; }
+
+        .shield-icon { width: 64px; height: 64px; margin: 0 auto 1.5rem; color: var(--accent); display: flex; justify-content: center; align-items: center; }
+        
+        /* Footer */
+        footer { padding: 4rem 0 2rem; border-top: 1px solid var(--border); background: #050810; }
+        .footer-grid { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 4rem; margin-bottom: 2rem; }
+        .footer-col h5 { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+        .footer-list { list-style: none; }
+        .footer-list li { margin-bottom: 0.75rem; }
+        .footer-list a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+        .footer-list a:hover { color: var(--white); }
+
+        @media (max-width: 768px) {
+            .legal-content { padding: 2rem; }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="moving-background">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <nav>
+        <div class="container nav-inner">
+            <a href="{% url 'landing' %}" class="brand">
+                <div class="brand-icon">P</div><span>PAW</span>
+            </a>
+            <div>
+                <a href="{% url 'landing' %}" class="nav-link">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="legal-header">
+            <div class="shield-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h1>Platform Security</h1>
+            <p>Your academic life, protected with enterprise-grade security.</p>
+        </div>
+        
+        <div class="legal-content">
+            <p>Thousands of students trust Paw with their notes, assignments, and study materials. We employ rigorous protocols to ensure your data stays safe, private, and out of the wrong hands.</p>
+
+            <h2>End-to-End Encryption in Transit</h2>
+            <p>All data sent between your browser and Paw's servers (including chat messages, uploaded documents, and file downloads) is securely encrypted in transit using industry-standard <strong>TLS 1.2+</strong>. Every interaction operates strictly over HTTPS.</p>
+
+            <h2>Secure Cloud Storage</h2>
+            <p>Your PDFs, generated podcast audio files, and profile media are stored sequentially in heavily audited, encrypted Cloudinary buckets. We utilize advanced tokenized delivery mechanisms so only you (or members of your explicit shared workspaces) can view or stream your documents.</p>
+
+            <h2>Authentication and Identity</h2>
+            <p>Paw uses session-based authentication reinforced with secure HTTP-only cookies to protect you against session hijacking and Cross-Site Scripting (XSS). We enforce CSRF validation on all state-changing API operations (such as making a post or updating an AI prompt).</p>
+
+            <h2>Responsible AI and Ephemeral Processing</h2>
+            <p>When you chat with your Neural Tutor, we only inject the specific document snippets necessary to answer your question. We never submit your entire vault of documents to language models simultaneously. Furthermore, our LLM partners are <strong>strictly prohibited</strong> from saving, observing, or training their base models on your personal Paw uploads.</p>
+
+            <h2>Vulnerability Response</h2>
+            <p>Security is a perpetual process. If you are a white-hat security researcher and believe you have discovered a vulnerability within the Paw ecosystem, please do not disclose it publicly. Email us directly at <strong>security@nexa-paw.com</strong> for a safe harbor process and potential bounty reward.</p>
+        </div>
+    </main>
+
+    <footer style="position: relative; z-index: 9999;">
+        <div class="container footer-grid">
+            <div>
+                <a href="{% url 'landing' %}" class="brand"><div class="brand-icon">P</div><span>PAW</span></a>
+                <p style="color: var(--text-dim); margin-top: 1rem;">The standard in AI learning.</p>
+            </div>
+            <div class="footer-col">
+                <h5>Legal</h5>
+                <ul class="footer-list">
+                    <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                    <li><a href="{% url 'terms' %}">Terms of Service</a></li>
+                    <li><a href="{% url 'security' %}">Security</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

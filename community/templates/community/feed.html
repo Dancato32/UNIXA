@@ -1258,7 +1258,7 @@
     <div class="right-card">
       <div class="rc-head">Quick Actions</div>
       <div class="rc-actions">
-        <a href="{% url 'community:post_create' %}" class="btn btn-primary" style="background:#22c55e;justify-content:center;">+ New Post</a>
+        <a href="{% url 'community:post_create' %}" id="desktop-new-post" class="btn btn-primary" style="background:#22c55e;justify-content:center;">+ New Post</a>
         <a href="{% url 'community:custom_create' %}" class="btn btn-ghost" style="justify-content:center;">Create Community</a>
       </div>
     </div>
@@ -1679,7 +1679,42 @@ function showToast(msg) {
 
 function feedSearch(q) {}
 
-/* ── Coach Marks Tutorial ── */
+</script>
+
+<style>
+/* ── Coach Marks Tutorial CSS ── */
+.coach-mark-overlay {
+    position: fixed; inset: 0; background: rgba(5,8,16,0.5); backdrop-filter: blur(2px); z-index: 9999; display: none; align-items: center; justify-content: center;
+}
+.coach-spotlight {
+    position: absolute; border-radius: 12px;
+    box-shadow: 0 0 0 9999px rgba(5,8,16,0.6), inset 0 0 0 2px var(--accent);
+    background: transparent; pointer-events: none; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.coach-pulse {
+    position: absolute; inset: -4px; border: 2px solid var(--accent);
+    border-radius: 14px; animation: coachPulse 2s infinite; pointer-events: none;
+}
+@keyframes coachPulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 0; } }
+.coach-mark-card {
+    position: absolute; width: 320px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4); z-index: 10000;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.coach-mark-title { font-size: 1.125rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.coach-mark-desc { font-size: 0.9375rem; color: var(--text3); line-height: 1.5; margin-bottom: 1.25rem; }
+.coach-mark-footer { display: flex; align-items: center; justify-content: space-between; }
+.coach-mark-step { font-size: 0.8125rem; font-weight: 600; color: var(--text4); }
+.coach-mark-next {
+    background: var(--accent); color: #fff; border: none; padding: 0.5rem 1.25rem;
+    border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s;
+}
+.coach-mark-next:hover { background: var(--accent-hover); transform: translateY(-1px); }
+</style>
+
+<script>
+/* ── Coach Marks Tutorial Logic ── */
 const isMobile = () => window.innerWidth < 900;
 
 const getTarget = (id) => {
@@ -1688,7 +1723,7 @@ const getTarget = (id) => {
 
 const coachSteps = [
     {
-        target: '#side-feed',
+        id: 'feed',
         title: '🏠 Community Feed',
         desc: 'Stay connected with your campus. See the latest notes, questions, and insights from your peers.',
         pos: 'auto'
@@ -1724,7 +1759,7 @@ const coachSteps = [
         pos: 'bottom'
     },
     {
-        target: '.nx-global-fab',
+        target: isMobile() ? '.feed-fab' : '#desktop-new-post',
         title: '✍️ Share & Contribute',
         desc: 'Ready to help others? Post your notes, ask questions, or share study resources with the community.',
         pos: 'left'
@@ -1787,7 +1822,7 @@ function showCoachStep(step) {
         cardLeft = (window.innerWidth / 2) - 140;
         
         // Final FAB on mobile is bottom-right, pos card left of it
-        if(data.target === '.nx-global-fab') {
+        if(data.title.includes('Contribute')) {
             cardTop = rect.top - 180;
             cardLeft = window.innerWidth - 300;
         }
@@ -2054,6 +2089,16 @@ window.addEventListener('load', () => {
 // Paw Splash Logic (Mobile-Home style)
 document.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('paw-splash');
+    
+    // Check if tutorial needed and run it
+    if (localStorage.getItem('paw_needs_tutorial') === 'true') {
+        setTimeout(() => {
+            if(typeof startCoachTour === 'function') {
+                startCoachTour();
+            }
+        }, 1500);
+    }
+    
     if (!splash) return;
     
     // Always show for 2 seconds as requested for every load

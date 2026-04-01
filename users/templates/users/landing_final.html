@@ -424,7 +424,7 @@
         </section>
     </main>
 
-    <footer>
+    <footer style="position: relative; z-index: 9999;">
         <div class="container footer-grid">
             <div>
                 <a href="/" class="brand"><div class="brand-icon">P</div><span>PAW</span></a>
@@ -439,13 +439,15 @@
             <div class="footer-col">
                 <h5>Community</h5>
                 <ul class="footer-list">
-                    <li><a href="#">Feed</a></li><li><a href="#">Login</a></li><li><a href="#">Discord</a></li>
+                    <li><a href="#">Feed</a></li><li><a href="{% url 'login' %}">Login</a></li><li><a href="#">Discord</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h5>Legal</h5>
                 <ul class="footer-list">
-                    <li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li>
+                    <li><a href="{% url 'privacy' %}">Privacy</a></li>
+                    <li><a href="{% url 'terms' %}">Terms</a></li>
+                    <li><a href="{% url 'security' %}">Security</a></li>
                 </ul>
             </div>
         </div>
