@@ -11,9 +11,11 @@ from django.conf import settings
 
 # Voices mapping
 VOICES = {
-    'Alex': 'en-US-AndrewNeural',   # Male, natural and warm
-    'Sam': 'en-US-AvaNeural',       # Female, natural and professional
-    'Divine': 'en-US-EmmaNeural',   # Divine, smooth, melodic female voice (Singer)
+    'Naruto': 'en-US-SteffanNeural',    # Energetic, youthful male
+    'Sasuke': 'en-US-ChristopherNeural', # Cool, calm, deeper male
+    'Alex': 'en-US-AndrewNeural',   
+    'Sam': 'en-US-AvaNeural',      
+    'Divine': 'en-US-EmmaNeural',   
     'Host 1': 'en-US-AndrewNeural',
     'Host 2': 'en-US-AvaNeural',
     'Vocal': 'en-US-EmmaNeural',
@@ -44,13 +46,16 @@ def _run_async_safe(coro):
 
 
 async def _generate_all(segments, storage_dir):
-    """Internal async helper to run all TTS tasks in parallel."""
+    """Internal async helper to run all TTS tasks in parallel with dynamic parameters."""
     tasks = []
     for seg in segments:
         voice = VOICES.get(seg['speaker'], VOICES['Alex'])
+        rate = seg.get('rate', '+0%')
+        pitch = seg.get('pitch', '+0Hz')
         filepath = os.path.join(storage_dir, seg['filename'])
-        # Edge TTS
-        tasks.append(edge_tts.Communicate(seg['text'], voice).save(filepath))
+        
+        # Communicate supports rate/pitch as strings (+X% or +XHz)
+        tasks.append(edge_tts.Communicate(seg['text'], voice, rate=rate, pitch=pitch).save(filepath))
 
     await asyncio.gather(*tasks)
 
@@ -128,18 +133,36 @@ def generate_podcast_segments(script_text, material_id, fixed_voice=None, use_pr
         speaker = m.group(1).title() if m else 'Alex'
         raw_text = m.group(2) if m else line
 
-        # 2. Strong Recursive Name/Vocal/Section Stripping
-        # Ensure 'Alex: [Verse 1]: Hello' becomes 'Hello'
-        clean_text = raw_text
-        while True:
-            # Matches names, Vocal:, Lyric:, Verse 1:, Chorus:, etc.
-            new_text = re.sub(r'^(Alex|Sam|Host \d|Host|Vocal|Lyric|Verse \d?|Chorus|Intro|Outro|Bridge|Hook):\s*', '', clean_text, flags=re.I).strip()
-            if new_text == clean_text:
-                break
-            clean_text = new_text
+        # 3. Handle Emotional Cues / Speed Control
+        # Map [Tags] to TTS parameters
+        rate = "+0%"
+        pitch = "+0Hz"
+        cue = "Normal"
+        
+        if "[Excited]" in raw_text or "!!" in raw_text:
+            rate = "+20%"
+            pitch = "+5Hz"
+            cue = "Excited"
+        elif "[Fast]" in raw_text:
+            rate = "+35%"
+            cue = "Fast"
+        elif "[Slower]" in raw_text or "[Thoughtful]" in raw_text:
+            rate = "-15%"
+            pitch = "-3Hz"
+            cue = "Thoughtful"
+        elif "[Whisper]" in raw_text or "[Serious]" in raw_text:
+            rate = "-30%"
+            pitch = "-10Hz"
+            cue = "Whisper"
 
-        # 3. Final cleanup (stars, directions)
-        clean_text = clean_text.replace('**', '').replace('[', '').replace(']', '').strip()
+        # 4. Final cleanup (stars, directions, and the cues themselves)
+        clean_text = raw_text.replace('**', '').strip()
+        clean_text = re.sub(r'\[(Excited|Fast|Slower|Thoughtful|Whisper|Serious|Laughter|Sigh|Note)\]', '', clean_text, flags=re.I).strip()
+        # Recursive cleaning of speaker tags again
+        while True:
+            new_text = re.sub(r'^(Naruto|Sasuke|Kojo|Afia|Alex|Sam|Host \d|Host|Vocal|Lyric|Verse \d?|Chorus|Intro|Outro|Bridge|Hook):\s*', '', clean_text, flags=re.I).strip()
+            if new_text == clean_text: break
+            clean_text = new_text
 
         if not clean_text:
             continue
@@ -149,6 +172,9 @@ def generate_podcast_segments(script_text, material_id, fixed_voice=None, use_pr
         segments_to_bake.append({
             'speaker': speaker,
             'text': clean_text,
+            'rate': rate,
+            'pitch': pitch,
+            'cue': cue,
             'filename': filename,
             'audio_url': f"{settings.MEDIA_URL}podcast_segments/{folder_name}/{filename}"
         })

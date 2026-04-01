@@ -361,6 +361,8 @@ button{font-family:inherit;cursor:pointer;}
 
 <script>
 const RESOURCE_ID = {{ resource.pk }};
+const RESOURCE_SUBJECT = "{{ resource.get_subject_display }}";
+const RESOURCE_TOPIC = "{{ resource.topic|escapejs }}";
 const CSRF = '{{ csrf_token }}';
 const RAW_CONTENT = `{{ resource.content|escapejs }}`;
 
@@ -520,15 +522,39 @@ async function callAI(url, body) {
 async function startLearn() {
   if (!aiOpen) toggleAI();
   appendMsg('user', 'Teach me about this topic');
-  const d = await callAI('{% url "api_teach" %}', {resource_id: RESOURCE_ID, question: 'Teach me this topic in detail with examples'});
+  const d = await callAI('{% url "api_teach" %}', {
+    resource_id: RESOURCE_ID,
+    question: 'Teach me this topic in detail with examples'
+  });
   appendMsg('ai', d.response || d.error || 'Something went wrong.');
 }
 
 async function generateQuiz() {
   if (!aiOpen) toggleAI();
   appendMsg('user', 'Generate a quiz for this topic');
-  const d = await callAI('{% url "api_quiz" %}', {resource_id: RESOURCE_ID});
-  appendMsg('ai', d.quiz || d.error || 'Something went wrong.');
+  const d = await callAI('{% url "api_quiz" %}', {
+    subject: RESOURCE_SUBJECT,
+    topic: RESOURCE_TOPIC
+  });
+  if (d.error) { appendMsg('ai', d.error); return; }
+  // Render quiz nicely
+  const quiz = d.quiz;
+  let text = '';
+  if (quiz && quiz.mc_questions && quiz.mc_questions.length) {
+    text += '📝 Multiple Choice\n\n';
+    quiz.mc_questions.forEach((q, i) => {
+      text += `${i+1}. ${q.question}\n`;
+      (q.options || []).forEach(opt => { text += `   ${opt}\n`; });
+      text += '\n';
+    });
+  }
+  if (quiz && quiz.theory_questions && quiz.theory_questions.length) {
+    text += '✍️ Theory Questions\n\n';
+    quiz.theory_questions.forEach((q, i) => {
+      text += `${i+1}. ${q.question || q}\n\n`;
+    });
+  }
+  appendMsg('ai', text || JSON.stringify(quiz, null, 2));
 }
 
 async function sendMessage() {
@@ -537,7 +563,10 @@ async function sendMessage() {
   if (!q) return;
   input.value = ''; input.style.height = '';
   appendMsg('user', q);
-  const d = await callAI('{% url "api_teach" %}', {resource_id: RESOURCE_ID, question: q});
+  const d = await callAI('{% url "api_teach" %}', {
+    resource_id: RESOURCE_ID,
+    question: q
+  });
   appendMsg('ai', d.response || d.error || 'Something went wrong.');
 }
 

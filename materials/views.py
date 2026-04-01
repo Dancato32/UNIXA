@@ -512,34 +512,31 @@ def serve_podcast_audio(request, material_id, filename=None):
 
 
 def build_podcast_prompt(text_content, title):
-    """Build the AI prompt for generating a podcast-style lesson."""
-    return f"""You are Nexa, an expert AI tutor creating a podcast-style audio lesson. Create an engaging, conversational podcast lesson from the following study material.
+    """Build a high-fidelity script for 'The Naruto & Sasuke Study Session'."""
+    return f"""You are a world-class Podcast Producer for "The Naruto & Sasuke Show". 
+    
+TOPIC: {title}
 
-Title: {title}
+THE HOSTS (SHINOBI PERSONAS):
+- NARUTO (The Hyper Student): High energy, optimistic, and uses "Believe it!" vibes. He's curious, asks lots of questions, and wants to master this topic "to become the best". He loves ramen analogies.
+- SASUKE (The Cool Elite): Calm, focused, and deep-voiced. He's a genius who explains things logically and briefly. He's a bit of a rival to Naruto but helps him understand the complex "Jutsu" of this subject.
 
-Instructions:
-1. Write as if you're a friendly, knowledgeable teacher giving an audio lesson
-2. Use a conversational tone - like talking to a student
-3. Break concepts into clear, digestible segments
-4. Include real-world examples where appropriate
-5. Use simple language that's easy to understand
+SCRIPTING RULES (HUMAN CHEMISTRY):
+1. NO REPETITIVE NAMES: Since users see the speaker tags in the UI, DO NOT have them start every sentence with "Hey Sasuke" or "Listen Sasuke". Only use names when it's natural for emphasis.
+2. NATURAL FLOW: Focus on the subject matter quickly. Let Naruto represent the struggle to learn, and Sasuke represent the mastery of the technique.
+3. HUMAN MARKERS: Include verbal cues naturally. No markdown.
 
-Structure your response with these markers:
-- INTRO: [Welcome message and topic introduction]
-- CONCEPT_1: [First main concept explained conversationally]
-- CONCEPT_2: [Second main concept]
-- CONCEPT_3: [Third main concept] 
-- EXAMPLE: [Real-world example or application]
-- SUMMARY: [Key takeaways and review]
-- OUTRO: [Closing message and encouragement]
+STRUCTURE:
+- INTRO: [Naruto's high-energy opening, Sasuke's calm correction]
+- THE_JUTSU: [A deep dive into the 3 core concepts explained as 'Training Techniques']
+- SHARINGAN_VIEW: [Sasuke's elite summary of the most important detail]
+- BELIEVE_IT: [Naruto's optimistic recap of why this matters for the future]
+- OUTRO: [Brief rivalry banter and closing]
 
-Make it engaging and educational! Write complete sentences as if speaking.
-
-Content to convert:
+STUDY MATERIAL:
 {text_content}
 
-Now create your podcast lesson:"""
-
+Now, start the session:"""
 
 def parse_podcast_response(ai_response, title):
     """Parse the AI response into structured podcast segments."""
@@ -549,8 +546,8 @@ def parse_podcast_response(ai_response, title):
     
     # Default structure
     default_segments = [
-        {'type': 'intro', 'title': 'Welcome to Your Learning Podcast', 'content': f"Hello learner! Welcome to this podcast on {title}. I'm excited to help you understand this topic today. Let's dive in!", 'visual': 'intro'},
-        {'type': 'concept', 'title': 'Getting Started', 'content': 'Loading your personalized learning content...', 'visual': 'loading'},
+        {'type': 'intro', 'title': 'Welcome to Your Study Session', 'content': f"Naruto: Believe it! We're diving into {title} today! Sasuke: Quiet, Naruto. Focus on the lesson.", 'visual': 'intro'},
+        {'type': 'concept', 'title': 'Getting Started', 'content': 'Loading your personalized training content...', 'visual': 'loading'},
     ]
     
     # Try to parse the AI response
@@ -623,11 +620,13 @@ def parse_podcast_response(ai_response, title):
     
     # Ensure minimum segments
     if len(segments) < 3:
-        segments = default_segments + segments
+        segments = [
+            {'type': 'intro', 'title': 'Welcome', 'content': f"Naruto: Hey Sasuke! Believe it, we're studying {title}! Sasuke: Focus, Naruto.", 'visual': 'intro'}
+        ] + segments
     
     return {
-        'title': f"Learning: {title}",
-        'segments': segments[:10]  # Limit to 10 segments max
+        'title': f"Naruto & Sasuke: {title}",
+        'segments': segments[:10]
     }
 
 
@@ -1002,144 +1001,6 @@ def wiki_image_ajax(request):
         return JsonResponse({'image_url': None})
 
 
-@login_required
-def learn_view(request, pk):
-    """Duolingo-style interactive learn mode for a study material."""
-    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
-    return render(request, 'materials/learn.html', {
-        'material': material, 'title': f'Learn: {material.title}'
-    })
-
-
-@login_required
-def learn_ajax(request, pk):
-    """AJAX: interactive learn mode chat endpoint."""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=405)
-    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
-    if not material.extracted_text:
-        return JsonResponse({'error': 'No text could be extracted from this material.'}, status=400)
-
-    try:
-        data = json.loads(request.body)
-        user_message = data.get('message', '').strip()
-        history = data.get('history', [])
-        if not isinstance(history, list):
-            history = []
-
-        # Extract relevant section when user picks a topic
-        import re as _re
-        full_text = material.extracted_text[:6000]
-        topic_context = ""
-        if user_message and history:
-            for h in reversed(history):
-                if h.get('role') == 'assistant' and 'Topics you can learn' in h.get('content', ''):
-                    topic_match = _re.search(r'\d+\.\s*(.+)', user_message)
-                    if topic_match:
-                        topic_name = topic_match.group(1).strip().lower()
-                        keywords = [w for w in topic_name.split() if len(w) > 3]
-                        paragraphs = [p.strip() for p in full_text.split('\n') if len(p.strip()) > 40]
-                        relevant = [p for p in paragraphs if any(w in p.lower() for w in keywords)]
-                        if relevant:
-                            topic_context = "\n".join(relevant[:20])
-                    break
-
-        # Lean system prompt â€” material injected as a context message instead
-        system_prompt = """You are NEXA Learn Mode, an expert AI tutor. You will be given study material and must teach it interactively.
-
-TEACHING RULES:
-- Always teach from the provided study material â€” quote and paraphrase it directly
-- Use your own knowledge only to add examples, analogies, and fill gaps
-- Never contradict the material
-- Math: use $expression$ for inline, $$expression$$ for display (own line, centred)
-- Bold key terms with **term**
-
-PHASE 1 â€” TOPIC LIST (first message only):
-Read the material. List ALL topics found:
-ðŸ“š Topics you can learn:
-1. [Topic]
-2. [Topic]
-Say: "Pick a topic number to start learning." Then STOP.
-
-PHASE 2 â€” TEACH (when user picks a number):
-Say: "Great choice! Let's learn about [Topic]."
-Teach in numbered steps pulled from the material:
-- **Step title** + 3-5 sentence explanation + formulas
-- Quote key definitions from the material
-- Add real-world examples from your knowledge
-- Cover EVERY detail in the material for this topic
-End with: "âœ… Lesson complete! Ready for the quiz? Type yes to start."
-
-PHASE 3 â€” QUIZ (when user says yes):
-5 questions from the material, ONE at a time:
-**Question X of 5**
-[question]
-A) [option]  B) [option]  C) [option]  D) [option]
-Reply A, B, C, or D. STOP and wait.
-
-PHASE 4 â€” FEEDBACK:
-Correct: "âœ… Correct! [why]" then next question.
-Wrong: "âŒ Not quite. Answer is [X]. [explanation from material]" then next question.
-
-PHASE 5 â€” DONE:
-Score X/5, what to review, ask if they want another topic."""
-
-        # Build messages â€” material as a separate context message (proper RAG pattern)
-        material_context = f"STUDY MATERIAL: {material.title}\n\n{full_text}"
-        if topic_context:
-            material_context += f"\n\n--- MOST RELEVANT SECTION FOR THIS TOPIC ---\n{topic_context}"
-
-        messages_payload = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": material_context},
-            {"role": "assistant", "content": "I have read the study material carefully. I am ready to help you learn it. What would you like to do?"},
-        ]
-
-        # Append conversation history (skip first exchange if it's the material injection)
-        for h in history[-8:]:
-            role = h.get('role', 'user')
-            msg_content = h.get('content', '')
-            if role in ('user', 'assistant') and msg_content:
-                messages_payload.append({"role": role, "content": str(msg_content)})
-
-        if user_message:
-            messages_payload.append({"role": "user", "content": user_message})
-        else:
-            messages_payload.append({"role": "user", "content": "Start â€” show me the topics I can learn from this material."})
-
-        from openai import OpenAI
-        materials_key = os.getenv('OPENROUTER_API_KEY_MATERIALS') or os.getenv('OPENROUTER_API_KEY')
-        if not materials_key:
-            return JsonResponse({'error': 'No API key configured.'}, status=500)
-        client = OpenAI(
-            api_key=materials_key,
-            base_url='https://openrouter.ai/api/v1',
-            default_headers={'HTTP-Referer': 'https://unixa.onrender.com', 'X-Title': 'Nexa AI Materials'}
-        )
-        # Only models that support system prompts
-        free_models = [
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "mistralai/mistral-small-3.1-24b-instruct:free",
-            "openai/gpt-4o-mini",
-        ]
-        last_error = None
-        for model in free_models:
-            try:
-                completion = client.chat.completions.create(
-                    model=model,
-                    messages=messages_payload,
-                    max_tokens=1200,
-                    temperature=0.7,
-                )
-                response = completion.choices[0].message.content
-                return JsonResponse({'success': True, 'response': response})
-            except Exception as e:
-                last_error = e
-                continue  # try next model on any error
-        raise last_error
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
 
 @login_required
 def learn_view(request, pk):
@@ -1448,6 +1309,7 @@ def _extract_docx_pages(file_path):
 
 @login_required
 def learn_ajax(request, pk):
+    import json, re
     """AJAX: AI assist for a specific page/section of the material."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
@@ -1458,13 +1320,13 @@ def learn_ajax(request, pk):
         page_text = data.get('page_text', '').strip()
         page_label = data.get('page_label', 'this section')
 
+        # [AI NORM] Unlimited context support (up to 250k chars)
+        MAX_INPUT = 250000
+        if len(page_text) > MAX_INPUT:
+            page_text = page_text[:MAX_INPUT] + "... (Document too large for single scan)"
+
         if not page_text and action not in ['podcast_list', 'podcast_detail']:
             return JsonResponse({'error': 'No text provided.'}, status=400)
-
-        if action == 'summarise':
-            prompt = f'Summarise this section titled "{page_label}" in 4-6 clear bullet points. Start each bullet with "â€¢ ". Plain text only, no markdown bold.\n\n{page_text}'
-            raw = ask_ai(prompt, user=request.user, use_rag=False)
-            return JsonResponse({'success': True, 'action': action, 'result': raw})
 
         elif action == 'chat':
             user_msg = data.get('message', '').strip()
@@ -1496,10 +1358,25 @@ def learn_ajax(request, pk):
                 
             return JsonResponse({'success': True, 'action': action, 'result': raw})
 
-        elif action == 'explain':
-            prompt = f'Explain the key concepts in this section titled "{page_label}" clearly, as if teaching a student. Use numbered points. Plain text only.\n\n{page_text}'
-            raw = ask_ai(prompt, user=request.user, use_rag=False)
-            return JsonResponse({'success': True, 'action': action, 'result': raw})
+        elif action == 'summarise' or action == 'brief' or action == 'explain':
+            prompt = f'''Perform a Deep Intelligence Scan on this study section titled "{page_label}".
+Return ONLY a valid JSON object with these keys:
+{{"summary": "clear bullet points of key details", "vocab": ["term1", "term2", "term3", "term4"], "recap": "One punchy genius sentence summarizing the core takeaway", "actions": ["Do X to master this", "Compare this to Y", "Draw a diagram of Z"]}}
+
+Section Content:
+{page_text[:200000]}''' # Safe limit for GPT-4o-mini
+            
+            try:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                match = re.search(r'\{.*\}', raw, re.DOTALL)
+                if match:
+                    data = json.loads(match.group())
+                    return JsonResponse({'success': True, 'action': action, 'result': data})
+                
+                # Fallback for plain text if AI fails JSON
+                return JsonResponse({'success': True, 'action': action, 'result': {'summary': raw, 'recap': 'Summary complete.', 'vocab': [], 'actions': []}})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': f"NEXA Briefing Error: {str(e)}"}, status=400)
 
         elif action == 'quiz':
             prompt = f'''Create 4 multiple choice questions from this section titled "{page_label}".
@@ -1511,14 +1388,16 @@ Return ONLY valid JSON array, no extra text:
 
 Section:
 {page_text}'''
-            raw = ask_ai(prompt, user=request.user, use_rag=False)
-            import re
-            # extract JSON array
-            match = re.search(r'\[.*\]', raw, re.DOTALL)
-            if match:
-                questions = json.loads(match.group())
-                return JsonResponse({'success': True, 'action': action, 'questions': questions})
-            return JsonResponse({'success': False, 'error': 'Could not parse quiz questions.'}, status=500)
+            try:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                # extract JSON array
+                match = re.search(r'\[.*\]', raw, re.DOTALL)
+                if match:
+                    questions = json.loads(match.group())
+                    return JsonResponse({'success': True, 'action': action, 'questions': questions})
+                return JsonResponse({'success': False, 'error': 'AI returned invalid quiz format. Try again.'}, status=500)
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': f"NEXA Studio Quiz Error: {str(e)}"}, status=400)
 
         elif action == 'flashcards':
             prompt = f'''Create 6 flashcards from this section titled "{page_label}".
@@ -1530,18 +1409,38 @@ Return ONLY valid JSON array, no extra text:
 
 Section:
 {page_text}'''
-            raw = ask_ai(prompt, user=request.user, use_rag=False)
-            import re
-            match = re.search(r'\[.*\]', raw, re.DOTALL)
-            if match:
-                cards = json.loads(match.group())
-                return JsonResponse({'success': True, 'action': action, 'cards': cards})
-            # fallback: parse FRONT/BACK format
-            pairs = re.findall(r'FRONT:\s*(.+?)\nBACK:\s*(.+?)(?=\nFRONT:|\Z)', raw, re.DOTALL)
-            if pairs:
-                cards = [{'front': f.strip(), 'back': b.strip()} for f, b in pairs]
-                return JsonResponse({'success': True, 'action': action, 'cards': cards})
-            return JsonResponse({'success': False, 'error': 'Could not parse flashcards.'}, status=500)
+            try:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                import re
+                match = re.search(r'\[.*\]', raw, re.DOTALL)
+                if match:
+                    cards = json.loads(match.group())
+                    return JsonResponse({'success': True, 'action': action, 'cards': cards})
+                # fallback: parse FRONT/BACK format
+                pairs = re.findall(r'FRONT:\s*(.+?)\nBACK:\s*(.+?)(?=\nFRONT:|\Z)', raw, re.DOTALL)
+                if pairs:
+                    cards = [{'front': f.strip(), 'back': b.strip()} for f, b in pairs]
+                    return JsonResponse({'success': True, 'action': action, 'cards': cards})
+                return JsonResponse({'success': False, 'error': 'AI returned invalid card format. Try again.'}, status=500)
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': f"NEXA Studio Cards Error: {str(e)}"}, status=400)
+
+        elif action == 'podcast':
+            # Use local function instead of incorrect import
+            from .audio_utils import generate_podcast_segments
+            prompt = build_podcast_prompt(page_text, page_label)
+            try:
+                script_text = ask_ai(prompt, user=request.user, use_rag=False)
+                # Generate natural audio segments (Kojo/Afia)
+                segments = generate_podcast_segments(script_text, pk)
+                return JsonResponse({
+                    'success': True, 
+                    'action': action, 
+                    'script_text': script_text,
+                    'script_json': segments
+                })
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': f"Podcast Error: {str(e)}"}, status=500)
 
         elif action == 'podcast_save':
             from .audio_utils import generate_podcast_segments
@@ -1656,22 +1555,118 @@ Section Content:
 
         elif action == 'podcast':
             from .audio_utils import generate_podcast_segments
-            prompt = f'''Create a conversational, engaging podcast script explaining this section titled "{page_label}".
-The script should be for two hosts, Alex and Sam, discussing the topic in a way that is easy to follow by listening. 
-Keep it under 3 minutes of speaking time. Plain text only.
+            prompt = f'''Create an immersive, high-energy podcast script explaining this section titled "{page_label}".
+            
+Hosts: Alex (energetic, funny) and Sam (brilliant, grounded).
+Speech Cues:
+- Use [Excited] for big realizations.
+- Use [Whisper] or [Serious] for key secrets or deep points.
+- Use [Slower] for complex explanations.
+- Use interjections like "Oh wow!", "Wait, really?", "Hmm...", and "Aha!"
+- Keep it under 3 minutes. Plain text only. Use Alex: and Sam: roles.
 
 Section:
 {page_text}'''
-            raw = ask_ai(prompt, user=request.user, use_rag=False)
+            try:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                # Auto-generate high-quality audio segments for Live playback!
+                segments = generate_podcast_segments(raw, material.pk)
+                return JsonResponse({'success': True, 'action': action, 'script_json': segments})
+            except Exception as e:
+                # If the AI call fails (Context Window or other), provide a fallback message
+                err_msg = str(e)
+                if "context length" in err_msg.lower():
+                    err_msg = "This chapter is too massive for a single podcast! Try breaking it into smaller sections."
+                return JsonResponse({'success': False, 'error': f"NEXA Studio: {err_msg}"}, status=400)
+
+        elif action == 'marginalia':
+            prompt = f'''Generate 2-3 short, clever, and helpful study hints or "scribbles" for this section: "{page_label}".
+Each hint should be max 10 words, informal student-speak. Use emojis.
+Format:
+HINT: [text]
+HINT: [text]
+
+Section Content:
+{page_text}'''
+            try:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                hints = [h.replace('HINT:', '').strip() for h in raw.split('\n') if 'HINT:' in h]
+                return JsonResponse({'success': True, 'action': action, 'hints': hints[:3]})
+            except:
+                return JsonResponse({'success': False, 'error': 'Failed to generate marginalia.'}, status=500)
+
+        elif action == 'paste_page':
+            # Append a custom page to the material's notebook
+            content = data.get('content', '').strip()
+            label = data.get('label', 'Saved Note').strip()
+            if not content: return JsonResponse({'success': False})
             
-            # Auto-generate high-quality audio segments for Live playback!
-            segments = generate_podcast_segments(raw, material.pk)
-            return JsonResponse({'success': True, 'action': action, 'script_json': segments})
+            pages = material.extracted_pages_json or []
+            new_page = {
+                'text': content,
+                'images': [],
+                'label': label,
+                'chapter_title': f"Saved: {label}"
+            }
+            pages.append(new_page)
+            material.extracted_pages_json = pages
+            material.save(update_fields=['extracted_pages_json'])
+            return JsonResponse({'success': True, 'page_index': len(pages)-1})
+
+        elif action == 'global_briefing':
+            # Summarize the 5 most recent study materials
+            from .audio_utils import generate_podcast_segments
+            recent_materials = StudyMaterial.objects.filter(owner=request.user).order_by('-created_at')[:5]
+            if not recent_materials:
+                return JsonResponse({'success': False, 'error': 'No study materials found to brief.'})
+            
+            titles = ", ".join([m.title for m in recent_materials])
+            prompt = f'''You are Sam and Alex from NEXA Intelligence. Create a "Morning Briefing" podcast script (max 2 mins).
+Briefly mention the 5 latest materials the student has been working on: {titles}.
+
+Speech Style:
+- Use [Excited] when mentioning progress.
+- Use [Thoughtful] for study tips.
+- Use [Fast] for quick recaps.
+- Be extremely motivating! Provide one "Genius Tip" for each or a general overview. 
+Plain text only. Use Alex: and Sam: roles.'''
+            
+            try:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                segments = generate_podcast_segments(raw, 0) # Global ID
+                return JsonResponse({'success': True, 'action': action, 'script_json': segments, 'raw_text': raw})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+        elif action == 'full_podcast':
+            # Podcast for the ENTIRE document (using extracted_text)
+            from .audio_utils import generate_podcast_segments
+            text = material.extracted_text or ""
+            if not text: return JsonResponse({'success': False, 'error': 'No text found in document.'})
+            
+            # No-limit expansion: Supporting massive full docs
+            if len(text) > 250000: text = text[:250000] + "..."
+            
+            prompt = f'''Create an ultimate, comprehensive study podcast for the FULL document: "{material.title}".
+Alex and Sam should dive deep into the major themes and key takeaways. Make it feel like a professional masterclass.
+Max 5 minutes of dialogue. Plain text only. Use Alex: and Sam: roles.
+
+Content:
+{text}'''
+            try:
+                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                segments = generate_podcast_segments(raw, material.pk)
+                return JsonResponse({'success': True, 'action': action, 'script_json': segments})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
         else:
             prompt = f'Provide general help for the section "{page_label}":\n\n{page_text}'
             raw = ask_ai(prompt, user=request.user, use_rag=False)
             return JsonResponse({'success': True, 'action': action, 'result': raw})
+            return JsonResponse({'success': True, 'action': action, 'result': raw})
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import logging
+        logging.getLogger(__name__).error(f"SYSTEM_CRASH_LEARN_AJAX: {e}")
+        return JsonResponse({'success': False, 'error': f"NEXA Studio Server Error: {str(e)}"}, status=200) # Status 200 prevents HTML error page intercept

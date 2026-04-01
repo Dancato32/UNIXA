@@ -322,6 +322,23 @@ html,body,.shell,.main-area,.content-scroll,.page{overflow-x:hidden!important;}
             </div>
           </div>
 
+          <!-- NEXA INTELLIGENCE BRIEFING CARD -->
+          <div id="intelBriefing" style="width:100%; max-width:640px; margin-top:2rem; padding:1.5rem; border-radius:18px; background:linear-gradient(135deg, #1e293b, #0f172a); color:#fff; text-align:left; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+            <div style="position:absolute; top:-20px; right:-20px; width:120px; height:120px; background:rgba(99,102,241,0.1); border-radius:50%; filter:blur(40px);"></div>
+            <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem;">
+                <span style="background:rgba(255,255,255,0.1); padding:.4rem .6rem; border-radius:8px; font-size:.7rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#818cf8;">Sam & Alex</span>
+                <span id="briefingStatus" style="font-size:.75rem; color:#94a3b8; font-weight:500;">Ready for your Morning Intelligence Briefing?</span>
+            </div>
+            <h3 style="font-size:1.5rem; font-weight:800; margin-bottom:1rem; letter-spacing:-.02em;">Digital Morning Briefing</h3>
+            <div id="briefingPlayerArea" style="display:none;">
+                <div id="briefingLyrics" style="font-family:'Gochi Hand', cursive; color:#f1f5f9; font-size:1.1rem; margin-bottom:1rem; min-height:3rem; padding:1rem; border-radius:12px; background:rgba(255,255,255,0.05); border-left:4px solid #818cf8;">Loading Sam & Alex...</div>
+                <audio id="briefingAudio" controls style="width:100%; filter:invert(1) hue-rotate(180deg); opacity:0.8;"></audio>
+            </div>
+            <button id="briefingStartBtn" onclick="runGlobalBriefing()" style="display:flex; align-items:center; gap:.75rem; background:#818cf8; color:#fff; border:none; padding:.75rem 1.75rem; border-radius:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:transform .2s; font-size:.9rem;">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M8 5v14l11-7z"/></svg>
+                Listen Now
+            </button>
+          </div>
         </div>
       </div>
       <div id="nx-input-bar" style="display:none;padding:.75rem 1.5rem 1rem;flex-shrink:0;max-width:800px;width:100%;margin:0 auto;box-sizing:border-box;">
@@ -4815,5 +4832,49 @@ function nxWsSaveWorksheet(){
   });
 })();
 
+async function runGlobalBriefing() {
+    const btn = document.getElementById('briefingStartBtn');
+    const area = document.getElementById('briefingPlayerArea');
+    const lyrics = document.getElementById('briefingLyrics');
+    const status = document.getElementById('briefingStatus');
+    
+    btn.style.display = 'none';
+    area.style.display = 'block';
+    status.innerText = "NEXA Intelligence: Syncing...";
+    
+    try {
+        const resp = await fetch("/materials/learn/0/", { // Action=global_briefing handles pk=0
+            method: 'POST',
+            body: JSON.stringify({ action: 'global_briefing' }),
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+        });
+        const data = await resp.json();
+        if (data.success && data.script_json) {
+            status.innerText = "Daily Briefing: Live";
+            
+            const audio = document.getElementById('briefingAudio');
+            const segs = data.script_json;
+            let current = 0;
+            
+            const playNext = () => {
+                if (current >= segs.length) return;
+                const seg = segs[current];
+                lyrics.innerText = `${seg.speaker}: ${seg.text}`;
+                audio.src = seg.audio_url;
+                audio.play();
+                current++;
+            };
+            audio.onended = playNext;
+            playNext();
+        } else {
+            status.innerText = "Error syncing briefing.";
+            btn.style.display = 'block';
+            area.style.display = 'none';
+        }
+    } catch(e) {
+        console.error(e);
+        status.innerText = "Connection lost.";
+    }
+}
 </script>
 {% endblock %}

@@ -152,7 +152,8 @@ def get_study_materials_for_rag(user):
         for material in materials:
             if material.extracted_text:
                 context += f"\n\n--- From {material.title} ---\n"
-                context += material.extracted_text[:2000]  # Limit context length
+                # Increased RAG limit significantly for 'unlimited' feel
+                context += material.extracted_text[:40000]
         
         return context
     except Exception:
@@ -286,11 +287,11 @@ Teach concepts clearly using board-style formatting. Break ideas into steps, use
                 messages_list.append({"role": "assistant", "content": h['response']})
         messages_list.append({"role": "user", "content": message})
 
-        # Make API call
+        # Make API call with increased output limit
         response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
             messages=messages_list,
-            max_tokens=1000,
+            max_tokens=4000, 
             temperature=0.7
         )
 
