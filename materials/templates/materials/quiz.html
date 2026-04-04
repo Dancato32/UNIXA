@@ -479,39 +479,40 @@ button{font-family:inherit;cursor:pointer;}
       
       <!-- Topic Selection Tray -->
       <div id="topicDiscoveryBox">
-        {% if concepts %}
-        <div id="topicTray" class="topic-tray" style="display:block;">
-          
+        <div id="topicTray" class="topic-tray" {% if concepts %}style="display:block;"{% endif %}>
           <div class="topic-tray-label" style="display:flex; justify-content:space-between; align-items:center;">
              <span>1. Choose your Battlefield</span>
              <button class="btn-ghost" style="font-size:10px; padding:2px 8px;" onclick="toggleAllTopics(this)">Deselect All</button>
           </div>
 
           <div id="topicList">
-            {% for concept in concepts %}
-            <label class="topic-item {% if concept.recurrence_risk %}risk-active{% endif %}">
-              <input type="checkbox" name="selected_topic" value="{{ concept.name }}" checked>
-              <div class="topic-meta">
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <span class="topic-name">{{ concept.name }}</span>
-                  {% if concept.recurrence_risk %}
-                  <span class="risk-badge">⚠️ Recurrence Risk</span>
-                  {% endif %}
+            {% if concepts %}
+              {% for concept in concepts %}
+              <label class="topic-item {% if concept.recurrence_risk %}risk-active{% endif %}">
+                <input type="checkbox" name="selected_topic" value="{{ concept.name }}" checked onchange="updateStartButton()">
+                <div class="topic-meta">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span class="topic-name">{{ concept.name }}</span>
+                    {% if concept.recurrence_risk %}
+                    <span class="risk-badge">⚠️ Recurrence Risk</span>
+                    {% endif %}
+                  </div>
+                  <span class="topic-def">{{ concept.definition|truncatechars:90 }}</span>
                 </div>
-                <span class="topic-def">{{ concept.definition|truncatechars:90 }}</span>
-              </div>
-            </label>
-            {% endfor %}
+              </label>
+              {% endfor %}
+            {% endif %}
           </div>
         </div>
-        {% else %}
+
+        {% if not concepts %}
         <div class="discovery-empty-state" id="discoveryEmpty">
           <div class="idle-icon" style="background:rgba(59,130,246,0.1); margin-top:1rem;">
             <svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
           <div class="idle-title" style="font-size:1rem;">Material Not Scanned</div>
           <div class="idle-desc" style="margin-bottom:1rem;">We need to identify the core themes in your slides before we can generate a targeted quiz.</div>
-          <button class="gen-btn" style="background:#60A5FA; width: 100%; border-radius: 10px;" onclick="discoverTopics(this)">
+          <button class="gen-btn" id="discoveryBtn" style="background:#60A5FA; width: 100%; border-radius: 10px;" onclick="discoverTopics(this)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M20 12a8 8 0 1 1-4.03-6.93"/><polyline points="20 2 20 8 14 8"/></svg>
             Identify Topics (Deep Scan)
           </button>
@@ -519,10 +520,10 @@ button{font-family:inherit;cursor:pointer;}
         {% endif %}
       </div>
 
-      <!-- Custom Topic Input (Hidden during Discovery A) -->
-      <div class="custom-topic-wrap" id="customTopicWrap" {% if not concepts %}style="display:none;"{% endif %}>
+      <!-- Custom Topic Input -->
+      <div class="custom-topic-wrap" id="customTopicWrap">
         <div class="topic-tray-label">Or specific area / chapter</div>
-        <input type="text" id="customTopicInput" class="custom-topic-input" placeholder="e.g. Chapter 4: Cellular Respiration">
+        <input type="text" id="customTopicInput" class="custom-topic-input" placeholder="e.g. Chapter 4: Cellular Respiration" oninput="updateStartButton()">
       </div>
 
       <div class="idle-chips" style="margin-top: 1.5rem;">
@@ -543,7 +544,7 @@ button{font-family:inherit;cursor:pointer;}
           🧠 Mastery<span class="diff-label">Synthesis & Reasoning</span>
         </button>
       </div>
-      <button class="gen-btn" id="genBtn" onclick="generate()" {% if not concepts %}style="display:none;"{% endif %}>
+      <button class="gen-btn" id="genBtn" onclick="generate(true)" style="display:none; transition: all 0.3s ease; opacity: 0; transform: translateY(10px);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         Generate Targeted Quiz
       </button>
@@ -566,7 +567,7 @@ button{font-family:inherit;cursor:pointer;}
     <div style="font-size:2rem;margin-bottom:.75rem;">⚠️</div>
     <div class="error-title">Couldn't generate quiz</div>
     <div class="error-msg" id="errorMsg"></div>
-    <button class="retry-btn" onclick="generate()">Try Again</button>
+    <button class="retry-btn" onclick="generate(true)">Try Again</button>
   </div>
 </div>
 
@@ -630,7 +631,7 @@ button{font-family:inherit;cursor:pointer;}
     <div class="results-title" id="resultsTitle"></div>
     <div class="results-sub" id="resultsSub"></div>
     <div class="results-btns">
-      <button class="btn-primary" onclick="generate()">
+      <button class="btn-primary" onclick="generate(true)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
         New Quiz
       </button>
@@ -688,6 +689,27 @@ function toggleAllTopics(btn) {
   const allChecked = Array.from(cbs).every(cb => cb.checked);
   cbs.forEach(cb => cb.checked = !allChecked);
   btn.textContent = allChecked ? 'Select All' : 'Deselect All';
+  updateStartButton();
+}
+
+function updateStartButton() {
+  const selectedTopics = Array.from(document.querySelectorAll('input[name="selected_topic"]:checked')).map(cb => cb.value);
+  const customTopic = document.getElementById('customTopicInput')?.value || '';
+  const genBtn = document.getElementById('genBtn');
+  
+  if (selectedTopics.length > 0 || customTopic.trim().length > 0) {
+    genBtn.style.display = 'flex';
+    setTimeout(() => {
+        genBtn.style.opacity = '1';
+        genBtn.style.transform = 'translateY(0)';
+    }, 10);
+  } else {
+    genBtn.style.opacity = '0';
+    genBtn.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+        genBtn.style.display = 'none';
+    }, 300);
+  }
 }
 
 async function discoverTopics(btn) {
@@ -702,21 +724,15 @@ async function discoverTopics(btn) {
     });
     const data = await res.json();
     if (data.success && data.concepts) {
-      const box = document.getElementById('topicDiscoveryBox');
-      let html = `
-        <div id="topicTray" class="topic-tray" style="display:block;">
-          
-          <div class="topic-tray-label" style="display:flex; justify-content:space-between; align-items:center;">
-             <span>1. Choose your Battlefield</span>
-             <button class="btn-ghost" style="font-size:10px; padding:2px 8px;" onclick="toggleAllTopics(this)">Deselect All</button>
-          </div>
-
-          <div id="topicList">`;
+      const tray = document.getElementById('topicTray');
+      const list = document.getElementById('topicList');
+      const empty = document.getElementById('discoveryEmpty');
       
+      let html = '';
       data.concepts.forEach(c => {
         html += `
           <label class="topic-item">
-            <input type="checkbox" name="selected_topic" value="${c.name}" checked>
+            <input type="checkbox" name="selected_topic" value="${c.name}" checked onchange="updateStartButton()">
             <div class="topic-meta">
               <span class="topic-name">${c.name}</span>
               <span class="topic-def">${(c.definition || "").substring(0, 90)}...</span>
@@ -724,12 +740,18 @@ async function discoverTopics(btn) {
           </label>`;
       });
       
-      html += `</div></div>`;
-      box.innerHTML = html;
+      list.innerHTML = html;
       
-      // Reveal other controls
-      document.getElementById('genBtn').style.display = 'block';
+      // Reveal tray and other controls
+      if (empty) {
+        empty.style.display = 'none';
+      }
+      tray.style.display = 'block';
+      tray.style.animation = 'trapFade 0.4s ease';
+      document.getElementById('customTopicInput').style.animation = 'trapFade 0.5s ease';
       document.getElementById('customTopicWrap').style.display = 'block';
+      
+      updateStartButton();
     } else {
       btn.innerHTML = originalHtml;
       btn.disabled = false;
@@ -742,7 +764,13 @@ async function discoverTopics(btn) {
   }
 }
 
-async function generate() {
+async function generate(manual = false) {
+  console.log("Quiz Generate Triggered. Manual:", manual);
+  if (!manual) {
+    console.warn("Automatic generate() attempt blocked.");
+    return;
+  }
+
   const selectedTopics = Array.from(document.querySelectorAll('input[name="selected_topic"]:checked')).map(cb => cb.value);
   const customTopic = document.getElementById('customTopicInput')?.value || '';
 
@@ -783,11 +811,17 @@ async function generate() {
 
 // Show topic tray if concepts exist
 document.addEventListener('DOMContentLoaded', () => {
-    const tray = document.getElementById('topicTray');
     const items = document.querySelectorAll('.topic-item');
-    if (items.length > 0 && tray) {
-        tray.style.display = 'block';
+    if (items.length > 0) {
+        updateStartButton();
     }
+    
+    // Also enable custom topic visibility even if no concepts exist (optional, but requested in plan)
+    // Actually, plan says "Start Quiz" visible after Topics are loaded OR custom provided.
+    // So we should ALWAYS show custom topic if we want the user to be able to use it without scanning.
+    // However, the "Material Not Scanned" state is very prominent. 
+    // Let's allow either path.
+    document.getElementById('customTopicWrap').style.display = 'block';
 });
 
 function loadQ() {
