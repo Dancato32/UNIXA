@@ -42,3 +42,7 @@ edge-tts
 
 # Google OAuth
 social-auth-app-django==5.4.2
+
+# Background Tasks
+celery
+redis
