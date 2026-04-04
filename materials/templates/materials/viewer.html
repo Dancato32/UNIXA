@@ -1960,7 +1960,509 @@ function pasteToNotebook(){}
 }
 .lightbox.open { display: flex; }
 .lightbox img { max-width: 95%; max-height: 95%; border-radius: 12px; box-shadow: 0 50px 100px rgba(0,0,0,0.5); }
+
+/* ═══════════════════════════════════════
+   MASTERY BREAKER — Recall Modal
+═══════════════════════════════════════ */
+#masteryBreakerOverlay {
+  position: fixed; inset: 0; z-index: 8000;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(14px);
+  display: none; align-items: center; justify-content: center; padding: 1.5rem;
+}
+#masteryBreakerOverlay.open { display: flex; }
+.mb-dialog {
+  background: #fff; border-radius: 28px;
+  padding: 2.5rem; width: 100%; max-width: 580px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+  animation: dialogSlideUp 0.35s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+}
+.mb-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  color: #15803d; font-size: 0.7rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 4px 12px; border-radius: 100px; margin-bottom: 1.25rem;
+}
+.mb-concept-name {
+  font-family: 'Poppins', sans-serif; font-weight: 900;
+  font-size: 1.55rem; color: #0f172a; line-height: 1.2; margin-bottom: 0.75rem;
+}
+.mb-prompt { font-size: 0.95rem; color:#64748b; margin-bottom: 1.5rem; line-height: 1.6; }
+.mb-textarea {
+  width: 100%; border: 1.5px solid #e2e8f0; border-radius: 16px;
+  padding: 1rem 1.25rem; font-family: inherit; font-size: 1rem;
+  color: #0f172a; resize: none; outline: none; min-height: 120px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.mb-textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+.mb-confidence-row {
+  display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem;
+}
+.mb-confidence-label { font-size: 0.8rem; font-weight: 700; color: #64748b; white-space: nowrap; }
+.mb-slider { flex: 1; accent-color: #6366f1; }
+.mb-conf-val { font-size: 0.85rem; font-weight: 800; color: #6366f1; min-width: 32px; }
+.mb-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+.mb-btn-submit {
+  flex: 1; padding: 0.875rem; background: #6366f1; color: #fff;
+  border: none; border-radius: 14px; font-family: inherit;
+  font-weight: 800; font-size: 0.95rem; cursor: pointer;
+  transition: all 0.2s;
+}
+.mb-btn-submit:hover { background: #4f46e5; transform: translateY(-1px); }
+.mb-btn-skip {
+  padding: 0.875rem 1.25rem; background: #f8fafc;
+  border: 1.5px solid #e2e8f0; border-radius: 14px; font-family: inherit;
+  font-weight: 700; font-size: 0.875rem; color: #64748b; cursor: pointer;
+  transition: all 0.2s;
+}
+.mb-btn-skip:hover { background: #f1f5f9; }
+.mb-result {
+  margin-top: 1.25rem; border-radius: 16px; padding: 1.25rem;
+  display: none;
+}
+.mb-result.pass { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.mb-result.fail { background: #fff1f2; border: 1px solid #fecdd3; }
+.mb-score-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.mb-score-big { font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2rem; }
+.mb-score-big.pass { color: #15803d; }
+.mb-score-big.fail { color: #be123c; }
+.mb-feedback-text { font-size: 0.9rem; color: #334155; line-height: 1.6; }
+.mb-prereq-warning {
+  margin-top: 0.75rem; padding: 0.75rem 1rem; background: #fff7ed;
+  border: 1px solid #fed7aa; border-radius: 10px;
+  font-size: 0.8rem; font-weight: 600; color: #92400e;
+}
+.mb-strength-bar-wrap { margin-top: 0.75rem; }
+.mb-strength-label { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; display: flex; justify-content: space-between; }
+.mb-strength-track { height: 8px; background: #e2e8f0; border-radius: 100px; overflow: hidden; }
+.mb-strength-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 100px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
+
+/* ═══════════════════════════════════════
+   CONCEPT MAP PANEL (Right Sidebar Tab)
+═══════════════════════════════════════ */
+.cm-panel { padding: 1.25rem; display: none; flex-direction: column; gap: 1rem; overflow-y: auto; flex: 1; }
+.cm-panel.active { display: flex; }
+.cm-node {
+  border: 1.5px solid #e2e8f0; border-radius: 16px;
+  padding: 1rem 1.25rem; background: #f8fafc;
+  cursor: pointer; transition: all 0.2s;
+  position: relative;
+}
+.cm-node:hover { border-color: #6366f1; background: #f0f0ff; }
+.cm-node-name { font-weight: 800; font-size: 0.95rem; color: #0f172a; margin-bottom: 0.35rem; }
+.cm-node-def { font-size: 0.8rem; color: #64748b; line-height: 1.5; }
+.cm-prereq-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.6rem; }
+.cm-chip {
+  font-size: 0.65rem; font-weight: 800; padding: 3px 10px;
+  border-radius: 100px; background: #ede9fe; color: #5b21b6;
+  border: 1px solid #ddd6fe;
+}
+.cm-strength-dot {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.cm-strength-dot.high { background: #22c55e; }
+.cm-strength-dot.mid { background: #f59e0b; }
+.cm-strength-dot.low { background: #ef4444; }
+.cm-strength-dot.none { background: #cbd5e1; }
+
+.cm-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; flex-shrink: 0;
+}
+.cm-header-title { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.95rem; color: #0f172a; }
+.cm-build-btn {
+  padding: 6px 14px; background: #6366f1; color: #fff;
+  border: none; border-radius: 100px; font-family: inherit;
+  font-size: 0.75rem; font-weight: 800; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.cm-build-btn:hover { background: #4f46e5; }
+.cm-build-btn:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+/* Sidebar Tab System */
+.right-pane-tabs {
+  display: flex; border-bottom: 1px solid #f1f5f9; flex-shrink: 0;
+}
+.rp-tab {
+  flex: 1; padding: 0.875rem; text-align: center;
+  font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #94a3b8; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+  background: none; border-top: none; border-left: none; border-right: none;
+}
+.rp-tab.active { color: #6366f1; border-bottom-color: #6366f1; }
 </style>
+
+<!-- ════════════════════════════════════
+     MASTERY BREAKER MODAL
+════════════════════════════════════ -->
+<div id="masteryBreakerOverlay">
+  <div class="mb-dialog">
+    <div class="mb-badge">🧠 Illusion of Mastery Breaker</div>
+    <div class="mb-concept-name" id="mbConceptName">Concept Name</div>
+    <div class="mb-prompt">Before we move on — explain this concept in your own words. Don't worry about being perfect. This helps lock it into memory.</div>
+    <textarea class="mb-textarea" id="mbAnswer" placeholder="Type what you know about this concept..."></textarea>
+    <div class="mb-confidence-row">
+      <span class="mb-confidence-label">How confident are you?</span>
+      <input type="range" class="mb-slider" id="mbConfidence" min="0" max="100" value="50">
+      <span class="mb-conf-val" id="mbConfVal">50%</span>
+    </div>
+    <div class="mb-result" id="mbResult">
+      <div class="mb-score-row">
+        <div class="mb-score-big" id="mbScoreBig">0</div>
+        <div>
+          <div style="font-weight:800;font-size:0.9rem;color:#0f172a;" id="mbScoreLabel">—</div>
+          <div style="font-size:0.75rem;color:#64748b;" id="mbErrorType"></div>
+        </div>
+      </div>
+      <div class="mb-feedback-text" id="mbFeedback"></div>
+      <div class="mb-prereq-warning" id="mbPrereqWarn" style="display:none;"></div>
+      <div class="mb-strength-bar-wrap" id="mbStrengthWrap" style="display:none;">
+        <div class="mb-strength-label">
+          <span>Your Mastery Strength</span>
+          <span id="mbStrengthPct">0%</span>
+        </div>
+        <div class="mb-strength-track"><div class="mb-strength-fill" id="mbStrengthFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="mb-actions">
+      <button class="mb-btn-submit" id="mbSubmitBtn" onclick="MasteryBreaker.submit()">Check My Understanding →</button>
+      <button class="mb-btn-skip" onclick="MasteryBreaker.skip()">Skip for Now</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  COGNITIVE ENGINE — Mastery Breaker & Concept Map
+//  Runs entirely on the viewer page. Hooks into existing
+//  page navigation events.
+// ════════════════════════════════════════════════════════════
+
+const MATERIAL_ID = {{ material.pk }};
+const GRAPH_URL   = `/materials/concept-graph/${MATERIAL_ID}/`;
+const GRADE_URL   = `/materials/grade-recall/`;
+const CSRF_TOKEN  = document.querySelector('[name=csrfmiddlewaretoken]')?.value 
+                    || (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+// ── State ──────────────────────────────────────────────────
+let conceptGraph    = [];       // Array of {id, name, definition, prerequisites:[ids]}
+let conceptIdMap    = {};       // id → concept object
+let shownCheckpoints= new Set();// concept ids already shown this session
+let currentConceptId= null;     // which concept is open in the breaker
+let breakerStartTime= null;     // for velocity tracking
+let graphBuilt      = false;
+let graphBuilding   = false;
+
+// ── Boot: inject sidebar tabs & concept map panel ──────────
+document.addEventListener('DOMContentLoaded', () => {
+  injectConceptMapUI();
+  buildConceptGraph();      // Eagerly build / fetch
+  hookScrollCheckpoints();  // Watch scroll position for trigger
+  wireConfidenceSlider();
+});
+
+function getCsrf() {
+  return document.querySelector('[name=csrfmiddlewaretoken]')?.value
+    || (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+}
+
+// ── 1. Inject tabs + right-panel Concept Map area ─────────
+function injectConceptMapUI() {
+  const rightPane = document.getElementById('aiSidebar');
+  if (!rightPane) return;
+
+  // Build tab bar above existing content
+  const existingPanelBody = document.getElementById('panelBody');
+  if (!existingPanelBody) return;
+
+  const tabBar = document.createElement('div');
+  tabBar.className = 'right-pane-tabs';
+  tabBar.id = 'rpTabBar';
+  tabBar.innerHTML = `
+    <button class="rp-tab active" id="tabTutor" onclick="switchTab('tutor')">AI Tutor</button>
+    <button class="rp-tab" id="tabMap" onclick="switchTab('map')">Concept Map</button>
+  `;
+
+  const mobileHeader = rightPane.querySelector('.mobile-only-header');
+  if (mobileHeader) {
+    mobileHeader.insertAdjacentElement('afterend', tabBar);
+  } else {
+    rightPane.insertBefore(tabBar, rightPane.firstChild);
+  }
+
+  // Build concept map panel
+  const cmPanel = document.createElement('div');
+  cmPanel.className = 'cm-panel';
+  cmPanel.id = 'cmPanel';
+  cmPanel.innerHTML = `
+    <div class="cm-header">
+      <span class="cm-header-title">Concept Map</span>
+      <button class="cm-build-btn" id="cmBuildBtn" onclick="buildConceptGraph(true)">Build Map</button>
+    </div>
+    <div id="cmNodes" style="display:flex;flex-direction:column;gap:0.75rem;padding:1rem;overflow-y:auto;flex:1;">
+      <div style="text-align:center;padding:2rem;color:#94a3b8;">
+        <div style="font-size:2rem;">🗺️</div>
+        <div style="font-weight:700;margin-top:0.75rem;font-size:0.9rem;">Building your concept map...</div>
+        <div style="font-size:0.8rem;margin-top:0.25rem;">This happens automatically when you load your material.</div>
+      </div>
+    </div>
+  `;
+
+  // Insert before the chat input
+  const chatWrap = rightPane.querySelector('.chat-sketch-wrap');
+  if (chatWrap) {
+    rightPane.insertBefore(cmPanel, chatWrap);
+  } else {
+    rightPane.appendChild(cmPanel);
+  }
+}
+
+function switchTab(tab) {
+  const panelBody = document.getElementById('panelBody');
+  const cmPanel   = document.getElementById('cmPanel');
+  const chatWrap  = document.querySelector('.chat-sketch-wrap');
+  const tabTutor  = document.getElementById('tabTutor');
+  const tabMap    = document.getElementById('tabMap');
+
+  if (tab === 'tutor') {
+    if (panelBody) panelBody.style.display = '';
+    if (cmPanel)  cmPanel.style.display = 'none';
+    if (chatWrap) chatWrap.style.display = '';
+    if (tabTutor) tabTutor.classList.add('active');
+    if (tabMap)   tabMap.classList.remove('active');
+  } else {
+    if (panelBody) panelBody.style.display = 'none';
+    if (cmPanel)  cmPanel.style.display = 'flex';
+    if (chatWrap) chatWrap.style.display = 'none';
+    if (tabTutor) tabTutor.classList.remove('active');
+    if (tabMap)   tabMap.classList.add('active');
+    renderConceptMapNodes();
+  }
+}
+
+// ── 2. Build or fetch concept graph from backend ───────────
+async function buildConceptGraph(force = false) {
+  if (graphBuilding) return;
+  if (graphBuilt && !force) { renderConceptMapNodes(); return; }
+  
+  graphBuilding = true;
+  const btn = document.getElementById('cmBuildBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Building...'; }
+
+  try {
+    const resp = await fetch(GRAPH_URL, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' }
+    });
+    const data = await resp.json();
+    if (data.success && data.concepts.length) {
+      conceptGraph = data.concepts;
+      conceptIdMap = {};
+      data.concepts.forEach(c => { conceptIdMap[c.id] = c; });
+      graphBuilt = true;
+      renderConceptMapNodes();
+      scheduleScrollCheckpoints();
+    }
+  } catch(e) {
+    console.warn('Concept graph fetch failed', e);
+  } finally {
+    graphBuilding = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Rebuild Map'; }
+  }
+}
+
+// ── 3. Render concept nodes in the sidebar panel ───────────
+function renderConceptMapNodes() {
+  const container = document.getElementById('cmNodes');
+  if (!container || !conceptGraph.length) return;
+
+  container.innerHTML = conceptGraph.map(c => {
+    const strength = (window._masteryStrengths && window._masteryStrengths[c.id]) || 0;
+    const dotClass = strength >= 70 ? 'high' : strength >= 40 ? 'mid' : strength > 0 ? 'low' : 'none';
+    const prereqChips = c.prerequisites.map(pid => {
+      const pre = conceptIdMap[pid];
+      return pre ? `<span class="cm-chip">← ${pre.name}</span>` : '';
+    }).join('');
+
+    return `
+      <div class="cm-node" onclick="MasteryBreaker.open(${c.id})">
+        <div class="cm-strength-dot ${dotClass}" title="Mastery: ${strength}%"></div>
+        <div class="cm-node-name">${c.name}</div>
+        <div class="cm-node-def">${c.definition.substring(0,120)}${c.definition.length > 120 ? '...' : ''}</div>
+        ${prereqChips ? `<div class="cm-prereq-chips">${prereqChips}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ── 4. Scroll-based checkpoint triggering ─────────────────
+function hookScrollCheckpoints() {
+  const leftPane = document.querySelector('.left-pane');
+  if (!leftPane) return;
+  
+  let lastScrollY = 0;
+  let scrollTimer = null;
+  
+  leftPane.addEventListener('scroll', () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      const scrollPct = leftPane.scrollTop / (leftPane.scrollHeight - leftPane.clientHeight);
+      maybeShowCheckpoint(scrollPct);
+      lastScrollY = leftPane.scrollTop;
+    }, 400);
+  });
+}
+
+function scheduleScrollCheckpoints() {
+  // Assign each concept a scroll depth trigger (evenly distributed between 20% and 75%)
+  window._checkpointMap = {};
+  const triggers = conceptGraph.map((c, i) => ({
+    concept: c,
+    depth: 0.20 + (i * (0.55 / Math.max(conceptGraph.length - 1, 1)))
+  }));
+  window._checkpointMap = triggers;
+}
+
+function maybeShowCheckpoint(scrollPct) {
+  if (!window._checkpointMap) return;
+  if (document.getElementById('masteryBreakerOverlay').classList.contains('open')) return;
+
+  for (const trig of window._checkpointMap) {
+    if (scrollPct >= trig.depth && !shownCheckpoints.has(trig.concept.id)) {
+      shownCheckpoints.add(trig.concept.id);
+      // Wait 600ms before showing so it doesn't feel jarring
+      setTimeout(() => MasteryBreaker.open(trig.concept.id), 600);
+      break; // Show one at a time
+    }
+  }
+}
+
+// ── 5. Confidence Slider ───────────────────────────────────
+function wireConfidenceSlider() {
+  const slider = document.getElementById('mbConfidence');
+  const val    = document.getElementById('mbConfVal');
+  if (slider) {
+    slider.addEventListener('input', () => { val.textContent = slider.value + '%'; });
+  }
+}
+
+// ── 6. Mastery Breaker Controller ─────────────────────────
+window.MasteryBreaker = {
+  open(conceptId) {
+    const concept = conceptIdMap[conceptId];
+    if (!concept) return;
+    
+    currentConceptId = conceptId;
+    breakerStartTime = Date.now();
+    
+    // Reset modal state
+    document.getElementById('mbConceptName').textContent = concept.name;
+    document.getElementById('mbAnswer').value = '';
+    document.getElementById('mbConfidence').value = 50;
+    document.getElementById('mbConfVal').textContent = '50%';
+    document.getElementById('mbResult').style.display = 'none';
+    document.getElementById('mbSubmitBtn').disabled = false;
+    document.getElementById('mbSubmitBtn').textContent = 'Check My Understanding →';
+    
+    document.getElementById('masteryBreakerOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('mbAnswer').focus(), 300);
+  },
+
+  skip() {
+    document.getElementById('masteryBreakerOverlay').classList.remove('open');
+    currentConceptId = null;
+  },
+
+  async submit() {
+    const answer     = document.getElementById('mbAnswer').value.trim();
+    const confidence = parseInt(document.getElementById('mbConfidence').value);
+    const timeTaken  = (Date.now() - breakerStartTime) / 1000;
+    const submitBtn  = document.getElementById('mbSubmitBtn');
+
+    if (!answer) {
+      document.getElementById('mbAnswer').focus();
+      document.getElementById('mbAnswer').style.borderColor = '#f87171';
+      setTimeout(() => { document.getElementById('mbAnswer').style.borderColor = ''; }, 1200);
+      return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = '✦ Analyzing...';
+
+    try {
+      const resp = await fetch(GRADE_URL, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          concept_id : currentConceptId,
+          answer     : answer,
+          time_taken : timeTaken,
+          confidence : confidence
+        })
+      });
+      const data = await resp.json();
+      if (!data.success) throw new Error(data.error);
+
+      // Update local mastery cache
+      if (!window._masteryStrengths) window._masteryStrengths = {};
+      window._masteryStrengths[currentConceptId] = data.new_strength;
+
+      MasteryBreaker.showResult(data);
+    } catch(e) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Check My Understanding →';
+      console.error('Grade recall failed', e);
+    }
+  },
+
+  showResult(data) {
+    const pass = data.score >= 60;
+    const resultEl = document.getElementById('mbResult');
+    resultEl.className = `mb-result ${pass ? 'pass' : 'fail'}`;
+    resultEl.style.display = 'block';
+
+    document.getElementById('mbScoreBig').textContent = data.score;
+    document.getElementById('mbScoreBig').className = `mb-score-big ${pass ? 'pass' : 'fail'}`;
+    document.getElementById('mbScoreLabel').textContent = pass ? '✓ Good Understanding' : '✗ Needs More Review';
+    document.getElementById('mbErrorType').textContent  = data.error_type !== 'None' ? `Error type: ${data.error_type}` : '';
+    document.getElementById('mbFeedback').textContent   = data.feedback;
+
+    // Prerequisite warning if they failed
+    const prereqWarn = document.getElementById('mbPrereqWarn');
+    if (!pass && data.prerequisites_failed && data.prerequisites_failed.length) {
+      prereqWarn.style.display = 'block';
+      prereqWarn.innerHTML = `⚠ Root cause: you may need to revisit <strong>${data.prerequisites_failed.join(', ')}</strong> first.`;
+    } else {
+      prereqWarn.style.display = 'none';
+    }
+
+    // Mastery strength bar
+    const strengthWrap = document.getElementById('mbStrengthWrap');
+    strengthWrap.style.display = 'block';
+    document.getElementById('mbStrengthPct').textContent = data.new_strength + '%';
+    setTimeout(() => {
+      document.getElementById('mbStrengthFill').style.width = data.new_strength + '%';
+    }, 100);
+
+    // Change button to close
+    const submitBtn = document.getElementById('mbSubmitBtn');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue Reading →';
+    submitBtn.onclick = () => {
+      document.getElementById('masteryBreakerOverlay').classList.remove('open');
+      submitBtn.onclick = () => MasteryBreaker.submit();
+      currentConceptId = null;
+      // Re-render map to update mastery dots
+      renderConceptMapNodes();
+    };
+  }
+};
+</script>

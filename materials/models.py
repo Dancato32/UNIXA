@@ -89,3 +89,36 @@ class SavedStudySong(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.genre})"
+
+
+class ConceptNode(models.Model):
+    """A distinct academic concept extracted from a StudyMaterial."""
+    material = models.ForeignKey(StudyMaterial, on_delete=models.CASCADE, related_name='concepts')
+    name = models.CharField(max_length=255)
+    definition = models.TextField(blank=True)
+    prerequisites = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='dependent_concepts')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} (from {self.material.title})"
+
+
+class StudentConceptState(models.Model):
+    """Tracks a single student's mastery of a specific concept (The Cognitive Profile Engine)."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cognitive_profile')
+    concept = models.ForeignKey(ConceptNode, on_delete=models.CASCADE, related_name='student_states')
+    
+    # The 5 Dimensions
+    concept_strength = models.IntegerField(default=0, help_text="Calculated mastery from 0 to 100")
+    confidence_calibration = models.IntegerField(default=0, help_text="Difference between self-reported confidence and actual performance")
+    error_profile = models.JSONField(default=dict, blank=True, help_text="Tracks error types (misconception, careless, etc.)")
+    response_velocity = models.FloatField(default=0.0, help_text="Average time taken to answer in seconds")
+    forgetting_risk_score = models.FloatField(default=0.0, help_text="Live score representing risk of forgetting")
+    
+    last_reviewed = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'concept')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.concept.name} (Strength: {self.concept_strength})"

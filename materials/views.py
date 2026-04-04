@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse, FileResponse, StreamingHttpResponse, HttpResponse
 from django.conf import settings
-from .models import StudyMaterial, SavedFlashcardDeck, SavedPodcast, SavedStudySong
+from .models import StudyMaterial, SavedFlashcardDeck, SavedPodcast, SavedStudySong, ConceptNode, StudentConceptState
 from .forms import StudyMaterialForm
 from ai_tutor.ai_utils import ask_ai, resolve_model
 from ai_tutor.models import ChatThread, Conversation
@@ -792,69 +792,213 @@ Summary:"""
 
 @login_required
 def quiz_view(request, pk):
-    """Dedicated page: AI-generated quiz from a study material."""
+    """Dedicated page: AI-generated interactive quiz with meta-cognitive awareness."""
     material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
-    return render(request, 'materials/quiz.html', {
-        'material': material, 'title': f'Quiz: {material.title}'
+    concepts = material.concepts.all()
+    from .models import StudentConceptState
+    
+    concept_data = []
+    for c in concepts:
+        has_risk = False
+        try:
+            state = StudentConceptState.objects.get(user=request.user, concept=c)
+            if (state.error_profile or {}).get("misconception", 0) >= 2:
+                has_risk = True
+        except StudentConceptState.DoesNotExist:
+            pass
+        
+        concept_data.append({
+            "id": c.id,
+            "name": c.name,
+            "definition": c.definition,
+            "recurrence_risk": has_risk
+        })
+    
+    return render(request, "materials/quiz.html", {
+        "material": material,
+        "title": f"Quiz: {material.title}",
+        "concepts": concept_data
     })
-
 
 @login_required
 def quiz_ajax(request, pk):
-    """AJAX: generate quiz."""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=405)
+    """AJAX: generate quiz with pattern-based rewiring and persistence escalation."""
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
     material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
     if not material.extracted_text:
-        return JsonResponse({'error': 'No text could be extracted from this material.'}, status=400)
-    prompt = f"""Create a 5-question multiple choice quiz from this study material. Be concise.
+        return JsonResponse({"error": "No text could be extracted from this material."}, status=400)
+    
+    data = {}
+    if request.body:
+        try: data = json.loads(request.body)
+        except: pass
+    
+    selected_topics = data.get("topics", [])
+    custom_topic = data.get("custom_topic", "").strip()
+    difficulty = data.get("difficulty", "academic")
+    selected_model = resolve_model(data.get("model"))
+    
+    from .models import ConceptNode, StudentConceptState
+    from django.utils import timezone
+    import datetime
+    week_ago = timezone.now() - datetime.timedelta(days=7)
+    
+    # Context building & Persistence Detection
+    context_info = ""
+    dep_info = ""
+    escalation_instructions = ""
+    
+    if selected_topics:
+        topic_objs = material.concepts.filter(name__in=selected_topics)
+        for t in topic_objs:
+            context_info += f"- {t.name}: {t.definition}\n"
+            # Detect recurrence
+            try:
+                state = StudentConceptState.objects.get(user=request.user, concept=t)
+                errors = state.error_profile or {}
+                misconception_count = errors.get("misconception", 0)
+                if misconception_count >= 2:
+                    escalation_instructions += f"- ESCALATE {t.name}: The student has a PERSISTANT MISCONCEPTION on this topic. Instead of a standard fix, use an ANALOGY or FIRST PRINCIPLES breakdown in the remediation bridge.\n"
+            except StudentConceptState.DoesNotExist:
+                pass
 
-Format EXACTLY (no extra text):
+            for prereq in t.prerequisites.all():
+                dep_info += f"  - {t.name} depends on: {prereq.name}\n"
+    
+    if custom_topic:
+        context_info += f"- FOCUS AREA: {custom_topic}\n"
+    
+    target_desc = "the entire material" if not context_info else "the specific topics listed below"
+    
+    diff_instructions = {
+        "casual": "Focus on RECALL and basic DEFINITIONS. Questions should test whether the student remembers key terms and facts. Keep language simple.",
+        "academic": "Focus on APPLICATION and WHY questions. Test understanding of how concepts work and connect to each other.",
+        "mastery": "Focus on SYNTHESIS and REASONING. Ask multi-concept questions that require deep analysis, comparison, or evaluation."
+    }
+    diff_prompt = diff_instructions.get(difficulty, diff_instructions["academic"])
+    
+    prompt = f"""You are a cognitive science assessment expert. Create a 5-question multiple choice quiz.
 
-Q1: [question]
-A. [option]
-B. [option]
-C. [option]
-D. [option]
-Answer: [A/B/C/D]
-Explanation: [one sentence why the answer is correct]
+DIFFICULTY LEVEL: {difficulty.upper()}
+{diff_prompt}
 
-Q2: ...
+{"TARGET TOPICS:\\n" + context_info if context_info else "Cover the entire material broadly."}
+{"PREREQUISITE MAP:\\n" + dep_info if dep_info else ""}
+{"URGENT ESCALATIONS:\\n" + escalation_instructions if escalation_instructions else ""}
 
-Material ({material.title}):
-{material.extracted_text[:2000]}"""
+MATERIAL TEXT (Excerpt):
+{material.extracted_text[:4000]}
+
+Return ONLY a valid JSON array. NO markdown, NO code blocks, NO extra text.
+Each object MUST have: "q", "concept", "opts", "ans", "explanation", "traps", "remediation", "dependencies".
+For "traps": map letter to {{"error_type", "trap_explanation"}}. Error Types: misconception | partial_confusion | misapplied_rule | calculation | recall | guessing.
+For "remediation": map to {{"bridge_question", "bridge_options", "bridge_answer", "bridge_explanation"}}. 
+IMPORTANT: If an ESCALATION is requested for a topic, the "bridge_explanation" MUST be an analogy or first-principles breakdown.
+
+JSON:"""
+
     try:
-        data = {}
-        if request.body:
-            try: data = json.loads(request.body)
-            except: pass
-        selected_model = resolve_model(data.get('model'))
         raw = ask_ai(prompt, user=request.user, use_rag=False, model=selected_model)
         import re
-        questions = []
-        blocks = re.split(r'\n(?=Q\d+:)', raw.strip())
-        for block in blocks:
-            q_match = re.search(r'Q\d+:\s*(.+?)(?=\nA\.)', block, re.DOTALL)
-            opts = {}
-            for letter in ['A', 'B', 'C', 'D']:
-                m = re.search(rf'{letter}\.\s*(.+?)(?=\n[A-D]\.|Answer:|$)', block, re.DOTALL)
-                if m:
-                    opts[letter] = m.group(1).strip()
-            ans_match = re.search(r'Answer:\s*([A-D])', block, re.IGNORECASE)
-            exp_match = re.search(r'Explanation:\s*(.+?)$', block, re.DOTALL | re.IGNORECASE)
-            if q_match and ans_match and len(opts) >= 2:
-                questions.append({
-                    'q': q_match.group(1).strip(),
-                    'opts': opts,
-                    'ans': ans_match.group(1).upper(),
-                    'explanation': exp_match.group(1).strip() if exp_match else ''
-                })
-        return JsonResponse({'success': True, 'questions': questions})
+        clean_raw = re.sub(r"```json\\s*|\\s*```", "", raw).strip()
+        json_start = clean_raw.find("[")
+        json_end = clean_raw.rfind("]") + 1
+        if json_start != -1 and json_end != 0:
+            clean_raw = clean_raw[json_start:json_end]
+            
+        questions = json.loads(clean_raw)
+        return JsonResponse({"success": True, "questions": questions})
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({"error": f"NEXA Quiz Generation Failed: {str(e)}"}, status=500)
+
+def quiz_report_ajax(request, pk):
+    """AJAX: process post-quiz analytics and update StudentConceptState."""
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    
+    try:
+        data = json.loads(request.body)
+    except:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    
+    results = data.get("results", [])
+    # results: [{concept, isRight, confidence, error_type, chosen}]
+    
+    concept_stats = {}
+    total_calibration_correct = 0
+    total_calibration_count = 0
+    
+    for r in results:
+        concept_name = r.get("concept", "General")
+        is_right = r.get("isRight", False)
+        confidence = r.get("confidence", 3)  # 1-5 scale
+        error_type = r.get("error_type", "unknown")
+        
+        if concept_name not in concept_stats:
+            concept_stats[concept_name] = {"correct": 0, "total": 0, "errors": [], "high_conf_wrong": 0}
+        
+        concept_stats[concept_name]["total"] += 1
+        if is_right:
+            concept_stats[concept_name]["correct"] += 1
+        else:
+            concept_stats[concept_name]["errors"].append(error_type)
+        
+        # Confidence calibration
+        total_calibration_count += 1
+        if (is_right and confidence >= 4) or (not is_right and confidence <= 2):
+            total_calibration_correct += 1
+        if not is_right and confidence >= 4:
+            concept_stats[concept_name]["high_conf_wrong"] += 1
+    
+    # Calculate calibration score
+    calibration_score = round((total_calibration_correct / max(total_calibration_count, 1)) * 100)
+    
+    # Update StudentConceptState for each concept
+    from .models import ConceptNode, StudentConceptState
+    from django.utils import timezone
+    
+    for concept_name, stats in concept_stats.items():
+        try:
+            concept_node = ConceptNode.objects.get(material=material, name__iexact=concept_name)
+            state, created = StudentConceptState.objects.get_or_create(
+                user=request.user, concept=concept_node
+            )
+            # Update strength (rolling average)
+            new_score = round((stats["correct"] / max(stats["total"], 1)) * 100)
+            if created:
+                state.concept_strength = new_score
+            else:
+                state.concept_strength = round((state.concept_strength * 0.6) + (new_score * 0.4))
+            
+            # Update error profile
+            existing_errors = state.error_profile or {}
+            for err in stats["errors"]:
+                existing_errors[err] = existing_errors.get(err, 0) + 1
+            state.error_profile = existing_errors
+            
+            # Calibration
+            state.confidence_calibration = calibration_score
+            state.last_reviewed = timezone.now()
+            state.save()
+        except ConceptNode.DoesNotExist:
+            pass  # Custom concepts without nodes are skipped
+    
+    # Build response with analytics
+    error_breakdown = {}
+    for stats in concept_stats.values():
+        for err in stats["errors"]:
+            error_breakdown[err] = error_breakdown.get(err, 0) + 1
+    
+    return JsonResponse({
+        "success": True,
+        "calibration_score": calibration_score,
+        "concept_mastery": {k: {"accuracy": round((v["correct"]/max(v["total"],1))*100), "errors": v["errors"], "overconfident": v["high_conf_wrong"]} for k, v in concept_stats.items()},
+        "error_breakdown": error_breakdown
+    })
 
 
-@login_required
 def flashcards_view(request, pk):
     """Dedicated page: AI-generated flashcards from a study material."""
     material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
@@ -1776,4 +1920,190 @@ Content:
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"SYSTEM_CRASH_LEARN_AJAX: {e}")
-        return JsonResponse({'success': False, 'error': f"NEXA Studio Server Error: {str(e)}"}, status=200) # Status 200 prevents HTML error page intercept
+
+
+@login_required
+def generate_concept_graph_ajax(request, pk):
+    """AJAX endpoint to build the Concept Dependency Graph for a material."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+        
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    
+    # If concepts already exist, return them
+    if material.concepts.exists():
+        concepts_data = []
+        for c in material.concepts.all():
+            concepts_data.append({
+                'id': c.id,
+                'name': c.name,
+                'definition': c.definition,
+                'prerequisites': list(c.prerequisites.values_list('id', flat=True))
+            })
+        return JsonResponse({'success': True, 'concepts': concepts_data})
+        
+    if not material.extracted_text:
+        return JsonResponse({'error': 'No text available for concept extraction.'}, status=400)
+
+    prompt = f"""You are a Cognitive Extraction Engine. Your task is to analyze the following study material and extract the core concepts as a Dependency Graph.
+    
+    Analyze this text: {material.extracted_text[:6000]}
+    
+    Return a strictly valid JSON object (NO Markdown, NO backticks) mapping each concept.
+    Format exactly like this example:
+    {{
+      "concepts": [
+        {{
+          "name": "Photosynthesis",
+          "definition": "The process by which green plants and some other organisms use sunlight to synthesize nutrients from carbon dioxide and water.",
+          "prerequisites": ["Chloroplasts", "Light Energy"]
+        }}
+      ]
+    }}
+    
+    Extract 5 to 10 key concepts and identify their prerequisites (if any). Ensure prerequisite names exactly match other extracted concept names.
+    JSON ONLY:"""
+    
+    try:
+        raw_response = ask_ai(prompt, user=request.user, use_rag=False)
+        # Strip markdown if AI accidentally includes it
+        import re
+        raw_response = re.sub(r'```json\s*|\s*```', '', raw_response).strip()
+        
+        # Try to find JSON object directly if trailing text exists
+        json_start = raw_response.find('{')
+        json_end = raw_response.rfind('}') + 1
+        if json_start != -1 and json_end != 0:
+            raw_response = raw_response[json_start:json_end]
+            
+        data = json.loads(raw_response)
+        
+        # Phase 1: Create all nodes
+        concept_dict = {}
+        for item in data.get('concepts', []):
+            name = item.get('name', '').strip()
+            if name:
+                node = ConceptNode.objects.create(
+                    material=material,
+                    name=name[:255],
+                    definition=item.get('definition', '')
+                )
+                concept_dict[name.lower()] = node
+                
+        # Phase 2: Link prerequisites
+        for item in data.get('concepts', []):
+            name = item.get('name', '').strip().lower()
+            if name in concept_dict:
+                node = concept_dict[name]
+                for prereq in item.get('prerequisites', []):
+                    prereq_lower = prereq.strip().lower()
+                    if prereq_lower in concept_dict and prereq_lower != name:
+                        node.prerequisites.add(concept_dict[prereq_lower])
+        
+        # Serialize response
+        concepts_data = []
+        for c in material.concepts.all():
+            concepts_data.append({
+                'id': c.id,
+                'name': c.name,
+                'definition': c.definition,
+                'prerequisites': list(c.prerequisites.values_list('id', flat=True))
+            })
+        return JsonResponse({'success': True, 'concepts': concepts_data})
+        
+    except Exception as e:
+        import traceback
+        return JsonResponse({'error': f"Failed to build concept graph: {str(e)}"}, status=500)
+
+
+@login_required
+def grade_concept_recall_ajax(request):
+    """AJAX endpoint for the Illusion of Mastery Breaker. Grades student recall."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+        concept_id = data.get('concept_id')
+        student_answer = data.get('answer', '')
+        time_taken = data.get('time_taken', 0.0) # seconds
+        self_confidence = data.get('confidence', 50) # 0-100
+        
+        concept = get_object_or_404(ConceptNode, pk=concept_id)
+        
+        # Initialize or get state
+        state, _ = StudentConceptState.objects.get_or_create(
+            user=request.user,
+            concept=concept
+        )
+        
+        # Grade the answer using AI
+        prompt = f"""You are the Nexa Cognitive Engine evaluating a student's active recall for the Illusion of Mastery Breaker.
+        
+        Concept: {concept.name}
+        Actual Definition/Key Elements: {concept.definition}
+        
+        Student's Recall Attempt: "{student_answer}"
+        
+        Return a strictly valid JSON response (NO markdown formatting) with the following structure:
+        {{
+            "score": [0-100 score based on accuracy and conceptual understanding. If completely wrong or blank, 0],
+            "feedback": "[A brief, encouraging explanation of what they missed or got right]",
+            "error_type": "[One of: 'Misconception', 'Careless', 'Blank/Guess', 'None']"
+        }}
+        """
+        
+        raw_response = ask_ai(prompt, user=request.user, use_rag=False)
+        # Clean json
+        import re
+        raw_response = re.sub(r'```json\s*|\s*```', '', raw_response).strip()
+        
+        json_start = raw_response.find('{')
+        json_end = raw_response.rfind('}') + 1
+        if json_start != -1 and json_end != 0:
+            raw_response = raw_response[json_start:json_end]
+            
+        grading_data = json.loads(raw_response)
+        
+        score = grading_data.get('score', 0)
+        feedback = grading_data.get('feedback', '')
+        error_type = grading_data.get('error_type', 'None')
+        
+        # Update Cognitive Profile metrics
+        # 1. Concept Strength (rolling average weighted towards latest)
+        if state.concept_strength == 0:
+            state.concept_strength = score
+        else:
+            state.concept_strength = int(state.concept_strength * 0.4 + score * 0.6)
+            
+        # 2. Confidence Calibration (Gap between perceived and actual)
+        state.confidence_calibration = abs(self_confidence - score)
+        
+        # 3. Response Velocity (Average time tracking)
+        if state.response_velocity == 0:
+            state.response_velocity = time_taken
+        else:
+            state.response_velocity = (state.response_velocity + time_taken) / 2
+            
+        # 4. Error Profile update
+        from django.utils import timezone
+        state.last_reviewed = timezone.now()
+        
+        error_dict = state.error_profile
+        error_dict[error_type] = error_dict.get(error_type, 0) + 1
+        state.error_profile = error_dict
+        
+        state.save()
+        
+        return JsonResponse({
+            'success': True,
+            'score': score,
+            'feedback': feedback,
+            'new_strength': state.concept_strength,
+            'error_type': error_type,
+            'prerequisites_failed': list(concept.prerequisites.values_list('name', flat=True)) if score < 60 else []
+        })
+        
+    except Exception as e:
+        import traceback
+        return JsonResponse({'error': str(e)}, status=500)

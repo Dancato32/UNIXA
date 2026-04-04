@@ -256,6 +256,196 @@ button{font-family:inherit;cursor:pointer;}
     .badge-Fast     { background: rgba(16,185,129,0.1); color: #10B981; }
     .badge-Smart    { background: rgba(59,130,246,0.1);  color: #60A5FA; }
     .badge-Powerful { background: rgba(139,92,246,0.1);  color: #A78BFA; }
+    
+    /* ── Topic Selection ── */
+    .topic-tray {
+        margin-top: 1.5rem; text-align: left;
+        max-height: 240px; overflow-y: auto;
+        padding: 4px; scrollbar-width: thin;
+        display: none; /* Shown by JS if concepts exist */
+    }
+    .topic-tray-label {
+        font-size: 11px; font-weight: 800; text-transform: uppercase;
+        color: var(--text3); margin-bottom: 8px; letter-spacing: 0.1em;
+    }
+    .topic-item {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 10px 12px; background: var(--surface2);
+        border: 1px solid var(--border); border-radius: 12px;
+        margin-bottom: 6px; cursor: pointer; transition: all 0.2s;
+    }
+    .topic-item:hover { border-color: var(--acc); background: rgba(249,115,22,0.05); }
+    .topic-item input { margin-top: 2px; accent-color: var(--acc); }
+    .topic-meta { display: flex; flex-direction: column; gap: 2px; }
+    .topic-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .topic-def { font-size: 11px; color: var(--text3); line-height: 1.4; }
+    
+    .custom-topic-wrap {
+        margin-top: 1.5rem; text-align: left;
+    }
+    .custom-topic-input {
+        width: 100%; padding: 12px 14px; background: var(--surface2);
+        border: 1.5px solid var(--border); border-radius: 12px;
+        color: var(--text); font-family: inherit; font-size: 13px;
+        outline: none; transition: 0.2s;
+    }
+    .custom-topic-input:focus { border-color: var(--acc); box-shadow: 0 0 0 4px rgba(249,115,22,0.1); }
+
+    /* ── Difficulty Selector ── */
+    .difficulty-selector {
+        display: flex; gap: 8px; margin-top: 1.25rem; justify-content: center;
+    }
+    .diff-btn {
+        flex: 1; padding: 10px 8px; background: var(--surface2);
+        border: 1.5px solid var(--border); border-radius: 12px;
+        color: var(--text2); font-size: 11px; font-weight: 700;
+        text-align: center; cursor: pointer; transition: all 0.2s;
+        font-family: inherit; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .diff-btn:hover { border-color: var(--acc); color: var(--text); }
+    .diff-btn.active { border-color: var(--acc); background: rgba(249,115,22,0.1); color: var(--acc); }
+    .diff-label { font-size: 10px; font-weight: 600; display: block; margin-top: 2px; opacity: 0.6; text-transform: none; letter-spacing: 0; }
+
+    /* ── Confidence Slider ── */
+    .confidence-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(8px); z-index: 6000;
+        display: none; align-items: center; justify-content: center;
+    }
+    .confidence-overlay.open { display: flex; }
+    .confidence-card {
+        background: var(--surface); border: 1px solid var(--border2);
+        border-radius: 20px; padding: 2rem 2.5rem; max-width: 380px; width: 90%;
+        text-align: center; animation: confSlide 0.3s ease;
+    }
+    @keyframes confSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .confidence-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .confidence-sub { font-size: 0.8125rem; color: var(--text2); margin-bottom: 1.5rem; }
+    .confidence-dots {
+        display: flex; gap: 12px; justify-content: center; margin-bottom: 1.5rem;
+    }
+    .conf-dot {
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 2px solid var(--border2); background: var(--surface2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; font-weight: 800; color: var(--text2);
+        cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .conf-dot:hover { border-color: var(--acc); color: var(--acc); transform: scale(1.1); }
+    .conf-dot.selected { border-color: var(--acc); background: var(--acc); color: #fff; transform: scale(1.15); }
+    .conf-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); margin-bottom: 1rem; }
+
+    /* ── Trap Explanation ── */
+    .trap-box {
+        margin: 0 1.5rem 0.5rem; padding: 0.75rem 1rem; border-radius: 10px;
+        background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2);
+        display: none; animation: trapFade 0.3s ease;
+    }
+    @keyframes trapFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .trap-label {
+        font-size: 0.6875rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 0.375rem;
+    }
+    .trap-text { font-size: 0.8125rem; color: #d4a574; line-height: 1.55; }
+    .trap-type-badge {
+        display: inline-block; font-size: 9px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        padding: 2px 8px; border-radius: 10px; margin-bottom: 6px;
+        background: rgba(245,158,11,0.15); color: var(--yellow);
+    }
+
+    /* ── Remediation Bridge ── */
+    .bridge-box {
+        margin: 0 1.5rem 0.75rem; padding: 1rem; border-radius: 12px;
+        background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);
+        display: none; animation: trapFade 0.4s ease;
+    }
+    .bridge-label {
+        font-size: 0.6875rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.08em; color: #60A5FA; margin-bottom: 0.5rem;
+    }
+    .bridge-q { font-size: 0.875rem; font-weight: 600; color: var(--text); margin-bottom: 0.75rem; line-height: 1.5; }
+    .bridge-opts { display: flex; flex-direction: column; gap: 6px; }
+    .bridge-opt {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 10px; background: var(--surface2);
+        border: 1.5px solid var(--border); border-radius: 8px;
+        color: #aaa; font-size: 0.8125rem; cursor: pointer;
+        transition: all 0.15s; font-family: inherit; text-align: left; width: 100%;
+    }
+    .bridge-opt:hover:not(:disabled) { border-color: #60A5FA; color: var(--text); }
+    .bridge-opt:disabled { cursor: default; }
+    .bridge-opt.b-correct { border-color: var(--green); background: rgba(34,197,94,0.08); color: #86efac; }
+    .bridge-opt.b-wrong { border-color: var(--red); background: rgba(239,68,68,0.08); color: #fca5a5; }
+    .bridge-opt-letter {
+        width: 24px; height: 24px; border-radius: 50%;
+        border: 1.5px solid var(--border2); display: flex;
+        align-items: center; justify-content: center;
+        font-size: 0.6875rem; font-weight: 700; flex-shrink: 0;
+    }
+    .bridge-result { margin-top: 0.75rem; font-size: 0.8125rem; color: #86efac; line-height: 1.5; display: none; }
+
+    /* ── Mastery Analytics (Results) ── */
+    .analytics-card {
+        background: var(--surface); border: 1px solid var(--border2);
+        border-radius: 20px; padding: 1.75rem 1.5rem; max-width: 480px;
+        width: 100%; text-align: left;
+    }
+    .analytics-title {
+        font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.1em; color: var(--text3); margin-bottom: 1rem;
+    }
+    .calibration-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 0.75rem 1rem; background: var(--surface2);
+        border: 1px solid var(--border); border-radius: 12px;
+        margin-bottom: 10px;
+    }
+    .cal-icon { font-size: 1.25rem; }
+    .cal-info { flex: 1; }
+    .cal-label { font-size: 0.75rem; color: var(--text2); }
+    .cal-value { font-size: 1.125rem; font-weight: 800; }
+    .cal-warn { font-size: 0.6875rem; color: var(--yellow); margin-top: 2px; }
+
+    .error-breakdown { margin-top: 12px; }
+    .error-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 12px; border-bottom: 1px solid var(--border);
+    }
+    .error-row:last-child { border-bottom: none; }
+    .error-type-name { font-size: 0.8125rem; font-weight: 600; color: var(--text); text-transform: capitalize; }
+    .error-count {
+        font-size: 0.75rem; font-weight: 800; color: var(--acc);
+        background: rgba(249,115,22,0.1); padding: 2px 10px;
+        border-radius: 10px;
+    }
+
+    .concept-mastery-list { margin-top: 12px; }
+    .mastery-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 12px; background: var(--surface2);
+        border: 1px solid var(--border); border-radius: 12px;
+        margin-bottom: 6px;
+    }
+    .mastery-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .mastery-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+    .mastery-name { font-size: 0.8125rem; font-weight: 600; color: var(--text); min-width: 100px; }
+    .mastery-pct { font-size: 0.75rem; font-weight: 800; min-width: 36px; text-align: right; }
+    .mastery-badge {
+        font-size: 8px; font-weight: 800; text-transform: uppercase;
+        padding: 2px 6px; border-radius: 8px; letter-spacing: 0.05em;
+    }
+    .topic-item.risk-active { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.03); }
+    .risk-badge {
+        font-size: 8px; font-weight: 800; text-transform: uppercase;
+        color: var(--red); background: rgba(239,68,68,0.1);
+        padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.2);
+    }
+    .spinner-sm {
+        width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff; border-radius: 50%;
+        animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
+    }
 </style>
 </head>
 <body style="display:flex;flex-direction:column;height:100vh;">
@@ -284,16 +474,78 @@ button{font-family:inherit;cursor:pointer;}
       <div class="idle-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       </div>
-      <div class="idle-title">Quiz: {{ material.title }}</div>
-      <div class="idle-desc">5 multiple-choice questions generated from your material. Wrong answers show an explanation so you learn from mistakes.</div>
-      <div class="idle-chips">
-        <span class="idle-chip">5 Questions</span>
-        <span class="idle-chip">Multiple Choice</span>
-        <span class="idle-chip">Instant Feedback</span>
+      <div class="idle-title">Quiz Studio</div>
+      <div class="idle-desc">Focus your session by selecting specific topics or a custom chapter below. AI will generate 5 targeted questions.</div>
+      
+      <!-- Topic Selection Tray -->
+      <div id="topicDiscoveryBox">
+        {% if concepts %}
+        <div id="topicTray" class="topic-tray" style="display:block;">
+          
+          <div class="topic-tray-label" style="display:flex; justify-content:space-between; align-items:center;">
+             <span>1. Choose your Battlefield</span>
+             <button class="btn-ghost" style="font-size:10px; padding:2px 8px;" onclick="toggleAllTopics(this)">Deselect All</button>
+          </div>
+
+          <div id="topicList">
+            {% for concept in concepts %}
+            <label class="topic-item {% if concept.recurrence_risk %}risk-active{% endif %}">
+              <input type="checkbox" name="selected_topic" value="{{ concept.name }}" checked>
+              <div class="topic-meta">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span class="topic-name">{{ concept.name }}</span>
+                  {% if concept.recurrence_risk %}
+                  <span class="risk-badge">⚠️ Recurrence Risk</span>
+                  {% endif %}
+                </div>
+                <span class="topic-def">{{ concept.definition|truncatechars:90 }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <div class="discovery-empty-state" id="discoveryEmpty">
+          <div class="idle-icon" style="background:rgba(59,130,246,0.1); margin-top:1rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <div class="idle-title" style="font-size:1rem;">Material Not Scanned</div>
+          <div class="idle-desc" style="margin-bottom:1rem;">We need to identify the core themes in your slides before we can generate a targeted quiz.</div>
+          <button class="gen-btn" style="background:#60A5FA; width: 100%; border-radius: 10px;" onclick="discoverTopics(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M20 12a8 8 0 1 1-4.03-6.93"/><polyline points="20 2 20 8 14 8"/></svg>
+            Identify Topics (Deep Scan)
+          </button>
+        </div>
+        {% endif %}
       </div>
-      <button class="gen-btn" onclick="generate()">
+
+      <!-- Custom Topic Input (Hidden during Discovery A) -->
+      <div class="custom-topic-wrap" id="customTopicWrap" {% if not concepts %}style="display:none;"{% endif %}>
+        <div class="topic-tray-label">Or specific area / chapter</div>
+        <input type="text" id="customTopicInput" class="custom-topic-input" placeholder="e.g. Chapter 4: Cellular Respiration">
+      </div>
+
+      <div class="idle-chips" style="margin-top: 1.5rem;">
+        <span class="idle-chip">5 Questions</span>
+        <span class="idle-chip">Interactive Feedback</span>
+      </div>
+
+      
+      <!-- Difficulty Selector -->
+      <div class="difficulty-selector" id="difficultySelector">
+        <button class="diff-btn" data-diff="casual" onclick="setDifficulty(this)">
+          🎯 Casual<span class="diff-label">Recall & Definitions</span>
+        </button>
+        <button class="diff-btn active" data-diff="academic" onclick="setDifficulty(this)">
+          📚 Academic<span class="diff-label">Application & Why</span>
+        </button>
+        <button class="diff-btn" data-diff="mastery" onclick="setDifficulty(this)">
+          🧠 Mastery<span class="diff-label">Synthesis & Reasoning</span>
+        </button>
+      </div>
+      <button class="gen-btn" id="genBtn" onclick="generate()" {% if not concepts %}style="display:none;"{% endif %}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        Generate Quiz
+        Generate Targeted Quiz
       </button>
     </div>
   </div>
@@ -350,6 +602,17 @@ button{font-family:inherit;cursor:pointer;}
       <div class="exp-label" id="expLabel"></div>
       <div id="expText"></div>
     </div>
+    <div class="trap-box" id="trapBox">
+      <div class="trap-type-badge" id="trapTypeBadge"></div>
+      <div class="trap-label">🔍 Common Trap</div>
+      <div class="trap-text" id="trapText"></div>
+    </div>
+    <div class="bridge-box" id="bridgeBox">
+      <div class="bridge-label">🌉 Bridge to Understanding</div>
+      <div class="bridge-q" id="bridgeQ"></div>
+      <div class="bridge-opts" id="bridgeOpts"></div>
+      <div class="bridge-result" id="bridgeResult"></div>
+    </div>
     <div class="q-footer">
       <button class="skip-btn" id="skipBtn" onclick="skip()">Skip</button>
       <button class="proceed-btn" id="proceedBtn" onclick="proceed()" disabled>Proceed</button>
@@ -374,23 +637,120 @@ button{font-family:inherit;cursor:pointer;}
       <button class="btn-ghost" onclick="reviewMode()">Review Answers</button>
     </div>
   </div>
+  <!-- Mastery Analytics Card -->
+  <div class="analytics-card" id="analyticsCard" style="display:none;">
+    <div class="analytics-title">🧠 Pattern Intelligence Report</div>
+    
+    <div class="calibration-row" id="calibrationRow">
+      <div class="cal-icon">🎯</div>
+      <div class="cal-info">
+        <div class="cal-label">Confidence Calibration</div>
+        <div class="cal-value" id="calScore">—</div>
+        <div class="cal-warn" id="calWarn" style="display:none;"></div>
+      </div>
+    </div>
+    
+    <div class="analytics-title" style="margin-top:1rem;">Error Type Breakdown</div>
+    <div class="error-breakdown" id="errorBreakdown"></div>
+    
+    <div class="analytics-title" style="margin-top:1rem;">Concept Mastery</div>
+    <div class="concept-mastery-list" id="conceptMasteryList"></div>
+  </div>
 </div>
 
 <script>
 const AJAX_URL = '{% url "quiz_ajax" material.pk %}';
+const REPORT_URL = '{% url "quiz_report_ajax" material.pk %}';
 const WIKI_URL = '{% url "wiki_image_ajax" %}';
 const MODELS_URL = '{% url "ai_get_models" %}';
 const CSRF     = '{{ csrf_token }}';
 const MAT_TEXT = `{{ material.extracted_text|default:""|escapejs }}`;
 
 let questions = [], idx = 0, score = 0, answered = 0, userAnswers = [];
+let selectedDifficulty = 'academic';
+let pendingChoice = null; // Holds chosen letter until confidence is submitted
+let confidenceRatings = []; // Per-question confidence
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
+function setDifficulty(btn) {
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedDifficulty = btn.dataset.diff;
+}
+
+
+function toggleAllTopics(btn) {
+  const cbs = document.querySelectorAll('input[name="selected_topic"]');
+  const allChecked = Array.from(cbs).every(cb => cb.checked);
+  cbs.forEach(cb => cb.checked = !allChecked);
+  btn.textContent = allChecked ? 'Select All' : 'Deselect All';
+}
+
+async function discoverTopics(btn) {
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner-sm"></span> Analyzing Slides...`;
+  
+  try {
+    const res = await fetch('{% url "generate_concept_graph_ajax" material.pk %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success && data.concepts) {
+      const box = document.getElementById('topicDiscoveryBox');
+      let html = `
+        <div id="topicTray" class="topic-tray" style="display:block;">
+          
+          <div class="topic-tray-label" style="display:flex; justify-content:space-between; align-items:center;">
+             <span>1. Choose your Battlefield</span>
+             <button class="btn-ghost" style="font-size:10px; padding:2px 8px;" onclick="toggleAllTopics(this)">Deselect All</button>
+          </div>
+
+          <div id="topicList">`;
+      
+      data.concepts.forEach(c => {
+        html += `
+          <label class="topic-item">
+            <input type="checkbox" name="selected_topic" value="${c.name}" checked>
+            <div class="topic-meta">
+              <span class="topic-name">${c.name}</span>
+              <span class="topic-def">${(c.definition || "").substring(0, 90)}...</span>
+            </div>
+          </label>`;
+      });
+      
+      html += `</div></div>`;
+      box.innerHTML = html;
+      
+      // Reveal other controls
+      document.getElementById('genBtn').style.display = 'block';
+      document.getElementById('customTopicWrap').style.display = 'block';
+    } else {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+      alert("Discovery failed: " + (data.error || "Unknown error"));
+    }
+  } catch (e) {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    alert("Network error during discovery");
+  }
+}
+
 async function generate() {
+  const selectedTopics = Array.from(document.querySelectorAll('input[name="selected_topic"]:checked')).map(cb => cb.value);
+  const customTopic = document.getElementById('customTopicInput')?.value || '';
+
+  if (selectedTopics.length === 0 && !customTopic.trim()) {
+    alert("Please select at least one topic or enter a custom focus area to begin.");
+    return;
+  }
+
   showScreen('loadingScreen');
   document.getElementById('scoreChip').style.display = 'none';
   document.getElementById('progressCounter').textContent = '';
@@ -398,12 +758,17 @@ async function generate() {
     const res = await fetch(AJAX_URL, {
       method: 'POST',
       headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: NexaModel.current })
+      body: JSON.stringify({ 
+        model: NexaModel.current,
+        topics: selectedTopics,
+        custom_topic: customTopic,
+        difficulty: selectedDifficulty
+      })
     });
     const data = await res.json();
     if (data.success && data.questions && data.questions.length > 0) {
       questions = data.questions;
-      idx = 0; score = 0; answered = 0; userAnswers = [];
+      idx = 0; score = 0; answered = 0; userAnswers = []; confidenceRatings = [];
       loadQ();
       showScreen('quizScreen');
     } else {
@@ -415,6 +780,15 @@ async function generate() {
     showScreen('errorScreen');
   }
 }
+
+// Show topic tray if concepts exist
+document.addEventListener('DOMContentLoaded', () => {
+    const tray = document.getElementById('topicTray');
+    const items = document.querySelectorAll('.topic-item');
+    if (items.length > 0 && tray) {
+        tray.style.display = 'block';
+    }
+});
 
 function loadQ() {
   const q = questions[idx];
@@ -437,7 +811,7 @@ function loadQ() {
     const chunk = 700, len = MAT_TEXT.length;
     const start = Math.max(0, Math.floor((idx / total) * len) - 100);
     document.getElementById('passageText').textContent =
-      MAT_TEXT.substring(start, start + chunk).trim() + (len > chunk ? '…' : '');
+      MAT_TEXT.substring(start, start + chunk).trim() + (len > chunk ? '\u2026' : '');
   } else {
     document.getElementById('passageText').textContent = 'No passage available.';
   }
@@ -455,13 +829,15 @@ function loadQ() {
     btn.className = 'opt-btn';
     btn.dataset.letter = letter;
     btn.innerHTML = `<span class="opt-letter">${letter}</span><span>${text}</span>`;
-    btn.onclick = () => pick(letter);
+    btn.onclick = () => onOptionClick(letter);
     wrap.appendChild(btn);
   });
 
   // reset state
   const exp = document.getElementById('expBox');
   exp.style.display = 'none'; exp.className = 'exp-box';
+  document.getElementById('trapBox').style.display = 'none';
+  document.getElementById('bridgeBox').style.display = 'none';
   document.getElementById('proceedBtn').disabled = true;
   document.getElementById('proceedBtn').textContent = idx < total - 1 ? 'Proceed' : 'Finish';
   document.getElementById('skipBtn').style.display = 'inline-block';
@@ -470,7 +846,27 @@ function loadQ() {
   document.getElementById('qBody').scrollTop = 0;
 }
 
-function pick(chosen) {
+// ── Confidence Flow ──
+function onOptionClick(letter) {
+  pendingChoice = letter;
+  // Show confidence overlay
+  document.querySelectorAll('.conf-dot').forEach(d => d.classList.remove('selected'));
+  document.getElementById('confidenceOverlay').classList.add('open');
+}
+
+function submitConfidence(level) {
+  document.querySelectorAll('.conf-dot').forEach(d => d.classList.remove('selected'));
+  document.querySelector(`.conf-dot[data-conf="${level}"]`).classList.add('selected');
+  confidenceRatings[idx] = level;
+  
+  setTimeout(() => {
+    document.getElementById('confidenceOverlay').classList.remove('open');
+    pick(pendingChoice, level);
+    pendingChoice = null;
+  }, 250);
+}
+
+function pick(chosen, confidence) {
   const q = questions[idx];
   const correct = q.ans;
   document.querySelectorAll('.opt-btn').forEach(b => {
@@ -482,12 +878,20 @@ function pick(chosen) {
   const isRight = chosen === correct;
   answered++;
   if (isRight) score++;
-  userAnswers[idx] = { chosen, correct, isRight };
+  
+  // Determine error type for wrong answers
+  let errorType = 'unknown';
+  if (!isRight && q.traps && q.traps[chosen]) {
+    errorType = q.traps[chosen].error_type || 'unknown';
+  }
+  
+  userAnswers[idx] = { chosen, correct, isRight, confidence: confidence || 3, concept: q.concept || 'General', error_type: errorType };
 
   const chip = document.getElementById('scoreChip');
   chip.style.display = 'inline-block';
   chip.textContent = `${score} / ${answered}`;
 
+  // Standard explanation
   const exp = document.getElementById('expBox');
   document.getElementById('expText').textContent =
     q.explanation || (isRight ? '' : `The correct answer is ${correct}: ${q.opts[correct]}`);
@@ -496,6 +900,36 @@ function pick(chosen) {
     exp.className = 'exp-box wrong-exp';
     document.getElementById('expLabel').textContent = `Correct answer: ${correct}`;
     exp.style.display = 'block';
+    
+    // ── Show Trap ──
+    if (q.traps && q.traps[chosen]) {
+      const trap = q.traps[chosen];
+      const trapBox = document.getElementById('trapBox');
+      document.getElementById('trapTypeBadge').textContent = (trap.error_type || 'error').replace('_', ' ');
+      document.getElementById('trapText').textContent = trap.trap_explanation || '';
+      trapBox.style.display = 'block';
+    }
+    
+    // ── Show Remediation Bridge ──
+    if (q.remediation && q.remediation.bridge_question) {
+      const bridge = q.remediation;
+      const bridgeBox = document.getElementById('bridgeBox');
+      document.getElementById('bridgeQ').textContent = bridge.bridge_question;
+      document.getElementById('bridgeResult').style.display = 'none';
+      
+      const optsWrap = document.getElementById('bridgeOpts');
+      optsWrap.innerHTML = '';
+      const bridgeOpts = bridge.bridge_options || {};
+      Object.entries(bridgeOpts).forEach(([letter, text]) => {
+        const btn = document.createElement('button');
+        btn.className = 'bridge-opt';
+        btn.innerHTML = `<span class="bridge-opt-letter">${letter}</span><span>${text}</span>`;
+        btn.onclick = () => pickBridge(letter, bridge.bridge_answer, bridge.bridge_explanation);
+        optsWrap.appendChild(btn);
+      });
+      bridgeBox.style.display = 'block';
+    }
+    
   } else if (q.explanation) {
     exp.className = 'exp-box right-exp';
     document.getElementById('expLabel').textContent = 'Correct!';
@@ -506,19 +940,36 @@ function pick(chosen) {
   document.getElementById('skipBtn').style.display = 'none';
 }
 
+function pickBridge(chosen, correctAns, explanation) {
+  document.querySelectorAll('.bridge-opt').forEach(b => {
+    b.disabled = true;
+    const letter = b.querySelector('.bridge-opt-letter').textContent;
+    if (letter === correctAns) b.classList.add('b-correct');
+    if (letter === chosen && chosen !== correctAns) b.classList.add('b-wrong');
+  });
+  const result = document.getElementById('bridgeResult');
+  if (chosen === correctAns) {
+    result.innerHTML = `<span style="color:#86efac;">✓ Correct!</span> ${explanation || ''}`;
+  } else {
+    result.innerHTML = `<span style="color:#fca5a5;">✗ Not quite.</span> The answer is <strong>${correctAns}</strong>. ${explanation || ''}`;
+  }
+  result.style.display = 'block';
+}
+
 function proceed() {
   if (idx < questions.length - 1) { idx++; loadQ(); }
   else showResults();
 }
 
 function skip() {
-  userAnswers[idx] = { chosen: null, correct: questions[idx].ans, isRight: false };
+  userAnswers[idx] = { chosen: null, correct: questions[idx].ans, isRight: false, confidence: 0, concept: questions[idx].concept || 'General', error_type: 'guessing' };
+  confidenceRatings[idx] = 0;
   answered++;
   if (idx < questions.length - 1) { idx++; loadQ(); }
   else showResults();
 }
 
-function showResults() {
+async function showResults() {
   const total = questions.length;
   const pct = Math.round((score / total) * 100);
   document.getElementById('resultsPct').textContent = pct + '%';
@@ -532,11 +983,88 @@ function showResults() {
   else { ring.style.borderColor = 'var(--red)'; pctEl.style.color = '#f87171'; }
   document.getElementById('progressFill').style.width = '100%';
   showScreen('resultsScreen');
+  
+  // ── Send analytics to backend ──
+  try {
+    const reportRes = await fetch(REPORT_URL, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ results: userAnswers })
+    });
+    const report = await reportRes.json();
+    if (report.success) {
+      renderAnalytics(report);
+    }
+  } catch(e) {
+    console.warn('Analytics report failed:', e);
+  }
+}
+
+function renderAnalytics(report) {
+  const card = document.getElementById('analyticsCard');
+  card.style.display = 'block';
+  
+  // Calibration
+  const calScore = report.calibration_score || 0;
+  const calEl = document.getElementById('calScore');
+  calEl.textContent = calScore + '%';
+  calEl.style.color = calScore >= 70 ? 'var(--green)' : calScore >= 40 ? 'var(--yellow)' : 'var(--red)';
+  
+  const calWarn = document.getElementById('calWarn');
+  if (calScore < 50) {
+    calWarn.textContent = '⚠ Overconfidence detected — you were confident on wrong answers.';
+    calWarn.style.display = 'block';
+  } else if (calScore >= 80) {
+    calWarn.textContent = '✓ Well calibrated — your confidence matches your accuracy.';
+    calWarn.style.color = 'var(--green)';
+    calWarn.style.display = 'block';
+  }
+  
+  // Error breakdown
+  const errDiv = document.getElementById('errorBreakdown');
+  errDiv.innerHTML = '';
+  const errors = report.error_breakdown || {};
+  if (Object.keys(errors).length === 0) {
+    errDiv.innerHTML = '<div style="padding:12px;color:var(--green);font-size:0.8125rem;">✓ No errors detected — perfect score!</div>';
+  } else {
+    const errLabels = {
+      misconception: '🔴 Misconception — Believes wrong rule',
+      partial_confusion: '🟠 Partial Confusion — Missing key detail',
+      misapplied_rule: '🟡 Misapplied Rule — Wrong context',
+      calculation: '🔵 Calculation — Step/arithmetic error',
+      recall: '⚪ Recall — Forgot the fact',
+      guessing: '⚫ Guessing — No strategy used'
+    };
+    Object.entries(errors).forEach(([type, count]) => {
+      const row = document.createElement('div');
+      row.className = 'error-row';
+      row.innerHTML = `<span class="error-type-name">${errLabels[type] || type}</span><span class="error-count">${count}x</span>`;
+      errDiv.appendChild(row);
+    });
+  }
+  
+  // Concept mastery
+  const masteryDiv = document.getElementById('conceptMasteryList');
+  masteryDiv.innerHTML = '';
+  const mastery = report.concept_mastery || {};
+  Object.entries(mastery).forEach(([name, data]) => {
+    const acc = data.accuracy || 0;
+    const color = acc >= 80 ? 'var(--green)' : acc >= 50 ? 'var(--yellow)' : 'var(--red)';
+    const item = document.createElement('div');
+    item.className = 'mastery-item';
+    item.innerHTML = `
+      <span class="mastery-name">${name}</span>
+      <div class="mastery-bar-wrap"><div class="mastery-bar-fill" style="width:${acc}%;background:${color};"></div></div>
+      <span class="mastery-pct" style="color:${color};">${acc}%</span>
+      ${data.overconfident > 0 ? '<span class="mastery-badge" style="background:rgba(245,158,11,0.15);color:var(--yellow);">⚠ Overconfident</span>' : ''}
+    `;
+    masteryDiv.appendChild(item);
+  });
 }
 
 function reviewMode() {
   idx = 0; loadQ();
-  setTimeout(() => { const ua = userAnswers[0]; if (ua && ua.chosen) pick(ua.chosen); }, 50);
+  setTimeout(() => { const ua = userAnswers[0]; if (ua && ua.chosen) pick(ua.chosen, ua.confidence); }, 50);
   showScreen('quizScreen');
 }
 
@@ -570,10 +1098,28 @@ async function fetchWikiImage(questionText) {
   }
 }
 
-generate();
+// Remove the automatic trigger to allow topic selection first.
+ 
+
 // Preload models
 setTimeout(() => ModelPicker.load(MODELS_URL), 600);
 </script>
 <script src="/static/js/nexa_models.js"></script>
+
+<!-- Confidence Calibration Overlay -->
+<div class="confidence-overlay" id="confidenceOverlay">
+  <div class="confidence-card">
+    <div class="confidence-title">How confident are you?</div>
+    <div class="confidence-sub">Rate before seeing the answer</div>
+    <div class="confidence-dots">
+      <button class="conf-dot" data-conf="1" onclick="submitConfidence(1)">1</button>
+      <button class="conf-dot" data-conf="2" onclick="submitConfidence(2)">2</button>
+      <button class="conf-dot" data-conf="3" onclick="submitConfidence(3)">3</button>
+      <button class="conf-dot" data-conf="4" onclick="submitConfidence(4)">4</button>
+      <button class="conf-dot" data-conf="5" onclick="submitConfidence(5)">5</button>
+    </div>
+    <div class="conf-labels"><span>Guessing</span><span>Certain</span></div>
+  </div>
+</div>
 </body>
 </html>

@@ -20,6 +20,7 @@ urlpatterns = [
     path('summarize/<int:pk>/ajax/', views.summarize_ajax, name='summarize_ajax'),
     path('quiz/<int:pk>/', views.quiz_view, name='quiz_material'),
     path('quiz/<int:pk>/ajax/', views.quiz_ajax, name='quiz_ajax'),
+    path('quiz/<int:pk>/report/', views.quiz_report_ajax, name='quiz_report_ajax'),
     path('flashcards/<int:pk>/', views.flashcards_view, name='flashcards_material'),
     path('flashcards/<int:pk>/ajax/', views.flashcards_ajax, name='flashcards_ajax'),
     path('flashcards/<int:pk>/save/', views.flashcards_save, name='flashcards_save'),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('wiki-image/', views.wiki_image_ajax, name='wiki_image_ajax'),
     path('learn/<int:pk>/', views.learn_view, name='learn_material'),
     path('learn/<int:pk>/ajax/', views.learn_ajax, name='learn_ajax'),
+    path('concept-graph/<int:pk>/', views.generate_concept_graph_ajax, name='generate_concept_graph_ajax'),
+    path('grade-recall/', views.grade_concept_recall_ajax, name='grade_concept_recall_ajax'),
 ]
-
 
