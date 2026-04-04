@@ -1,1351 +1,564 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Essay Generator â€” NEXA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Essay Studio — CLUTCH STUDIO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --bg:#f7f7f5;--surface:#fff;--surface2:#f0f0ec;--surface3:#e8e8e4;
-  --border:#e8e8e4;--border2:#ddd;--text:#1a1a1a;--text2:#555;--text3:#999;
-  --blue:#3b82f6;--green:#16a34a;--purple:#7c3aed;--orange:#f97316;
-  --sidebar-w:232px;
+:root {
+  --studio-bg: #0b0e14;
+  --studio-surface: #161b22;
+  --studio-border: rgba(255, 255, 255, 0.05);
+  --studio-accent: #3b82f6;
+  --studio-accent-glow: rgba(59, 130, 246, 0.2);
+  --studio-text: #ffffff;
+  --studio-text-dim: #8b949e;
+  --sidebar-w: 280px;
+  --pane-w: 420px;
+  --radius: 32px; /* Key tactile vibe requirement */
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;}
 
-/* Sidebar (Standardized Redesign) */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-body); background: var(--studio-bg); color: var(--studio-text);
+  height: 100vh; display: flex; overflow: hidden; -webkit-font-smoothing: antialiased;
+}
+
+/* 🌀 Mesh Background */
+.mesh-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: #050508; }
+.mesh-circle { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15; animation: float 20s infinite alternate; }
+.c1 { width: 600px; height: 600px; background: #3b82f6; top: -10%; left: -10%; }
+.c2 { width: 500px; height: 500px; background: #7c3aed; bottom: -10%; right: -10%; animation-delay: -5s; }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(100px, 50px); } }
+
+/* ── SIDEBAR ── */
 .sidebar {
-  width: var(--sidebar-w); background: #0b0b0f;
-  border-right: 1px solid rgba(255,255,255,0.05);
-  display: flex; flex-direction: column; flex-shrink: 0;
-  z-index: 1500; height: 100vh; position: relative;
+  width: var(--sidebar-w); background: rgba(11, 14, 20, 0.85); backdrop-filter: blur(30px);
+  border-right: 1px solid var(--studio-border); display: flex; flex-direction: column; z-index: 100;
 }
-.sidebar-header { padding: 1.5rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.sidebar-logo-icon { color: #818cf8; font-size: 1.25rem; line-height: 1; display:flex; align-items:center; justify-content:center;}
-.sidebar-logo-text { font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
-
-.sidebar-section-label { font-size: .625rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #4b4b5a; padding: 1.5rem 1.25rem 0.75rem; }
-
-.sidebar-nav { flex: 1; overflow-y: auto; padding: 0.5rem 0; scrollbar-width: none; display:flex; flex-direction:column; }
-.sidebar-nav::-webkit-scrollbar { display: none; }
-
-.nav-item { display: flex; align-items: center; gap: 1rem; padding: .75rem 1.25rem; margin: 0.125rem 0.75rem; border-radius: 12px; color: #8a8a93; font-size: .9375rem; font-weight: 600; transition: all 0.2s ease; text-decoration: none; border: none; background: none; width: calc(100% - 1.5rem); text-align: left; }
-.nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
-.nav-item.active { background: rgba(129, 140, 248, 0.1); color: #818cf8; font-weight: 700; }
-.nav-item svg { width: 20px; height: 20px; stroke-width: 2px; flex-shrink: 0; }
-.nav-item.active svg { color: #818cf8; stroke-width: 2.5px; }
-
-.sidebar-footer { padding: 1.25rem; display: flex; align-items: center; gap: .75rem; border-top: 1px solid rgba(255,255,255,0.05); }
-.sidebar-avatar { width: 40px; height: 40px; border-radius: 50%; background: #334455; display: flex; align-items: center; justify-content: center; font-size: .875rem; font-weight: 800; color: #fff; flex-shrink: 0; overflow: hidden; }
-.sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.sidebar-footer-info { flex: 1; min-width: 0; }
-.sidebar-user-name { font-size: .9375rem; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
-.sidebar-user-status { font-size: .75rem; color: #4b4b5a; margin-top: 1px; }
-
-/* Main layout wrapper */
-.main-content { display:flex; flex-direction:column; flex:1; overflow:hidden; }
-
-/* Minimal topbar â€” logo + avatar only, no nav links */
-.topnav{display:flex;align-items:center;justify-content:space-between;height:48px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.25rem;position:sticky;top:0;z-index:200;flex-shrink:0;}
-.topnav-logo{font-size:.9375rem;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem;}
-.topnav-logo-icon{width:26px;height:26px;background:linear-gradient(135deg,#f97316,#fb923c);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;color:#fff;}
-.topnav-right{display:flex;align-items:center;gap:.5rem;}
-.topnav-back{display:flex;align-items:center;gap:.35rem;padding:.3rem .65rem;color:var(--text2);text-decoration:none;font-size:.775rem;font-weight:500;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);transition:all .15s;}
-.topnav-back:hover{background:var(--surface3);color:var(--text);}
-.topnav-back svg{width:13px;height:13px;}
-.mode-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
-.mode-tab{flex:1;padding:.6rem .2rem;font-size:.65rem;font-weight:700;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:.2rem;border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.04em;}
-.mode-tab svg{width:13px;height:13px;}
-.mode-tab:hover{color:var(--text2);}
-.mode-tab.active.tab-generate{border-bottom-color:#f97316;color:#f97316;}
-.mode-tab.active.tab-guidance{border-bottom-color:#16a34a;color:#16a34a;}
-.mode-tab.active.tab-improver{border-bottom-color:#7c3aed;color:#7c3aed;}
-
-/* Panel panes */
-.panel-pane{display:none;flex:1;overflow-y:auto;flex-direction:column;}
-.panel-pane.active{display:flex;}
-.panel-pane::-webkit-scrollbar{width:4px;}
-.panel-pane::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.panel-body{padding:1rem 1.125rem;display:flex;flex-direction:column;gap:.875rem;}
-.field-label{font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:.375rem;}
-.field-input{width:100%;padding:.625rem .875rem;font-size:.8375rem;background:var(--bg);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;transition:border-color .15s;}
-.field-input:focus{outline:none;border-color:#aaa;}
-.field-input::placeholder{color:var(--text3);}
-textarea.field-input{resize:none;}
-.field-select{width:100%;padding:.575rem .875rem;font-size:.8375rem;background:var(--bg);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;}
-.field-select:focus{outline:none;border-color:#aaa;}
-.chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.375rem;}
-.chip{padding:.2rem .55rem;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:.65rem;color:var(--text2);cursor:pointer;transition:all .15s;}
-.chip:hover{background:var(--surface3);color:var(--text);border-color:#bbb;}
-/* Format grid */
-.format-grid{display:grid;grid-template-columns:1fr 1fr;gap:.375rem;}
-.format-card{cursor:pointer;}
-.format-card input{display:none;}
-.format-inner{display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;background:var(--bg);border:1px solid var(--border2);border-radius:7px;transition:all .15s;}
-.format-card:hover .format-inner{border-color:#aaa;}
-.format-card input:checked+.format-inner{border-color:#f97316;background:rgba(249,115,22,.06);}
-.format-icon{width:22px;height:22px;border-radius:5px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.format-icon svg{width:11px;height:11px;color:var(--text2);}
-.format-card input:checked+.format-inner .format-icon svg{color:#f97316;}
-.format-name{font-size:.7rem;font-weight:600;}
-/* Style pills */
-.style-pills{display:flex;flex-wrap:wrap;gap:.3rem;}
-.style-pill{cursor:pointer;}
-.style-pill input{display:none;}
-.style-inner{padding:.275rem .6rem;background:var(--bg);border:1px solid var(--border2);border-radius:20px;font-size:.7rem;font-weight:500;color:var(--text2);transition:all .15s;}
-.style-pill:hover .style-inner{border-color:#aaa;color:var(--text);}
-.style-pill input:checked+.style-inner{background:rgba(249,115,22,.1);border-color:#f97316;color:#ea6c00;}
-/* Toggle */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
-.toggle-info h4{font-size:.775rem;font-weight:600;margin-bottom:.1rem;}
-.toggle-info p{font-size:.65rem;color:var(--text2);}
-.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;}
-.toggle-track{position:absolute;inset:0;background:var(--surface3);border-radius:10px;cursor:pointer;transition:background .2s;border:1px solid var(--border2);}
-.toggle input:checked+.toggle-track{background:#f97316;}
-.toggle-track::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.15);}
-.toggle input:checked+.toggle-track::after{transform:translateX(16px);}
-/* Improvement checkboxes */
-.improve-checks{display:flex;flex-direction:column;gap:.375rem;}
-.improve-check{display:flex;align-items:center;gap:.5rem;cursor:pointer;}
-.improve-check input{width:14px;height:14px;accent-color:#7c3aed;cursor:pointer;}
-.improve-check span{font-size:.775rem;color:var(--text2);}
-/* Action buttons */
-.action-btn{width:100%;padding:.75rem;font-size:.8375rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .15s;}
-.action-btn svg{width:14px;height:14px;}
-.btn-generate{background:#f97316;color:#fff;}
-.btn-generate:hover{background:#ea6c00;}
-.btn-guidance{background:rgba(22,163,74,.1);color:#16a34a;border:1px solid rgba(22,163,74,.25);}
-.btn-guidance:hover{background:rgba(22,163,74,.18);}
-.btn-improve{background:rgba(124,58,237,.1);color:#7c3aed;border:1px solid rgba(124,58,237,.25);}
-.btn-improve:hover{background:rgba(124,58,237,.18);}
-.action-btn:disabled{opacity:.5;cursor:not-allowed;}
-/* Loading */
-.loading-state{display:none;padding:1.5rem 1.125rem;text-align:center;}
-.loading-state.active{display:block;}
-.spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:#f97316;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-text{font-size:.8125rem;font-weight:600;margin-bottom:.2rem;}
-.loading-sub{font-size:.7rem;color:var(--text2);}
-/* Right panel */
-.doc-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
-.doc-toolbar{display:flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
-.doc-toolbar-title{font-size:.8125rem;font-weight:600;color:var(--text2);}
-.doc-toolbar-spacer{flex:1;}
-.doc-content{flex:1;overflow-y:auto;padding:2rem 2.5rem;}
-.doc-content::-webkit-scrollbar{width:5px;}
-.doc-content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-/* Welcome state */
-.welcome-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;}
-.welcome-icon{width:52px;height:52px;background:var(--surface);border:1px solid var(--border2);border-radius:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.125rem;}
-.welcome-icon svg{width:24px;height:24px;color:var(--text3);}
-.welcome-title{font-size:1.125rem;font-weight:700;margin-bottom:.4rem;}
-.welcome-sub{font-size:.8125rem;color:var(--text2);max-width:320px;line-height:1.6;}
-/* Essays list */
-.essays-list{display:flex;flex-direction:column;gap:.5rem;}
-.essay-item{display:flex;align-items:center;gap:.875rem;padding:.875rem 1rem;background:var(--surface);border:1px solid var(--border2);border-radius:10px;transition:all .15s;}
-.essay-item:hover{background:var(--surface2);border-color:#ccc;}
-.essay-icon{width:32px;height:32px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.essay-icon svg{width:14px;height:14px;color:var(--text2);}
-.essay-info{flex:1;min-width:0;}
-.essay-title{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.essay-meta{font-size:.675rem;color:var(--text2);margin-top:.1rem;}
-.essay-actions{display:flex;gap:.3rem;flex-shrink:0;}
-.btn-sm{display:inline-flex;align-items:center;padding:.275rem .6rem;font-size:.675rem;font-weight:600;border-radius:5px;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
-.btn-view{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-.btn-view:hover{color:var(--text);border-color:#aaa;}
-.btn-del{background:rgba(239,68,68,.07);color:#dc2626;border:1px solid rgba(239,68,68,.2);}
-.btn-del:hover{background:rgba(239,68,68,.12);}
-.empty-state{text-align:center;padding:2rem;color:var(--text2);font-size:.8125rem;}
-/* Essay streaming panel */
-.essay-stream-wrap{display:flex;flex-direction:column;height:100%;gap:0;}
-.essay-stream-header{margin-bottom:.875rem;flex-shrink:0;}
-.essay-stream-topic{font-size:1rem;font-weight:700;margin-bottom:.25rem;}
-.essay-stream-sub{font-size:.75rem;color:var(--text2);}
-.essay-stream-body{flex:1;overflow-y:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1.25rem 1.5rem;font-size:.875rem;line-height:1.85;color:#333;white-space:pre-wrap;word-break:break-word;min-height:180px;max-height:38vh;}
-.essay-stream-body::-webkit-scrollbar{width:4px;}
-.essay-stream-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.essay-cursor{display:inline-block;width:2px;height:1em;background:#f97316;margin-left:1px;vertical-align:text-bottom;animation:blink .6s step-end infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-.essay-stream-actions{display:flex;gap:.5rem;margin-top:.625rem;flex-shrink:0;flex-wrap:wrap;}
-.esa-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .875rem;font-size:.75rem;font-weight:600;border-radius:7px;cursor:pointer;border:none;font-family:inherit;transition:all .15s;text-decoration:none;}
-.esa-open{background:#f97316;color:#fff;}
-.esa-open:hover{background:#ea6c00;}
-.esa-copy{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-.esa-copy:hover{color:var(--text);border-color:#aaa;}
-.esa-new{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-.esa-new:hover{color:var(--text);border-color:#aaa;}
-
-/* Essay edit chat */
-.essay-chat{display:flex;flex-direction:column;flex:1;min-height:0;margin-top:.875rem;border-top:1px solid var(--border);padding-top:.875rem;}
-.essay-chat-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.5rem;flex-shrink:0;}
-.essay-chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.625rem;min-height:0;max-height:calc(100vh - 48px - 38vh - 220px);padding-right:.25rem;}
-.essay-chat-msgs::-webkit-scrollbar{width:3px;}
-.essay-chat-msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.ecm{display:flex;gap:.5rem;align-items:flex-start;}
-.ecm.user{flex-direction:row-reverse;}
-.ecm-avatar{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0;margin-top:2px;}
-.ecm.user .ecm-avatar{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-.ecm.ai .ecm-avatar{background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;}
-.ecm-bubble{max-width:88%;padding:.5rem .75rem;border-radius:10px;font-size:.8rem;line-height:1.65;word-break:break-word;}
-.ecm.user .ecm-bubble{background:var(--surface2);border:1px solid var(--border2);color:var(--text);}
-.ecm.ai .ecm-bubble{background:#fff3ed;border:1px solid rgba(249,115,22,.2);color:#7c2d12;}
-.ecm.ai .ecm-bubble.streaming{border-color:rgba(249,115,22,.35);}
-.essay-chat-input-row{display:flex;gap:.5rem;margin-top:.625rem;flex-shrink:0;}
-.essay-chat-input{flex:1;padding:.5rem .75rem;font-size:.8rem;background:var(--bg);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;outline:none;resize:none;line-height:1.5;max-height:80px;overflow-y:auto;}
-.essay-chat-input:focus{border-color:#aaa;}
-.essay-chat-input::placeholder{color:var(--text3);}
-.essay-chat-send{width:34px;height:34px;background:#f97316;border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;align-self:flex-end;}
-.essay-chat-send:hover{background:#ea6c00;}
-.essay-chat-send:disabled{opacity:.4;cursor:default;}
-.essay-chat-send svg{width:14px;height:14px;color:#fff;}
-.essay-chat-suggestions{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem;flex-shrink:0;}
-.ecs-chip{padding:.2rem .55rem;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;font-size:.65rem;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
-.ecs-chip:hover{background:var(--surface3);color:var(--text);border-color:#aaa;}
-/* Guidance / Improver result panels */
-.result-panel-wrap{display:flex;flex-direction:column;height:100%;gap:0;}
-.result-panel-header{margin-bottom:.875rem;flex-shrink:0;}
-.result-panel-title{font-size:1rem;font-weight:700;margin-bottom:.25rem;}
-.result-panel-sub{font-size:.75rem;color:var(--text2);}
-.result-panel-body{flex:1;overflow-y:auto;min-height:0;max-height:42vh;}
-.result-panel-body::-webkit-scrollbar{width:4px;}
-.result-panel-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.result-section{margin-bottom:1.5rem;}.result-section-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:.625rem;display:flex;align-items:center;gap:.4rem;}
-.result-section-title svg{width:12px;height:12px;}
-.result-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1rem 1.125rem;font-size:.8375rem;line-height:1.75;color:#333;white-space:pre-wrap;}
-.feedback-card{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.2);border-radius:10px;padding:.875rem 1.125rem;font-size:.8rem;line-height:1.65;color:#5b21b6;}
-.improved-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:1.25rem;font-size:.875rem;line-height:1.8;color:#333;white-space:pre-wrap;max-height:600px;overflow-y:auto;}
-.improved-card::-webkit-scrollbar{width:4px;}
-.improved-card::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.copy-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;font-size:.7rem;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:inherit;transition:all .15s;margin-top:.625rem;}
-.copy-btn:hover{color:var(--text);border-color:#aaa;}
-/* Web search panel */
-.ws-section{border-top:1px solid var(--border);margin-top:.5rem;padding-top:.75rem;}
-.ws-toggle-btn{display:flex;align-items:center;gap:.4rem;width:100%;padding:.4rem .65rem;font-size:.7rem;font-weight:600;background:var(--bg);border:1px solid var(--border2);border-radius:7px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;}
-.ws-toggle-btn:hover{border-color:#aaa;color:var(--text);}
-.ws-toggle-btn svg{width:12px;height:12px;flex-shrink:0;}
-.ws-toggle-btn .ws-badge{margin-left:auto;background:var(--orange);color:#fff;border-radius:10px;padding:.05rem .4rem;font-size:.6rem;font-weight:700;display:none;}
-.ws-toggle-btn .ws-badge.visible{display:inline-block;}
-.ws-panel{display:none;flex-direction:column;gap:.5rem;}
-.ws-panel.open{display:flex;margin-top:.5rem;}
-.ws-input-row{display:flex;gap:.375rem;}
-.ws-input{flex:1;padding:.45rem .65rem;font-size:.775rem;background:var(--bg);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:inherit;outline:none;}
-.ws-input:focus{border-color:#aaa;}
-.ws-input::placeholder{color:var(--text3);}
-.ws-search-btn{padding:.45rem .75rem;font-size:.75rem;font-weight:600;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;}
-.ws-search-btn:hover{color:var(--text);border-color:#aaa;}
-.ws-results{display:flex;flex-direction:column;gap:.35rem;max-height:220px;overflow-y:auto;}
-.ws-results::-webkit-scrollbar{width:3px;}
-.ws-results::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.article-card{padding:.55rem .7rem;background:var(--bg);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;user-select:none;}
-.article-card:hover{border-color:#aaa;}
-.article-card.selected{border-color:var(--orange);background:rgba(249,115,22,.06);}
-.article-card-top{display:flex;align-items:flex-start;gap:.4rem;}
-.article-card-check{width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.article-card.selected .article-card-check{background:var(--orange);border-color:var(--orange);}
-.article-card-check svg{width:9px;height:9px;color:#fff;display:none;}
-.article-card.selected .article-card-check svg{display:block;}
-.article-card-title{font-size:.75rem;font-weight:600;color:var(--text);line-height:1.4;}
-.article-card-snippet{font-size:.68rem;color:var(--text2);margin-top:.25rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.article-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.3rem;}
-.article-source-badge{font-size:.6rem;font-weight:600;padding:.1rem .4rem;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text3);}
-.article-link{font-size:.6rem;color:var(--blue);text-decoration:none;}
-.article-link:hover{text-decoration:underline;}
-.ws-empty{font-size:.75rem;color:var(--text3);text-align:center;padding:.75rem 0;}
-/* Bottom nav */
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:.5rem;z-index:100;justify-content:space-around;}
-.bn-item{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.4rem .75rem;color:var(--text3);text-decoration:none;font-size:.6rem;border-radius:6px;}
-.bn-item svg{width:20px;height:20px;}
-.bn-item.active{color:#f97316;}
-@media(max-width:900px){
-  .topnav{display:none;}.mobile-topbar{display:flex;}.bottom-nav{display:flex;}
-  .sidebar{display:none;}
-  .workspace{flex-direction:column;height:auto;overflow:visible;}
-  .settings-panel{width:100%;border-right:none;border-bottom:1px solid var(--border);}
-  .doc-panel{min-height:400px;}.doc-content{padding:1.25rem;}
+.sidebar-header { padding: 2.5rem 1.5rem; }
+.sidebar-logo-group { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: #fff; }
+.sidebar-logo-icon { width: 36px; height: 36px; background: var(--studio-accent); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; box-shadow: 0 0 20px var(--studio-accent-glow); }
+.sidebar-logo-text { font-family: var(--font-display); font-weight: 950; font-size: 1.25rem; letter-spacing: -0.02em; }
+.sidebar-nav { flex: 1; padding: 1rem; overflow-y: auto; scrollbar-width: none; }
+.sidebar-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: var(--studio-text-dim); letter-spacing: 0.2em; padding: 1.5rem 1.25rem 0.75rem; }
+.nav-item {
+  display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; border-radius: 12px;
+  color: var(--studio-text-dim); font-size: 0.8125rem; font-weight: 600; text-decoration: none;
+  transition: all 0.2s ease; margin-bottom: 0.25rem;
 }
-@media(max-width:600px){.format-grid{grid-template-columns:1fr 1fr;}.essay-actions{flex-direction:column;}}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,0.03); }
+.nav-item.active { background: rgba(59, 130, 246, 0.1); color: var(--studio-accent); border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.05); }
+.nav-item svg { width: 20px; height: 20px; opacity: 0.8; }
+
+/* ── MAIN STUDIO ── */
+.studio-main { flex: 1; display: flex; flex-direction: column; position: relative; }
+.studio-header {
+  height: 80px; padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--studio-border); z-index: 50;
+}
+.studio-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1rem; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 100px; color: var(--studio-accent); font-size: 0.65rem; font-weight: 950; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.studio-workspace { display: flex; flex: 1; overflow: hidden; }
+
+/* Intelligence Panel (Wizard) */
+.wizard-panel {
+  width: var(--pane-w); background: rgba(255,255,255,0.01); backdrop-filter: blur(40px);
+  border-right: 1px solid var(--studio-border); display: flex; flex-direction: column;
+}
+.wizard-tabs { display: flex; padding: 1.5rem; gap: 0.75rem; border-bottom: 1px solid var(--studio-border); }
+.wizard-tab {
+  flex: 1; padding: 0.75rem; border-radius: 14px; border: 1px solid var(--studio-border);
+  background: var(--studio-surface); color: var(--studio-text-dim); font-size: 0.6rem; font-weight: 950;
+  text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.3s;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.wizard-tab.active { background: #fff; color: #000; border-color: #fff; transform: translateY(-2px); }
+.wizard-tab svg { width: 18px; height: 18px; }
+
+.panel-pane { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
+.panel-pane.active { display: flex; }
+.panel-body { padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
+
+/* Inputs Elite */
+.field-group { display: flex; flex-direction: column; gap: 0.8rem; }
+.field-label { font-family: var(--font-display); font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: var(--studio-text-dim); letter-spacing: 0.15em; }
+.field-input, .field-select {
+  width: 100%; padding: 1.25rem; background: rgba(255,255,255,0.03); border: 1px solid var(--studio-border);
+  border-radius: 18px; color: #fff; font-family: inherit; font-size: 0.9375rem; outline: none; transition: all 0.3s;
+}
+.field-input:focus { border-color: var(--studio-accent); background: rgba(255,255,255,0.06); }
+
+.style-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+.style-card { cursor: pointer; border-radius: 18px; border: 1px solid var(--studio-border); background: var(--studio-surface); padding: 1.25rem; text-align: center; transition: all 0.3s; }
+.style-card.selected { background: #fff; border-color: #fff; color: #000; box-shadow: 0 10px 30px rgba(255,255,255,0.1); }
+.style-name { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.btn-elite {
+  padding: 1.25rem; background: var(--studio-accent); color: #fff; border: none; border-radius: 18px;
+  font-family: var(--font-display); font-weight: 900; font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.15em; cursor: pointer; transition: all 0.3s;
+  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  box-shadow: 0 10px 30px var(--studio-accent-glow);
+}
+.btn-elite:hover { transform: translateY(-3px); box-shadow: 0 15px 35px var(--studio-accent-glow); }
+
+/* ── DISPLAY PANEL ── */
+.display-panel { flex: 1; padding: 4rem 3rem; overflow-y: auto; background: radial-gradient(circle at center, rgba(59,130,246,0.02) 0, transparent 70%); }
+.paper-shelf { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+
+.essay-card {
+  padding: 2.5rem; background: var(--studio-surface); border: 1px solid var(--studio-border);
+  border-radius: var(--radius); display: flex; flex-direction: column; gap: 1.5rem; transition: all 0.3s;
+  text-decoration: none; color: inherit;
+}
+.essay-card:hover { border-color: rgba(59,130,246,0.4); transform: translateY(-6px); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+.essay-card-topic { font-family: var(--font-display); font-weight: 900; font-size: 1.25rem; color: #fff; }
+.essay-card-meta { font-size: 0.7rem; font-weight: 800; color: var(--studio-text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+.essay-card-btn {
+  margin-top: auto; padding: 0.875rem; border-radius: 12px; border: 1.5px solid rgba(59,130,246,0.2);
+  text-align: center; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; color: var(--studio-accent);
+}
+.essay-card:hover .essay-card-btn { background: var(--studio-accent); color: #fff; border-color: var(--studio-accent); }
+
+/* ── EDITOR AREA (SPA) ── */
+.editor-viewport { display: none; flex: 1; padding: 4rem 2rem 10rem; flex-direction: column; align-items: center; background: radial-gradient(circle at center, rgba(59,130,246,0.03) 0, transparent 70%); }
+.paper-surface {
+  width: 100%; max-width: 900px; background: #ffffff; 
+  border-radius: 16px; padding: 5rem; min-height: 800px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6); color: #111111; position: relative;
+}
+.paper-title { font-family: var(--font-display); font-size: 2.5rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1.1; margin-bottom: 2.5rem; color: #000; border: none; outline: none; }
+.essay-content { font-family: 'Inter', serif; font-size: 1.125rem; line-height: 1.9; color: #1a1a1a; white-space: pre-wrap; border: none; outline: none; min-height: 500px; }
+
+/* ── FLOATING TOOLS ── */
+.floating-toolbar {
+  position: absolute; top: 1.5rem; left: 50%; transform: translateX(-50%);
+  background: rgba(22, 27, 34, 0.85); backdrop-filter: blur(24px);
+  padding: 0.6rem 1.25rem; border-radius: 100px; border: 1px solid var(--studio-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 0.4rem; z-index: 100;
+}
+.tool-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent; color: var(--studio-text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.tool-btn:hover { background: rgba(55, 65, 81, 0.5); color: #fff; transform: scale(1.1); }
+.tool-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.08); margin: 0 6px; }
+
+.analytics-bar {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); width: calc(100% - 4rem); max-width: 900px;
+  background: rgba(11, 14, 20, 0.85); backdrop-filter: blur(30px); border: 1px solid var(--studio-border);
+  border-radius: 20px; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.stat { display: flex; flex-direction: column; gap: 4px; }
+.stat-label { font-size: 0.55rem; font-weight: 900; color: var(--studio-text-dim); text-transform: uppercase; letter-spacing: 0.15em; }
+.stat-value { font-family: var(--font-display); font-size: 0.85rem; font-weight: 900; color: #fff; }
+.btn-sm-elite { padding: 0.6rem 1.25rem; border-radius: 10px; border: 1.5px solid var(--studio-accent); background: rgba(59, 130, 246, 0.1); color: var(--studio-accent); font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.25s; }
+.btn-sm-elite:hover { background: var(--studio-accent); color: #fff; transform: translateY(-2px); box-shadow: 0 10px 20px var(--studio-accent-glow); }
+
+/* Switch Toggle for Deep Web */
+.toggle-group { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--studio-border); border-radius: 16px; margin-top: 0.5rem; }
+.toggle-switch { position: relative; width: 44px; height: 24px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--studio-surface); border: 1px solid var(--studio-border); transition: .4s; border-radius: 34px; }
+.toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--studio-text-dim); transition: .4s; border-radius: 50%; }
+input:checked + .toggle-slider { background-color: var(--studio-accent); border-color: var(--studio-accent); }
+input:checked + .toggle-slider:before { background-color: #fff; transform: translateX(20px); }
+
+@media (max-width: 1100px) {
+  body { display: block; height: auto; overflow: auto; }
+  .sidebar { display: none; }
+  .studio-main { display: block; overflow: visible; height: auto; }
+  .studio-workspace { display: block; overflow: visible; }
+  .wizard-panel { width: 100%; border-right: none; }
+  .display-panel { overflow-y: visible; padding: 2rem 1.5rem; }
+  .paper-shelf { grid-template-columns: 1fr; }
+  .editor-viewport { padding: 2rem 1rem 8rem; }
+  .paper-surface { padding: 3rem 1.5rem; border-radius: 12px; }
+  .paper-title { font-size: 1.8rem; margin-bottom: 1.5rem; line-height: 1.2; word-wrap: break-word; }
+  .essay-content { font-size: 0.95rem; line-height: 1.7; }
+  .floating-toolbar { width: 90%; overflow-x: auto; }
+  .analytics-bar { width: 90%; flex-wrap: wrap; gap: 1rem; padding: 1rem; bottom: 1rem; border-radius: 16px; position: relative; left: auto; transform: none; margin: 2rem auto 0; }
+  
+  /* Responsive Header Tuning */
+  .studio-header { padding: 0 1rem; height: 60px; justify-content: space-between; }
+  .studio-header > div { gap: 1rem !important; }
+  .studio-back-btn { font-size: 0.6rem !important; gap: 0.4rem !important; }
+  .studio-back-btn svg { width: 14px !important; height: 14px !important; }
+  .studio-badge { scale: 0.85; transform-origin: left center; }
+  .studio-badge span { display: none; } /* Hide 'STUDIO' text to save space */
+  .terminate-btn { font-size: 0.6rem !important; }
+  .bell-btn { width: 28px !important; height: 28px !important; }
+  .bell-btn svg { width: 14px !important; height: 14px !important; }
+  
+  /* Hides the wizard entirely to let the editor cover the mobile screen */
+  body.editor-active .wizard-panel { display: none; }
+}
 </style>
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-logo-icon">✦</div>
-    <div class="sidebar-logo-text">NEXA</div>
-  </div>
-  <div class="sidebar-section-label">Main</div>
-  <nav class="sidebar-nav">
-    <a href="{% url 'community:feed' %}" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Feed</a>
-    <a href="{% url 'ai_chat' %}" class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>AI Tutor</a>
-    <a href="{% url 'community:workspace_list' %}" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Your Workspace</a>
-    <a href="{% url 'community:ai_tools' %}" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Your Tools</a>
-    <a href="{% url 'list_materials' %}" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="sidebar-avatar">
-      {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-    </div>
-    <div class="sidebar-footer-info">
-      <div class="sidebar-user-name">{{ user.username }}</div>
-      <div class="sidebar-user-status">Online</div>
-    </div>
-  </div>
-</aside>
+</head>
+<body>
+<div class="mesh-bg">
+  <div class="mesh-circle c1"></div>
+  <div class="mesh-circle c2"></div>
+</div>
 
-<div class="main-content">
-<!-- Desktop top navbar â€” minimal: logo + back + avatar -->
-<nav class="topnav">
-  <a href="{% url 'community:community_home' %}" class="topnav-logo">
-    <div class="topnav-logo-icon">N</div>
-    NEXA
-  </a>
-  <div class="topnav-right">
-    <a href="#" onclick="history.back();return false;" class="topnav-back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      Back
-    </a>
-    <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
-  </div>
-</nav>
-<div class="workspace">
-  <!-- Left: Settings panel with 3 mode tabs -->
-  <aside class="settings-panel">
-    <div class="mode-tabs">
-      <button class="mode-tab tab-generate active" onclick="switchMode('generate',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        Generate
-      </button>
-      <button class="mode-tab tab-guidance" onclick="switchMode('guidance',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Guidance
-      </button>
-      <button class="mode-tab tab-improver" onclick="switchMode('improver',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        Improver
-      </button>
+<main class="studio-main">
+  <header class="studio-header">
+    <div style="display:flex; align-items:center; gap:2rem;">
+      <a href="{% url 'community:ai_tools' %}" class="studio-back-btn" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:var(--studio-accent); font-size:0.75rem; font-weight:950; text-transform:uppercase; letter-spacing:0.15em;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:18px; height:18px;"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to Tools
+      </a>
+      <div class="studio-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+        <span>STUDIO</span> · READY
+      </div>
     </div>
+    <div style="display:flex; align-items:center; gap:1.5rem;">
+      <a href="{% url 'community:feed' %}" class="terminate-btn" style="color:var(--studio-text-dim); text-decoration:none; font-size:.75rem; font-weight:750; text-transform:uppercase; letter-spacing:.1em;">Terminate</a>
+      <div class="bell-btn" style="width:36px; height:36px; border-radius:12px; background:var(--studio-surface); border:1px solid var(--studio-border); display:flex; align-items:center; justify-content:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--studio-accent)" stroke-width="2" style="width:18px; height:18px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+    </div>
+  </header>
 
-    <!-- PANE 1: Generate -->
-    <div class="panel-pane active" id="pane-generate">
-      <form method="POST" id="essayForm">
-        {% csrf_token %}
+  <div class="studio-workspace">
+    <aside class="wizard-panel">
+      <div class="wizard-tabs">
+        <button class="wizard-tab active" data-pane="generate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Build
+        </button>
+        <button class="wizard-tab" data-pane="guidance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Plan
+        </button>
+      </div>
+
+      <!-- Build Pane -->
+      <div class="panel-pane active" id="pane-generate">
         <div class="panel-body">
-          <div>
-            <div class="field-label">Essay Topic</div>
-            <textarea name="topic" id="topicInput" class="field-input" rows="3" placeholder="e.g. The impact of AI on modern educationâ€¦" required></textarea>
-            <div class="chips">
-              <span class="chip" onclick="setTopic('The impact of artificial intelligence on education')">AI in Education</span>
-              <span class="chip" onclick="setTopic('Climate change and its effects on biodiversity')">Climate Change</span>
-              <span class="chip" onclick="setTopic('The history and evolution of the internet')">History of Internet</span>
-              <span class="chip" onclick="setTopic('The importance of mental health awareness')">Mental Health</span>
-              <span class="chip" onclick="setTopic('Renewable energy sources and their future')">Renewable Energy</span>
-              <span class="chip" onclick="setTopic('Social media and its impact on society')">Social Media</span>
+          <div class="field-group">
+            <label class="field-label">Briefing Topic</label>
+            <textarea id="topicInput" class="field-input" rows="3" placeholder="Describe the focus of your synthesis..." required></textarea>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Writing Protocol</label>
+            <div class="style-grid" id="styleGrid">
+              <div class="style-card selected" data-value="argumentative"><div class="style-name">Academic</div></div>
+              <div class="style-card" data-value="narrative"><div class="style-name">Story</div></div>
+              <div class="style-card" data-value="technical"><div class="style-name">Technical</div></div>
+              <div class="style-card" data-value="persuasive"><div class="style-name">Elite</div></div>
             </div>
           </div>
-          <div>
-            <div class="field-label">Writing Style</div>
-            <div class="style-pills">
-              <label class="style-pill"><input type="radio" name="writing_style" value="argumentative" checked><span class="style-inner">Argumentative</span></label>
-              <label class="style-pill"><input type="radio" name="writing_style" value="narrative"><span class="style-inner">Narrative</span></label>
-              <label class="style-pill"><input type="radio" name="writing_style" value="descriptive"><span class="style-inner">Descriptive</span></label>
-              <label class="style-pill"><input type="radio" name="writing_style" value="expository"><span class="style-inner">Expository</span></label>
-            </div>
-          </div>
-          <div>
-            <div class="field-label">Essay Length</div>
-            <select name="word_count" class="field-select">
-              <option value="250">250 words</option>
-              <option value="500" selected>500 words</option>
-              <option value="750">750 words</option>
-              <option value="1000">1000 words</option>
-              <option value="1500">1500 words</option>
-              <option value="2000">2000 words</option>
-              <option value="3000">3000 words</option>
+          <div class="field-group">
+            <label class="field-label">Output Capacity</label>
+            <select id="wordCount" class="field-select">
+              <option value="500">500 Words</option>
+              <option value="1000">1000 Words</option>
+              <option value="2000">2000 Words</option>
             </select>
           </div>
-          <div>
-            <div class="field-label">Output Format</div>
-            <div class="format-grid">
-              <label class="format-card"><input type="radio" name="output_format" value="text" checked><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="14" x2="3" y2="14"/></svg></div><div class="format-name">Plain Text</div></div></label>
-              <label class="format-card"><input type="radio" name="output_format" value="pdf"><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="format-name">PDF</div></div></label>
-              <label class="format-card"><input type="radio" name="output_format" value="word"><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="format-name">Word</div></div></label>
-              <label class="format-card"><input type="radio" name="output_format" value="powerpoint"><div class="format-inner"><div class="format-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div><div class="format-name">Slides</div></div></label>
+          
+          <div class="toggle-group">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div style="font-family:var(--font-display); font-size:0.75rem; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.1em;">Deep Web Search</div>
+              <div style="font-size:0.6rem; color:var(--studio-text-dim);">Poll current context before synthesis.</div>
             </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="deepWebToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
           </div>
-          <div>
-            <div class="toggle-row">
-              <div class="toggle-info"><h4>Web Research</h4><p>Search web for up-to-date sources</p></div>
-              <label class="toggle"><input type="checkbox" name="research_done" checked><span class="toggle-track"></span></label>
-            </div>
-          </div>
-          <!-- Web Search References â€” Generate -->
-          <div class="ws-section">
-            <button type="button" class="ws-toggle-btn" onclick="toggleWebSearch('generate')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              Search Web for References
-              <span class="ws-badge" id="ws-badge-generate">0</span>
-            </button>
-            <div class="ws-panel" id="ws-panel-generate">
-              <div class="ws-input-row">
-                <input class="ws-input" id="ws-input-generate" placeholder="Search topic or keywordâ€¦" onkeydown="if(event.key==='Enter')runWebSearch('generate')">
-                <button type="button" class="ws-search-btn" onclick="runWebSearch('generate')">Search</button>
-              </div>
-              <div class="ws-results" id="ws-results-generate"><div class="ws-empty">Search for articles to use as references</div></div>
-            </div>
-          </div>
-          <button type="submit" class="action-btn btn-generate" id="genBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            Generate Essay
+          
+          <button class="btn-elite" id="genBtn" style="margin-top:0.5rem;" onclick="startGeneration()">
+            INITIALIZE NEURAL BUILD
           </button>
         </div>
-      </form>
-      <div class="loading-state" id="loadingState">
-        <div class="spinner"></div>
-        <div class="loading-text">Writing your essayâ€¦</div>
-        <div class="loading-sub">Researching sources and generating content</div>
       </div>
-    </div>
 
-    <!-- PANE 2: Guidance -->
-    <div class="panel-pane" id="pane-guidance">
-      <div class="panel-body">
-        <div>
-          <div class="field-label">Your Essay Topic</div>
-          <textarea id="guidanceTopic" class="field-input" rows="3" placeholder="e.g. The causes and effects of World War Iâ€¦"></textarea>
-          <div class="chips">
-            <span class="chip" onclick="setGuidanceTopic('The causes and effects of World War I')">WW1</span>
-            <span class="chip" onclick="setGuidanceTopic('The role of technology in modern education')">Tech in Education</span>
-            <span class="chip" onclick="setGuidanceTopic('Effects of social media on teenagers')">Social Media</span>
-            <span class="chip" onclick="setGuidanceTopic('Climate change solutions')">Climate Change</span>
-          </div>
+      <!-- Plan Pane -->
+      <div class="panel-pane" id="pane-guidance">
+        <div class="panel-body">
+          <p style="font-size:0.8rem; color:var(--studio-text-dim);">Coming soon: High-fidelity essay outlining and thesis brainstorming module.</p>
         </div>
-        <div>
-          <div class="field-label">What do you need?</div>
-          <select id="guidanceAction" class="field-select">
-            <option value="all">Everything (Breakdown + Thesis + Outline)</option>
-            <option value="breakdown">Topic Breakdown only</option>
-            <option value="thesis">Thesis Statements only</option>
-            <option value="outline">Essay Outline only</option>
-          </select>
-        </div>
-        <!-- Web Search References â€” Guidance -->
-        <div class="ws-section">
-          <button type="button" class="ws-toggle-btn" onclick="toggleWebSearch('guidance')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Search Web for References
-            <span class="ws-badge" id="ws-badge-guidance">0</span>
-          </button>
-          <div class="ws-panel" id="ws-panel-guidance">
-            <div class="ws-input-row">
-              <input class="ws-input" id="ws-input-guidance" placeholder="Search topic or keywordâ€¦" onkeydown="if(event.key==='Enter')runWebSearch('guidance')">
-              <button type="button" class="ws-search-btn" onclick="runWebSearch('guidance')">Search</button>
-            </div>
-            <div class="ws-results" id="ws-results-guidance"><div class="ws-empty">Search for articles to use as references</div></div>
-          </div>
-        </div>
-        <button onclick="runGuidance()" id="guidanceBtn" class="action-btn btn-guidance">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Get Guidance
-        </button>
       </div>
-    </div>
+    </aside>
 
-    <!-- PANE 3: Improver -->
-    <div class="panel-pane" id="pane-improver">
-      <div class="panel-body">
-        <div>
-          <div class="field-label">Paste Your Essay</div>
-          <textarea id="improverText" class="field-input" rows="6" placeholder="Paste your essay here and the AI will improve itâ€¦"></textarea>
-        </div>
-        <div>
-          <div class="field-label">Improvements to Apply</div>
-          <div style="display:flex;flex-direction:column;gap:.35rem;">
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_grammar" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Grammar &amp; spelling</span></label>
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_vocab" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Better vocabulary</span></label>
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_clarity" checked style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Clarity &amp; flow</span></label>
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" id="imp_structure" style="width:13px;height:13px;accent-color:#a78bfa;"><span style="font-size:.775rem;color:var(--text2);">Paragraph structure</span></label>
-          </div>
-        </div>
-        <div>
-          <div class="field-label">Tone Adjustment (optional)</div>
-          <select id="improverTone" class="field-select">
-            <option value="">Keep original tone</option>
-            <option value="formal and academic">Formal / Academic</option>
-            <option value="persuasive">Persuasive</option>
-            <option value="concise and direct">Concise &amp; Direct</option>
-            <option value="friendly and conversational">Friendly / Conversational</option>
-          </select>
-        </div>
-        <!-- Web Search References â€” Improver -->
-        <div class="ws-section">
-          <button type="button" class="ws-toggle-btn" onclick="toggleWebSearch('improver')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Search Web for References
-            <span class="ws-badge" id="ws-badge-improver">0</span>
-          </button>
-          <div class="ws-panel" id="ws-panel-improver">
-            <div class="ws-input-row">
-              <input class="ws-input" id="ws-input-improver" placeholder="Search topic or keywordâ€¦" onkeydown="if(event.key==='Enter')runWebSearch('improver')">
-              <button type="button" class="ws-search-btn" onclick="runWebSearch('improver')">Search</button>
-            </div>
-            <div class="ws-results" id="ws-results-improver"><div class="ws-empty">Search for articles to use as references</div></div>
-          </div>
-        </div>
-        <button onclick="runImprover()" id="improverBtn" class="action-btn btn-improve">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Improve My Essay
-        </button>
+    <section class="display-panel">
+      <div style="margin-bottom:3rem;">
+        <h1 style="font-family:var(--font-display); font-size:3rem; font-weight:950; letter-spacing:-0.05em; color:#fff; margin-bottom:0.75rem;">Elite Studio</h1>
+        <p style="color:var(--studio-text-dim); font-size:1.1rem;">Manage your synthesis blueprints and neural drafts.</p>
       </div>
-    </div>
-  </aside>
-  <!-- Right: Document panel -->
-  <div class="doc-panel">
-    <div class="doc-toolbar">
-      <span class="doc-toolbar-title" id="rightPanelTitle">Your Essays</span>
-      <div class="doc-toolbar-spacer"></div>
-      <span style="font-size:.7rem;color:var(--text3);" id="rightPanelMeta">{{ essays|length }} document{% if essays|length != 1 %}s{% endif %}</span>
-    </div>
-    <div class="doc-content" id="rightPanelContent">
 
-      <!-- Essays list (default view) -->
-      <div id="view-essays">
+      <div class="paper-shelf" id="paperShelf">
         {% if essays %}
-          <div class="essays-list">
-            {% for essay in essays %}
-            <div class="essay-item">
-              <div class="essay-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-              <div class="essay-info">
-                <div class="essay-title">{{ essay.topic }}</div>
-                <div class="essay-meta">{{ essay.created_at|date:"M d, Y" }} Â· {{ essay.word_count|default:"500" }} words Â· {{ essay.get_output_format_display }}</div>
-              </div>
-              <div class="essay-actions">
-                <a href="{% url 'essay_detail' essay.id %}" class="btn-sm btn-view">Open</a>
-                <a href="{% url 'delete_essay' essay.id %}" class="btn-sm btn-del">Delete</a>
-              </div>
+          {% for essay in essays %}
+          <div class="essay-card" id="card-{{ essay.id }}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+              <div class="essay-card-topic">{{ essay.topic }}</div>
+              <button onclick="deleteDraft('{{ essay.id }}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; opacity:0.7; transition:all 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Delete Blueprint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
             </div>
-            {% endfor %}
+            <div class="essay-card-meta">{{ essay.created_at|date:"M d, Y" }} · {{ essay.word_count|default:"500" }} WORDS</div>
+            <a href="{% url 'essay_detail' essay.id %}" class="essay-card-btn">OPEN DRAFT →</a>
           </div>
+          {% endfor %}
         {% else %}
-          <div class="welcome-state">
-            <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
-            <div class="welcome-title">Start writing</div>
-            <div class="welcome-sub">Choose a mode on the left. Generate a full essay, get guidance before writing, or improve your own work.</div>
+          <div style="grid-column:1/-1; text-align:center; padding:8rem 2rem; color:var(--studio-text-dim);">
+             <p>No active blueprints found. Initiate a new build to begin.</p>
           </div>
         {% endif %}
       </div>
 
-      <!-- Guidance results view (hidden by default) -->
-      <div id="view-guidance" style="display:none;">
-        <div style="margin-bottom:1.25rem;">
-          <div style="font-size:1rem;font-weight:700;margin-bottom:.25rem;" id="guidanceTopicDisplay"></div>
-          <div style="font-size:.75rem;color:var(--text2);">Smart Essay Guidance</div>
+      <!-- INLINE EDITOR (Hidden by default) -->
+      <div class="editor-viewport" id="editorViewport">
+        <div class="floating-toolbar">
+          <button class="tool-btn" onclick="closeEditor()" title="Close Studio" style="color:var(--studio-accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M15 19l-7-7 7-7"/></svg></button>
+          <div class="tool-sep"></div>
+          <button class="tool-btn" onclick="document.execCommand('bold',false,null)" title="Bold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
+          <button class="tool-btn" onclick="document.execCommand('italic',false,null)" title="Italic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
+          <button class="tool-btn" onclick="document.execCommand('underline',false,null)" title="Underline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><path d="M6 3v7a6 6 0 0 0 12 0V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg></button>
+          <div class="tool-sep"></div>
+          <button class="tool-btn" onclick="document.execCommand('justifyLeft',false,null)" title="Align Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="11" y1="18" x2="3" y2="18"/></svg></button>
+          <button class="tool-btn" onclick="document.execCommand('justifyCenter',false,null)" title="Align Center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="15" y1="18" x2="9" y2="18"/></svg></button>
+          <div class="tool-sep"></div>
+          <button class="tool-btn" onclick="toggleEditMode()" id="editToggleBtn" title="Toggle Code Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+          <div class="tool-sep"></div>
+          <button class="btn-sm-elite" id="saveBtn" onclick="saveEdits()">SAVE CHANGES</button>
         </div>
-        <div id="guidance-breakdown" class="result-section" style="display:none;">
-          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Topic Breakdown</div>
-          <div class="result-card" id="breakdown-text"></div>
-        </div>
-        <div id="guidance-thesis" class="result-section" style="display:none;">
-          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Thesis Statements</div>
-          <div class="result-card" id="thesis-text"></div>
-        </div>
-        <div id="guidance-outline" class="result-section" style="display:none;">
-          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Essay Outline</div>
-          <div class="result-card" id="outline-text"></div>
-        </div>
-      </div>
 
-      <!-- Improver results view (hidden by default) -->
-      <div id="view-improver" style="display:none;">
-        <div style="margin-bottom:1.25rem;">
-          <div style="font-size:1rem;font-weight:700;margin-bottom:.25rem;">Improved Essay</div>
-          <div style="font-size:.75rem;color:var(--text2);">AI-enhanced version of your work</div>
+        <div class="paper-surface">
+          <div class="paper-title" contenteditable="true" id="editorTitle">Initializing...</div>
+          <div class="essay-content" contenteditable="true" id="editorBody"></div>
         </div>
-        <div id="improver-feedback-section" style="display:none;margin-bottom:1rem;">
-          <div class="result-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>What was improved</div>
-          <div class="feedback-card" id="improver-feedback"></div>
-        </div>
-        <div class="result-section">
-          <div class="result-section-title" style="justify-content:space-between;">
-            <span style="display:flex;align-items:center;gap:.4rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Improved Text</span>
-            <button class="copy-btn" onclick="copyImproved()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
-          </div>
-          <div class="improved-card" id="improver-result"></div>
-        </div>
-      </div>
 
-      <!-- Essay stream view (shown during/after generation) -->
-      <div id="view-stream" style="display:none;height:100%;">
-        <div class="essay-stream-wrap">
-          <div class="essay-stream-header">
-            <div class="essay-stream-topic" id="streamTopic"></div>
-            <div class="essay-stream-sub" id="streamSub">Generatingâ€¦</div>
+        <div class="analytics-bar">
+          <div class="stat">
+            <div class="stat-label">Words</div>
+            <div class="stat-value" id="valWords">0</div>
           </div>
-          <div class="essay-stream-body" id="streamBody"><span class="essay-cursor" id="streamCursor"></span></div>
-          <div class="essay-stream-actions" id="streamActions" style="display:none;">
-            <a class="esa-btn esa-open" id="streamOpenBtn" href="#">View Essay</a>
-            <button class="esa-btn esa-copy" onclick="copyStreamEssay()">Copy</button>
-            <button class="esa-btn esa-new" onclick="resetToGenerate()">New Essay</button>
+          <div class="stat">
+            <div class="stat-label">Reading</div>
+            <div class="stat-value" id="valReading">0 min</div>
           </div>
-
-          <!-- Edit chat â€” shown after generation -->
-          <div class="essay-chat" id="essayChat" style="display:none;">
-            <div class="essay-chat-label">Edit with AI</div>
-            <div class="essay-chat-suggestions" id="chatSuggestions">
-              <span class="ecs-chip" onclick="sendChatSuggestion(this)">Make it more persuasive</span>
-              <span class="ecs-chip" onclick="sendChatSuggestion(this)">Shorten it</span>
-              <span class="ecs-chip" onclick="sendChatSuggestion(this)">Improve the introduction</span>
-              <span class="ecs-chip" onclick="sendChatSuggestion(this)">Add more examples</span>
-              <span class="ecs-chip" onclick="sendChatSuggestion(this)">Fix grammar</span>
-              <span class="ecs-chip" onclick="sendChatSuggestion(this)">Make it more formal</span>
-            </div>
-            <div class="essay-chat-msgs" id="essayChatMsgs"></div>
-            <div class="essay-chat-input-row">
-              <textarea class="essay-chat-input" id="essayChatInput" rows="1" placeholder="Ask AI to edit your essayâ€¦" onkeydown="chatInputKeydown(event)"></textarea>
-              <button class="essay-chat-send" id="essayChatSend" onclick="sendEssayChat()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              </button>
-            </div>
+          <div class="stat">
+            <div class="stat-label">Neural Humanization</div>
+            <div class="stat-value" style="color:var(--studio-accent);">99.2% OPTIMAL</div>
+          </div>
+          <div style="display:flex; gap:0.75rem;">
+            <button class="btn-sm-elite" style="background:rgba(255,255,255,0.03); border-color:var(--studio-border); color:#fff;" onclick="downloadEssay('pdf')">EXPORT PDF</button>
+            <button class="btn-sm-elite" onclick="restyleEssay()">AI POLISH</button>
           </div>
         </div>
       </div>
-
-    </div>
+    </section>
   </div>
-</div>
-
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: #0b0b0f !important;
-  border-top: 1px solid #1e1e2c !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 100 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0.375rem 0.5rem;
-  color: #8a8a93;
-  border-radius: 12px;
-  text-decoration: none;
-  flex: 1;
-  transition: color 0.15s;
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
-.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
-.bn-unified-item:active svg { transform: scale(1.05); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #8a8a93);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
-.bn-unified-item:active svg { transform: scale(0.9); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
-</nav>
+</main>
 
 <script>
-const CSRF = '{{ csrf_token }}';
-
-function toggleMenu(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('open');
-}
-function setTopic(t){ document.getElementById('topicInput').value = t; }
-function setGuidanceTopic(t){ document.getElementById('guidanceTopic').value = t; }
-
-// Mode switching
-function switchMode(mode, btn){
-  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.panel-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('pane-' + mode).classList.add('active');
-
-  // Update right panel
-  const titles = {generate:'Your Essays', guidance:'Essay Guidance', improver:'Essay Improver'};
-  document.getElementById('rightPanelTitle').textContent = titles[mode];
-
-  if(mode === 'generate'){
-    showView('essays');
-    document.getElementById('rightPanelMeta').style.display = '';
-  } else if(mode === 'guidance'){
-    showView('guidance');
-    document.getElementById('rightPanelMeta').style.display = 'none';
-    // Show placeholder if no results yet
-    const hasResults = document.getElementById('guidance-result-body');
-    if(!hasResults){
-      document.getElementById('view-guidance').innerHTML = `
-        <div class="welcome-state">
-          <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="welcome-title">Plan before you write</div>
-          <div class="welcome-sub">Enter your topic on the left and get a breakdown, thesis ideas, and a full outline â€” before writing a single word.</div>
-        </div>`;
-    }
-  } else {
-    showView('improver');
-    document.getElementById('rightPanelMeta').style.display = 'none';
-    if(!document.getElementById('improver-result-body')){
-      document.getElementById('view-improver').innerHTML = `
-        <div class="welcome-state">
-          <div class="welcome-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
-          <div class="welcome-title">Improve your writing</div>
-          <div class="welcome-sub">Paste your essay on the left, choose what to fix, and get a polished version instantly.</div>
-        </div>`;
-    }
-  }
-}
-
-// Generate form submit â€” AJAX + typewriter
-const GENERATE_URL = '{% url "essay_generate_ajax" %}';
-let streamEssayText = '';
-let streamEssayId = null;
-
-document.getElementById('essayForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const topic = document.getElementById('topicInput').value.trim();
-  if (!topic) return;
-
-  const wordCount = this.querySelector('[name="word_count"]').value;
-  const writingStyle = this.querySelector('[name="writing_style"]:checked')?.value || 'argumentative';
-  const outputFormat = this.querySelector('[name="output_format"]:checked')?.value || 'text';
-
-  // Disable button, show loading in left panel
-  const genBtn = document.getElementById('genBtn');
-  genBtn.disabled = true;
-  genBtn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;"></div> Generatingâ€¦';
-  document.querySelector('#pane-generate form .panel-body').style.display = 'none';
-  document.getElementById('loadingState').classList.add('active');
-
-  // Switch right panel to stream view
-  showView('stream');
-  document.getElementById('streamTopic').textContent = topic;
-  document.getElementById('streamSub').textContent = 'Writing your essayâ€¦';
-  document.getElementById('streamBody').innerHTML = '<span class="essay-cursor" id="streamCursor"></span>';
-  document.getElementById('streamActions').style.display = 'none';
-  streamEssayText = '';
-  streamEssayId = null;
-
-  try {
-    const resp = await fetch(GENERATE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ topic, word_count: wordCount, writing_style: writingStyle, output_format: outputFormat, references: getSelectedRefs('generate') })
-    });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error || 'Generation failed');
-
-    streamEssayText = data.essay_text;
-    streamEssayId = data.essay_id;
-
-    // Typewriter effect
-    await typewriterStream(streamEssayText, document.getElementById('streamBody'));
-
-    // Done
-    document.getElementById('streamSub').textContent = `${streamEssayText.split(/\s+/).length} words Â· Done`;
-    document.getElementById('streamActions').style.display = 'flex';
-    document.getElementById('streamOpenBtn').href = data.detail_url;
-    // Show chat panel
-    document.getElementById('essayChat').style.display = 'flex';
-
-    // Re-enable left panel
-    document.getElementById('loadingState').classList.remove('active');
-    document.querySelector('#pane-generate form .panel-body').style.display = '';
-    genBtn.disabled = false;
-    genBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Generate Essay';
-
-  } catch(err) {
-    document.getElementById('streamBody').textContent = 'Error: ' + err.message;
-    document.getElementById('streamSub').textContent = 'Failed';
-    document.getElementById('loadingState').classList.remove('active');
-    document.querySelector('#pane-generate form .panel-body').style.display = '';
-    genBtn.disabled = false;
-    genBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Generate Essay';
-  }
+// Wizard Tabs Interaction
+document.querySelectorAll('.wizard-tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.wizard-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane-' + tab.dataset.pane).classList.add('active');
+  };
 });
 
-async function typewriterStream(text, container) {
-  container.innerHTML = '';
-  const cursor = document.createElement('span');
-  cursor.className = 'essay-cursor';
-  container.appendChild(cursor);
-
-  // Stream word by word for a natural left-to-right flow
-  const words = text.split(' ');
-  let buffer = '';
-  for (let i = 0; i < words.length; i++) {
-    buffer += (i === 0 ? '' : ' ') + words[i];
-    // Update text node before cursor
-    const textNode = container.firstChild;
-    if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-      textNode.textContent = buffer;
-    } else {
-      container.insertBefore(document.createTextNode(buffer), cursor);
-    }
-    // Scroll to bottom
-    container.scrollTop = container.scrollHeight;
-    // Vary speed slightly for natural feel â€” faster for short words
-    const delay = words[i].length <= 3 ? 18 : words[i].length <= 6 ? 28 : 38;
-    await sleep(delay);
-  }
-  // Remove cursor when done
-  cursor.remove();
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function showView(name) {
-  ['essays','guidance','improver','stream'].forEach(v => {
-    const el = document.getElementById('view-' + v);
-    if (el) el.style.display = v === name ? '' : 'none';
-  });
-}
-
-function copyStreamEssay() {
-  if (streamEssayText) {
-    navigator.clipboard.writeText(streamEssayText);
-  }
-}
-
-function resetToGenerate() {
-  showView('essays');
-  document.getElementById('rightPanelTitle').textContent = 'Your Essays';
-  document.getElementById('rightPanelMeta').style.display = '';
-  // Reset chat
-  document.getElementById('essayChatMsgs').innerHTML = '';
-  document.getElementById('essayChat').style.display = 'none';
-}
-
-// â”€â”€ Essay edit chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-let essayChatBusy = false;
-
-function chatInputKeydown(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendEssayChat();
-  }
-}
-
-function sendChatSuggestion(el) {
-  document.getElementById('essayChatInput').value = el.textContent.trim();
-  sendEssayChat();
-}
-
-async function sendEssayChat() {
-  if (essayChatBusy) return;
-  const input = document.getElementById('essayChatInput');
-  const msg = input.value.trim();
-  if (!msg || !streamEssayText) return;
-
-  input.value = '';
-  input.style.height = '';
-  essayChatBusy = true;
-  document.getElementById('essayChatSend').disabled = true;
-
-  const msgs = document.getElementById('essayChatMsgs');
-
-  // User bubble
-  const userEl = document.createElement('div');
-  userEl.className = 'ecm user';
-  userEl.innerHTML = `<div class="ecm-avatar">{{ user.username|slice:":1"|upper }}</div><div class="ecm-bubble">${escHtml(msg)}</div>`;
-  msgs.appendChild(userEl);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  // AI bubble (streaming)
-  const aiEl = document.createElement('div');
-  aiEl.className = 'ecm ai';
-  const aiBubble = document.createElement('div');
-  aiBubble.className = 'ecm-bubble streaming';
-  aiBubble.textContent = 'â€¦';
-  aiEl.innerHTML = `<div class="ecm-avatar">N</div>`;
-  aiEl.appendChild(aiBubble);
-  msgs.appendChild(aiEl);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  try {
-    const resp = await fetch('{% url "essay_edit_chat" %}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ message: msg, essay_text: streamEssayText })
-    });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error || 'Error');
-
-    // Typewrite the AI reply into the bubble
-    aiBubble.textContent = '';
-    aiBubble.classList.remove('streaming');
-    const words = data.reply.split(' ');
-    for (let i = 0; i < words.length; i++) {
-      aiBubble.textContent += (i === 0 ? '' : ' ') + words[i];
-      msgs.scrollTop = msgs.scrollHeight;
-      await sleep(22);
-    }
-
-    // If AI returned an updated essay, update the stream body
-    if (data.updated_essay) {
-      streamEssayText = data.updated_essay;
-      const body = document.getElementById('streamBody');
-      body.textContent = '';
-      await typewriterStream(streamEssayText, body);
-      document.getElementById('streamSub').textContent = `${streamEssayText.split(/\s+/).length} words Â· Updated`;
-    }
-
-  } catch(e) {
-    aiBubble.textContent = 'Error: ' + e.message;
-    aiBubble.classList.remove('streaming');
-  }
-
-  essayChatBusy = false;
-  document.getElementById('essayChatSend').disabled = false;
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-// Auto-resize textarea
-document.addEventListener('DOMContentLoaded', () => {
-  const ta = document.getElementById('essayChatInput');
-  if (ta) {
-    ta.addEventListener('input', () => {
-      ta.style.height = 'auto';
-      ta.style.height = Math.min(ta.scrollHeight, 80) + 'px';
-    });
-  }
-});
-
-// â”€â”€ Shared result chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// currentResultContext holds the text the chat will reference
-let currentResultContext = '';
-let resultChatBusy = false;
-
-function showResultChat(containerId, context, suggestions) {
-  currentResultContext = context;
-  resultChatBusy = false;
-  const wrap = document.getElementById(containerId);
-  if (!wrap) return;
-  // Remove any existing chat
-  const old = wrap.querySelector('.essay-chat');
-  if (old) old.remove();
-
-  const chat = document.createElement('div');
-  chat.className = 'essay-chat';
-  chat.style.display = 'flex';
-  chat.innerHTML = `
-    <div class="essay-chat-label">Ask AI about this</div>
-    <div class="essay-chat-suggestions">
-      ${suggestions.map(s=>`<span class="ecs-chip" onclick="sendResultChat(this,'${containerId}')">${s}</span>`).join('')}
-    </div>
-    <div class="essay-chat-msgs" id="${containerId}-msgs"></div>
-    <div class="essay-chat-input-row">
-      <textarea class="essay-chat-input" id="${containerId}-input" rows="1"
-        placeholder="Ask a follow-upâ€¦"
-        onkeydown="resultChatKey(event,'${containerId}')"></textarea>
-      <button class="essay-chat-send" id="${containerId}-send" onclick="sendResultChat(null,'${containerId}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
-    </div>`;
-  wrap.appendChild(chat);
-
-  // auto-resize
-  const ta = document.getElementById(`${containerId}-input`);
-  ta.addEventListener('input', () => {
-    ta.style.height = 'auto';
-    ta.style.height = Math.min(ta.scrollHeight, 80) + 'px';
-  });
-}
-
-function resultChatKey(e, id) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendResultChat(null, id); }
-}
-
-function sendResultChat(chipEl, containerId) {
-  if (resultChatBusy) return;
-  const input = document.getElementById(`${containerId}-input`);
-  const msg = chipEl ? chipEl.textContent.trim() : input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  input.style.height = '';
-  _doResultChat(msg, containerId);
-}
-
-async function _doResultChat(msg, containerId) {
-  resultChatBusy = true;
-  const sendBtn = document.getElementById(`${containerId}-send`);
-  if (sendBtn) sendBtn.disabled = true;
-  const msgs = document.getElementById(`${containerId}-msgs`);
-
-  const userEl = document.createElement('div');
-  userEl.className = 'ecm user';
-  userEl.innerHTML = `<div class="ecm-avatar">{{ user.username|slice:":1"|upper }}</div><div class="ecm-bubble">${escHtml(msg)}</div>`;
-  msgs.appendChild(userEl);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  const aiEl = document.createElement('div');
-  aiEl.className = 'ecm ai';
-  const aiBubble = document.createElement('div');
-  aiBubble.className = 'ecm-bubble streaming';
-  aiBubble.textContent = 'â€¦';
-  aiEl.innerHTML = `<div class="ecm-avatar">N</div>`;
-  aiEl.appendChild(aiBubble);
-  msgs.appendChild(aiEl);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  try {
-    const resp = await fetch('{% url "essay_edit_chat" %}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ message: msg, essay_text: currentResultContext })
-    });
-    const data = await resp.json();
-    if (!data.ok) throw new Error(data.error || 'Error');
-    aiBubble.textContent = '';
-    aiBubble.classList.remove('streaming');
-    const words = data.reply.split(' ');
-    for (let i = 0; i < words.length; i++) {
-      aiBubble.textContent += (i === 0 ? '' : ' ') + words[i];
-      msgs.scrollTop = msgs.scrollHeight;
-      await sleep(22);
-    }
-  } catch(e) {
-    aiBubble.textContent = 'Error: ' + e.message;
-    aiBubble.classList.remove('streaming');
-  }
-  resultChatBusy = false;
-  if (sendBtn) sendBtn.disabled = false;
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-// â”€â”€ Web Search References â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const WS_REFS = { generate: [], guidance: [], improver: [] };
-const WS_URL = '{% url "essay_web_search" %}';
-
-function toggleWebSearch(pane) {
-  const panel = document.getElementById('ws-panel-' + pane);
-  panel.classList.toggle('open');
-}
-
-async function runWebSearch(pane) {
-  const input = document.getElementById('ws-input-' + pane);
-  const query = input.value.trim();
-  if (!query) return;
-  const resultsEl = document.getElementById('ws-results-' + pane);
-  resultsEl.innerHTML = '<div class="ws-empty">Searchingâ€¦</div>';
-  try {
-    const resp = await fetch(WS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ query })
-    });
-    const data = await resp.json();
-    if (!data.ok || !data.results.length) {
-      resultsEl.innerHTML = '<div class="ws-empty">No results found. Try a different query.</div>';
-      return;
-    }
-    resultsEl.innerHTML = '';
-    data.results.forEach(r => {
-      const card = document.createElement('div');
-      card.className = 'article-card';
-      // Check if already selected
-      const alreadySelected = WS_REFS[pane].some(x => x.url === r.url);
-      if (alreadySelected) card.classList.add('selected');
-      card.innerHTML = `
-        <div class="article-card-top">
-          <div class="article-card-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="article-card-title">${escHtml(r.title)}</div>
-        </div>
-        <div class="article-card-snippet">${escHtml(r.snippet)}</div>
-        <div class="article-card-footer">
-          <span class="article-source-badge">${escHtml(r.source)}</span>
-          <a class="article-link" href="${escHtml(r.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit â†—</a>
-        </div>`;
-      card.addEventListener('click', () => toggleRef(card, r, pane));
-      resultsEl.appendChild(card);
-    });
-  } catch(e) {
-    resultsEl.innerHTML = `<div class="ws-empty">Error: ${e.message}</div>`;
-  }
-}
-
-function toggleRef(card, ref, pane) {
-  const idx = WS_REFS[pane].findIndex(x => x.url === ref.url);
-  if (idx === -1) {
-    WS_REFS[pane].push(ref);
+// Style Selection
+let selectedStyle = 'argumentative';
+document.querySelectorAll('.style-card').forEach(card => {
+  card.onclick = () => {
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
+    selectedStyle = card.dataset.value;
+  };
+});
+
+// Editor Tools
+function toggleEditMode() {
+  const btn = document.getElementById('editToggleBtn');
+  const body = document.getElementById('editorBody');
+  if(body.style.fontFamily === 'monospace') {
+    body.style.fontFamily = '';
+    body.style.whiteSpace = 'pre-wrap';
+    btn.classList.remove('active');
   } else {
-    WS_REFS[pane].splice(idx, 1);
-    card.classList.remove('selected');
+    body.style.fontFamily = 'monospace';
+    body.style.whiteSpace = 'pre';
+    btn.classList.add('active');
   }
-  updateRefBadge(pane);
 }
 
-function updateRefBadge(pane) {
-  const badge = document.getElementById('ws-badge-' + pane);
-  const count = WS_REFS[pane].length;
-  badge.textContent = count;
-  badge.classList.toggle('visible', count > 0);
+function updateStats() {
+  const text = document.getElementById('editorBody').innerText;
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+  document.getElementById('valWords').innerText = words;
+  document.getElementById('valReading').innerText = Math.ceil(words / 225) + ' MIN';
 }
+document.getElementById('editorBody').addEventListener('input', updateStats);
 
-function getSelectedRefs(pane) {
-  return WS_REFS[pane];
-}
+// Single Page Generation Logic
+let activeEssayId = null;
 
-// â”€â”€ Guidance
-async function runGuidance(){
-  const topic = document.getElementById('guidanceTopic').value.trim();
-  if(!topic){ alert('Please enter a topic.'); return; }
-  const action = document.getElementById('guidanceAction').value;
-  const btn = document.getElementById('guidanceBtn');
+async function startGeneration() {
+  const topic = document.getElementById('topicInput').value.trim();
+  const count = document.getElementById('wordCount').value;
+  const useResearch = document.getElementById('deepWebToggle').checked;
+  if(!topic) { alert('A Briefing Topic is required.'); return; }
+  
+  const btn = document.getElementById('genBtn');
+  const oldText = btn.innerText;
   btn.disabled = true;
-  btn.textContent = 'Thinkingâ€¦';
-
-  showView('guidance');
-  const gv = document.getElementById('view-guidance');
-  gv.innerHTML = `
-    <div class="result-panel-wrap" id="guidance-result-wrap">
-      <div class="result-panel-header">
-        <div class="result-panel-title" id="guidance-result-topic">${escHtml(topic)}</div>
-        <div class="result-panel-sub">Smart Essay Guidance</div>
-      </div>
-      <div class="result-panel-body" id="guidance-result-body">
-        <div style="padding:2rem;text-align:center;">
-          <div style="width:28px;height:28px;border:2px solid var(--border2);border-top-color:#22c55e;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;"></div>
-          <div style="font-size:.8125rem;color:var(--text2);">Analysing your topicâ€¦</div>
-        </div>
-      </div>
-    </div>`;
-
+  btn.innerText = 'INITIALIZING BLUEPRINT...';
+  
   try {
-    const resp = await fetch('{% url "essay_guidance" %}', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
-      body: JSON.stringify({topic, action, references: getSelectedRefs('guidance')})
+    const resp = await fetch('{% url "essay_generate_ajax" %}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+        body: JSON.stringify({topic: topic, style: selectedStyle, word_count: count, research: useResearch})
     });
     const data = await resp.json();
-    if(!data.ok) throw new Error(data.error || 'Error');
-
-    const body = document.getElementById('guidance-result-body');
-    body.innerHTML = '';
-
-    const sections = action === 'all'
-      ? [['breakdown','Topic Breakdown',data.results.breakdown],['thesis','Thesis Statements',data.results.thesis],['outline','Essay Outline',data.results.outline]]
-      : [[action, action.charAt(0).toUpperCase()+action.slice(1), data.result]];
-
-    let allText = '';
-    for (const [, label, text] of sections) {
-      allText += text + '\n\n';
-      const sec = document.createElement('div');
-      sec.className = 'result-section';
-      const card = document.createElement('div');
-      card.className = 'result-card';
-      sec.innerHTML = `<div class="result-section-title">${label}</div>`;
-      sec.appendChild(card);
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'copy-btn';
-      copyBtn.textContent = 'Copy';
-      copyBtn.onclick = () => { navigator.clipboard.writeText(text); copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1500); };
-      sec.appendChild(copyBtn);
-      body.appendChild(sec);
-      // Typewrite into card
-      await typewriterIntoEl(text, card);
+    if(data.ok) {
+        btn.innerText = 'BLUEPRINT READY ✓';
+        activeEssayId = data.essay_id;
+        
+        // Single Page Switch
+        document.getElementById('paperShelf').style.display = 'none';
+        document.body.classList.add('editor-active');
+        
+        const editorViewport = document.getElementById('editorViewport');
+        editorViewport.style.display = 'flex';
+        
+        const editorTitle = document.getElementById('editorTitle');
+        const editorBody = document.getElementById('editorBody');
+        
+        editorTitle.innerText = topic;
+        editorBody.innerText = '';
+        editorBody.style.pointerEvents = 'none'; // Lock during synthesis
+        editorBody.style.opacity = '0.7';
+        
+        // Start EventSource Stream
+        const streamSrc = new EventSource('/ai-tutor/essay/' + activeEssayId + '/stream/');
+        
+        streamSrc.onmessage = function(e) {
+            try {
+                const streamData = JSON.parse(e.data);
+                if (streamData.chunk) {
+                    editorBody.innerText += streamData.chunk;
+                    updateStats();
+                    editorViewport.scrollTo({
+                        top: editorViewport.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            } catch(error) {}
+        };
+        
+        streamSrc.addEventListener('done', function(e) {
+            streamSrc.close();
+            editorBody.style.pointerEvents = 'auto'; // Unlock
+            editorBody.style.opacity = '1';
+            
+            const actionBtn = document.getElementById('saveBtn');
+            actionBtn.innerText = 'SYNTHESIS COMPLETE ✓';
+            actionBtn.style.color = '#10b981';
+            setTimeout(() => { actionBtn.innerText = 'SAVE CHANGES'; actionBtn.style.color = ''; }, 3000);
+            
+            btn.disabled = false;
+            btn.innerText = oldText;
+        });
+        
+        streamSrc.addEventListener('error', function(e) {
+            streamSrc.close();
+            editorBody.style.pointerEvents = 'auto'; // Unlock
+            editorBody.style.opacity = '1';
+            btn.disabled = false;
+            btn.innerText = oldText;
+        });
+        
+    } else {
+        alert('Synthesis failed: ' + data.error);
+        btn.disabled = false;
+        btn.innerText = oldText;
     }
-
-    // Show chat
-    showResultChat('guidance-result-wrap', allText.trim(), [
-      'Expand the outline', 'Give me more thesis options', 'Simplify the breakdown', 'What sources should I use?'
-    ]);
-
-  } catch(e){
-    document.getElementById('guidance-result-body').innerHTML =
-      `<div style="padding:1.5rem;color:#f87171;font-size:.8125rem;">Error: ${e.message}</div>`;
+  } catch(e) {
+    alert('System error.');
+    btn.disabled = false;
+    btn.innerText = oldText;
   }
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Get Guidance';
 }
 
-// Improver
-async function runImprover(){
-  const text = document.getElementById('improverText').value.trim();
-  if(!text){ alert('Please paste your essay first.'); return; }
-  const improvements = [];
-  if(document.getElementById('imp_grammar').checked) improvements.push('grammar');
-  if(document.getElementById('imp_vocab').checked) improvements.push('vocabulary');
-  if(document.getElementById('imp_clarity').checked) improvements.push('clarity');
-  if(document.getElementById('imp_structure').checked) improvements.push('structure');
-  const tone = document.getElementById('improverTone').value;
+async function deleteDraft(id) {
+    if (!confirm("Delete this draft permanently?")) return;
+    
+    try {
+        const res = await fetch(`/ai-tutor/essay/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        // Since delete_essay returns a redirect on POST, fetch will follow it or ok will be true
+        if (res.ok) {
+            const card = document.getElementById(`card-${id}`);
+            if (card) {
+                card.style.transform = 'scale(0.9)';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+            }
+        } else {
+            alert('Could not delete draft. Try again.');
+        }
+    } catch(e) {
+        console.error("Failed to delete draft", e);
+    }
+}
 
-  const btn = document.getElementById('improverBtn');
-  btn.disabled = true;
-  btn.textContent = 'Improvingâ€¦';
+function closeEditor() {
+    document.getElementById('editorViewport').style.display = 'none';
+    document.getElementById('paperShelf').style.display = 'grid';
+    document.body.classList.remove('editor-active');
+    activeEssayId = null;
+}
 
-  showView('improver');
-  const iv = document.getElementById('view-improver');
-  iv.innerHTML = `
-    <div class="result-panel-wrap" id="improver-result-wrap">
-      <div class="result-panel-header">
-        <div class="result-panel-title">Improved Essay</div>
-        <div class="result-panel-sub">AI-enhanced version of your work</div>
-      </div>
-      <div class="result-panel-body" id="improver-result-body">
-        <div style="padding:2rem;text-align:center;">
-          <div style="width:28px;height:28px;border:2px solid var(--border2);border-top-color:#a78bfa;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem;"></div>
-          <div style="font-size:.8125rem;color:var(--text2);">Improving your essayâ€¦</div>
-        </div>
-      </div>
-    </div>`;
-
+async function saveEdits() {
+  if(!activeEssayId) return;
+  const body = document.getElementById('editorBody').innerText;
+  const topic = document.getElementById('editorTitle').innerText;
+  const btn = document.getElementById('saveBtn');
+  btn.innerText = 'SAVING...';
+  
   try {
-    const resp = await fetch('{% url "essay_improve" %}', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
-      body: JSON.stringify({essay_text: text, improvements, tone, references: getSelectedRefs('improver')})
+    const res = await fetch('/ai-tutor/essay/' + activeEssayId + '/save-edits/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+      body: JSON.stringify({essay_text: body, topic: topic})
     });
-    const data = await resp.json();
-    if(!data.ok) throw new Error(data.error || 'Error');
-
-    const body = document.getElementById('improver-result-body');
-    body.innerHTML = '';
-
-    // Feedback section
-    const fbSec = document.createElement('div');
-    fbSec.className = 'result-section';
-    fbSec.innerHTML = `<div class="result-section-title">What was improved</div>`;
-    const fbCard = document.createElement('div');
-    fbCard.className = 'feedback-card';
-    fbSec.appendChild(fbCard);
-    body.appendChild(fbSec);
-    await typewriterIntoEl(data.feedback, fbCard);
-
-    // Improved text section
-    const impSec = document.createElement('div');
-    impSec.className = 'result-section';
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'copy-btn';
-    copyBtn.textContent = 'Copy';
-    impSec.innerHTML = `<div class="result-section-title" style="justify-content:space-between;"><span>Improved Text</span></div>`;
-    impSec.querySelector('.result-section-title').appendChild(copyBtn);
-    const impCard = document.createElement('div');
-    impCard.className = 'improved-card';
-    impSec.appendChild(impCard);
-    body.appendChild(impSec);
-    copyBtn.onclick = () => { navigator.clipboard.writeText(data.improved); copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1500); };
-    await typewriterIntoEl(data.improved, impCard);
-
-    // Show chat
-    showResultChat('improver-result-wrap', data.improved, [
-      'Make it more concise', 'Strengthen the conclusion', 'Add more evidence', 'Change the tone to formal'
-    ]);
-
-  } catch(e){
-    document.getElementById('improver-result-body').innerHTML =
-      `<div style="padding:1.5rem;color:#f87171;font-size:.8125rem;">Error: ${e.message}</div>`;
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Improve My Essay';
+    if(res.ok) {
+      btn.innerText = 'SAVED ✓';
+      setTimeout(() => btn.innerText = 'SAVE CHANGES', 2000);
+    }
+  } catch(e) { btn.innerText = 'ERROR'; setTimeout(() => btn.innerText = 'SAVE CHANGES', 2000); }
 }
 
-// Typewrite into a plain element (no cursor node needed â€” just text)
-async function typewriterIntoEl(text, el) {
-  el.textContent = '';
-  const words = text.split(' ');
-  for (let i = 0; i < words.length; i++) {
-    el.textContent += (i === 0 ? '' : ' ') + words[i];
-    if (el.parentElement) el.parentElement.scrollTop = el.parentElement.scrollHeight;
-    const delay = words[i].length <= 3 ? 12 : words[i].length <= 6 ? 20 : 28;
-    await sleep(delay);
-  }
+function downloadEssay(fmt) {
+  if(!activeEssayId) return;
+  window.location.href = '/ai-tutor/essay/export/?id=' + activeEssayId + '&format=' + fmt;
 }
 
-function copyImproved(){
-  const el = document.getElementById('improver-result-text');
-  if(el){ navigator.clipboard.writeText(el.textContent); }
+async function restyleEssay() {
+  if(!activeEssayId) return;
+  const instruction = prompt("How should the AI polish this draft?");
+  if(!instruction) return;
+  
+  alert('Warning: Wait for stream completion first. Restyling via stream is coming to the next update.');
 }
 </script>
-  </div> <!-- /workspace -->
-</div> <!-- /main-content -->
 </body>
 </html>

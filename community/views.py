@@ -354,7 +354,7 @@ def feed(request):
     )
 
     if tab == 'following':
-        # "Following" tab â€” only posts from people you follow + communities you're in
+        # "Following" tab — only posts from people you follow + communities you're in + AI posts
         from django.db.models import Q
         following_ids = Follow.objects.filter(follower=request.user).values_list('following_id', flat=True)
         joined_school_ids = CommunityMembership.objects.filter(user=request.user).values_list('community_id', flat=True)
@@ -363,13 +363,18 @@ def feed(request):
             Q(author_id__in=following_ids) |
             Q(author=request.user) |
             Q(school_community_id__in=joined_school_ids) |
-            Q(custom_community_id__in=joined_custom_ids)
+            Q(custom_community_id__in=joined_custom_ids) |
+            Q(is_ai_generated=True) |
+            Q(feed_only=True)
         ).distinct()
     elif tab == 'liked':
-        # "Liked" tab â€” only posts this user has liked
+        # "Liked" tab — only posts this user has liked
         liked_post_ids = PostLike.objects.filter(user=request.user).values_list('post_id', flat=True)
         qs = qs.filter(id__in=liked_post_ids)
-    # "For You" (tab == 'all') â€” all posts, no filter
+    # "For You" (tab == 'all') — all posts, no filter
+    elif tab == 'all':
+        # Ensure we don't accidentally filter out feed_only in the 'all' view
+        pass
 
     qs = qs.order_by('-created_at')
 
@@ -446,6 +451,9 @@ def feed(request):
             'all_viewed': all(s.id in viewed_story_ids for s in stories)
         })
 
+    from django.core.cache import cache
+    clutch_ai_last_run = cache.get('clutch_ai_last_run')
+
     return render(request, 'community/feed.html', {
         'posts': posts,
         'has_more': has_more,
@@ -462,6 +470,7 @@ def feed(request):
         'has_my_story': has_my_story,
         'viewed_story_ids': viewed_story_ids,
         'liked_story_ids': liked_story_ids,
+        'clutch_ai_last_run': clutch_ai_last_run,
     })
 
 

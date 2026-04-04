@@ -7,11 +7,15 @@ class Assignment(models.Model):
     """Model for storing assignment uploads and instructions."""
     
     TASK_TYPE_CHOICES = [
-        ('essay', 'Write an Essay'),
-        ('summarize', 'Summarize'),
-        ('answer', 'Answer Questions'),
-        ('slides', 'Generate Slides'),
-        ('structured', 'Provide Structured Answers'),
+        ('essay', 'Essays & Written Reports'),
+        ('research', 'Deep Research Projects'),
+        ('coding', 'Practical / Coding Assignments'),
+        ('lab_report', 'Scientific Lab Reports'),
+        ('presentation', 'Presentations & Slides'),
+        ('problem_set', 'Problem Sets & Calculations'),
+        ('group', 'Group Projects & Startup Systems'),
+        ('case_study', 'Real-world Case Studies'),
+        ('capstone', 'Capstone / Final Year Project'),
     ]
     
     OUTPUT_FORMAT_CHOICES = [
@@ -29,6 +33,8 @@ class Assignment(models.Model):
     instructions = models.TextField(blank=True, default='', help_text="Additional instructions for the AI")
     output_format = models.CharField(max_length=20, choices=OUTPUT_FORMAT_CHOICES, default='word')
     use_rag = models.BooleanField(default=True, help_text="Use study materials as reference (RAG)")
+    research_notes = models.TextField(blank=True, default='', help_text="Findings from deep web research")
+    research_sources = models.JSONField(blank=True, default=dict, help_text="Sources found during research (JSON list)")
     selected_materials = models.ManyToManyField(
         StudyMaterial, blank=True, related_name='assignments',
         help_text="Specific study materials to use (empty = use all)"

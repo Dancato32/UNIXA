@@ -51,12 +51,72 @@ h1 { font-size: 1.25rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidd
 .bottom-nav-item svg { width: 20px; height: 20px; }
 .bottom-nav-item.active { color: #60a5fa; }
 
-@media (max-width: 900px) {
-    body { padding: 1rem; padding-bottom: 5rem; }
-    .bottom-nav { display: flex; }
-    h1 { font-size: 1rem; }
-    .card-body { padding: 1rem; }
-}
+    @media (max-width: 900px) {
+        body { padding: 1rem; padding-bottom: 5rem; }
+        .bottom-nav { display: flex; }
+        h1 { font-size: 1rem; }
+        .card-body { padding: 1rem; }
+    }
+
+    /* ── Model Picker ── */
+    .model-trigger {
+        display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+        background: rgba(255,255,255,0.05); border: 1px solid #2a2a2a;
+        border-radius: 16px; cursor: pointer; transition: all 0.2s;
+        font-size: 11px; font-weight: 700; color: #a0a0a0;
+        font-family: inherit; margin-left: auto;
+    }
+    .model-trigger:hover { border-color: #3b82f6; color: #e8e8e8; background: rgba(59,130,246,0.08); }
+    .model-trigger svg { width: 12px; height: 12px; }
+    #model-badge-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .model-picker-overlay {
+        position: fixed; inset: 0; z-index: 5000;
+        display: none;
+    }
+    .model-picker-overlay.open { display: block; }
+
+    .model-picker-panel {
+        position: absolute; top: 70px; right: 24px;
+        width: 320px; max-height: 480px; overflow-y: auto; scrollbar-width: none;
+        background: #161616; border: 1px solid #2a2a2a;
+        border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        backdrop-filter: blur(20px); z-index: 5001;
+        display: none;
+        padding: 8px;
+    }
+    .model-picker-panel::-webkit-scrollbar { display: none; }
+    
+    .picker-header { padding: 8px 10px 12px; }
+    .picker-header h4 { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+    .picker-header p { font-size: 11px; color: #555; }
+
+    .provider-group { margin-bottom: 6px; }
+    .provider-label {
+        font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+        color: #444; padding: 6px 10px 2px;
+    }
+    .model-option {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 10px; border-radius: 10px; cursor: pointer;
+        transition: all 0.15s; border: 1px solid transparent;
+    }
+    .model-option:hover { background: #222; }
+    .model-option.active {
+        background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2);
+    }
+    .model-option-left { display: flex; flex-direction: column; }
+    .model-option-name { font-size: 12px; font-weight: 700; color: #eee; }
+    .model-option-id { font-size: 11px; color: #555; font-family: monospace; }
+    .model-badge {
+        font-size: 8px; font-weight: 800; text-transform: uppercase;
+        padding: 2px 6px; border-radius: 10px;
+    }
+    .badge-Fast     { background: rgba(16,185,129,0.1); color: #10B981; }
+    .badge-Smart    { background: rgba(59,130,246,0.1);  color: #60A5FA; }
+    .badge-Powerful { background: rgba(139,92,246,0.1);  color: #A78BFA; }
+    
+    @keyframes pickerIn { from { opacity:0; transform:translateY(-8px) scale(0.98); } to { opacity:1; transform:none; } }
 </style>
 </head>
 <body>
@@ -70,6 +130,10 @@ h1 { font-size: 1.25rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidd
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Summarize
     </span>
+    <button class="model-trigger" onclick="ModelPicker.toggle()" title="Switch AI Model">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M20 12a8 8 0 1 1-4.03-6.93"/><polyline points="20 2 20 8 14 8"/></svg>
+        <span id="model-badge-name">GPT-4o Mini</span>
+    </button>
 </div>
 
 <div class="card">
@@ -116,8 +180,19 @@ h1 { font-size: 1.25rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidd
     </div>
 </div>
 
+<!-- Model Picker Overlay -->
+<div class="model-picker-overlay" id="model-picker-overlay" onclick="ModelPicker.close()"></div>
+<div class="model-picker-panel" id="model-picker-panel">
+    <div class="picker-header">
+        <h4>AI Engine</h4>
+        <p>Select the model for analysis</p>
+    </div>
+    <div id="model-picker-list"></div>
+</div>
+
 <script>
 const AJAX_URL = '{% url "summarize_ajax" material.pk %}';
+const MODELS_URL = '{% url "ai_get_models" %}';
 const CSRF = '{{ csrf_token }}';
 
 function setState(id) {
@@ -131,7 +206,8 @@ async function generate() {
     try {
         const res = await fetch(AJAX_URL, {
             method: 'POST',
-            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' }
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: NexaModel.current })
         });
         const data = await res.json();
         if (data.success) {
@@ -157,8 +233,12 @@ function copyText() {
 }
 
 // Auto-generate on load
-generate();
+setTimeout(() => {
+    ModelPicker.load(MODELS_URL);
+    generate();
+}, 600);
 </script>
+<script src="/static/js/nexa_models.js"></script>
 
 <style>
 /* Unified Bottom Nav Styles */

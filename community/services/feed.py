@@ -65,6 +65,8 @@ def get_personalized_feed(user, limit: int = 20, cursor: str | None = None):
         Q(school_community_id__in=joined_community_ids)
         | Q(custom_community_id__in=joined_community_ids)
         | Q(author_id__in=followed_user_ids)
+        | Q(is_ai_generated=True)
+        | Q(feed_only=True)
     )
 
     qs = (

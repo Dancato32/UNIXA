@@ -18,7 +18,7 @@ def _client():
         base_url='https://openrouter.ai/api/v1',
         default_headers={
             'HTTP-Referer': 'https://unixa.onrender.com',
-            'X-Title': 'Nexa AI Community',
+            'X-Title': 'Clutch AI Community',
         },
     )
 

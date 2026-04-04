@@ -193,25 +193,25 @@ class Post(models.Model):
     category = models.CharField(max_length=100, blank=True)
     # Opportunity fields — user can mark a post as an opportunity when creating it
     OPP_INTERNSHIP = 'internship'
-    OPP_SCHOLARSHIP = 'scholarship'
     OPP_JOB = 'job'
-    OPP_COMPETITION = 'competition'
-    OPP_RESEARCH = 'research'
+    OPP_SCHOLARSHIP = 'scholarship'
     OPP_GRANT = 'grant'
+    OPP_FREELANCE = 'freelance'
     OPP_OTHER = 'other'
     OPP_TYPE_CHOICES = [
         (OPP_INTERNSHIP, 'Internship'),
-        (OPP_SCHOLARSHIP, 'Scholarship'),
         (OPP_JOB, 'Job'),
-        (OPP_COMPETITION, 'Competition'),
-        (OPP_RESEARCH, 'Research'),
+        (OPP_SCHOLARSHIP, 'Scholarship'),
         (OPP_GRANT, 'Grant'),
+        (OPP_FREELANCE, 'Freelance Gig'),
         (OPP_OTHER, 'Other'),
     ]
     is_opportunity = models.BooleanField(default=False, db_index=True)
     opportunity_type = models.CharField(
         max_length=20, choices=OPP_TYPE_CHOICES, blank=True, default=''
     )
+    is_ai_generated = models.BooleanField(default=False, db_index=True)
+    source_url = models.URLField(max_length=500, null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     # Denormalized counters — updated via signals
@@ -531,7 +531,9 @@ class CommunityProfile(models.Model):
     website = models.URLField(blank=True)
     avatar = models.ImageField(upload_to='community/profiles/avatars/', null=True, blank=True)
     banner = models.ImageField(upload_to='community/profiles/banners/', null=True, blank=True)
+    major = models.CharField(max_length=100, blank=True)
     interests = models.CharField(max_length=500, blank=True, help_text='Comma-separated interest tags')
+    match_prefs = models.CharField(max_length=500, blank=True, help_text='Comma-separated matching preferences')
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

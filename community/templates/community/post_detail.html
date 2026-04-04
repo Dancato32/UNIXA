@@ -1,623 +1,373 @@
 {% extends "community/base.html" %}
 {% load community_tags %}
-{% block title %}Post by {{ post.author.username }}{% endblock %}
-{% block mobile_title %}Post{% endblock %}
-{% block topbar_title %}post{% endblock %}
+{% block title %}Blueprint by {{ post.author.username }}{% endblock %}
+{% block mobile_title %}Blueprint{% endblock %}
+{% block topbar_title %}blueprint{% endblock %}
 {% block topbar_desc %}by {{ post.author.username }}{% endblock %}
 
 {% block extra_css %}
 <style>
-/* â”€â”€ Post card â”€â”€ */
-.post-card{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1.25rem;margin-bottom:1rem;}
-.post-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
-.post-avatar{width:38px;height:38px;background:var(--surface4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9375rem;font-weight:700;flex-shrink:0;overflow:hidden;}
-.post-avatar img{width:100%;height:100%;object-fit:cover;}
-.post-author{font-size:.9375rem;font-weight:700;}
-.post-author a{color:var(--text);}
-.post-community{font-size:.8125rem;color:var(--text2);}
-.post-community a{color:var(--text2);}
-.post-time{font-size:.75rem;color:var(--text3);}
-.post-title{font-size:1.125rem;font-weight:700;color:var(--text);margin-bottom:.625rem;line-height:1.4;}
-.post-content{font-size:.9375rem;line-height:1.7;white-space:pre-wrap;color:var(--text2);margin-bottom:1.25rem;}
-.post-media{width:100%;border-radius:6px;margin-bottom:1.25rem;max-height:500px;object-fit:cover;}
-.post-stats{display:flex;gap:1.5rem;padding:.625rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:.875rem;}
-.stat{font-size:.8125rem;color:var(--text3);}
-.stat strong{color:var(--text);}
-/* â”€â”€ Action bar â”€â”€ */
-.post-actions{display:flex;gap:.375rem;flex-wrap:wrap;}
-.pa{display:inline-flex;align-items:center;gap:.375rem;padding:.35rem .75rem;border-radius:4px;font-size:.8125rem;font-weight:600;color:var(--text2);background:var(--surface3);border:1px solid var(--border2);transition:all .15s;cursor:pointer;}
-.pa:hover{background:var(--surface4);color:var(--text);}
-.pa.liked{color:#ff6314;border-color:rgba(255,99,20,.3);}
-.pa svg{width:15px;height:15px;}
-/* â”€â”€ Comment section â”€â”€ */
-.comments-section{margin-top:1rem;}
-.comments-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;}
-.comments-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);}
-.sort-comments{display:flex;gap:.25rem;}
-.sc-btn{padding:.2rem .5rem;background:none;border:1px solid var(--border2);border-radius:3px;font-size:.6875rem;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;}
-.sc-btn:hover,.sc-btn.active{background:var(--surface3);color:var(--text2);}
-/* â”€â”€ Comment composer â”€â”€ */
-.comment-composer{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.875rem;}
-.cc-top{display:flex;gap:.625rem;align-items:flex-start;}
-.cc-av{width:30px;height:30px;background:var(--surface4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;overflow:hidden;}
-.cc-av img{width:100%;height:100%;object-fit:cover;}
-.cc-wrap{flex:1;}
-.cc-input{width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:.5rem .75rem;color:var(--text);font-size:.875rem;resize:none;min-height:72px;outline:none;transition:border-color .15s;line-height:1.6;}
-.cc-input:focus{border-color:var(--border3);}
-.cc-input::placeholder{color:var(--text3);}
-.cc-footer{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.5rem;}
-/* â”€â”€ Comment card â”€â”€ */
-.comment-card{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.5rem;transition:border-color .15s;}
-.comment-card:hover{border-color:var(--border3);}
-.comment-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;}
-.comment-av{width:26px;height:26px;background:var(--surface4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6875rem;font-weight:700;flex-shrink:0;overflow:hidden;}
-.comment-av img{width:100%;height:100%;object-fit:cover;}
-.comment-author{font-size:.8125rem;font-weight:600;color:var(--text);}
-.comment-author a{color:var(--text);}
-.comment-time{font-size:.6875rem;color:var(--text3);margin-left:.25rem;}
-.comment-body{font-size:.875rem;line-height:1.6;color:var(--text2);white-space:pre-wrap;margin-bottom:.5rem;}
-/* â”€â”€ Comment actions (Reddit-style) â”€â”€ */
-.comment-actions{display:flex;align-items:center;gap:.25rem;flex-wrap:wrap;}
-/* Vote pill */
-.vote-pill{display:inline-flex;align-items:center;background:var(--surface3);border:1px solid var(--border2);border-radius:20px;overflow:hidden;}
-.vote-btn{display:inline-flex;align-items:center;justify-content:center;padding:.3rem .5rem;background:none;border:none;color:var(--text3);cursor:pointer;transition:all .15s;font-size:.75rem;font-weight:700;}
-.vote-btn:hover{background:var(--surface4);color:var(--text);}
-.vote-btn.up.active{color:#ff6314;}
-.vote-btn.down.active{color:#7c9cf8;}
-.vote-btn svg{width:14px;height:14px;}
-.vote-count{font-size:.75rem;font-weight:700;color:var(--text2);padding:0 .25rem;min-width:20px;text-align:center;}
-/* Action buttons */
-.ca{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .6rem;border-radius:20px;font-size:.75rem;font-weight:600;color:var(--text3);background:none;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.ca:hover{background:var(--surface3);color:var(--text2);}
-.ca svg{width:13px;height:13px;}
-/* More menu */
-.ca-more{position:relative;}
-.ca-more-menu{display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:var(--surface4);border:1px solid var(--border3);border-radius:6px;min-width:130px;z-index:50;overflow:hidden;}
-.ca-more-menu.open{display:block;}
-.ca-more-item{display:block;width:100%;padding:.45rem .75rem;font-size:.8125rem;color:var(--text2);background:none;border:none;text-align:left;cursor:pointer;transition:background .12s;}
-.ca-more-item:hover{background:var(--surface5);color:var(--text);}
-/* â”€â”€ Reply thread â”€â”€ */
-.replies{margin-top:.625rem;padding-left:1rem;border-left:2px solid var(--border2);}
-.reply-composer{margin-top:.5rem;display:none;}
-.reply-composer.open{display:block;}
-.rc-wrap{display:flex;gap:.5rem;align-items:flex-start;}
-.rc-input{flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:.4rem .625rem;color:var(--text);font-size:.8125rem;resize:none;min-height:52px;outline:none;transition:border-color .15s;line-height:1.5;}
-.rc-input:focus{border-color:var(--border3);}
-.rc-input::placeholder{color:var(--text3);}
-.rc-footer{display:flex;justify-content:flex-end;gap:.375rem;margin-top:.375rem;}
-/* â”€â”€ Share toast â”€â”€ */
-.share-toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--surface5);color:var(--text);padding:.5rem 1.25rem;border-radius:6px;font-size:.8125rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;}
-.share-toast.show{opacity:1;}
-/* â”€â”€ New comment highlight â”€â”€ */
-@keyframes fadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
-.comment-new{animation:fadeIn .3s ease;}
+/* ── DETAILED BLUEPRINT: CLUTCH STUDIO ARCHITECTURE ── */
+.detail-wrap { max-width: 800px; margin: 0 auto; padding: 2rem 1.125rem 6rem; }
 
-@media(max-width:600px){
-  .post-card{border-radius:0;border-left:none;border-right:none;margin:0 -.625rem;}
-  .vote-col{display:none;}
-  .post-body{padding:.75rem;}
-  .post-title{font-size:.9375rem;}
-  .post-text{font-size:.8125rem;}
-  .post-actions{gap:0;}
-  .pa{padding:.3rem .4rem;font-size:.7rem;}
-  .comment-card{padding:.625rem .75rem;}
-  .comment-actions{gap:.1rem;}
-  .ca-btn{padding:.2rem .4rem;font-size:.7rem;}
-  .vote-pill{padding:.2rem .5rem;}
-  .reply-box{padding:.5rem .75rem;}
-  .reply-input{font-size:.8125rem;}
-  .more-menu{right:0;left:auto;}
+/* ── Post Card ── */
+.post-card {
+  background: var(--clutch-surface); border: 2px solid var(--clutch-border);
+  border-radius: 32px; margin-bottom: 2.5rem; overflow: hidden;
+  box-shadow: var(--clutch-shadow);
+  animation: fluidSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes fluidSlideUp { from { opacity: 0; transform: translateY(30px) scale(0.98); filter: blur(8px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); } }
+
+.post-head { padding: 1.75rem; display: flex; align-items: flex-start; justify-content: space-between; }
+.post-user { display: flex; align-items: center; gap: 1rem; text-decoration: none; }
+.post-av {
+  width: 52px; height: 52px; border-radius: 14px; background: #f1f5f9;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.125rem; font-weight: 950; color: var(--clutch-text); overflow: hidden;
+}
+.post-av img { width: 100%; height: 100%; object-fit: cover; }
+.post-info { flex: 1; }
+.post-author { font-size: 1.125rem; font-weight: 950; color: var(--clutch-text); letter-spacing: -0.03em; line-height: 1.1; }
+.post-sub { font-size: 0.75rem; font-weight: 850; color: var(--clutch-text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+
+.post-body { padding: 0 1.75rem 1.75rem; font-size: 1.125rem; line-height: 1.7; color: var(--clutch-text); }
+.post-card.ai-generation { border-color: var(--clutch-blue); background: linear-gradient(to bottom, #fff, #f8fbff); }
+.clutch-ai-badge {
+  background: var(--clutch-blue); color: #fff; padding: 2px 8px; border-radius: 6px;
+  font-size: 0.6rem; font-weight: 950; letter-spacing: 0.1em; margin-left: 8px;
+  vertical-align: middle; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+.post-media { margin: 0 1.75rem 1.75rem; border-radius: 20px; overflow: hidden; border: 1px solid var(--clutch-border); }
+.post-media img, .post-media video { width: 100%; display: block; max-height: 800px; object-fit: contain; background: #000; }
+
+.post-file {
+  display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; background: #f9f9f9;
+  border-radius: 16px; margin: 0 1.75rem 1.75rem; text-decoration: none; color: inherit;
+  border: 1px solid var(--clutch-border); transition: all 0.2s;
+}
+.post-file:hover { border-color: var(--clutch-blue); background: #fff; transform: translateY(-2px); }
+.post-file-icon { width: 48px; height: 48px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; border: 1px solid var(--clutch-border); }
+.post-file-name { font-weight: 950; font-size: 1rem; color: var(--clutch-text); margin-bottom: 2px; }
+.post-file-meta { font-size: 0.75rem; font-weight: 800; color: var(--clutch-text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.post-footer { padding: 1.5rem 1.75rem; border-top: 1px solid var(--clutch-border); display: flex; justify-content: space-between; align-items: center; }
+.post-actions { display: flex; gap: 2.5rem; }
+.post-act {
+  display: flex; align-items: center; gap: 10px; font-size: 0.875rem; font-weight: 950;
+  color: var(--clutch-text); cursor: pointer; text-transform: uppercase; letter-spacing: 0.12em;
+  background: none; border: none; padding: 0; transition: transform 0.2s;
+}
+.post-act:hover { transform: scale(1.05); }
+.post-act svg { width: 22px; height: 22px; stroke-width: 2.5; }
+.post-act.liked { color: var(--clutch-blue); }
+.post-act.liked svg { fill: var(--clutch-blue); stroke: var(--clutch-blue); }
+
+/* ── BLUEPRINT THREADING: Comments ── */
+.comments-sec { margin-top: 3rem; }
+.comments-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding: 0 0.5rem; }
+.comments-title { font-size: 0.75rem; font-weight: 950; text-transform: uppercase; letter-spacing: 0.2em; color: var(--clutch-text-dim); }
+
+.comment-composer {
+  background: var(--clutch-surface); border: 2px solid var(--clutch-border);
+  border-radius: 32px; padding: 1.5rem; margin-bottom: 2.5rem;
+  box-shadow: var(--clutch-shadow);
+}
+.composer-row { display: flex; gap: 1rem; }
+.composer-av { width: 44px; height: 44px; border-radius: 12px; background: #eee; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: 950; font-size: 1rem; }
+.composer-av img { width: 100%; height: 100%; object-fit: cover; }
+.composer-main { flex: 1; }
+.composer-input {
+  width: 100%; background: #fcfcfc; border: 2px solid var(--clutch-border);
+  border-radius: 16px; padding: 1rem; font-size: 1rem; font-weight: 600;
+  color: var(--clutch-text); resize: none; min-height: 100px; outline: none;
+  transition: all 0.2s; margin-bottom: 1rem;
+}
+.composer-input:focus { border-color: var(--clutch-blue); background: #fff; box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.1); }
+.composer-footer { display: flex; justify-content: flex-end; gap: 0.75rem; }
+
+.btn-clutch-sm {
+  padding: 0.6rem 1.25rem; border-radius:100px; font-size: 0.75rem; font-weight: 950;
+  text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s;
+}
+.btn-clutch-primary { background: #000; color: #fff; border: none; }
+.btn-clutch-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+.btn-clutch-ghost { background: none; color: var(--clutch-text-dim); border: 1px solid var(--clutch-border); }
+.btn-clutch-ghost:hover { background: #f9f9f9; color: var(--clutch-text); }
+.btn-clutch-apply {
+  background: var(--clutch-blue); color: #fff !important; padding: 0.75rem 1.75rem;
+  border-radius: 100px; font-size: 0.75rem; font-weight: 950;
+  text-transform: uppercase; letter-spacing: 0.15em; transition: all 0.2s;
+  text-decoration: none; display: inline-block; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+.btn-clutch-apply:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5); filter: brightness(1.1); }
+
+/* Comment Cards */
+.comment-card {
+  display: flex; gap: 1rem; margin-bottom: 2rem; position: relative;
+  animation: fluidFadeIn 0.5s ease backwards;
+}
+@keyframes fluidFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.comment-av { width: 40px; height: 40px; border-radius: 12px; background: #f1f5f9; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: 950; font-size: 0.9rem; }
+.comment-content { flex: 1; }
+.comment-bubble {
+  background: #fff; border: 2px solid var(--clutch-border);
+  border-radius: 0 24px 24px 24px; padding: 1rem 1.25rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+.comment-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.comment-author { font-size: 0.9375rem; font-weight: 950; color: var(--clutch-text); }
+.comment-time { font-size: 0.7rem; font-weight: 850; color: var(--clutch-text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.comment-text { font-size: 1rem; line-height: 1.6; color: var(--clutch-text); }
+
+.comment-footer { display: flex; gap: 1.5rem; margin-top: 8px; padding-left: 4px; }
+.comment-act {
+  display: flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 950;
+  color: var(--clutch-text-dim); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;
+  background: none; border: none; padding: 0; transition: color 0.2s;
+}
+.comment-act:hover { color: var(--clutch-text); }
+.comment-act svg { width: 14px; height: 14px; stroke-width: 3; }
+.comment-act.active { color: var(--clutch-blue); }
+
+.comment-replies {
+  margin-top: 1.5rem; padding-left: 2.5rem;
+  border-left: 2px solid var(--clutch-border);
+}
+
+/* Share Toast */
+.share-toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  background: #000; color: #fff; padding: 1rem 2rem; border-radius: 100px;
+  font-size: 0.8125rem; font-weight: 950; text-transform: uppercase; letter-spacing: 0.15em;
+  z-index: 9999; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.share-toast.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+
+@media (max-width: 600px) {
+  .detail-wrap { padding: 1rem; }
+  .post-card { border-radius: 24px; }
+  .post-head { padding: 1.25rem; }
+  .post-body { padding: 0 1.25rem 1.25rem; }
+  .post-media { margin: 0 1.25rem 1.25rem; border-radius: 14px; }
+  .comment-replies { padding-left: 1.5rem; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Post -->
-<div class="post-card">
-  <div class="post-header">
-    <a href="{% url 'community:profile' post.author.username %}">
-      <div class="post-avatar">
-        {% if post.author.community_profile.avatar %}
-          <img src="{{ post.author.community_profile.avatar.url }}" alt="">
-        {% else %}
-          {{ post.author.username|slice:":1"|upper }}
-        {% endif %}
-      </div>
-    </a>
-    <div>
-      <div class="post-author"><a href="{% url 'community:profile' post.author.username %}">{{ post.author.username }}</a></div>
-      <div class="post-community">
-        {% if post.school_community %}<a href="{% url 'community:school_detail' post.school_community.slug %}">{{ post.school_community.name }}</a>
-        {% elif post.custom_community %}<a href="{% url 'community:custom_detail' post.custom_community.slug %}">{{ post.custom_community.name }}</a>
-        {% else %}Feed{% endif %}
-      </div>
-      <div class="post-time">{{ post.created_at|date:"N j, Y · g:i A" }}</div>
-    </div>
-    {% if post.author == user %}
-    <a href="{% url 'community:post_delete' post.id %}" class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--red);">Delete</a>
-    {% endif %}
-  </div>
-  {% if post.title %}<div class="post-title">{{ post.title }}</div>{% endif %}
-  <div class="post-content">{{ post.content }}</div>
-  {% if post.media and post.media_type == 'image' %}
-    <img src="{{ post.media.url }}" alt="" class="post-media">
-  {% elif post.media and post.media_type == 'video' %}
-    <video src="{{ post.media.url }}" controls class="post-media"></video>
-  {% elif post.media and post.media_type == 'file' %}
-    <a href="{{ post.media.url }}" target="_blank" class="post-file-card" style="display:flex; align-items:center; gap:0.75rem; padding:1.125rem; background:#fff; border:2.5px solid var(--border-ink); border-radius:12px; box-shadow:4px 4px 0 var(--border-ink); text-decoration:none; color:inherit; margin-bottom:1.5rem;">
-      <div class="pfc-icon" style="width:48px; height:48px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border:2px solid var(--border-ink); border-radius:8px;">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-      </div>
-      <div class="pfc-info" style="flex:1; min-width:0;">
-        <div class="pfc-name" style="font-weight:800; font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.media.name|basename }}</div>
-        <div class="pfc-meta" style="font-size:0.8125rem; color:var(--text3); font-weight:600;">Download / Institutional Attachment</div>
-      </div>
-    </a>
-  {% endif %}
-  <div class="post-stats">
-    <span class="stat"><strong id="like-count">{{ post.like_count }}</strong> likes</span>
-    <span class="stat"><strong id="comment-count">{{ post.comment_count }}</strong> comments</span>
-  </div>
-  <div class="post-actions">
-    <button class="pa {% if is_liked %}liked{% endif %}" id="like-btn" onclick="togglePostLike()">
-      <svg viewBox="0 0 24 24" fill="{% if is_liked %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      <span id="like-label">{% if is_liked %}Liked{% else %}Like{% endif %}</span>
-    </button>
-    <button class="pa" onclick="focusComposer()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Comment
-    </button>
-    <button class="pa" onclick="sharePost()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      Share
-    </button>
-  </div>
-</div>
-
-<!-- Comments section -->
-<div class="comments-section">
-  <div class="comments-header">
-    <span class="comments-title" id="comments-label">{{ post.comment_count }} Comment{{ post.comment_count|pluralize }}</span>
-    <div class="sort-comments">
-      <button class="sc-btn active" onclick="sortComments('top',this)">Top</button>
-      <button class="sc-btn" onclick="sortComments('new',this)">New</button>
-      <button class="sc-btn" onclick="sortComments('old',this)">Old</button>
-    </div>
-  </div>
-
-  <!-- Composer -->
-  <div class="comment-composer">
-    <div class="cc-top">
-      <div class="cc-av">
-        {% if user.community_profile.avatar %}
-          <img src="{{ user.community_profile.avatar.url }}" alt="">
-        {% else %}
-          {{ user.username|slice:":1"|upper }}
-        {% endif %}
-      </div>
-      <div class="cc-wrap">
-        <textarea id="main-comment-input" class="cc-input" placeholder="What are your thoughts?" rows="3"></textarea>
-        <div class="cc-footer">
-          <button class="btn btn-ghost btn-sm" onclick="clearComposer()">Cancel</button>
-          <button class="btn btn-primary btn-sm" onclick="submitComment()">Comment</button>
+<div class="detail-wrap">
+  <!-- The Detailed Blueprint -->
+  <div class="post-card">
+    <div class="post-head">
+      <a href="{% url 'community:profile' post.author.username %}" class="post-user">
+        <div class="post-av">
+          {% if post.author.community_profile.avatar %}<img src="{{ post.author.community_profile.avatar.url }}" alt="">{% else %}{{ post.author.username|slice:":1"|upper }}{% endif %}
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Comment list -->
-  <div id="comments-list">
-    {% for comment in comments %}
-    <div class="comment-card" id="comment-{{ comment.id }}">
-      <div class="comment-header">
-        <a href="{% url 'community:profile' comment.author.username %}">
-          <div class="comment-av">
-            {% if comment.author.community_profile.avatar %}
-              <img src="{{ comment.author.community_profile.avatar.url }}" alt="">
-            {% else %}
-              {{ comment.author.username|slice:":1"|upper }}
-            {% endif %}
-          </div>
-        </a>
-        <span class="comment-author"><a href="{% url 'community:profile' comment.author.username %}">{{ comment.author.username }}</a></span>
-        <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
-      </div>
-      <div class="comment-body">{{ comment.content }}</div>
-      <div class="comment-actions">
-        <div class="vote-pill">
-          <button class="vote-btn up {% if comment.id in liked_comment_ids %}active{% endif %}" id="clbtn-{{ comment.id }}" onclick="likeComment('{{ comment.id }}',this)" title="Upvote">
-            <svg viewBox="0 0 24 24" fill="{% if comment.id in liked_comment_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-          </button>
-          <span class="vote-count" id="clc-{{ comment.id }}">{{ comment.like_count }}</span>
-          <button class="vote-btn down" title="Downvote" onclick="showToast('Downvote coming soon')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-        </div>
-        <button class="ca" onclick="toggleReplyBox('{{ comment.id }}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Reply
-        </button>
-        <button class="ca" onclick="showToast('Awards coming soon ðŸ†')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-          Award
-        </button>
-        <button class="ca" onclick="shareComment('{{ comment.id }}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Share
-        </button>
-        <div class="ca-more">
-          <button class="ca" onclick="toggleMore(this)">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-          </button>
-          <div class="ca-more-menu">
-            <button class="ca-more-item" onclick="copyToClipboard(location.origin+'/community/post/{{ comment.post_id }}/#comment-{{ comment.id }}');closeAllMoreMenus()">Copy link</button>
-            {% if comment.author == user %}<button class="ca-more-item" style="color:var(--red);" onclick="closeAllMoreMenus();showToast('Delete coming soon')">Delete</button>{% endif %}
-            <button class="ca-more-item" onclick="closeAllMoreMenus();showToast('Reported')">Report</button>
+        <div class="post-info">
+          <div class="post-author">{{ post.author.community_profile.display_name|default:post.author.username }}{% if post.is_ai_generated %}<span class="clutch-ai-badge">CLUTCH AI</span>{% endif %}</div>
+          <div class="post-sub">
+            {{ post.created_at|date:"N j, Y" }} · 
+            {% if post.is_ai_generated %}VERIFIED AI OPPORTUNITY{% elif post.school_community %}{{ post.school_community.name }}{% else %}THE HIVE{% endif %}
           </div>
         </div>
-      </div>
-      <!-- Reply composer -->
-      <div class="reply-composer" id="rc-{{ comment.id }}">
-        <div class="rc-wrap">
-          <div class="cc-av" style="width:24px;height:24px;font-size:.5625rem;">
-            {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-          </div>
-          <div style="flex:1;">
-            <textarea class="rc-input" id="ri-{{ comment.id }}" placeholder="Reply to {{ comment.author.username }}…" rows="2"></textarea>
-            <div class="rc-footer">
-              <button class="btn btn-ghost btn-sm" onclick="toggleReplyBox('{{ comment.id }}')">Cancel</button>
-              <button class="btn btn-primary btn-sm" onclick="submitReply('{{ comment.id }}')">Reply</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Replies -->
-      {% if comment.replies.all %}
-      <div class="replies" id="replies-{{ comment.id }}">
-        {% for reply in comment.replies.all %}
-        <div class="comment-card" id="comment-{{ reply.id }}" style="margin-bottom:.375rem;">
-          <div class="comment-header">
-            <a href="{% url 'community:profile' reply.author.username %}">
-              <div class="comment-av">
-                {% if reply.author.community_profile.avatar %}<img src="{{ reply.author.community_profile.avatar.url }}" alt="">{% else %}{{ reply.author.username|slice:":1"|upper }}{% endif %}
-              </div>
-            </a>
-            <span class="comment-author"><a href="{% url 'community:profile' reply.author.username %}">{{ reply.author.username }}</a></span>
-            <span class="comment-time">{{ reply.created_at|timesince }} ago</span>
-          </div>
-          <div class="comment-body">{{ reply.content }}</div>
-          <div class="comment-actions">
-            <div class="vote-pill">
-              <button class="vote-btn up {% if reply.id in liked_comment_ids %}active{% endif %}" id="clbtn-{{ reply.id }}" onclick="likeComment('{{ reply.id }}',this)" title="Upvote">
-                <svg viewBox="0 0 24 24" fill="{% if reply.id in liked_comment_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-              </button>
-              <span class="vote-count" id="clc-{{ reply.id }}">{{ reply.like_count }}</span>
-              <button class="vote-btn down" title="Downvote" onclick="showToast('Downvote coming soon')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-            </div>
-            <button class="ca" onclick="shareComment('{{ reply.id }}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-              Share
-            </button>
-            <div class="ca-more">
-              <button class="ca" onclick="toggleMore(this)">
-                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-              </button>
-              <div class="ca-more-menu">
-                <button class="ca-more-item" onclick="copyToClipboard(location.origin+'/community/post/{{ reply.post_id }}/#comment-{{ reply.id }}');closeAllMoreMenus()">Copy link</button>
-                <button class="ca-more-item" onclick="closeAllMoreMenus();showToast('Reported')">Report</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="replies" id="replies-{{ comment.id }}" style="display:none;"></div>
+      </a>
+      {% if post.author == user %}
+      <a href="{% url 'community:post_delete' post.id %}" class="btn-clutch-sm btn-clutch-ghost" style="color:var(--red); border-color:rgba(239, 68, 68, 0.2);">DELETE</a>
       {% endif %}
     </div>
-    {% empty %}
-    <div class="empty-state" id="no-comments">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <p>No comments yet. Be the first!</p>
+
+    {% if post.title %}<div class="post-body" style="font-weight:950; font-size:1.5rem; padding-bottom:0.5rem; letter-spacing:-0.03em;">{{ post.title }}</div>{% endif %}
+    <div class="post-body">{{ post.content|linebreaksbr }}</div>
+
+    {% if post.media %}
+    <div class="post-media">
+      {% if post.media_type == 'image' %}
+        <img src="{{ post.media.url }}" alt="" loading="lazy">
+      {% elif post.media_type == 'video' %}
+        <video src="{{ post.media.url }}" controls preload="auto"></video>
+      {% elif post.media_type == 'file' %}
+        <a href="{{ post.media.url }}" target="_blank" class="post-file">
+          <div class="post-file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
+          <div style="flex:1;"><div class="post-file-name">{{ post.media.name|basename }}</div><div class="post-file-meta">BLUEPRINT ATTACHMENT</div></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:18px; color:var(--clutch-blue);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+      {% endif %}
     </div>
-    {% endfor %}
+    {% endif %}
+
+    <div class="post-footer">
+      <div class="post-actions">
+        <button class="post-act {% if is_liked %}liked{% endif %}" id="like-btn" onclick="togglePostLike()">
+          <svg viewBox="0 0 24 24" fill="{% if is_liked %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span id="like-count">{{ post.like_count }}</span>
+        </button>
+        <button class="post-act" onclick="document.getElementById('main-comment-input').focus()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="comment-count-label">{{ post.comment_count }}</span>
+        </button>
+        <button class="post-act" onclick="shareBlueprint()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+      </div>
+      {% if post.is_ai_generated and post.source_url %}
+      <a href="{{ post.source_url }}" target="_blank" class="btn-clutch-apply">APPLY NOW</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Architectural Threading: Comments -->
+  <div class="comments-sec">
+    <div class="comments-header">
+      <div class="comments-title">STUDIO DISCUSSION ({{ post.comment_count }})</div>
+    </div>
+
+    <!-- Composer -->
+    <div class="comment-composer">
+      <div class="composer-row">
+        <div class="composer-av">
+          {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+        </div>
+        <div class="composer-main">
+          <textarea id="main-comment-input" class="composer-input" placeholder="Draft your contribution to this blueprint..."></textarea>
+          <div class="composer-footer">
+            <button class="btn-clutch-sm btn-clutch-ghost" onclick="document.getElementById('main-comment-input').value=''">CANCEL</button>
+            <button class="btn-clutch-sm btn-clutch-primary" onclick="submitComment()">POST COMMENT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="comments-list">
+      {% for comment in comments %}
+      <div class="comment-card" id="comment-{{ comment.id }}">
+        <div class="comment-av">
+          {% if comment.author.community_profile.avatar %}<img src="{{ comment.author.community_profile.avatar.url }}" alt="">{% else %}{{ comment.author.username|slice:":1"|upper }}{% endif %}
+        </div>
+        <div class="comment-content">
+          <div class="comment-bubble">
+            <div class="comment-head">
+              <span class="comment-author">{{ comment.author.community_profile.display_name|default:comment.author.username }}</span>
+              <span class="comment-time">{{ comment.created_at|timesince }} AGO</span>
+            </div>
+            <div class="comment-text">{{ comment.content|linebreaksbr }}</div>
+          </div>
+          <div class="comment-footer">
+            <button class="comment-act {% if comment.id in liked_comment_ids %}active{% endif %}" onclick="likeComment('{{ comment.id }}', this)">
+              <svg viewBox="0 0 24 24" fill="{% if comment.id in liked_comment_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+              <span id="clc-{{ comment.id }}">{{ comment.like_count }}</span>
+            </button>
+            <button class="comment-act" onclick="toggleReplyBox('{{ comment.id }}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              REPLY
+            </button>
+          </div>
+
+          <!-- Reply Area -->
+          <div id="rc-{{ comment.id }}" style="display:none; margin-top:1rem;">
+             <textarea class="composer-input" id="ri-{{ comment.id }}" placeholder="Drafting reply..." style="min-height:80px;"></textarea>
+             <div class="composer-footer">
+               <button class="btn-clutch-sm btn-clutch-ghost" onclick="toggleReplyBox('{{ comment.id }}')">CANCEL</button>
+               <button class="btn-clutch-sm btn-clutch-primary" onclick="submitReply('{{ comment.id }}')">REPLY</button>
+             </div>
+          </div>
+
+          <div class="comment-replies" id="replies-{{ comment.id }}">
+            {% for reply in comment.replies.all %}
+            <div class="comment-card" id="comment-{{ reply.id }}" style="margin-bottom:1rem;">
+              <div class="comment-av" style="width:32px; height:32px; font-size:0.75rem;">
+                {% if reply.author.community_profile.avatar %}<img src="{{ reply.author.community_profile.avatar.url }}" alt="">{% else %}{{ reply.author.username|slice:":1"|upper }}{% endif %}
+              </div>
+              <div class="comment-content">
+                <div class="comment-bubble" style="padding: 0.75rem 1rem;">
+                  <div class="comment-head"><span class="comment-author">{{ reply.author.community_profile.display_name|default:reply.author.username }}</span></div>
+                  <div class="comment-text" style="font-size:0.9375rem;">{{ reply.content|linebreaksbr }}</div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align:center; padding:3rem; border:2px dashed var(--clutch-border); border-radius:24px;">
+        <div style="font-size:0.875rem; font-weight:950; color:var(--clutch-text-dim); text-transform:uppercase; letter-spacing:0.1em;">NO CONTRIBUTIONS YET</div>
+        <div style="font-size:0.75rem; font-weight:800; color:var(--clutch-text-dim); margin-top:8px;">BE THE FIRST ARCHITECT TO COMMENT</div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
 </div>
 
-<div class="share-toast" id="share-toast">Link copied!</div>
+<div class="share-toast" id="share-toast">BLUEPRINT LINK COPIED</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const CSRF = '{{ csrf_token }}';
 const POST_ID = '{{ post.id }}';
-const CURRENT_USER = '{{ user.username }}';
-const CURRENT_USER_INITIAL = '{{ user.username|slice:":1"|upper }}';
-{% if user.community_profile.avatar %}
-const CURRENT_USER_AVATAR = '{{ user.community_profile.avatar.url }}';
-{% else %}
-const CURRENT_USER_AVATAR = null;
-{% endif %}
 
-/* â”€â”€ Helpers â”€â”€ */
 function api(url, method='POST', body=null) {
   return fetch(url, {
     method,
     headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/json'},
     body: body ? JSON.stringify(body) : null,
-  }).then(r => r.json());
+  }).then(r => r.ok ? r.json() : Promise.reject());
 }
 
-function showToast(msg='Link copied!') {
+function showToast(msg='BLUEPRINT LINK COPIED') {
   const t = document.getElementById('share-toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-function copyToClipboard(text) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => showToast());
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast();
-  }
-}
-
-function avatarHtml(size='26px', fontSize='.6875rem') {
-  if (CURRENT_USER_AVATAR) {
-    return `<div class="comment-av" style="width:${size};height:${size};"><img src="${CURRENT_USER_AVATAR}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`;
-  }
-  return `<div class="comment-av" style="width:${size};height:${size};font-size:${fontSize};">${CURRENT_USER_INITIAL}</div>`;
-}
-
-function updateCommentCount(delta) {
-  const el = document.getElementById('comment-count');
-  const label = document.getElementById('comments-label');
-  const n = parseInt(el.textContent || '0') + delta;
-  el.textContent = n;
-  if (label) label.textContent = n + ' Comment' + (n !== 1 ? 's' : '');
-}
-
-/* â”€â”€ Post like â”€â”€ */
 function togglePostLike() {
   api(`/community/api/posts/${POST_ID}/like/`).then(data => {
     const btn = document.getElementById('like-btn');
-    const lbl = document.getElementById('like-label');
     btn.classList.toggle('liked', data.liked);
-    btn.querySelector('svg path').setAttribute('fill', data.liked ? 'currentColor' : 'none');
+    btn.querySelector('svg').setAttribute('fill', data.liked ? 'currentColor' : 'none');
     document.getElementById('like-count').textContent = data.like_count;
-    lbl.textContent = data.liked ? 'Liked' : 'Like';
   });
 }
 
-/* â”€â”€ Comment composer â”€â”€ */
-function focusComposer() {
-  const ta = document.getElementById('main-comment-input');
-  ta.focus();
-  ta.scrollIntoView({behavior:'smooth', block:'center'});
-}
-function clearComposer() {
-  document.getElementById('main-comment-input').value = '';
-}
-
-/* â”€â”€ Build comment HTML â”€â”€ */
-function buildCommentCard(c, isReply=false) {
-  const avatarEl = c.avatar
-    ? `<img src="${c.avatar}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-    : c.initial;
-  const size = isReply ? '24px' : '26px';
-  const actions = isReply ? `
-    <div class="vote-pill">
-      <button class="vote-btn up" id="clbtn-${c.id}" onclick="likeComment('${c.id}',this)" title="Upvote">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-      </button>
-      <span class="vote-count" id="clc-${c.id}">0</span>
-      <button class="vote-btn down" title="Downvote" onclick="showToast('Downvote coming soon')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-    </div>
-    <button class="ca" onclick="shareComment('${c.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-      Share
-    </button>
-    <div class="ca-more">
-      <button class="ca" onclick="toggleMore(this)">
-        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-      </button>
-      <div class="ca-more-menu">
-        <button class="ca-more-item" onclick="copyToClipboard(location.origin+location.pathname+'#comment-${c.id}');closeAllMoreMenus()">Copy link</button>
-        <button class="ca-more-item" onclick="closeAllMoreMenus();showToast('Reported')">Report</button>
-      </div>
-    </div>` : `
-    <div class="vote-pill">
-      <button class="vote-btn up" id="clbtn-${c.id}" onclick="likeComment('${c.id}',this)" title="Upvote">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-      </button>
-      <span class="vote-count" id="clc-${c.id}">0</span>
-      <button class="vote-btn down" title="Downvote" onclick="showToast('Downvote coming soon')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-    </div>
-    <button class="ca" onclick="toggleReplyBox('${c.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Reply
-    </button>
-    <button class="ca" onclick="showToast('Awards coming soon ðŸ†')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-      Award
-    </button>
-    <button class="ca" onclick="shareComment('${c.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-      Share
-    </button>
-    <div class="ca-more">
-      <button class="ca" onclick="toggleMore(this)">
-        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-      </button>
-      <div class="ca-more-menu">
-        <button class="ca-more-item" onclick="copyToClipboard(location.origin+location.pathname+'#comment-${c.id}');closeAllMoreMenus()">Copy link</button>
-        <button class="ca-more-item" onclick="closeAllMoreMenus();showToast('Reported')">Report</button>
-      </div>
-    </div>`;
-
-  return `
-  <div class="comment-card comment-new" id="comment-${c.id}" style="${isReply ? 'margin-bottom:.375rem;' : ''}">
-    <div class="comment-header">
-      <a href="/community/profile/${c.username}/">
-        <div class="comment-av" style="width:${size};height:${size};">${avatarEl}</div>
-      </a>
-      <span class="comment-author"><a href="/community/profile/${c.username}/">${c.username}</a></span>
-      <span class="comment-time">just now</span>
-    </div>
-    <div class="comment-body">${escHtml(c.content)}</div>
-    <div class="comment-actions">${actions}</div>
-    ${!isReply ? `
-    <div class="reply-composer" id="rc-${c.id}">
-      <div class="rc-wrap">
-        ${avatarHtml('24px','.5625rem')}
-        <div style="flex:1;">
-          <textarea class="rc-input" id="ri-${c.id}" placeholder="Reply to ${c.username}…" rows="2"></textarea>
-          <div class="rc-footer">
-            <button class="btn btn-ghost btn-sm" onclick="toggleReplyBox('${c.id}')">Cancel</button>
-            <button class="btn btn-primary btn-sm" onclick="submitReply('${c.id}')">Reply</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="replies" id="replies-${c.id}" style="display:none;"></div>` : ''}
-  </div>`;
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* â”€â”€ Submit top-level comment â”€â”€ */
 function submitComment() {
   const ta = document.getElementById('main-comment-input');
-  const content = ta.value.trim();
-  if (!content) return;
-
-  api(`/community/api/posts/${POST_ID}/comments/`, 'POST', {content})
-    .then(data => {
-      ta.value = '';
-      // Remove "no comments" placeholder
-      const empty = document.getElementById('no-comments');
-      if (empty) empty.remove();
-
-      const card = buildCommentCard({
-        id: data.id,
-        username: CURRENT_USER,
-        initial: CURRENT_USER_INITIAL,
-        avatar: CURRENT_USER_AVATAR,
-        content,
-      });
-      document.getElementById('comments-list').insertAdjacentHTML('afterbegin', card);
-      updateCommentCount(1);
-    })
-    .catch(() => showToast('Failed to post comment'));
+  const val = ta.value.trim(); if(!val) return;
+  api(`/community/api/posts/${POST_ID}/comments/`, 'POST', {content: val}).then(data => {
+    location.reload(); // Simple reload for consistent threading
+  }).catch(() => alert('Drafting failed.'));
 }
 
-/* â”€â”€ Reply box toggle â”€â”€ */
-function toggleReplyBox(commentId) {
-  const box = document.getElementById('rc-' + commentId);
-  if (!box) return;
-  const isOpen = box.classList.toggle('open');
-  if (isOpen) {
-    const ta = document.getElementById('ri-' + commentId);
-    if (ta) { ta.focus(); }
-  }
+function toggleReplyBox(id) {
+  const b = document.getElementById('rc-'+id);
+  b.style.display = b.style.display === 'none' ? 'block' : 'none';
+  if(b.style.display === 'block') b.querySelector('textarea').focus();
 }
 
-/* â”€â”€ Submit reply â”€â”€ */
 function submitReply(parentId) {
-  const ta = document.getElementById('ri-' + parentId);
-  const content = ta.value.trim();
-  if (!content) return;
-
-  api(`/community/api/posts/${POST_ID}/comments/`, 'POST', {content, parent: parentId})
-    .then(data => {
-      ta.value = '';
-      toggleReplyBox(parentId);
-
-      const repliesEl = document.getElementById('replies-' + parentId);
-      if (repliesEl) {
-        repliesEl.style.display = '';
-        repliesEl.insertAdjacentHTML('beforeend', buildCommentCard({
-          id: data.id,
-          username: CURRENT_USER,
-          initial: CURRENT_USER_INITIAL,
-          avatar: CURRENT_USER_AVATAR,
-          content,
-        }, true));
-      }
-      updateCommentCount(1);
-    })
-    .catch(() => showToast('Failed to post reply'));
+  const ta = document.getElementById('ri-'+parentId);
+  const val = ta.value.trim(); if(!val) return;
+  api(`/community/api/posts/${POST_ID}/comments/`, 'POST', {content: val, parent: parentId}).then(data => {
+    location.reload();
+  }).catch(() => alert('Drafting failed.'));
 }
 
-/* â”€â”€ Like comment â”€â”€ */
 function likeComment(id, btn) {
   api(`/community/comments/${id}/like/`).then(data => {
     btn.classList.toggle('active', data.liked);
-    const svg = btn.querySelector('svg polyline');
-    if (svg) svg.setAttribute('fill', data.liked ? 'currentColor' : 'none');
-    const el = document.getElementById('clc-' + id);
-    if (el) el.textContent = data.like_count;
+    btn.querySelector('svg').setAttribute('fill', data.liked ? 'currentColor' : 'none');
+    document.getElementById('clc-'+id).textContent = data.like_count;
   });
 }
 
-/* â”€â”€ More menu â”€â”€ */
-function toggleMore(btn) {
-  closeAllMoreMenus();
-  const menu = btn.nextElementSibling;
-  if (menu) menu.classList.toggle('open');
-}
-function closeAllMoreMenus() {
-  document.querySelectorAll('.ca-more-menu.open').forEach(m => m.classList.remove('open'));
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest('.ca-more')) closeAllMoreMenus();
-});
-
-/* â”€â”€ Share â”€â”€ */
-function sharePost() {
-  copyToClipboard(location.href);
-}
-function shareComment(id) {
-  copyToClipboard(location.origin + location.pathname + '#comment-' + id);
-}
-
-/* â”€â”€ Sort comments (client-side) â”€â”€ */
-function sortComments(type, btn) {
-  document.querySelectorAll('.sc-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const list = document.getElementById('comments-list');
-  const cards = Array.from(list.querySelectorAll(':scope > .comment-card'));
-  cards.sort((a, b) => {
-    if (type === 'top') {
-      const la = parseInt(a.querySelector('[id^="clc-"]')?.textContent || 0);
-      const lb = parseInt(b.querySelector('[id^="clc-"]')?.textContent || 0);
-      return lb - la;
-    }
-    if (type === 'new') return a.id < b.id ? 1 : -1;
-    if (type === 'old') return a.id > b.id ? 1 : -1;
-    return 0;
-  });
-  cards.forEach(c => list.appendChild(c));
-}
-
-/* â”€â”€ Anchor scroll â”€â”€ */
-if (location.hash) {
-  const el = document.querySelector(location.hash);
-  if (el) setTimeout(() => el.scrollIntoView({behavior:'smooth', block:'center'}), 300);
+function shareBlueprint() {
+  if (navigator.share) {
+    navigator.share({title: 'CLUTCH BLUEPRINT', url: window.location.href}).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(window.location.href).then(() => showToast());
+  }
 }
 </script>
 {% endblock %}
-

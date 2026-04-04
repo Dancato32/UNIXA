@@ -7,7 +7,8 @@ from django.http import JsonResponse, FileResponse, StreamingHttpResponse, HttpR
 from django.conf import settings
 from .models import StudyMaterial, SavedFlashcardDeck, SavedPodcast, SavedStudySong
 from .forms import StudyMaterialForm
-from ai_tutor.ai_utils import ask_ai
+from ai_tutor.ai_utils import ask_ai, resolve_model
+from ai_tutor.models import ChatThread, Conversation
 import os
 import json
 import uuid
@@ -259,8 +260,9 @@ def generate_podcast_ajax(request):
             return JsonResponse({'error': 'No text content available for this material'}, status=400)
 
         text_content = material.extracted_text[:4000]
+        selected_model = resolve_model(data.get('model'))
         prompt = build_podcast_prompt(text_content, material.title)
-        podcast_script = ask_ai(prompt, user=request.user, use_rag=False)
+        podcast_script = ask_ai(prompt, user=request.user, use_rag=False, model=selected_model)
 
         word_count = len(podcast_script.split())
         duration_mins = round(word_count / 130)
@@ -512,26 +514,29 @@ def serve_podcast_audio(request, material_id, filename=None):
 
 
 def build_podcast_prompt(text_content, title):
-    """Build a high-fidelity script for 'The Naruto & Sasuke Study Session'."""
-    return f"""You are a world-class Podcast Producer for "The Naruto & Sasuke Show". 
+    """Build a high-fidelity script for 'The Alex & Sam Masterclass Podcast'."""
+    return f"""You are a world-class Podcast Producer directing the "Alex & Sam Masterclass". Your goal is to write a highly natural, engaging, and premium podcast script.
     
 TOPIC: {title}
 
-THE HOSTS (SHINOBI PERSONAS):
-- NARUTO (The Hyper Student): High energy, optimistic, and uses "Believe it!" vibes. He's curious, asks lots of questions, and wants to master this topic "to become the best". He loves ramen analogies.
-- SASUKE (The Cool Elite): Calm, focused, and deep-voiced. He's a genius who explains things logically and briefly. He's a bit of a rival to Naruto but helps him understand the complex "Jutsu" of this subject.
+THE HOSTS:
+- ALEX (Male): The expert. Professional, friendly, deep-thinking, and clear.
+- SAM (Female): The color-commentator. Insightful, relatable, asking the right questions, and connecting ideas.
 
-SCRIPTING RULES (HUMAN CHEMISTRY):
-1. NO REPETITIVE NAMES: Since users see the speaker tags in the UI, DO NOT have them start every sentence with "Hey Sasuke" or "Listen Sasuke". Only use names when it's natural for emphasis.
-2. NATURAL FLOW: Focus on the subject matter quickly. Let Naruto represent the struggle to learn, and Sasuke represent the mastery of the technique.
-3. HUMAN MARKERS: Include verbal cues naturally. No markdown.
+STRICT RULES FOR AUDIO REALISM:
+1. START EXACTLY LIKE THIS:
+   Alex: Hi, my name is Alex.
+   Sam: And my name is Sam. Today we're going to be talking about {title}.
+2. ZERO ROBOTICS: After the intro, transition into a highly natural conversation. Treat it like a natural discussion, not constantly saying each other's names. Start with brief casual banter (like grabbing coffee or their weekend) before transitioning to the subject.
+3. PURE DIALOGUE ONLY: Write only what they SAY. No stage directions [Laughs].
+4. NO BRACKETS: No bracketed text at all.
+5. NATURAL OVERLAPS: Use natural conversation fillers ("Um", "Hmm", "Right", "Exactly", "Wait") fluidly to make them sound like they are sitting in the same room.
 
 STRUCTURE:
-- INTRO: [Naruto's high-energy opening, Sasuke's calm correction]
-- THE_JUTSU: [A deep dive into the 3 core concepts explained as 'Training Techniques']
-- SHARINGAN_VIEW: [Sasuke's elite summary of the most important detail]
-- BELIEVE_IT: [Naruto's optimistic recap of why this matters for the future]
-- OUTRO: [Brief rivalry banter and closing]
+- INTRO: [Exact intro -> Brief natural banter -> Smooth transition]
+- DECONSTRUCTION: [Breaking down the first major concept naturally]
+- THE "AHA" MOMENT: [A back-and-forth epiphany about the hardest part of the topic]
+- OUTRO: [A quick, confident sign-off]
 
 STUDY MATERIAL:
 {text_content}
@@ -621,11 +626,11 @@ def parse_podcast_response(ai_response, title):
     # Ensure minimum segments
     if len(segments) < 3:
         segments = [
-            {'type': 'intro', 'title': 'Welcome', 'content': f"Naruto: Hey Sasuke! Believe it, we're studying {title}! Sasuke: Focus, Naruto.", 'visual': 'intro'}
+            {'type': 'intro', 'title': 'Welcome', 'content': f"Alex: Hi, my name is Alex. Sam: And my name is Sam. Today we're going to be talking about {title}.", 'visual': 'intro'}
         ] + segments
     
     return {
-        'title': f"Naruto & Sasuke: {title}",
+        'title': f"Alex & Sam: {title}",
         'segments': segments[:10]
     }
 
@@ -665,7 +670,8 @@ Student's Question: {question}
 Provide a clear, concise answer (2-3 sentences) that directly addresses their question. Be friendly and encouraging."""
         
         # Get AI answer
-        answer = ask_ai(prompt, user=request.user, use_rag=False)
+        selected_model = resolve_model(data.get('model'))
+        answer = ask_ai(prompt, user=request.user, use_rag=False, model=selected_model)
         
         # Generate audio for the answer natively using Edge TTS (matching the podcast hosts)
         audio_url = None
@@ -773,7 +779,12 @@ Content:
 
 Summary:"""
     try:
-        result = ask_ai(prompt, user=request.user, use_rag=False)
+        data = {}
+        if request.body:
+            try: data = json.loads(request.body)
+            except: pass
+        selected_model = resolve_model(data.get('model'))
+        result = ask_ai(prompt, user=request.user, use_rag=False, model=selected_model)
         return JsonResponse({'success': True, 'result': result})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -813,7 +824,12 @@ Q2: ...
 Material ({material.title}):
 {material.extracted_text[:2000]}"""
     try:
-        raw = ask_ai(prompt, user=request.user, use_rag=False)
+        data = {}
+        if request.body:
+            try: data = json.loads(request.body)
+            except: pass
+        selected_model = resolve_model(data.get('model'))
+        raw = ask_ai(prompt, user=request.user, use_rag=False, model=selected_model)
         import re
         questions = []
         blocks = re.split(r'\n(?=Q\d+:)', raw.strip())
@@ -869,7 +885,12 @@ Content:
 
 Flashcards:"""
     try:
-        raw = ask_ai(prompt, user=request.user, use_rag=False)
+        data = {}
+        if request.body:
+            try: data = json.loads(request.body)
+            except: pass
+        selected_model = resolve_model(data.get('model'))
+        raw = ask_ai(prompt, user=request.user, use_rag=False, model=selected_model)
         import re
         pairs = re.findall(r'FRONT:\s*(.+?)\nBACK:\s*(.+?)(?=\nFRONT:|\Z)', raw, re.DOTALL)
         cards = [{'front': f.strip(), 'back': b.strip()} for f, b in pairs]
@@ -1319,6 +1340,20 @@ def learn_ajax(request, pk):
         action = data.get('action', 'summarise')
         page_text = data.get('page_text', '').strip()
         page_label = data.get('page_label', 'this section')
+        selected_model = resolve_model(data.get('model'))
+        thread_id = data.get('thread_id')
+
+        # Resolve Memory (Thread & History)
+        thread = None
+        history = []
+        
+        if thread_id:
+            thread = ChatThread.objects.filter(id=thread_id, user=request.user).first()
+        
+        # Fetch history if we have a thread
+        if thread:
+            recent = Conversation.objects.filter(thread=thread).order_by('-created_at')[:15]
+            history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
 
         # [AI NORM] Unlimited context support (up to 250k chars)
         MAX_INPUT = 250000
@@ -1354,9 +1389,20 @@ def learn_ajax(request, pk):
                 context_image = images[0] # Usually the most important snapshot
                 raw = chat_with_image(user_msg, context_image, system_prompt=prompt)
             else:
-                raw = ask_ai(prompt, user=request.user, use_rag=False)
+                raw = ask_ai(prompt, user=request.user, use_rag=False, history=history, model=selected_model)
+
+            # Persist to Thread
+            if not thread:
+                thread = ChatThread.objects.create(user=request.user, title=f"Study: {material.title[:50]}")
                 
-            return JsonResponse({'success': True, 'action': action, 'result': raw})
+            Conversation.objects.create(
+                user=request.user,
+                thread=thread,
+                message=user_msg,
+                response=raw
+            )
+                
+            return JsonResponse({'success': True, 'action': action, 'result': raw, 'thread_id': thread.id})
 
         elif action == 'summarise' or action == 'brief' or action == 'explain':
             prompt = f'''Perform a Deep Intelligence Scan on this study section titled "{page_label}".
@@ -1442,6 +1488,40 @@ Section:
             except Exception as e:
                 return JsonResponse({'success': False, 'error': f"Podcast Error: {str(e)}"}, status=500)
 
+        elif action == 'podcast_call':
+            from .audio_utils import generate_podcast_segments
+            question = data.get('question', '').strip()
+            if not question:
+                return JsonResponse({'error': 'No question provided.'}, status=400)
+                
+            prompt = f'''You are directing "The Alex & Sam Masterclass".
+The podcast was just interrupted because a listener called in with a question!
+The current topic is: {page_label}
+
+Listener's Question: "{question}"
+
+Write a short, pure dialogue script addressing the question.
+STRICT RULES:
+1. START EXACTLY LIKE THIS:
+   Sam: We actually have a caller on the line! Caller, you there?
+   Alex: That is a fascinating question.
+2. HAVE THEM ANSWER IT NATURALLY.
+3. END WITH:
+   Sam: Thanks for calling in! Now, back to what we were saying...
+4. NO BRACKETS, NO REPETITIVE NAMES.
+
+Now answer:'''
+            try:
+                script_text = ask_ai(prompt, user=request.user, use_rag=False)
+                segments = generate_podcast_segments(script_text, pk)
+                return JsonResponse({
+                    'success': True, 
+                    'action': action, 
+                    'script_json': segments
+                })
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': f"Podcast Call Error: {str(e)}"}, status=500)
+
         elif action == 'podcast_save':
             from .audio_utils import generate_podcast_segments
             script_json = data.get('script_json')
@@ -1479,6 +1559,33 @@ Section:
             pod_id = data.get('podcast_id')
             pod = get_object_or_404(SavedPodcast, id=pod_id, owner=request.user)
             return JsonResponse({'success': True, 'script_json': pod.script_json})
+
+        elif action == 'chat' or action == 'help' or action == 'explain' or action == 'qa':
+            # Standard AI assist (non-multi-modal) with history support
+            user_msg = data.get('message', '').strip() or f"Help me with {page_label}"
+            prompt = f'''You are Kojo, a brilliant and supportive study assistant. 
+I am studying this section: "{page_label}".
+
+CONTENT:
+{page_text}
+
+STUDENT REQUEST:
+{user_msg}'''
+            
+            raw = ask_ai(prompt, user=request.user, use_rag=False, history=history, model=selected_model)
+            
+            # Save to Thread
+            if not thread:
+                thread = ChatThread.objects.create(user=request.user, title=f"Study: {material.title[:50]}")
+            
+            Conversation.objects.create(
+                user=request.user,
+                thread=thread,
+                message=user_msg,
+                response=raw
+            )
+            
+            return JsonResponse({'success': True, 'action': action, 'result': raw, 'thread_id': thread.id})
 
         elif action == 'podcast_question':
             from .audio_utils import generate_podcast_segments

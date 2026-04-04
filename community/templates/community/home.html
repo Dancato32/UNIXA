@@ -5,572 +5,665 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0d0d14">
+<meta name="theme-color" content="#0F172A">
 <title>Feed — Paw</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#F8FAFC;--sb:#ffffff;--card:#ffffff;--card2:#F1F5F9;
-  --bdr:#E5E7EB;--t1:#111827;--t2:#374151;--t3:#6B7280;
-  --acc:#F59E0B;--acc2:#FBBF24;--cyan:#3B82F6;--pink:#F59E0B;--green:#10B981;
-  --radius:12px;
+  --bg:#F0F2F5;
+  --surface:#ffffff;
+  --surface2:#F8FAFC;
+  --border:#E4E6EA;
+  --text:#050505;
+  --text2:#65676B;
+  --text3:#8A8D91;
+  --primary:#0F172A;
+  --accent:#F59E0B;
+  --accent-h:#D97706;
+  --accent-s:rgba(245,158,11,.1);
+  --accent-g:rgba(245,158,11,.25);
+  --blue:#1877F2;
+  --green:#42B72A;
+  --red:#FA3E3E;
+  --r:12px;--r-lg:16px;--r-xl:20px;
+  --sh:0 1px 2px rgba(0,0,0,.1);
+  --sh-md:0 2px 8px rgba(0,0,0,.1);
+  --sidebar-w:280px;
+  --right-w:300px;
 }
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;cursor:pointer;border:none;background:none;}
+img{display:block;}
+</style>
 
+<style>
 /* ── Shell ── */
-.shell{display:flex;height:100vh;height:100dvh;}
+.shell{display:flex;height:100vh;overflow:hidden;}
 
-/* ── Sidebar ── */
-.sb{
-  width:200px;flex-shrink:0;background:var(--sb);
+/* ── Left Sidebar ── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--surface);
   display:flex;flex-direction:column;
-  border-right:1px solid var(--bdr);
-  padding:0;
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;padding:0 .75rem 1rem;
+  border-right:1px solid var(--border);
 }
-.sb-logo{
-  display:flex;align-items:center;gap:.625rem;
-  padding:1.375rem 1.25rem 1.25rem;
-  border-bottom:1px solid var(--bdr);
-  margin-bottom:.5rem;
+.sidebar::-webkit-scrollbar{display:none;}
+.sidebar-logo{
+  display:flex;align-items:center;gap:.75rem;
+  padding:1.25rem .75rem 1rem;
 }
-.sb-logo-icon{
-  width:32px;height:32px;border-radius:10px;flex-shrink:0;
+.logo-icon{
+  width:36px;height:36px;border-radius:10px;
   background:linear-gradient(135deg,#F59E0B,#FBBF24);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 12px rgba(245,158,11,.3);
+  box-shadow:0 2px 8px rgba(245,158,11,.3);flex-shrink:0;
 }
-.sb-logo-icon svg{width:18px;height:18px;color:#fff;}
-.sb-logo-text{font-size:1.125rem;font-weight:700;letter-spacing:-.02em;color:var(--t1);font-family:'Poppins',sans-serif;}
-.sb-nav{flex:1;padding:0 .75rem;display:flex;flex-direction:column;gap:.125rem;}
-.sb-item{
+.logo-icon svg{width:18px;height:18px;color:#fff;}
+.logo-text{font-family:'Poppins',sans-serif;font-size:1.375rem;font-weight:700;color:var(--text);letter-spacing:-.03em;}
+
+.nav-item{
+  display:flex;align-items:center;gap:.875rem;
+  padding:.75rem 1rem;border-radius:var(--r);
+  font-size:.9375rem;font-weight:600;color:var(--text2);
+  transition:all .15s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent-s);color:var(--accent-h);}
+.nav-item svg{width:22px;height:22px;flex-shrink:0;}
+.nav-item .nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  font-size:.6875rem;font-weight:700;min-width:20px;height:20px;
+  border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;
+}
+.nav-divider{height:1px;background:var(--border);margin:.5rem 0;}
+.nav-section-label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:.75rem 1rem .375rem;}
+
+.sidebar-profile{
   display:flex;align-items:center;gap:.75rem;
-  padding:.625rem .875rem;border-radius:10px;
-  font-size:.875rem;font-weight:500;color:var(--t3);
-  cursor:pointer;transition:all .2s;text-decoration:none;
-  border:none;background:none;width:100%;text-align:left;
-  min-height:44px;
+  padding:.875rem 1rem;border-radius:var(--r);
+  margin-top:auto;cursor:pointer;transition:background .15s;
 }
-.sb-item:hover{background:var(--card2);color:var(--t1);}
-.sb-item.active{background:rgba(245,158,11,.1);color:#D97706;font-weight:600;}
-.sb-item.active .sb-item-icon{color:#D97706;}
-.sb-item-icon{width:20px;height:20px;flex-shrink:0;transition:all .15s;}
-.sb-footer{
-  padding:.875rem .75rem;border-top:1px solid var(--bdr);
-  display:flex;align-items:center;gap:.625rem;
-}
-.sb-footer-av{
-  width:34px;height:34px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--acc),var(--acc2));
+.sidebar-profile:hover{background:var(--surface2);}
+.profile-av{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),#FBBF24);
   display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:700;color:#fff;overflow:hidden;
+  font-size:.875rem;font-weight:700;color:#fff;overflow:hidden;
 }
-.sb-footer-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.sb-footer-name{font-size:.8125rem;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sb-footer-sub{font-size:.625rem;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.profile-av img{width:100%;height:100%;object-fit:cover;}
+.profile-name{font-size:.875rem;font-weight:700;color:var(--text);}
+.profile-handle{font-size:.75rem;color:var(--text3);}
 
-/* ── Main ── */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
-
-/* ── Topbar ── */
-.topbar{
-  height:56px;display:flex;align-items:center;justify-content:flex-end;
-  padding:0 1.5rem;flex-shrink:0;gap:.5rem;
-  border-bottom:1px solid var(--bdr);
+/* ── Main Feed ── */
+.main{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  min-width:0;background:var(--bg);
 }
-.tb-notif{
-  position:relative;width:38px;height:38px;border-radius:10px;
-  background:none;border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;color:var(--t2);
-  transition:all .15s;min-height:44px;min-width:44px;
+.feed-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
 }
-.tb-notif:hover{background:rgba(255,255,255,.06);color:var(--t1);}
-.tb-notif svg{width:20px;height:20px;}
-.tb-notif-dot{
-  position:absolute;top:8px;right:8px;
-  width:8px;height:8px;border-radius:50%;
-  background:var(--pink);border:2px solid var(--bg);
-}
-.tb-avatar{
-  width:34px;height:34px;border-radius:50%;
-  background:linear-gradient(135deg,var(--acc),var(--acc2));overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:700;color:#fff;cursor:pointer;
-  transition:opacity .15s;
-}
-.tb-avatar:hover{opacity:.85;}
-.tb-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-
-/* ── Feed scroll ── */
-.feed-scroll{flex:1;overflow-y:auto;padding:1.25rem 1.5rem 2rem;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent;}
 .feed-scroll::-webkit-scrollbar{width:4px;}
-.feed-scroll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px;}
-.feed-inner{max-width:580px;margin:0 auto;}
+.feed-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.feed-inner{max-width:600px;margin:0 auto;padding:1rem 1rem 5rem;}
+
+/* ── Topbar (mobile) ── */
+.topbar{
+  display:none;height:56px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  align-items:center;padding:0 1rem;gap:.75rem;
+  position:sticky;top:0;z-index:200;
+  box-shadow:var(--sh);
+}
+.topbar-logo{font-family:'Poppins',sans-serif;font-size:1.25rem;font-weight:700;color:var(--text);flex:1;}
+.topbar-actions{display:flex;align-items:center;gap:.375rem;}
+.topbar-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--surface2);border:none;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text2);cursor:pointer;transition:background .15s;position:relative;
+}
+.topbar-btn:hover{background:var(--border);}
+.topbar-btn svg{width:20px;height:20px;}
+.notif-dot{
+  position:absolute;top:6px;right:6px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--red);border:2px solid var(--surface);
+}
+
+/* ── Create Post Box ── */
+.create-box{
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:1rem;margin-bottom:.875rem;
+  box-shadow:var(--sh);
+}
+.create-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem;}
+.create-av{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),#FBBF24);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.875rem;font-weight:700;color:#fff;overflow:hidden;
+}
+.create-av img{width:100%;height:100%;object-fit:cover;}
+.create-input{
+  flex:1;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:24px;padding:.625rem 1.125rem;
+  font-size:.9375rem;color:var(--text2);cursor:pointer;
+  transition:all .2s;font-family:inherit;
+}
+.create-input:hover{background:var(--border);}
+.create-actions{display:flex;gap:.25rem;padding-top:.875rem;border-top:1px solid var(--border);}
+.create-action{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.625rem;border-radius:var(--r-sm,8px);
+  font-size:.875rem;font-weight:600;color:var(--text2);
+  cursor:pointer;transition:background .15s;
+}
+.create-action:hover{background:var(--surface2);}
+.create-action svg{width:20px;height:20px;}
+.create-action.photo{color:#45BD62;}
+.create-action.video{color:#F3425F;}
+.create-action.feeling{color:#F7B928;}
 
 /* ── Stories ── */
-.stories-wrap{margin-bottom:1.5rem;}
-.stories-label{font-size:.625rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:.875rem;padding-left:2px;}
-.stories{display:flex;gap:1rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.25rem;}
-.stories::-webkit-scrollbar{display:none;}
-.story{display:flex;flex-direction:column;align-items:center;gap:.4375rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
-.story-ring{
-  width:64px;height:64px;border-radius:50%;padding:3px;
-  background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
+.stories-card{
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:1rem;margin-bottom:.875rem;
+  box-shadow:var(--sh);overflow:hidden;
 }
-.story-ring:hover{transform:scale(1.05);box-shadow:0 0 15px rgba(220,39,67,.3);}
-.story-ring.add{background:none;border:1.5px dashed var(--bdr);padding:0;}
-.story-ring.add:hover{border-color:var(--acc);background:rgba(99,102,241,.05);}
+.stories-row{display:flex;gap:.75rem;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.stories-row::-webkit-scrollbar{display:none;}
+.story-item{
+  display:flex;flex-direction:column;align-items:center;
+  gap:.375rem;cursor:pointer;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.story-ring{
+  width:60px;height:60px;border-radius:50%;padding:2.5px;
+  background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s;
+}
+.story-ring:hover{transform:scale(1.06);}
+.story-ring.add-ring{
+  background:none;border:2px dashed var(--border);padding:0;
+}
+.story-ring.add-ring:hover{border-color:var(--accent);}
 .story-inner{
   width:100%;height:100%;border-radius:50%;
-  background:var(--bg);overflow:hidden;
+  background:var(--surface2);overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  border:2px solid var(--bg);font-size:.75rem;font-weight:700;color:var(--t1);
+  border:2.5px solid var(--surface);
+  font-size:.8125rem;font-weight:700;color:var(--text);
 }
 .story-inner img{width:100%;height:100%;object-fit:cover;}
-.story-add-icon{
+.story-add-btn{
   width:100%;height:100%;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  color:var(--t2);font-size:1.5rem;font-weight:300;
+  background:var(--surface2);color:var(--accent);
 }
-.story-label{font-size:.7rem;color:var(--t2);font-weight:500;margin-top:.125rem;white-space:nowrap;max-width:64px;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+.story-add-btn svg{width:22px;height:22px;}
+.story-name{font-size:.6875rem;font-weight:600;color:var(--text2);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;}
 
-/* ── Post card ── */
+/* ── Post Card ── */
 .post-card{
-  background:var(--card);border:1px solid var(--bdr);border-radius:16px;
-  padding:1.25rem;margin-bottom:1rem;
-  transition:box-shadow .2s,transform .2s;
-  box-shadow:0 1px 3px rgba(0,0,0,.06);
+  background:var(--surface);border-radius:var(--r-lg);
+  margin-bottom:.875rem;box-shadow:var(--sh);
+  overflow:hidden;
+  animation:fadeUp .3s ease both;
 }
-.post-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-1px);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.post-card:nth-child(1){animation-delay:.04s;}
-.post-card:nth-child(2){animation-delay:.08s;}
-.post-card:nth-child(3){animation-delay:.12s;}
-.post-card:nth-child(4){animation-delay:.16s;}
-.post-card:nth-child(5){animation-delay:.2s;}
-.post-head{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.post-card:nth-child(1){animation-delay:.05s;}
+.post-card:nth-child(2){animation-delay:.1s;}
+.post-card:nth-child(3){animation-delay:.15s;}
+.post-card:nth-child(4){animation-delay:.2s;}
+.post-card:nth-child(5){animation-delay:.25s;}
+
+.post-header{display:flex;align-items:flex-start;gap:.75rem;padding:1rem 1rem .75rem;}
 .post-av{
   width:42px;height:42px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--acc),var(--acc2));overflow:hidden;
+  background:linear-gradient(135deg,var(--accent),#FBBF24);
   display:flex;align-items:center;justify-content:center;
-  font-size:.875rem;font-weight:700;color:#fff;
-}.post-av img{width:100%;height:100%;object-fit:cover;}
+  font-size:.875rem;font-weight:700;color:#fff;overflow:hidden;
+}
+.post-av img{width:100%;height:100%;object-fit:cover;}
 .post-meta{flex:1;min-width:0;}
-.post-name{font-size:.9375rem;font-weight:700;color:var(--t1);}
-.post-time{font-size:.75rem;color:var(--t3);margin-top:1px;}
-.post-more{
-  width:32px;height:32px;border-radius:50%;
-  color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;
+.post-author{font-size:.9375rem;font-weight:700;color:var(--text);line-height:1.2;}
+.post-time{font-size:.75rem;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:.25rem;}
+.post-time svg{width:12px;height:12px;}
+.post-menu{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text3);cursor:pointer;transition:background .15s;flex-shrink:0;
 }
-.post-more:hover{background:rgba(255,255,255,.05);color:var(--t1);}
-.post-more svg{width:18px;height:18px;}
-.post-body{font-size:.9375rem;line-height:1.6;color:var(--t1);margin-bottom:1.125rem;}
-.post-divider{height:1px;background:var(--bdr);margin-bottom:.875rem;}
-.post-actions{display:flex;align-items:center;gap:1.5rem;}
-.post-act{
-  display:flex;align-items:center;gap:.5rem;
-  font-size:.875rem;font-weight:600;color:var(--t2);
-  background:none;border:none;cursor:pointer;transition:all .15s;
-  padding:.25rem 0;
-}
-.post-act:hover{color:var(--t1);}
-.post-act.liked{color:var(--acc);}
-.post-act.liked:hover{color:var(--acc);}
-.post-act svg{width:20px;height:20px;transition:transform .15s;}
-.post-act:hover svg{transform:scale(1.1);}
-.post-act-spacer{flex:1;}
-.post-share{
-  width:34px;height:34px;border-radius:8px;
-  color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;min-height:44px;min-width:44px;
-}
-.post-share:hover{background:rgba(255,255,255,.05);color:var(--t1);}
-.post-share svg{width:16px;height:16px;}
+.post-menu:hover{background:var(--surface2);}
+.post-menu svg{width:18px;height:18px;}
 
-/* ── Empty state ── */
-.feed-empty{text-align:center;padding:4rem 1rem;}
-.feed-empty-icon{width:64px;height:64px;border-radius:20px;background:rgba(124,106,247,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
-.feed-empty-icon svg{width:28px;height:28px;color:var(--acc2);}
-.feed-empty h3{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:.5rem;}
-.feed-empty p{font-size:.875rem;color:var(--t3);margin-bottom:1.5rem;line-height:1.6;}
-.btn-primary{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:var(--acc);color:#fff;border-radius:10px;font-size:.875rem;font-weight:700;transition:all .2s;box-shadow:0 4px 12px rgba(245,158,11,.3);}
-.btn-primary:hover{background:#D97706;transform:translateY(-1px);box-shadow:0 6px 16px rgba(245,158,11,.4);}
+.post-body{padding:0 1rem .875rem;font-size:.9375rem;line-height:1.65;color:var(--text);}
+.post-body p{margin-bottom:.5rem;}
+.post-body p:last-child{margin-bottom:0;}
 
-/* ── Comments UI ── */
-.post-comments-sec {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--bdr);
-  animation: fadeUp 0.2s ease both;
+.post-media{margin-bottom:.875rem;}
+.post-media img,.post-media video{width:100%;display:block;max-height:500px;object-fit:cover;}
+.post-file-card{
+  display:flex;align-items:center;gap:.875rem;
+  padding:1rem 1.25rem;background:var(--surface2);
+  border-top:1px solid var(--border);
+  text-decoration:none;color:inherit;transition:background .15s;
 }
-.comments-list {
-  max-height: 300px;
-  overflow-y: auto;
-  margin-bottom: 1rem;
-  padding-right: 0.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--bdr) transparent;
+.post-file-card:hover{background:var(--border);}
+.post-file-icon{
+  width:44px;height:44px;border-radius:10px;
+  background:var(--accent-s);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
 }
-.comment-item {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.875rem;
-}
-.comment-av {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, var(--acc2), var(--cyan));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #fff;
-  overflow: hidden;
-}
-.comment-av img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.comment-content {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 0.625rem 0.875rem;
-  border-radius: 0 12px 12px 12px;
-}
-.comment-hdr {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-.comment-name {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--t1);
-}
-.comment-time {
-  font-size: 0.6875rem;
-  color: var(--t3);
-}
-.comment-text {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--t2);
-}
-.comment-input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid var(--bdr);
-  border-radius: 20px;
-  padding: 0.25rem 0.5rem;
-}
-.comment-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  padding: 0.5rem 0.5rem;
-  font-size: 0.875rem;
-  color: var(--t1);
-  outline: none;
-}
-.comment-input::placeholder {
-  color: var(--t3);
-}
-.comment-submit {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--acc);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.comment-submit:hover {
-  background: var(--acc2);
-  transform: scale(1.05);
-}
-.comment-submit svg {
-  width: 14px;
-  height: 14px;
-}
-.loading-comments {
-  text-align: center;
-  padding: 1rem;
-  color: var(--t3);
-  font-size: 0.8125rem;
-}
-.post-act-like svg {
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.post-act-like.liked svg {
-  transform: scale(1.15);
-}
+.post-file-icon svg{width:22px;height:22px;color:var(--accent-h);}
+.post-file-name{font-size:.875rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.post-file-meta{font-size:.75rem;color:var(--text3);margin-top:2px;}
 
-/* ── Bottom tab bar (mobile) ── */
-.bottom-nav{display:none;}
-
-/* ── Skeleton ── */
-.skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
-@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
-
-/* ── Mobile ── */
-@media(max-width:768px){
-  .sb{display:none;}
-  .topbar{padding:0 1rem;}
-  .feed-scroll{padding:.875rem .875rem 5.5rem;}
-  .bottom-nav{
-    display:flex;position:fixed;bottom:0;left:0;right:0;
-    height:58px;background:var(--sb);border-top:1px solid var(--bdr);
-    z-index:100;padding-bottom:env(safe-area-inset-bottom);
-  }
-  .bn-item{
-    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:.25rem;color:var(--t3);text-decoration:none;transition:color .15s;
-    min-height:44px;
-  }
-  .bn-item.active{color:var(--acc2);}
-  .bn-item svg{width:22px;height:22px;}
-  .bn-item span{font-size:.5625rem;font-weight:600;letter-spacing:.02em;}
+/* ── Post Stats ── */
+.post-stats{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.375rem 1rem;border-top:1px solid var(--border);
+  font-size:.8125rem;color:var(--text3);
 }
-
-/* ── Onboarding Overlay ── */
-.onboarding-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  animation: ob-fade-in .5s ease both;
+.post-stat-likes{display:flex;align-items:center;gap:.375rem;cursor:pointer;}
+.post-stat-likes:hover{text-decoration:underline;}
+.like-emojis{display:flex;}
+.like-emoji{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.625rem;margin-left:-4px;
 }
-@keyframes ob-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.like-emoji:first-child{margin-left:0;}
 
-/* Hide shell while onboarding is active */
-body.onboarding-active .shell { display: none !important; }
-body.onboarding-active .feed-fab { display: none !important; }
-body.onboarding-active .bottom-nav-unified { display: none !important; }
-
-.ob-card {
-  width: 100%; max-width: 480px; padding: 2.5rem;
-  background: var(--sb); border: 1px solid var(--bdr); border-radius: 28px;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.1);
-  position: relative; overflow: hidden;
-  display: none;
+/* ── Post Actions ── */
+.post-actions{
+  display:flex;border-top:1px solid var(--border);
+  padding:.25rem .5rem;
 }
-.ob-card.active { display: block; animation: ob-slide-up .6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-@keyframes ob-slide-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-
-.ob-progress {
-  display: flex; gap: 6px; margin-bottom: 2rem;
+.post-action{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.625rem;border-radius:var(--r);
+  font-size:.875rem;font-weight:600;color:var(--text2);
+  cursor:pointer;transition:background .15s;
 }
-.ob-step-dot {
-  flex: 1; height: 4px; background: var(--bdr); border-radius: 2px; transition: .3s;
+.post-action:hover{background:var(--surface2);}
+.post-action svg{width:20px;height:20px;}
+.post-action.liked{color:var(--accent-h);}
+.post-action.liked svg{fill:var(--accent);}
+
+/* ── Comments ── */
+.comments-section{
+  border-top:1px solid var(--border);
+  padding:.875rem 1rem;
+  animation:fadeUp .2s ease both;
 }
-.ob-step-dot.active { background: var(--acc); }
-
-.ob-title { font-family: 'Poppins', sans-serif; font-size: 1.75rem; font-weight: 800; color: var(--t1); margin-bottom: 0.75rem; }
-.ob-desc { font-size: 0.9375rem; color: var(--t3); line-height: 1.6; margin-bottom: 2rem; }
-
-.ob-input-group { margin-bottom: 1.5rem; }
-.ob-label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--t3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.625rem; }
-.ob-input { width: 100%; padding: 0.875rem 1rem; border: 1.5px solid var(--bdr); border-radius: 12px; font-size: 0.9375rem; transition: .2s; }
-.ob-input:focus { border-color: var(--acc); outline: none; }
-
-.ob-interests { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2rem; }
-.ob-interest-tag {
-  padding: 0.625rem 1.125rem; border: 1px solid var(--bdr); border-radius: 100px;
-  font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: .2s;
+.comment-item{display:flex;gap:.625rem;margin-bottom:.75rem;}
+.comment-av{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#3B82F6,#60A5FA);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6875rem;font-weight:700;color:#fff;overflow:hidden;
 }
-.ob-interest-tag.active { background: var(--acc); border-color: var(--acc); color: #fff; }
-
-.ob-avatar-picker { display: flex; justify-content: center; margin: 2rem 0; }
-.ob-avatar-circle {
-  width: 100px; height: 100px; border-radius: 50%; background: var(--card2);
-  display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
-  cursor: pointer; border: 2px dashed var(--bdr); transition: .2s;
+.comment-av img{width:100%;height:100%;object-fit:cover;}
+.comment-bubble{
+  flex:1;background:var(--surface2);border-radius:0 var(--r) var(--r) var(--r);
+  padding:.625rem .875rem;
 }
-.ob-avatar-circle:hover { border-color: var(--acc); }
-
-.ob-btn {
-  width: 100%; padding: 1rem; background: var(--acc); color: #fff; border-radius: 14px;
-  font-size: 1rem; font-weight: 800; transition: .2s; box-shadow: 0 4px 12px rgba(245,158,11,0.25);
+.comment-author{font-size:.8125rem;font-weight:700;color:var(--text);margin-bottom:.2rem;}
+.comment-text{font-size:.875rem;color:var(--text);line-height:1.5;}
+.comment-time{font-size:.6875rem;color:var(--text3);margin-top:.25rem;}
+.comment-input-row{display:flex;align-items:center;gap:.625rem;margin-top:.5rem;}
+.comment-input-av{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),#FBBF24);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6875rem;font-weight:700;color:#fff;overflow:hidden;
 }
-.ob-btn:hover { background: #D97706; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,0.4); }
-
-.ob-bg-blobs { position: absolute; inset: 0; z-index: -1; opacity: 0.1; pointer-events: none; }
-.ob-blob { position: absolute; width: 300px; height: 300px; border-radius: 50%; filter: blur(60px); animation: ob-drift 20s infinite alternate linear; }
-.ob-blob-1 { background: var(--acc); top: -100px; left: -100px; }
-.ob-blob-2 { background: var(--cyan); bottom: -100px; right: -100px; }
-@keyframes ob-drift { from { transform: translate(0,0); } to { transform: translate(40px, 60px); } }
-
-/* Transition animation for the shell reveal */
-@keyframes shell-reveal {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+.comment-input-av img{width:100%;height:100%;object-fit:cover;}
+.comment-input-wrap{
+  flex:1;display:flex;align-items:center;
+  background:var(--surface2);border-radius:24px;
+  padding:.375rem .375rem .375rem 1rem;
+  border:1.5px solid var(--border);transition:border-color .2s;
 }
-.shell-reveal { animation: shell-reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.comment-input-wrap:focus-within{border-color:var(--accent);}
+.comment-input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:.875rem;color:var(--text);font-family:inherit;
+}
+.comment-input::placeholder{color:var(--text3);}
+.comment-send{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;flex-shrink:0;
+}
+.comment-send:hover{background:var(--accent-h);}
+.comment-send svg{width:14px;height:14px;}
+.loading-comments{text-align:center;padding:.75rem;color:var(--text3);font-size:.8125rem;}
+
+/* ── Empty State ── */
+.feed-empty{
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:3rem 2rem;text-align:center;box-shadow:var(--sh);
+}
+.feed-empty-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:var(--accent-s);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.25rem;
+}
+.feed-empty-icon svg{width:32px;height:32px;color:var(--accent-h);}
+.feed-empty h3{font-size:1.125rem;font-weight:700;color:var(--text);margin-bottom:.5rem;}
+.feed-empty p{font-size:.9375rem;color:var(--text3);margin-bottom:1.5rem;line-height:1.6;}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.5rem;background:var(--accent);color:#fff;
+  border-radius:var(--r);font-size:.9375rem;font-weight:700;
+  transition:all .2s;box-shadow:0 4px 12px var(--accent-g);
+}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px);}
+
+/* ── Right Panel ── */
+.right-panel{
+  width:var(--right-w);flex-shrink:0;
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;padding:1rem .75rem;
+  border-left:1px solid var(--border);
+}
+.right-panel::-webkit-scrollbar{display:none;}
+.right-card{
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:1rem;margin-bottom:.875rem;box-shadow:var(--sh);
+}
+.right-card-title{font-size:.9375rem;font-weight:700;color:var(--text);margin-bottom:.875rem;}
+.right-card-link{
+  font-size:.875rem;font-weight:600;color:var(--accent-h);
+  cursor:pointer;float:right;margin-top:-1.75rem;
+}
+.right-card-link:hover{text-decoration:underline;}
+
+/* Trending topics */
+.trend-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.5rem 0;border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background .15s;border-radius:var(--r);padding:.5rem .625rem;
+}
+.trend-item:last-child{border-bottom:none;}
+.trend-item:hover{background:var(--surface2);}
+.trend-num{font-size:.75rem;font-weight:700;color:var(--text3);min-width:20px;}
+.trend-info{flex:1;}
+.trend-label{font-size:.6875rem;color:var(--text3);}
+.trend-name{font-size:.875rem;font-weight:700;color:var(--text);}
+.trend-count{font-size:.75rem;color:var(--text3);}
+
+/* Suggested users */
+.suggest-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.5rem 0;
+}
+.suggest-av{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#3B82F6,#60A5FA);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8125rem;font-weight:700;color:#fff;overflow:hidden;
+}
+.suggest-av img{width:100%;height:100%;object-fit:cover;}
+.suggest-info{flex:1;min-width:0;}
+.suggest-name{font-size:.875rem;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.suggest-handle{font-size:.75rem;color:var(--text3);}
+.follow-btn{
+  padding:.375rem .875rem;border-radius:20px;
+  font-size:.8125rem;font-weight:700;
+  background:var(--primary);color:#fff;
+  cursor:pointer;transition:all .2s;flex-shrink:0;
+}
+.follow-btn:hover{background:#1E293B;}
+
+/* ── FAB ── */
+.feed-fab{
+  position:fixed;bottom:80px;right:20px;
+  width:52px;height:52px;border-radius:14px;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px var(--accent-g);
+  z-index:999;text-decoration:none;
+  transition:all .2s;
+}
+.feed-fab:hover{background:var(--accent-h);transform:translateY(-2px);}
+.feed-fab svg{width:24px;height:24px;}
+
+/* ── Bottom Nav ── */
+.bottom-nav-unified{
+  display:flex!important;position:fixed!important;
+  bottom:0!important;left:0!important;right:0!important;
+  background:var(--surface)!important;border-top:1px solid var(--border)!important;
+  padding:0 .5rem!important;padding-bottom:env(safe-area-inset-bottom,0)!important;
+  z-index:2000!important;justify-content:space-around!important;
+  align-items:center!important;height:60px!important;
+  box-shadow:0 -4px 16px rgba(0,0,0,.06)!important;
+}
+.bn-unified-item{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;padding:.375rem .5rem;
+  color:var(--text3);text-decoration:none;flex:1;
+  transition:color .2s;min-width:0;background:none;border:none;cursor:pointer;
+}
+.bn-unified-item svg{width:22px;height:22px;stroke-width:2px;}
+.bn-unified-label{font-size:.625rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+.bn-unified-item.active,.bn-unified-item:hover{color:var(--accent-h);}
+
+/* ── Onboarding ── */
+.onboarding-overlay{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1rem;}
+body.onboarding-active .shell{display:none!important;}
+body.onboarding-active .feed-fab{display:none!important;}
+body.onboarding-active .bottom-nav-unified{display:none!important;}
+.ob-card{width:100%;max-width:460px;background:var(--surface);border-radius:24px;padding:2.5rem;box-shadow:0 24px 64px rgba(0,0,0,.2);display:none;animation:ob-up .4s cubic-bezier(.2,.8,.2,1) both;}
+.ob-card.active{display:block;}
+@keyframes ob-up{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.ob-progress{display:flex;gap:6px;margin-bottom:2rem;}
+.ob-dot{flex:1;height:4px;background:var(--border);border-radius:2px;transition:.3s;}
+.ob-dot.active{background:var(--accent);}
+.ob-title{font-family:'Poppins',sans-serif;font-size:1.625rem;font-weight:700;color:var(--text);margin-bottom:.625rem;}
+.ob-desc{font-size:.9375rem;color:var(--text3);line-height:1.6;margin-bottom:1.75rem;}
+.ob-label{display:block;font-size:.75rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;}
+.ob-input{width:100%;padding:.875rem 1rem;border:1.5px solid var(--border);border-radius:var(--r);font-size:.9375rem;font-family:inherit;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:1rem;}
+.ob-input:focus{border-color:var(--accent);}
+.ob-interests{display:flex;flex-wrap:wrap;gap:.625rem;margin-bottom:1.75rem;}
+.ob-tag{padding:.5rem 1rem;border:1.5px solid var(--border);border-radius:20px;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text2);}
+.ob-tag.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.ob-av-picker{display:flex;justify-content:center;margin:1.5rem 0;}
+.ob-av-circle{width:88px;height:88px;border-radius:50%;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;overflow:hidden;}
+.ob-av-circle:hover{border-color:var(--accent);}
+.ob-btn{width:100%;padding:.9375rem;background:var(--accent);color:#fff;border-radius:var(--r);font-size:1rem;font-weight:700;transition:all .2s;box-shadow:0 4px 12px var(--accent-g);}
+.ob-btn:hover{background:var(--accent-h);transform:translateY(-1px);}
+.ob-skip{display:block;text-align:center;margin-top:1rem;font-size:.875rem;color:var(--text3);cursor:pointer;}
+.ob-skip:hover{color:var(--text);}
+
+/* ── Responsive ── */
+@media(max-width:1200px){.right-panel{display:none;}}
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .topbar{display:flex;}
+  html,body{overflow:auto;height:auto;}
+  .shell{flex-direction:column;height:auto;overflow:visible;}
+  .main{overflow:visible;}
+  .feed-scroll{overflow:visible;}
+  .feed-inner{padding:.75rem .75rem 5.5rem;}
+}
+@media(min-width:900px){.bottom-nav-unified{display:none!important;}.feed-fab{display:none;}}
 </style>
+
 </head>
 <body {% if show_onboarding %}class="onboarding-active"{% endif %}>
+
 {% if show_onboarding %}
 <div class="onboarding-overlay" id="ob-overlay">
-  <div class="ob-bg-blobs">
-    <div class="ob-blob ob-blob-2"></div>
-  </div>
-
-  <div style="position: absolute; bottom: 2rem; width: 100%; display: flex; justify-content: center; z-index: 100000;">
-      <button type="button" onclick="obFinish()" style="background:none; border:none; color:var(--t3); font-size:0.875rem; text-decoration:underline; cursor:pointer; opacity:0.7;">Already been here? Skip to Feed</button>
-  </div>
-
-  <!-- Step 1: Welcome -->
   <div class="ob-card active" id="ob-step-1">
-    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot"></div><div class="ob-step-dot"></div><div class="ob-step-dot"></div></div>
-    <div class="sb-logo-icon" style="margin-bottom: 2rem; width: 64px; height: 64px; border-radius: 18px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:36px; height:36px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
-    <h1 class="ob-title">Welcome to Paw</h1>
-    <p class="ob-desc">You're joining a community of students who use next-gen intelligence to master their studies. Let's set up your profile.</p>
-    <button class="ob-btn" onclick="obNext(1)">Start Journey</button>
+    <div class="ob-progress"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+    <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;box-shadow:0 4px 12px rgba(245,158,11,.3);">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <h1 class="ob-title">Welcome to Paw 🐾</h1>
+    <p class="ob-desc">You're joining a community of students who use AI to master their studies. Let's set up your profile in 60 seconds.</p>
+    <button class="ob-btn" onclick="obNext(1)">Get Started →</button>
+    <span class="ob-skip" onclick="obFinish()">Skip for now</span>
   </div>
-
-  <!-- Step 2: Basic Info -->
   <div class="ob-card" id="ob-step-2">
-    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot"></div><div class="ob-step-dot"></div></div>
-    <h1 class="ob-title">Introduce yourself</h1>
+    <div class="ob-progress"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+    <h1 class="ob-title">Your Profile</h1>
     <p class="ob-desc">Help your future study buddies find you.</p>
-    <div class="ob-avatar-picker">
-        <label for="ob-avatar-input" class="ob-avatar-circle" id="ob-avatar-preview">
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </label>
-        <input type="file" id="ob-avatar-input" style="display:none" accept="image/*" onchange="obPreviewAvatar(this)">
-    </div>
-    <div class="ob-input-group">
-      <label class="ob-label">Display Name</label>
-      <input type="text" class="ob-input" id="ob-display-name" placeholder="How should we call you?" value="{{ user.username }}">
-    </div>
-    <div class="ob-input-group">
-      <label class="ob-label">Bio (Optional)</label>
-      <input type="text" class="ob-input" id="ob-bio" placeholder="E.g. Computer Science Junior @ NY">
-    </div>
-    <button class="ob-btn" onclick="obNext(2)">Continue</button>
+    <div class="ob-av-picker"><label for="ob-avatar-input" class="ob-av-circle" id="ob-avatar-preview"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></label><input type="file" id="ob-avatar-input" style="display:none" accept="image/*" onchange="obPreviewAvatar(this)"></div>
+    <label class="ob-label">Display Name</label>
+    <input type="text" class="ob-input" id="ob-display-name" placeholder="How should we call you?" value="{{ user.username }}">
+    <label class="ob-label">Bio (optional)</label>
+    <input type="text" class="ob-input" id="ob-bio" placeholder="e.g. Computer Science · Year 2">
+    <button class="ob-btn" onclick="obNext(2)">Continue →</button>
   </div>
-
-  <!-- Step 3: Interests -->
   <div class="ob-card" id="ob-step-3">
-    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot"></div></div>
-    <h1 class="ob-title">Finding Friends</h1>
-    <p class="ob-desc">Pick your study interests. We'll use these to connect you with relevant classmates and content.</p>
-    <div class="ob-interests" id="ob-interest-list">
-        {% for tag in ob_interest_tags %}
-        <span class="ob-interest-tag" onclick="this.classList.toggle('active')">{{ tag }}</span>
-        {% endfor %}
-    </div>
-    <button class="ob-btn" onclick="obNext(3)">Find My Community</button>
+    <div class="ob-progress"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot"></div></div>
+    <h1 class="ob-title">Your Interests</h1>
+    <p class="ob-desc">Pick subjects you study — we'll connect you with the right people.</p>
+    <div class="ob-interests" id="ob-interest-list">{% for tag in ob_interest_tags %}<span class="ob-tag" onclick="this.classList.toggle('active')">{{ tag }}</span>{% endfor %}</div>
+    <button class="ob-btn" onclick="obNext(3)">Find My Community →</button>
   </div>
-
-  <!-- Step 4: Finalize -->
   <div class="ob-card" id="ob-step-4">
-    <div class="ob-progress"><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div><div class="ob-step-dot active"></div></div>
-    <h1 class="ob-title">Ready to Explore?</h1>
-    <p class="ob-desc">We've personalized your feed and AI Tutor based on your choices. You're ready to start learning with Paw.</p>
-    <div style="background: var(--card2); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem;">
-        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
-            <svg width="20" height="20" color="var(--green)" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="font-size:0.9rem; font-weight:700;">AI Tutor Personalized</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.75rem;">
-            <svg width="20" height="20" color="var(--green)" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="font-size:0.9rem; font-weight:700;">Intelligence Tools Active</span>
-        </div>
+    <div class="ob-progress"><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot active"></div><div class="ob-dot active"></div></div>
+    <h1 class="ob-title">You're all set! 🎉</h1>
+    <p class="ob-desc">Your feed and AI Tutor are personalized. Time to explore Paw.</p>
+    <div style="background:var(--surface2);border-radius:var(--r);padding:1.25rem;margin-bottom:1.75rem;">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.625rem;"><svg width="18" height="18" fill="none" stroke="#42B72A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span style="font-size:.9rem;font-weight:600;">AI Tutor personalized</span></div>
+      <div style="display:flex;align-items:center;gap:.75rem;"><svg width="18" height="18" fill="none" stroke="#42B72A" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span style="font-size:.9rem;font-weight:600;">Community feed ready</span></div>
     </div>
-    <button class="ob-btn" onclick="obFinish()">Enter Workspace</button>
+    <button class="ob-btn" onclick="obFinish()">Enter Paw →</button>
   </div>
 </div>
 {% endif %}
-<div class="shell">
 
-  <!-- ── Sidebar ── -->
-  <nav class="sb">
-    <div class="sb-logo">
-      <div class="sb-logo-icon">
-        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-      </div>
-      <span class="sb-logo-text">Paw</span>
+<div class="shell">
+  <!-- ── Left Sidebar ── -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+      <span class="logo-text">Paw</span>
     </div>
-    <div class="sb-nav">
-      <a href="{% url 'community:community_home' %}" class="sb-item active">
-        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Community Feed
-      </a>
-      <a href="{% url 'ai_chat' %}" class="sb-item">
-        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><circle cx="12" cy="12" r="3"/><path d="M12 7v2m0 6v2m-2.5-5.5h-2m10 0h-2"/></svg>
-        AI Tutor
-      </a>
-      <a href="{% url 'community:workspace_list' %}" class="sb-item">
-        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Workspace
-      </a>
-      <a href="{% url 'community:ai_tools' %}" class="sb-item">
-        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        Tools
-      </a>
-    </div>
-    <div class="sb-footer">
-      <div class="sb-footer-av">
-        {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+
+    <a href="{% url 'community:community_home' %}" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Feed
+    </a>
+    <a href="{% url 'community:profile' username=user.username %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </a>
+    <a href="{% url 'community:notifications' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notifications
+      {% if unread_notif_count %}<span class="nav-badge">{{ unread_notif_count }}</span>{% endif %}
+    </a>
+    <a href="{% url 'community:schools' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Communities
+    </a>
+    <a href="{% url 'community:post_create' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Create Post
+    </a>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Tools</div>
+
+    <a href="{% url 'ai_chat' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      AI Tutor
+    </a>
+    <a href="{% url 'community:workspace_list' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Workspace
+    </a>
+    <a href="{% url 'community:ai_tools' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      AI Tools
+    </a>
+    <a href="{% url 'list_materials' %}" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload
+    </a>
+
+    <div class="nav-divider"></div>
+    <a href="{% url 'community:profile' username=user.username %}" class="sidebar-profile">
+      <div class="profile-av">{% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</div>
+      <div>
+        <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+        <div class="profile-handle">@{{ user.username }}</div>
       </div>
-      <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;">
-        <div class="sb-footer-name" style="line-height:1.2;">{{ user.get_full_name|default:user.username }}</div>
-        <div class="sb-footer-sub" style="margin-top:1px;">{{ user.email|truncatechars:22 }}</div>
-      </div>
-    </div>
+    </a>
   </nav>
 
-  <!-- ── Main ── -->
+  <!-- ── Main Feed ── -->
   <div class="main">
+    <!-- Mobile topbar -->
     <div class="topbar">
-      <a href="{% url 'community:notifications' %}" class="tb-notif">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        {% if unread_notif_count %}<span class="tb-notif-dot"></span>{% endif %}
-      </a>
-      <a href="{% url 'community:profile' username=user.username %}" class="tb-avatar">
-        {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-      </a>
+      <span class="topbar-logo">Paw 🐾</span>
+      <div class="topbar-actions">
+        <a href="{% url 'community:notifications' %}" class="topbar-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          {% if unread_notif_count %}<span class="notif-dot"></span>{% endif %}
+        </a>
+        <a href="{% url 'community:profile' username=user.username %}" class="topbar-btn" style="overflow:hidden;">
+          {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">{% else %}<span style="font-size:.8125rem;font-weight:700;color:var(--text);">{{ user.username|slice:":1"|upper }}</span>{% endif %}
+        </a>
+      </div>
     </div>
 
     <div class="feed-scroll">
       <div class="feed-inner">
 
+        <!-- Create Post Box -->
+        <div class="create-box">
+          <div class="create-row">
+            <div class="create-av">{% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</div>
+            <a href="{% url 'community:post_create' %}" class="create-input">What's on your mind, {{ user.get_full_name|default:user.username|truncatechars:12 }}?</a>
+          </div>
+          <div class="create-actions">
+            <a href="{% url 'community:post_create' %}" class="create-action photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Photo
+            </a>
+            <a href="{% url 'community:post_create' %}" class="create-action video">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              Video
+            </a>
+            <a href="{% url 'community:post_create' %}" class="create-action feeling">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              Feeling
+            </a>
+          </div>
+        </div>
+
         <!-- Stories -->
-        <div class="stories-wrap">
-          <div class="stories-label">Stories</div>
-          <div class="stories">
-            <div class="story" onclick="window.location.href='{% url 'community:post_create' %}'">
-              <div class="story-ring add">
-                <div class="story-add-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </div>
+        <div class="stories-card">
+          <div class="stories-row">
+            <div class="story-item" onclick="window.location.href='{% url 'community:post_create' %}'">
+              <div class="story-ring add-ring">
+                <div class="story-add-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
               </div>
-              <span class="story-label">Add Story</span>
+              <span class="story-name">Add Story</span>
             </div>
             {% for f in following %}
-            <div class="story">
+            <div class="story-item">
               <div class="story-ring">
-                <div class="story-inner">
-                  {% if f.following.community_profile.avatar %}<img src="{{ f.following.community_profile.avatar.url }}" alt="">{% else %}{{ f.following.username|slice:":1"|upper }}{% endif %}
-                </div>
+                <div class="story-inner">{% if f.following.community_profile.avatar %}<img src="{{ f.following.community_profile.avatar.url }}" alt="">{% else %}{{ f.following.username|slice:":1"|upper }}{% endif %}</div>
               </div>
-              <span class="story-label">{{ f.following.username|truncatechars:8 }}</span>
+              <span class="story-name">{{ f.following.username|truncatechars:8 }}</span>
             </div>
             {% endfor %}
           </div>
@@ -579,71 +672,80 @@ body.onboarding-active .bottom-nav-unified { display: none !important; }
         <!-- Posts -->
         {% for post in feed_posts %}
         <div class="post-card" id="post-{{ post.id }}">
-          <div class="post-head">
+          <div class="post-header">
             <a href="{% url 'community:profile' username=post.author.username %}" class="post-av">
               {% if post.author.community_profile.avatar %}<img src="{{ post.author.community_profile.avatar.url }}" alt="">{% else %}{{ post.author.username|slice:":1"|upper }}{% endif %}
             </a>
             <div class="post-meta">
-              <div class="post-name">{{ post.author.community_profile.display_name|default:post.author.username }}</div>
-              <div class="post-time">{{ post.created_at|timesince }} ago</div>
+              <div class="post-author">{{ post.author.community_profile.display_name|default:post.author.username }}</div>
+              <div class="post-time">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {{ post.created_at|timesince }} ago
+              </div>
             </div>
-            <button class="post-more">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-            </button>
+            <button class="post-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
           </div>
-          <div class="post-body">
-            <div class="post-text">{{ post.content|linebreaksbr }}</div>
-            {% if post.media %}
-            <div class="post-media" style="margin-top:0.875rem; border-radius:12px; overflow:hidden;">
-              {% if post.media_type == 'image' %}
-                <img src="{{ post.media.url }}" alt="" style="width:100%; display:block; border: 2px solid var(--border-ink); border-radius: 8px;">
-              {% elif post.media_type == 'video' %}
-                <video src="{{ post.media.url }}" controls style="width:100%; display:block; border: 2px solid var(--border-ink); border-radius: 8px;"></video>
-              {% elif post.media_type == 'file' %}
-                <a href="{{ post.media.url }}" target="_blank" class="post-file-card" style="display:flex; align-items:center; gap:0.75rem; padding:0.875rem; background:#fff; border:2px solid var(--border-ink); border-radius:12px; box-shadow:3px 3px 0 var(--border-ink); text-decoration:none; color:inherit;">
-                  <div class="pfc-icon" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border:1.5px solid var(--border-ink); border-radius:6px;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                  </div>
-                  <div class="pfc-info" style="flex:1; min-width:0;">
-                    <div class="pfc-name" style="font-weight:800; font-size:0.875rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.media.name|basename }}</div>
-                    <div class="pfc-meta" style="font-size:0.7rem; color:var(--text3); font-weight:600;">Click to open attachment</div>
-                  </div>
-                </a>
-              {% endif %}
-            </div>
+
+          <div class="post-body">{{ post.content|linebreaksbr }}</div>
+
+          {% if post.media %}
+          <div class="post-media">
+            {% if post.media_type == 'image' %}
+              <img src="{{ post.media.url }}" alt="" loading="lazy">
+            {% elif post.media_type == 'video' %}
+              <video src="{{ post.media.url }}" controls preload="none"></video>
+            {% elif post.media_type == 'file' %}
+              <a href="{{ post.media.url }}" target="_blank" class="post-file-card">
+                <div class="post-file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
+                <div><div class="post-file-name">{{ post.media.name|basename }}</div><div class="post-file-meta">Click to open</div></div>
+              </a>
             {% endif %}
           </div>
+          {% endif %}
+
+          {% if post.like_count %}
+          <div class="post-stats">
+            <div class="post-stat-likes">
+              <div class="like-emojis"><div class="like-emoji">👍</div></div>
+              <span>{{ post.like_count }}</span>
+            </div>
+            <span>{{ post.comment_count|default:"0" }} comment{{ post.comment_count|pluralize }}</span>
+          </div>
+          {% endif %}
+
           <div class="post-actions">
-            <button id="like-btn-{{ post.id }}" class="post-act post-act-like {% if post.id in liked_ids %}liked{% endif %}" onclick="likePost('{{ post.id }}')">
-              <svg id="like-svg-{{ post.id }}" viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              <span id="like-count-{{ post.id }}">{{ post.like_count|default:"0" }}</span>
+            <button id="like-btn-{{ post.id }}" class="post-action {% if post.id in liked_ids %}liked{% endif %}" onclick="likePost('{{ post.id }}')">
+              <svg id="like-svg-{{ post.id }}" viewBox="0 0 24 24" fill="{% if post.id in liked_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+              <span id="like-count-{{ post.id }}">{{ post.like_count|default:"0" }}</span> Like
             </button>
-            <button class="post-act" onclick="toggleComments('{{ post.id }}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-              <span id="comment-count-{{ post.id }}">{{ post.comment_count|default:"0" }}</span>
+            <button class="post-action" onclick="toggleComments('{{ post.id }}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span id="comment-count-{{ post.id }}">{{ post.comment_count|default:"0" }}</span> Comment
             </button>
-            <button class="post-act post-share" onclick="sharePost('{{ post.id }}')">
+            <button class="post-action" onclick="sharePost('{{ post.id }}')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              Share
             </button>
           </div>
-          
-          <div class="post-comments-sec" id="comments-sec-{{ post.id }}" style="display:none;">
-            <div class="comments-list" id="comments-list-{{ post.id }}"></div>
-            <div class="comment-input-wrap">
-              <input type="text" id="comment-input-{{ post.id }}" class="comment-input" placeholder="Write a comment..." onkeypress="if(event.key === 'Enter') submitComment('{{ post.id }}')">
-              <button class="comment-submit" onclick="submitComment('{{ post.id }}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              </button>
+
+          <div class="comments-section" id="comments-sec-{{ post.id }}" style="display:none;">
+            <div id="comments-list-{{ post.id }}"></div>
+            <div class="comment-input-row">
+              <div class="comment-input-av">{% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</div>
+              <div class="comment-input-wrap">
+                <input type="text" id="comment-input-{{ post.id }}" class="comment-input" placeholder="Write a comment…" onkeypress="if(event.key==='Enter')submitComment('{{ post.id }}')">
+                <button class="comment-send" onclick="submitComment('{{ post.id }}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
         {% empty %}
         <div class="feed-empty">
-          <div class="feed-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <h3>Nothing here yet</h3>
-          <p>Follow people and join communities to see posts in your feed.</p>
+          <div class="feed-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <h3>Your feed is empty</h3>
+          <p>Follow people and join communities to see posts here.</p>
           <a href="{% url 'community:schools' %}" class="btn-primary">Browse Communities</a>
         </div>
         {% endfor %}
@@ -651,329 +753,154 @@ body.onboarding-active .bottom-nav-unified { display: none !important; }
       </div>
     </div>
   </div>
+
+  <!-- ── Right Panel ── -->
+  <div class="right-panel">
+    <div class="right-card">
+      <div class="right-card-title">Trending Topics</div>
+      <div class="trend-item"><span class="trend-num">1</span><div class="trend-info"><div class="trend-label">Education</div><div class="trend-name">#StudyWithAI</div><div class="trend-count">2.4K posts</div></div></div>
+      <div class="trend-item"><span class="trend-num">2</span><div class="trend-info"><div class="trend-label">Mathematics</div><div class="trend-name">#Calculus</div><div class="trend-count">1.8K posts</div></div></div>
+      <div class="trend-item"><span class="trend-num">3</span><div class="trend-info"><div class="trend-label">Science</div><div class="trend-name">#PhysicsHelp</div><div class="trend-count">1.2K posts</div></div></div>
+      <div class="trend-item"><span class="trend-num">4</span><div class="trend-info"><div class="trend-label">Writing</div><div class="trend-name">#EssayTips</div><div class="trend-count">980 posts</div></div></div>
+    </div>
+    <div class="right-card">
+      <div class="right-card-title">People You May Know</div>
+      {% for f in following|slice:":3" %}
+      <div class="suggest-item">
+        <div class="suggest-av">{% if f.following.community_profile.avatar %}<img src="{{ f.following.community_profile.avatar.url }}" alt="">{% else %}{{ f.following.username|slice:":1"|upper }}{% endif %}</div>
+        <div class="suggest-info"><div class="suggest-name">{{ f.following.community_profile.display_name|default:f.following.username }}</div><div class="suggest-handle">@{{ f.following.username }}</div></div>
+        <a href="{% url 'community:profile' username=f.following.username %}" class="follow-btn">View</a>
+      </div>
+      {% empty %}
+      <div style="font-size:.875rem;color:var(--text3);text-align:center;padding:1rem 0;">
+        <a href="{% url 'community:schools' %}" style="color:var(--accent-h);font-weight:600;">Find people to follow →</a>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="font-size:.75rem;color:var(--text3);padding:.5rem .25rem;line-height:1.8;">
+      <a href="{% url 'community:community_home' %}" style="margin-right:.5rem;">About</a>
+      <a href="#" style="margin-right:.5rem;">Privacy</a>
+      <a href="#" style="margin-right:.5rem;">Terms</a>
+      <br>© 2025 Paw Education
+    </div>
+  </div>
 </div>
 
-<!-- ── Bottom nav (mobile) ── -->
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: #0b0b0f !important;
-  border-top: 1px solid #1e1e2c !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 100 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0.375rem 0.5rem;
-  color: #8a8a93;
-  border-radius: 12px;
-  text-decoration: none;
-  flex: 1;
-  transition: color 0.15s;
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
-.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
-.bn-unified-item:active svg { transform: scale(1.05); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #8a8a93);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: #D97706; }
-.bn-unified-item:active svg { transform: scale(0.9); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
-</nav>
-
-<!-- ── Floating Action Button ── -->
+<!-- FAB -->
 <a href="{% url 'community:post_create' %}" class="feed-fab" aria-label="New post">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 </a>
 
+<!-- Bottom Nav -->
+<nav class="bottom-nav-unified">
+  <a href="{% url 'community:feed' %}" class="bn-unified-item active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="bn-unified-label">Feed</span></a>
+  <a href="{% url 'ai_chat' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><span class="bn-unified-label">Tutor</span></a>
+  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span class="bn-unified-label">Workspace</span></a>
+  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="bn-unified-label">Tools</span></a>
+  <a href="{% url 'list_materials' %}" class="bn-unified-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="bn-unified-label">Upload</span></a>
+</nav>
+
 <script>
 const CSRF = '{{ csrf_token }}';
+function getCsrfToken(){const v=`; ${document.cookie}`;const p=v.split('; csrftoken=');if(p.length===2)return p.pop().split(';').shift();return CSRF;}
 
-function getCsrfToken() {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; csrftoken=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return CSRF;
+function likePost(id){
+  fetch('/community/api/posts/'+id+'/like/',{method:'POST',headers:{'X-CSRFToken':getCsrfToken(),'Content-Type':'application/json'},credentials:'same-origin'})
+  .then(r=>r.ok?r.json():null).then(d=>{
+    if(!d)return;
+    const btn=document.getElementById('like-btn-'+id);
+    if(btn)btn.classList.toggle('liked',d.liked);
+    const svg=document.getElementById('like-svg-'+id);
+    if(svg)svg.setAttribute('fill',d.liked?'currentColor':'none');
+    const span=document.getElementById('like-count-'+id);
+    if(span)span.textContent=d.like_count;
+  }).catch(console.error);
 }
 
-function likePost(id) {
-  fetch('/community/api/posts/' + id + '/like/', {
-    method: 'POST', 
-    headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
-    credentials: 'same-origin'
-  }).then(async r => {
-    if (!r.ok) {
-       console.error("Like api failed.", await r.text());
-       return null;
+function timeSince(dateStr){
+  const diff=Math.floor((new Date()-new Date(dateStr))/1000);
+  if(diff<60)return diff+'s';if(diff<3600)return Math.floor(diff/60)+'m';
+  if(diff<86400)return Math.floor(diff/3600)+'h';return Math.floor(diff/86400)+'d';
+}
+
+function buildCommentHtml(c){
+  const av=c.author.community_profile&&c.author.community_profile.avatar?`<img src="${c.author.community_profile.avatar}" alt="">`:c.author.username.charAt(0).toUpperCase();
+  const name=(c.author.community_profile&&c.author.community_profile.display_name)?c.author.community_profile.display_name:c.author.username;
+  return `<div class="comment-item"><div class="comment-av">${av}</div><div class="comment-bubble"><div class="comment-author">${name}</div><div class="comment-text">${c.content}</div><div class="comment-time">${timeSince(c.created_at)}</div></div></div>`;
+}
+
+function toggleComments(id){
+  const sec=document.getElementById('comments-sec-'+id);
+  const list=document.getElementById('comments-list-'+id);
+  if(sec.style.display==='none'){
+    sec.style.display='block';
+    if(!list.hasAttribute('data-loaded')){
+      list.innerHTML='<div class="loading-comments">Loading…</div>';
+      fetch('/community/api/posts/'+id+'/comments/',{method:'GET',headers:{'X-CSRFToken':getCsrfToken()},credentials:'same-origin'})
+      .then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+        list.innerHTML=data.length?data.map(buildCommentHtml).join(''):'<div class="loading-comments">No comments yet. Be the first!</div>';
+        list.setAttribute('data-loaded','true');
+      }).catch(()=>{list.innerHTML='<div class="loading-comments">Error loading comments.</div>';});
     }
-    return r.json();
-  }).then(d => {
-    if (!d) return;
-    const btn = document.getElementById('like-btn-' + id);
-    if (btn) btn.classList.toggle('liked', d.liked);
-    const svg = document.getElementById('like-svg-' + id);
-    if (svg) svg.setAttribute('fill', d.liked ? 'currentColor' : 'none');
-    const span = document.getElementById('like-count-' + id);
-    if (span) span.textContent = d.like_count;
-  }).catch(e => {
-    console.error("Fetch error on like:", e);
-  });
+  } else { sec.style.display='none'; }
 }
 
-function timeSince(dateStr) {
-  const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
-  if (diff < 60) return diff + 's';
-  if (diff < 3600) return Math.floor(diff / 60) + 'm';
-  if (diff < 86400) return Math.floor(diff / 3600) + 'h';
-  return Math.floor(diff / 86400) + 'd';
+function submitComment(id){
+  const inp=document.getElementById('comment-input-'+id);
+  const val=inp.value.trim();if(!val)return;
+  const list=document.getElementById('comments-list-'+id);
+  if(list.querySelector('.loading-comments'))list.innerHTML='';
+  inp.disabled=true;
+  fetch('/community/api/posts/'+id+'/comments/',{method:'POST',body:JSON.stringify({content:val}),headers:{'X-CSRFToken':getCsrfToken(),'Content-Type':'application/json'},credentials:'same-origin'})
+  .then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+    list.insertAdjacentHTML('beforeend',buildCommentHtml(data));
+    inp.value='';inp.disabled=false;inp.focus();list.scrollTop=list.scrollHeight;
+    const cspan=document.getElementById('comment-count-'+id);
+    if(cspan)cspan.textContent=parseInt(cspan.textContent||0)+1;
+  }).catch(()=>{inp.disabled=false;});
 }
 
-function buildCommentHtml(c) {
-  const av = c.author.community_profile && c.author.community_profile.avatar 
-      ? `<img src="${c.author.community_profile.avatar}">` 
-      : c.author.username.charAt(0).toUpperCase();
-  const name = (c.author.community_profile && c.author.community_profile.display_name) 
-      ? c.author.community_profile.display_name 
-      : c.author.username;
-  return `
-    <div class="comment-item">
-      <div class="comment-av">${av}</div>
-      <div class="comment-content">
-        <div class="comment-hdr">
-          <span class="comment-name">${name}</span>
-          <span class="comment-time">${timeSince(c.created_at)}</span>
-        </div>
-        <div class="comment-text">${c.content}</div>
-      </div>
-    </div>
-  `;
+function sharePost(id){
+  const url=window.location.origin+'/community/posts/'+id+'/';
+  if(navigator.share){navigator.share({title:'Check this out on Paw',url}).catch(console.error);}
+  else{navigator.clipboard.writeText(url).then(()=>{showToast('Link copied!');});}
 }
 
-function toggleComments(id) {
-  const sec = document.getElementById('comments-sec-' + id);
-  const list = document.getElementById('comments-list-' + id);
-  if (sec.style.display === 'none') {
-    sec.style.display = 'block';
-    if (!list.hasAttribute('data-loaded')) {
-      list.innerHTML = '<div class="loading-comments">Loading...</div>';
-      fetch('/community/api/posts/' + id + '/comments/', {
-        method: 'GET', 
-        headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
-        credentials: 'same-origin'
-      }).then(r => {
-        if(!r.ok) throw new Error("Load failed");
-        return r.json();
-      }).then(data => {
-        list.innerHTML = data.length ? data.map(buildCommentHtml).join('') : '<div class="loading-comments">No comments yet. Be the first to reply!</div>';
-        list.setAttribute('data-loaded', 'true');
-      }).catch(e => {
-        console.error(e);
-        list.innerHTML = '<div class="loading-comments">Error loading comments.</div>';
-      });
-    }
-  } else {
-    sec.style.display = 'none';
-  }
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0F172A;color:#fff;padding:.5rem 1.25rem;border-radius:20px;font-size:.875rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;white-space:nowrap;';
+  t.textContent=msg;document.body.appendChild(t);
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{t.style.opacity='1';});});
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),220);},2200);
 }
 
-function submitComment(id) {
-  const inp = document.getElementById('comment-input-' + id);
-  const val = inp.value.trim();
-  if (!val) return;
-  const list = document.getElementById('comments-list-' + id);
-  if (list.querySelector('.loading-comments')) {
-    list.innerHTML = '';
-  }
-  inp.disabled = true;
-  fetch('/community/api/posts/' + id + '/comments/', {
-    method: 'POST', 
-    body: JSON.stringify({content: val}), 
-    headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
-    credentials: 'same-origin'
-  }).then(async r => {
-    if (!r.ok) throw new Error(await r.text());
-    return r.json();
-  }).then(data => {
-    list.insertAdjacentHTML('beforeend', buildCommentHtml(data));
-    inp.value = '';
-    inp.disabled = false;
-    inp.focus();
-    list.scrollTop = list.scrollHeight;
-    
-    // Update counter
-    const cspan = document.getElementById('comment-count-' + id);
-    if (cspan) cspan.textContent = parseInt(cspan.textContent || 0) + 1;
-  }).catch(e => {
-    console.error("Submit error:", e);
-    inp.disabled = false;
-  });
+/* Onboarding */
+function obNext(step){
+  if(step===2)obSaveStep2();
+  if(step===3)obSaveStep3();
+  document.getElementById('ob-step-'+step).classList.remove('active');
+  document.getElementById('ob-step-'+(step+1)).classList.add('active');
 }
-
-function sharePost(id) {
-  const url = window.location.origin + '/community/posts/' + id + '/';
-  if (navigator.share) {
-    navigator.share({ title: 'Check out this post on NEXA', url: url }).catch(console.error);
-  } else {
-    navigator.clipboard.writeText(url).then(() => {
-      alert("Link copied to clipboard!");
-    });
-  }
+function obPreviewAvatar(input){
+  if(input.files&&input.files[0]){const r=new FileReader();r.onload=e=>{document.getElementById('ob-avatar-preview').innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;};r.readAsDataURL(input.files[0]);}
 }
-
-/* ── Onboarding JS ── */
-let obCurrentStep = 1;
-function obNext(step) {
-    if(step === 2) {
-        // Save first set of data
-        obSaveStep2();
-    }
-    if(step === 3) {
-        // Save interests
-        obSaveStep3();
-    }
-    document.getElementById('ob-step-' + step).classList.remove('active');
-    obCurrentStep = step + 1;
-    document.getElementById('ob-step-' + obCurrentStep).classList.add('active');
+function obSaveStep2(){
+  const fd=new FormData();fd.append('display_name',document.getElementById('ob-display-name').value);fd.append('bio',document.getElementById('ob-bio').value);
+  const files=document.getElementById('ob-avatar-input').files;if(files.length)fd.append('avatar',files[0]);
+  fetch('/community/onboarding/save-profile/',{method:'POST',headers:{'X-CSRFToken':getCsrfToken()},body:fd});
 }
-
-function obPreviewAvatar(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('ob-avatar-preview').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        }
-        reader.readAsDataURL(input.files[0]);
-    }
+function obSaveStep3(){
+  const tags=Array.from(document.querySelectorAll('.ob-tag.active')).map(t=>t.textContent);
+  const fd=new FormData();fd.append('interests',tags.join(', '));
+  fetch('/community/onboarding/save-profile/',{method:'POST',headers:{'X-CSRFToken':getCsrfToken()},body:fd});
 }
-
-function obSaveStep2() {
-    const fd = new FormData();
-    fd.append('display_name', document.getElementById('ob-display-name').value);
-    fd.append('bio', document.getElementById('ob-bio').value);
-    const files = document.getElementById('ob-avatar-input').files;
-    if(files.length) fd.append('avatar', files[0]);
-    
-    fetch('/community/onboarding/save-profile/', {
-        method: 'POST',
-        headers: {'X-CSRFToken': getCsrfToken()},
-        body: fd
-    });
-}
-
-function obSaveStep3() {
-    const tags = Array.from(document.querySelectorAll('.ob-interest-tag.active')).map(t => t.textContent);
-    const fd = new FormData();
-    fd.append('interests', tags.join(', '));
-    
-    fetch('/community/onboarding/save-profile/', {
-        method: 'POST',
-        headers: {'X-CSRFToken': getCsrfToken()},
-        body: fd
-    });
-}
-
-function obFinish() {
-    console.log("Finalizing onboarding...");
-    fetch('/community/onboarding/follow-users/', {
-        method: 'POST',
-        headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json'},
-        body: JSON.stringify({ usernames: [] })
-    }).then(r => {
-        if(!r.ok) throw new Error("Save error");
-        return r.json();
-    }).then(() => {
-        console.log("Onboarding marked as complete in database.");
-        localStorage.setItem('paw_needs_tutorial', 'true');
-        document.getElementById('ob-overlay').style.opacity = '0';
-        setTimeout(() => {
-            window.location.href = "{% url 'community:feed' %}";
-        }, 500);
-    }).catch(e => {
-        console.warn("Retrying direct redirect as backup...", e);
-        window.location.href = "{% url 'community:feed' %}";
-    });
+function obFinish(){
+  fetch('/community/onboarding/follow-users/',{method:'POST',headers:{'X-CSRFToken':getCsrfToken(),'Content-Type':'application/json'},body:JSON.stringify({usernames:[]})})
+  .then(r=>r.json()).then(()=>{
+    localStorage.setItem('paw_needs_tutorial','true');
+    document.getElementById('ob-overlay').style.opacity='0';
+    setTimeout(()=>{window.location.href="{% url 'community:feed' %}";},400);
+  }).catch(()=>{window.location.href="{% url 'community:feed' %}";});
 }
 </script>
 </body>

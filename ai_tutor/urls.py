@@ -3,6 +3,10 @@ from . import views
 
 urlpatterns = [
     path('chat/', views.chat_ai, name='ai_chat'),
+    path('chat/<int:thread_id>/', views.chat_ai, name='ai_chat_detail'),
+    path('chat/create/', views.create_thread, name='create_chat_thread'),
+    path('chat/<int:thread_id>/delete/', views.delete_chat_thread, name='delete_chat_thread'),
+    path('chat/<int:thread_id>/rename/', views.rename_chat_thread, name='rename_chat_thread'),
     path('chat/ajax/', views.chat_ajax, name='ai_chat_ajax'),
     path('chat/stream/', views.chat_stream, name='ai_chat_stream'),
     path('chat/tts/', views.text_to_speech_view, name='ai_tts'),
@@ -10,6 +14,7 @@ urlpatterns = [
     path('chat/image/', views.chat_with_image, name='ai_chat_image'),
     path('chat/websearch/', views.web_search_ajax, name='ai_web_search'),
     path('material/ai/', views.ai_material_action, name='ai_material_action'),
+    path('chat/models/', views.get_models, name='ai_get_models'),
     # Essay — static paths MUST come before <int:essay_id> patterns
     path('essay/', views.essay_request, name='essay_request'),
     path('essay/generate/', views.essay_generate_ajax, name='essay_generate_ajax'),
@@ -21,6 +26,7 @@ urlpatterns = [
     path('essay/autocomplete/', views.essay_autocomplete, name='essay_autocomplete'),
     path('essay/copilot/', views.essay_copilot, name='essay_copilot'),
     # Essay — dynamic <int:essay_id> paths
+    path('essay/<int:essay_id>/stream/', views.essay_stream_build, name='essay_stream_build'),
     path('essay/<int:essay_id>/', views.essay_detail, name='essay_detail'),
     path('essay/<int:essay_id>/delete/', views.delete_essay, name='delete_essay'),
     path('essay/<int:essay_id>/save-edits/', views.essay_save_edits, name='essay_save_edits'),

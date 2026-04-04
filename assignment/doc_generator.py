@@ -54,14 +54,14 @@ def _parse_slides(content):
 
 def _fetch_image_bytes(query, width=800, height=450):
     """
-    Fetch a relevant image from Unsplash Source (no API key needed).
+    Fetch a relevant AI generated image from Pollinations AI (no API key needed).
     Returns bytes or None on failure.
     """
     try:
-        safe_query = urllib.parse.quote(query.replace(' ', ','))
-        url = f"https://source.unsplash.com/{width}x{height}/?{safe_query}"
+        safe_query = urllib.parse.quote(query)
+        url = f"https://image.pollinations.ai/prompt/{safe_query}?width={width}&height={height}&nologo=true"
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=8) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:
             return resp.read()
     except Exception as e:
         logger.warning(f"Image fetch failed for '{query}': {e}")
@@ -207,15 +207,19 @@ def generate_powerpoint_slides(content, title):
         dot.line.fill.background()
 
         # ── Content slides ───────────────────────────────────────────────────
-        parsed = _parse_slides(content)
+        if isinstance(content, list):
+            parsed = content
+        else:
+            parsed = _parse_slides(content)
 
         for slide_data in parsed:
-            slide_title = slide_data['title']
-            bullets = slide_data['bullets'][:7]
-            notes_text = slide_data['notes']
+            slide_title = slide_data.get('title', 'Overview')
+            bullets = slide_data.get('bullets', [])[:7]
+            notes_text = slide_data.get('notes', '')
+            image_prompt = slide_data.get('image_prompt', f"{title} {slide_title} realistic highly detailed")
 
             # Fetch image for this slide
-            img_bytes = _fetch_image_bytes(f"{title} {slide_title}", 800, 450)
+            img_bytes = _fetch_image_bytes(image_prompt, 800, 450)
 
             slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank
             fill_bg(slide)

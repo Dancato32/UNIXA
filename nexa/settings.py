@@ -31,6 +31,7 @@ OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
 RESEMBLE_API_KEY = os.environ.get('RESEMBLE_API_KEY', '')
 PEERJS_API_KEY = os.environ.get('PEERJS_API_KEY', 'peerjs')
+TAVILY_API_KEY = os.environ.get('TAVILY_API_KEY', '')
 
 # ── Installed Apps ────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -264,6 +265,20 @@ REST_FRAMEWORK = {
         'ai': '30/hour',         # AI endpoints (chat, essay, quiz, etc.)
         'upload': '20/hour',     # file uploads
         'anon': '20/day',        # unauthenticated requests
+    },
+}
+
+# ── Celery & Redis ────────────────────────────────────────────────────────────
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    'run-clutch-ai-cycle-every-10-minutes': {
+        'task': 'community.tasks.run_clutch_ai_cycle',
+        'schedule': 600.0,  # 10 minutes in seconds
     },
 }
 

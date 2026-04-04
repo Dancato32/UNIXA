@@ -1,656 +1,290 @@
 {% extends "community/base.html" %}
-{% block title %}New Post{% endblock %}
-{% block mobile_title %}New Post{% endblock %}
+{% block title %}Draft Blueprint{% endblock %}
+{% block mobile_title %}Drafting{% endblock %}
 
 {% block extra_css %}
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ── Shell: lock to viewport ── */
-.np-shell {
-  position: fixed; inset: 0;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  overflow: hidden; font-family: var(--font-hand);
-  z-index: 4500;
+/* ── THE DRAFTING STUDIO: CLUTCH STUDIO ARCHITECTURE ── */
+.draft-shell {
+  position: fixed; inset: 0; background: #fff;
+  display: flex; flex-direction: column; z-index: 5000;
+  animation: studioSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
+@keyframes studioSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-/* ── Top bar ── */
-.np-topbar {
+/* ── Top Bar ── */
+.draft-top {
   flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
-  padding: .875rem 1.125rem;
-  background: var(--surface); border-bottom: 3px solid var(--border-ink);
-  box-shadow: 0 4px 0 rgba(0,0,0,0.05);
+  padding: 1rem 1.75rem; border-bottom: 2px solid var(--clutch-border);
+  background: var(--clutch-surface);
 }
-.np-back {
-  width: 42px; height: 42px;
+.draft-back {
+  width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  background: var(--surface); border: 2.2px solid var(--border-ink);
-  border-radius: 50%; color: var(--text); text-decoration: none;
-  box-shadow: 2px 2px 0 var(--border-ink); transition: transform .1s;
+  background: #f9f9f9; border: 1px solid var(--clutch-border);
+  color: var(--clutch-text); text-decoration: none; transition: all 0.2s;
 }
-.np-back:hover { transform: translate(-1.5px, -1.5px); box-shadow: 3.5px 3.5px 0 var(--border-ink); }
-.np-back svg { width: 22px; height: 22px; }
+.draft-back:hover { background: #fff; border-color: #000; transform: translateX(-2px); }
+.draft-title { font-size: 1rem; font-weight: 950; text-transform: uppercase; letter-spacing: 0.1em; }
+.draft-post-btn {
+  padding: 0.75rem 1.75rem; background: #000; color: #fff;
+  border-radius: 100px; border: none; font-size: 0.75rem; font-weight: 950;
+  text-transform: uppercase; letter-spacing: 0.15em; cursor: pointer;
+  transition: all 0.2s; opacity: 0.3; pointer-events: none;
+}
+.draft-post-btn.ready { opacity: 1; pointer-events: auto; }
+.draft-post-btn.ready:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 
-.np-title {
-  font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; color: var(--text);
-}
+/* ── Body ── */
+.draft-body { flex: 1; overflow-y: auto; padding: 2rem 1.5rem; max-width: 800px; margin: 0 auto; width: 100%; }
 
-.np-post-top-btn {
-  padding: .5rem 1.4rem; background: var(--border-ink);
-  border: 2.5px solid var(--border-ink); border-radius: 6px;
-  color: var(--surface); font-family: var(--font-display); font-size: 1.125rem;
-  cursor: pointer; transition: transform .1s; box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
-  opacity: .35; pointer-events: none;
-}
-.np-post-top-btn.ready { opacity: 1; pointer-events: auto; }
-.np-post-top-btn.ready:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 rgba(0,0,0,0.3); }
-
-/* ── Scrollable composer area ── */
-.np-body {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 1.25rem 1.125rem 0; background: var(--bg);
-}
-
-/* ── Author row ── */
-.np-author-row {
-  display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;
-}
-.np-av {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: #fff; border: 2.2px solid var(--border-ink);
+.draft-row { display: flex; gap: 1.5rem; margin-bottom: 2rem; }
+.draft-av {
+  width: 60px; height: 60px; border-radius: 18px; border: 1.5px solid var(--clutch-border);
+  background: #f1f5f9; flex-shrink: 0; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-size: 1.5rem; color: var(--text);
-  flex-shrink: 0; overflow: hidden; box-shadow: 3px 3px 0 var(--border-ink);
+  font-size: 1.25rem; font-weight: 950; color: #000;
 }
-.np-av img { width: 100%; height: 100%; object-fit: cover; }
+.draft-av img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ── Destination pill ── */
-.np-dest {
-  display: inline-flex; align-items: center; gap: .375rem;
-  background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.3);
-  border-radius: 20px; padding: .25rem .7rem .25rem .5rem;
-  font-size: .75rem; font-weight: 600; color: #a5b4fc;
-  cursor: pointer; position: relative; margin-bottom: .5rem;
-  transition: background .15s;
+.draft-main { flex: 1; }
+.draft-audience {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #f1f5f9; padding: 6px 14px; border-radius: 100px;
+  font-size: 0.75rem; font-weight: 900; color: var(--clutch-text-dim);
+  text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;
+  margin-bottom: 1.5rem; border: 1px solid transparent; transition: all 0.2s;
 }
-.np-dest:hover { background: rgba(99,102,241,.2); }
-.np-dest svg { width: 12px; height: 12px; }
-.np-dest select {
-  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+.draft-audience:hover { background: #fff; border-color: var(--clutch-blue); color: var(--clutch-blue); }
+.draft-audience select { position: absolute; opacity: 0; cursor: pointer; }
+
+.draft-textarea {
+  width: 100%; background: none; border: none; outline: none;
+  font-size: 1.25rem; line-height: 1.6; color: var(--clutch-text);
+  font-weight: 700; resize: none; min-height: 200px; padding: 0;
+}
+.draft-textarea::placeholder { color: #d1d5db; font-weight: 600; }
+
+/* ── Media Previews ── */
+.preview-wrap { margin-top: 1rem; position: relative; border-radius: 32px; overflow: hidden; border: 2px solid var(--clutch-border); display: none; }
+.preview-wrap.active { display: block; }
+.preview-wrap img, .preview-wrap video { width: 100%; display: block; max-height: 500px; object-fit: contain; background: #f9f9f9; }
+.preview-remove {
+  position: absolute; top: 1rem; right: 1rem; width: 40px; height: 40px;
+  border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-weight: 950; transition: all 0.2s;
+}
+.preview-remove:hover { transform: scale(1.1) rotate(90deg); }
+
+.preview-file {
+  display: flex !important; align-items: center !important; gap: 1rem !important;
+  padding: 1.5rem !important; background: #fcfcfc !important; border: 2px solid var(--clutch-border) !important;
+  border-radius: 24px !important; text-decoration: none !important; color: inherit !important;
 }
 
-/* ── Textarea ── */
-.np-textarea {
-  width: 100%;
-  background: transparent;
-  border: none; outline: none; resize: none;
-  font-size: 1.0625rem; line-height: 1.7;
-  color: #d8d8e8; font-family: inherit;
-  min-height: 100px;
-  padding: 0;
-  caret-color: #6366f1;
+/* ── Bottom Bar ── */
+.draft-bottom {
+  flex-shrink: 0; padding: 1.25rem 1.75rem; background: var(--clutch-surface);
+  border-top: 2px solid var(--clutch-border); display: flex; gap: 1.25rem; align-items: center;
 }
-.np-textarea::placeholder { color: rgba(200,200,220,.3); }
-
-/* ── Media preview ── */
-.np-media-preview {
-  display: none; margin: 1rem 0; border: 2.5px solid var(--border-ink);
-  border-radius: 8px; overflow: hidden; position: relative;
-  background: #fff; box-shadow: 5px 5px 0 var(--border-ink);
-}
-.np-media-preview img,
-.np-media-preview video {
-  width: 100%; max-height: 320px; object-fit: contain; display: block;
-}
-.np-media-remove {
-  position: absolute; top: .75rem; right: .75rem;
-  background: var(--border-ink); border: 2px solid #fff; color: #fff;
-  width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+.draft-tool {
+  width: 52px; height: 52px; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 900; box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  background: #fff; border: 2px solid var(--clutch-border);
+  color: var(--clutch-text); cursor: pointer; transition: all 0.2s;
 }
+.draft-tool:hover { transform: translateY(-3px); border-color: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.draft-tool svg { width: 24px; height: 24px; stroke-width: 2.5; }
 
-/* ── File card for "Other Stuff" ── */
-.np-file-preview {
-  display: flex; align-items: center; gap: .75rem; padding: 1rem;
-  background: #fff; border: 2.2px solid var(--border-ink);
-  border-radius: 8px; box-shadow: 4px 4px 0 var(--border-ink); margin: 1rem 0;
+/* Progress Overlay */
+.draft-overlay {
+  position: fixed; inset: 0; background: rgba(255,255,255,0.9);
+  z-index: 6000; display: none; align-items: center; justify-content: center; flex-direction: column;
 }
-.np-file-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: var(--surface2); border: 2px solid var(--border-ink); border-radius: 6px; }
-.np-file-info { flex: 1; min-width: 0; }
-.np-file-name { font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .875rem; }
-.np-file-meta { font-size: .75rem; color: var(--text3); font-weight: 500; }
-
-/* ── Char count ── */
-.np-charcount {
-  text-align: right;
-  font-size: .7rem;
-  color: rgba(160,160,180,.5);
-  padding: .25rem 0;
-  transition: color .15s;
-}
-.np-charcount.warn { color: #f59e0b; }
-.np-charcount.danger { color: #ef4444; }
-
-/* ── Formatting bar ── */
-.np-fmt-bar {
-  display: none;
-  gap: .375rem;
-  flex-wrap: wrap;
-  padding: .625rem 0;
-  border-top: 1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
-  margin: .375rem 0;
-  animation: fadeSlideIn .15s ease;
-}
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.np-fmt-bar button {
-  padding: .3rem .65rem;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px;
-  color: #c0c0cc;
-  cursor: pointer; font-size: .8125rem; font-family: inherit;
-  transition: background .12s;
-}
-.np-fmt-bar button:hover { background: rgba(255,255,255,.12); }
-
-/* ── Opportunity toggle ── */
-.np-opp-section {
-  padding: .875rem 0;
-  border-top: 1px solid rgba(255,255,255,.06);
-}
-.np-opp-toggle {
-  display: flex; align-items: center; gap: .75rem;
-  cursor: pointer; user-select: none;
-}
-.np-opp-toggle input[type=checkbox] { display: none; }
-.np-opp-switch {
-  width: 42px; height: 24px; border-radius: 12px;
-  background: rgba(255,255,255,.1); flex-shrink: 0;
-  position: relative; transition: background .2s;
-  border: 1px solid rgba(255,255,255,.1);
-}
-.np-opp-switch::after {
-  content: ''; position: absolute; top: 3px; left: 3px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.4);
-  transition: transform .2s;
-}
-.np-opp-toggle input:checked ~ .np-opp-switch { background: #6366f1; border-color: #6366f1; }
-.np-opp-toggle input:checked ~ .np-opp-switch::after { transform: translateX(18px); }
-.np-opp-text { font-size: .875rem; font-weight: 600; color: #9090aa; }
-.np-opp-badge { font-size: 1rem; }
-.np-opp-type {
-  display: none;
-  margin-top: .75rem;
-  animation: fadeSlideIn .15s ease;
-}
-.np-opp-type select {
-  width: 100%; padding: .6rem .875rem;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 12px; font-size: .875rem; font-weight: 600;
-  color: #c0c0cc; outline: none; cursor: pointer;
-  transition: border-color .15s; font-family: inherit;
-}
-.np-opp-type select:focus { border-color: #6366f1; }
-.np-opp-type select option { background: #1a1a2e; }
-
-/* ── Bottom action bar ── */
-.np-bottom {
-  flex-shrink: 0; padding: .75rem 1.125rem;
-  padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
-  background: var(--surface); border-top: 3px solid var(--border-ink);
-  display: flex; align-items: center; gap: .75rem;
-}
-.np-act-btn {
-  width: 48px; height: 48px;
-  display: flex; align-items: center; justify-content: center;
-  background: #fff; border: 2.2px solid var(--border-ink);
-  border-radius: 8px; color: var(--text); cursor: pointer;
-  transition: transform .1s, box-shadow .1s; box-shadow: 2.5px 2.5px 0 var(--border-ink);
-}
-.np-act-btn:hover, .np-act-btn.active {
-  transform: translate(-1.5px, -1.5px); box-shadow: 4px 4px 0 var(--border-ink);
-  background: var(--surface3);
-}
-.np-act-btn svg { width: 24px; height: 24px; stroke-width: 2.2; }
-.np-spacer { flex: 1; }
-
-.np-post-btn-bottom {
-  margin-left: .5rem; flex: 1; padding: .75rem;
-  background: var(--border-ink); border: 2.5px solid var(--border-ink);
-  border-radius: 8px; color: var(--surface); font-family: var(--font-display);
-  font-size: 1.25rem; font-weight: 400; cursor: pointer;
-  transition: transform .1s; box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
-  opacity: .3; pointer-events: none;
-}
-.np-post-btn-bottom.ready { opacity: 1; pointer-events: auto; }
-.np-post-btn-bottom.ready:hover { transform: translate(-2.5px, -2.5px); box-shadow: 6px 6px 0 rgba(0,0,0,0.3); }
-.np-post-btn-bottom.posting { opacity: .6; pointer-events: none; filter: grayscale(1); }
-
-/* ── Character ring (shows on long posts) ── */
-.np-ring-wrap {
-  flex-shrink: 0;
-  position: relative;
-  width: 30px; height: 30px;
-  display: none;
-}
-.np-ring-wrap.show { display: block; }
-.np-ring-svg { transform: rotate(-90deg); }
-.np-ring-track { fill: none; stroke: rgba(255,255,255,.1); stroke-width: 3; }
-.np-ring-fill  { fill: none; stroke: #6366f1; stroke-width: 3; stroke-linecap: round;
-  stroke-dasharray: 75.4; stroke-dashoffset: 75.4; transition: stroke-dashoffset .15s, stroke .15s; }
-.np-ring-fill.warn { stroke: #f59e0b; }
-.np-ring-fill.danger { stroke: #ef4444; }
-.np-ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: .5rem; color: #888899; }
-
-/* ── Media tools ── */
-.np-media-tools {
-  display: flex !important;
-  gap: .875rem;
-  margin: 1.25rem 0;
-}
-.np-tool-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: .625rem;
-  padding: 1.125rem;
-  background: var(--surface2);
-  border: 2.2px solid var(--border-ink);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  cursor: pointer;
-  transition: all .2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 4px 4px 0 var(--border-ink);
-  user-select: none;
-  animation: toolBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
-}
-.np-tool-btn svg {
-  width: 30px;
-  height: 30px;
-  stroke-width: 2.2;
-  transition: transform .2s ease;
-}
-.np-tool-btn:hover {
-  transform: translateY(-5px) rotate(-1.5deg);
-  box-shadow: 9px 9px 0 rgba(0,0,0,0.1);
-  background: #fff;
-  color: var(--accent);
-}
-.np-tool-btn:hover svg {
-  transform: scale(1.1) rotate(5deg);
-}
-.np-tool-btn:active {
-  transform: translate(3px, 3px) scale(0.97);
-  box-shadow: 1px 1px 0 var(--border-ink);
-}
-.np-tool-btn:nth-child(2) { animation-delay: 0.1s; }
-.np-tool-btn:nth-child(3) { animation-delay: 0.2s; }
-
-@keyframes toolBounce {
-  0% { transform: scale(0.8) rotate(-10deg); opacity: 0; }
-  50% { transform: scale(1.05) rotate(2deg); }
-  100% { transform: scale(1) rotate(0); opacity: 1; }
-}
+.draft-overlay.active { display: flex; }
+.prog-ring { width: 80px; height: 80px; border: 6px solid var(--clutch-border); border-top-color: var(--clutch-blue); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 600px) {
-  .np-topbar { padding: .75rem .875rem; }
-  .np-body { padding: 1rem .875rem 0; }
-  .np-bottom { padding: .625rem .875rem calc(.625rem + env(safe-area-inset-bottom, 0px)); }
+  .draft-body { padding: 1.5rem 1rem; }
+  .draft-row { gap: 1rem; }
+  .draft-av { width: 48px; height: 48px; border-radius: 14px; }
+  .draft-textarea { font-size: 1.125rem; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="np-shell" id="np-shell">
-
-  <!-- Top bar -->
-  <div class="np-topbar">
-    <a href="{% url 'community:feed' %}" class="np-back" title="Back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </a>
-    <span class="np-title">New Post</span>
-    <button class="np-post-top-btn" id="np-post-top-btn" type="button" onclick="npSubmit()">Post</button>
+<div class="draft-shell">
+  <!-- Top Bar -->
+  <div class="draft-top">
+    <a href="{% url 'community:feed' %}" class="draft-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"/></svg></a>
+    <div class="draft-title">STUDIO DRAFTS</div>
+    <button class="draft-post-btn" id="post-btn" onclick="submitDraft()">POST BLUEPRINT</button>
   </div>
 
-  <!-- Form -->
-  <form method="post" enctype="multipart/form-data" id="np-form" style="display:contents;">
-    {% csrf_token %}
-    <input type="hidden" name="community_type" id="community_type" value="feed">
-    <input type="hidden" name="school_community_id" id="school_community_id" value="">
-    <input type="hidden" name="custom_community_id" id="custom_community_id" value="">
-    <input type="hidden" name="title" id="np-title-hidden" value="Post">
-    <input type="file" name="media" id="np-file" accept="image/*,video/*,.gif" style="display:none;" onchange="npPreviewMedia(this)">
-    <input type="hidden" name="is_opportunity" id="np-is-opp-val" value="0">
-    <input type="hidden" name="opportunity_type" id="np-opp-type-val" value="internship">
-
-    <!-- Scrollable composer -->
-    <div class="np-body" id="np-body">
-
-      <!-- Author & textarea -->
-      <div class="np-author-row">
-        <div class="np-av">
-          {% if user.community_profile.avatar %}
-            <img src="{{ user.community_profile.avatar.url }}" alt="">
-          {% else %}
-            {{ user.username|slice:":1"|upper }}
-          {% endif %}
-        </div>
-        <div style="flex:1;min-width:0;">
-          <!-- Audience pill -->
-          <div class="np-dest" id="np-dest-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            <span id="np-dest-label">Everyone</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            <select id="dest-select" onchange="npSyncDest(this.value)" aria-label="Post audience">
-              <option value="feed">Everyone</option>
-              {% for sc in school_communities %}
-              <option value="school:{{ sc.id }}">{{ sc.name }}</option>
-              {% endfor %}
-              {% for cc in custom_communities %}
-              <option value="custom:{{ cc.id }}">{{ cc.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <!-- Main textarea -->
-          <textarea
-            name="content"
-            id="np-textarea"
-            class="np-textarea"
-            placeholder="What's on your mind?"
-            maxlength="40000"
-            oninput="npOnInput()"
-            autofocus
-          ></textarea>
-        </div>
+  <!-- Drafting Body -->
+  <div class="draft-body">
+    <div class="draft-row">
+      <div class="draft-av">
+        {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
       </div>
-
-      <!-- Media preview -->
-      <div class="np-media-preview" id="np-media-preview"></div>
-
-      <!-- Formatting toolbar (hidden by default) -->
-      <div id="np-fmt-bar" class="np-fmt-bar">
-        <button type="button" onclick="npWrap('**','**')"><b>B</b></button>
-        <button type="button" onclick="npWrap('*','*')"><i>I</i></button>
-        <button type="button" onclick="npWrap('~~','~~')" style="text-decoration:line-through;">S</button>
-        <button type="button" onclick="npInsertLink()">🔗 Link</button>
-        <button type="button" onclick="npInsertList()">• List</button>
-      </div>
-
-      <!-- Upload progress -->
-      <div class="np-progress" id="np-progress">
-        <div class="np-progress-meta">
-          <span id="np-prog-label">Uploading...</span>
-          <span id="np-prog-pct">0%</span>
-        </div>
-        <div class="np-progress-bar"><div class="np-progress-fill" id="np-prog-fill"></div></div>
-      </div>
-
-      <!-- Opportunity toggle -->
-      <div class="np-opp-section">
-        <label class="np-opp-toggle" id="np-opp-label">
-          <input type="checkbox" id="np-opp-check" onchange="npToggleOpp(this)">
-          <span class="np-opp-switch"></span>
-          <span class="np-opp-text">Mark as Opportunity</span>
-          <span class="np-opp-badge" id="np-opp-badge" style="display:none;">💼</span>
-        </label>
-        <div class="np-opp-type" id="np-opp-type">
-          <select id="np-opp-select" onchange="document.getElementById('np-opp-type-val').value=this.value">
-            <option value="internship">💼 Internship</option>
-            <option value="scholarship">🎓 Scholarship</option>
-            <option value="job">💰 Job</option>
-            <option value="competition">🏆 Competition</option>
-            <option value="research">🔬 Research</option>
-            <option value="grant">💡 Grant</option>
-            <option value="other">📌 Other</option>
+      <div class="draft-main">
+        <div class="draft-audience" id="audience-trigger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <span id="audience-label">Everyone</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;"><polyline points="6 9 12 15 18 9"/></svg>
+          <select id="audience-select" onchange="syncAudience(this)">
+            <option value="feed">Everyone</option>
+            {% for sc in school_communities %}<option value="school:{{ sc.id }}">{{ sc.name }}</option>{% endfor %}
+            {% for cc in custom_communities %}<option value="custom:{{ cc.id }}">{{ cc.name }}</option>{% endfor %}
           </select>
         </div>
+
+        <textarea id="draft-input" class="draft-textarea" placeholder="Architect your community blueprint..." autofocus oninput="onDraftInput()"></textarea>
+
+        <!-- Media Preview -->
+        <div class="preview-wrap" id="media-preview"></div>
       </div>
-
-      <!-- Enhanced Media Tools -->
-      <div class="np-media-tools">
-        <button class="np-tool-btn" type="button" onclick="npTriggerFile('image/*')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <span>Photo</span>
-        </button>
-        <button class="np-tool-btn" type="button" onclick="npTriggerFile('video/*')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-          <span>Video</span>
-        </button>
-        <button class="np-tool-btn" type="button" onclick="npTriggerFile('*/*')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-          <span>File</span>
-        </button>
-      </div>
-
-    </div><!-- /np-body -->
-
-    <!-- Bottom action bar -->
-    <div class="np-bottom">
-      <button class="np-act-btn" type="button" id="btn-fmt" title="Formatting" onclick="npToggleFmt()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
-      </button>
-      <button class="np-act-btn" type="button" id="btn-opp" title="Opportunity" onclick="document.getElementById('np-opp-check').click()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-      </button>
-
-      <div class="np-spacer"></div>
-
-      <!-- Character ring -->
-      <div class="np-ring-wrap" id="np-ring-wrap">
-        <svg class="np-ring-svg" viewBox="0 0 30 30" width="30" height="30">
-          <circle class="np-ring-track" cx="15" cy="15" r="12"/>
-          <circle class="np-ring-fill" id="np-ring-fill" cx="15" cy="15" r="12"/>
-        </svg>
-        <div class="np-ring-label" id="np-ring-label"></div>
-      </div>
-
-      <button class="np-post-btn-bottom" id="np-post-btn-bottom" type="button" onclick="npSubmit()">Post</button>
     </div>
+  </div>
 
+  <!-- Bottom Bar Tools -->
+  <div class="draft-bottom">
+    <button class="draft-tool" onclick="triggerFile('image/*')" title="Add Photo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    </button>
+    <button class="draft-tool" onclick="triggerFile('video/*')" title="Add Video">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    </button>
+    <button class="draft-tool" onclick="triggerFile('*/*')" title="Add Resource">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+    </button>
+    <div style="flex:1;"></div>
+    <div id="char-ring" style="font-size:0.7rem; font-weight:950; color:var(--clutch-text-dim); display:none;"></div>
+  </div>
+
+  <!-- Hidden Inputs & Form Shell -->
+  <form id="draft-form" style="display:none;">
+    {% csrf_token %}
+    <input type="file" id="file-input" name="media" onchange="previewMedia(this)">
+    <input type="hidden" name="content" id="form-content">
+    <input type="hidden" name="title" id="form-title" value="New Blueprint">
+    <input type="hidden" name="community_type" id="form-ct" value="feed">
+    <input type="hidden" name="school_community_id" id="form-sc" value="">
+    <input type="hidden" name="custom_community_id" id="form-cc" value="">
   </form>
+
+  <!-- Upload Overlay -->
+  <div class="draft-overlay" id="prog-overlay">
+    <div class="prog-ring"></div>
+    <div style="margin-top:1.5rem; font-weight:950; font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase;">SYNCHRONIZING BLUEPRINT...</div>
+    <div id="prog-pct" style="margin-top:8px; font-weight:950; font-size:1.5rem; color:var(--clutch-blue);">0%</div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const MAX_CHARS = 40000;
-const RING_SHOW_AT = 0.7; // show ring at 70% capacity
-
-function npOnInput() {
-  const ta = document.getElementById('np-textarea');
-  const topBtn = document.getElementById('np-post-top-btn');
-  const btmBtn = document.getElementById('np-post-btn-bottom');
-  const hasContent = ta.value.trim().length > 0 || document.getElementById('np-file').files.length > 0;
-
-  // Enable buttons
-  topBtn.classList.toggle('ready', hasContent);
-  btmBtn.classList.toggle('ready', hasContent);
-
-  // Auto-grow textarea
-  ta.style.height = 'auto';
-  ta.style.height = ta.scrollHeight + 'px';
-
-  // Character ring
+function onDraftInput() {
+  const ta = document.getElementById('draft-input');
+  const btn = document.getElementById('post-btn');
+  const hasContent = ta.value.trim().length > 0 || document.getElementById('file-input').files.length > 0;
+  btn.classList.toggle('ready', hasContent);
+  
+  // Char count hint
+  const ring = document.getElementById('char-ring');
   const len = ta.value.length;
-  const pct = len / MAX_CHARS;
-  const ring = document.getElementById('np-ring-wrap');
-  const fill = document.getElementById('np-ring-fill');
-  const lbl  = document.getElementById('np-ring-label');
-
-  if (pct >= RING_SHOW_AT) {
-    ring.classList.add('show');
-    const circ = 75.4;
-    fill.style.strokeDashoffset = circ - (circ * Math.min(pct, 1));
-    const rem = MAX_CHARS - len;
-    lbl.textContent = rem < 0 ? rem : '';
-    fill.classList.toggle('warn', pct >= .9 && pct < .98);
-    fill.classList.toggle('danger', pct >= .98);
-  } else {
-    ring.classList.remove('show');
-  }
+  if (len > 35000) { ring.style.display = 'block'; ring.textContent = (40000 - len) + ' REMAINING'; }
+  else { ring.style.display = 'none'; }
 }
 
-function npSyncDest(val) {
-  const label = document.getElementById('np-dest-label');
-  const sel   = document.getElementById('dest-select');
+function syncAudience(sel) {
+  const label = document.getElementById('audience-label');
+  const val = sel.value;
   label.textContent = sel.options[sel.selectedIndex].text;
-  const ct = document.getElementById('community_type');
-  const sc = document.getElementById('school_community_id');
-  const cc = document.getElementById('custom_community_id');
+  
+  const ct = document.getElementById('form-ct');
+  const sc = document.getElementById('form-sc');
+  const cc = document.getElementById('form-cc');
+  
   if (val === 'feed') { ct.value = 'feed'; sc.value = ''; cc.value = ''; }
   else if (val.startsWith('school:')) { ct.value = 'school'; sc.value = val.split(':')[1]; cc.value = ''; }
   else if (val.startsWith('custom:')) { ct.value = 'custom'; cc.value = val.split(':')[1]; sc.value = ''; }
 }
 
-function npTriggerFile(accept) {
-  const f = document.getElementById('np-file');
-  f.accept = accept;
-  f.click();
+function triggerFile(accept) {
+  const f = document.getElementById('file-input');
+  f.accept = accept; f.click();
 }
 
-function npPreviewMedia(input) {
-  const file = input.files[0]; if (!file) return;
-  const wrap = document.getElementById('np-media-preview');
-  const url  = URL.createObjectURL(file);
-  wrap.style.display = 'block';
+function previewMedia(input) {
+  const file = input.files[0]; if(!file) return;
+  const wrap = document.getElementById('media-preview');
+  const url = URL.createObjectURL(file);
+  wrap.classList.add('active');
   
   if (file.type.startsWith('image/')) {
-    wrap.innerHTML = `<img src="${url}" alt="preview"><button class="np-media-remove" type="button" onclick="npClearMedia()">&times;</button>`;
+    wrap.innerHTML = `<img src="${url}"><div class="preview-remove" onclick="clearPreview()">&times;</div>`;
   } else if (file.type.startsWith('video/')) {
-    wrap.innerHTML = `<video src="${url}" controls></video><button class="np-media-remove" type="button" onclick="npClearMedia()">&times;</button>`;
+    wrap.innerHTML = `<video src="${url}" controls></video><div class="preview-remove" onclick="clearPreview()">&times;</div>`;
   } else {
-    // Show File Card
-    const size = (file.size / 1024 / 1024).toFixed(2) + ' MB';
     wrap.innerHTML = `
-      <div class="np-file-preview">
-        <div class="np-file-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+      <div class="preview-file">
+        <div style="width:40px; height:40px; border-radius:10px; background:#fff; border:1px solid var(--clutch-border); display:flex; align-items:center; justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
         </div>
-        <div class="np-file-info">
-          <div class="np-file-name">${file.name}</div>
-          <div class="np-file-meta">${size} • Click to change</div>
+        <div style="flex:1;">
+          <div style="font-weight:950; font-size:0.875rem;">${file.name}</div>
+          <div style="font-size:0.7rem; font-weight:800; color:var(--clutch-text-dim); text-transform:uppercase;">${(file.size/1024/1024).toFixed(1)} MB · RESOURCE</div>
         </div>
-        <button class="np-media-remove" type="button" onclick="npClearMedia()">&times;</button>
+        <div class="preview-remove" style="position:static; border-radius:10px;" onclick="clearPreview()">&times;</div>
       </div>
     `;
   }
-  npOnInput();
+  onDraftInput();
 }
 
-function npClearMedia() {
-  document.getElementById('np-file').value = '';
-  const wrap = document.getElementById('np-media-preview');
-  wrap.style.display = 'none'; wrap.innerHTML = '';
-  npOnInput();
+function clearPreview() {
+  document.getElementById('file-input').value = '';
+  const wrap = document.getElementById('media-preview');
+  wrap.classList.remove('active'); wrap.innerHTML = '';
+  onDraftInput();
 }
 
-let fmtOpen = false;
-function npToggleFmt() {
-  fmtOpen = !fmtOpen;
-  const bar = document.getElementById('np-fmt-bar');
-  const btn = document.getElementById('btn-fmt');
-  bar.style.display = fmtOpen ? 'flex' : 'none';
-  btn.classList.toggle('active', fmtOpen);
-}
-
-function npToggleOpp(cb) {
-  const isChecked = cb.checked;
-  document.getElementById('np-is-opp-val').value = isChecked ? '1' : '0';
-  document.getElementById('np-opp-type').style.display = isChecked ? 'block' : 'none';
-  document.getElementById('np-opp-badge').style.display = isChecked ? 'inline' : 'none';
-  document.getElementById('btn-opp').classList.toggle('active', isChecked);
-  if (isChecked) {
-    document.getElementById('np-opp-type-val').value = document.getElementById('np-opp-select').value;
-  }
-}
-
-function npWrap(before, after) {
-  const ta = document.getElementById('np-textarea');
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  const sel = ta.value.substring(s, e) || 'text';
-  ta.value = ta.value.substring(0, s) + before + sel + after + ta.value.substring(e);
-  ta.focus(); ta.selectionStart = ta.selectionEnd = s + before.length + sel.length + after.length;
-  npOnInput();
-}
-function npInsertLink() {
-  const url = prompt('Enter URL:'); if (!url) return;
-  const ta = document.getElementById('np-textarea');
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  const sel = ta.value.substring(s, e) || 'link text';
-  ta.value = ta.value.substring(0, s) + '[' + sel + '](' + url + ')' + ta.value.substring(e);
-  ta.focus(); npOnInput();
-}
-function npInsertList() {
-  const ta = document.getElementById('np-textarea');
-  ta.value += (ta.value && !ta.value.endsWith('\n') ? '\n' : '') + '- ';
-  ta.focus(); npOnInput();
-}
-
-function npSubmit() {
-  const content = document.getElementById('np-textarea').value.trim();
-  if (!content && !document.getElementById('np-file').files.length) return;
-
-  const firstLine = content.split('\n')[0].slice(0, 300) || 'Post';
-  document.getElementById('np-title-hidden').value = firstLine;
-
-  const topBtn = document.getElementById('np-post-top-btn');
-  const btmBtn = document.getElementById('np-post-btn-bottom');
-  const prog   = document.getElementById('np-progress');
-  const fill   = document.getElementById('np-prog-fill');
-  const pct    = document.getElementById('np-prog-pct');
-  const lbl    = document.getElementById('np-prog-label');
-  const hasVideo = document.getElementById('np-file').files[0]?.type.startsWith('video');
-
-  topBtn.textContent = 'Posting…';
-  topBtn.classList.add('posting');
-  btmBtn.textContent = 'Posting…';
-  btmBtn.classList.add('posting');
-  if (hasVideo) { prog.classList.add('show'); lbl.textContent = 'Uploading video…'; }
-
+function submitDraft() {
+  const content = document.getElementById('draft-input').value.trim();
+  if (!content && !document.getElementById('file-input').files.length) return;
+  
+  const form = document.getElementById('draft-form');
+  document.getElementById('form-content').value = content;
+  document.getElementById('form-title').value = content.split('\n')[0].slice(0, 200) || 'Post';
+  
+  const overlay = document.getElementById('prog-overlay');
+  const pct = document.getElementById('prog-pct');
+  overlay.classList.add('active');
+  
   const xhr = new XMLHttpRequest();
-  xhr.upload.addEventListener('progress', ev => {
-    if (!ev.lengthComputable) return;
-    const p = Math.round(ev.loaded / ev.total * 100);
-    fill.style.width = p + '%'; pct.textContent = p + '%';
-    if (p === 100) lbl.textContent = 'Processing…';
-  });
-  xhr.addEventListener('load', () => {
-    if (xhr.status >= 200 && xhr.status < 400) {
-      window.location.href = xhr.responseURL || '/community/';
-    } else {
-      topBtn.textContent = 'Post'; topBtn.classList.remove('posting'); topBtn.classList.add('ready');
-      btmBtn.textContent = 'Post'; btmBtn.classList.remove('posting'); btmBtn.classList.add('ready');
-      prog.classList.remove('show');
-      alert('Failed to post (status ' + xhr.status + '). Please try again.');
+  xhr.upload.addEventListener('progress', e => {
+    if(e.lengthComputable) {
+      let p = Math.round((e.loaded / e.total) * 100);
+      pct.textContent = p + '%';
     }
   });
-  xhr.addEventListener('error', () => {
-    topBtn.textContent = 'Post'; topBtn.classList.remove('posting'); topBtn.classList.add('ready');
-    btmBtn.textContent = 'Post'; btmBtn.classList.remove('posting'); btmBtn.classList.add('ready');
-    prog.classList.remove('show');
-    alert('Network error. Please try again.');
+  
+  xhr.addEventListener('load', () => {
+    if(xhr.status >= 200 && xhr.status < 400) {
+      window.location.href = '{% url "community:feed" %}';
+    } else {
+      overlay.classList.remove('active');
+      alert('Drafting failed. Studio connection error.');
+    }
   });
-  xhr.open('POST', document.getElementById('np-form').action || window.location.href);
+  
+  xhr.open('POST', window.location.href);
   xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-  xhr.send(new FormData(document.getElementById('np-form')));
+  xhr.send(new FormData(form));
 }
-
-// Preselect from URL params
-const params = new URLSearchParams(location.search);
-if (params.get('sc')) { const s = document.getElementById('dest-select'); s.value = 'school:' + params.get('sc'); npSyncDest(s.value); }
-if (params.get('cc')) { const s = document.getElementById('dest-select'); s.value = 'custom:' + params.get('cc'); npSyncDest(s.value); }
 </script>
 {% endblock %}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>{% block title %}Community{% endblock %}  Paw</title>
+<title>{% block title %}Community{% endblock %} - Clutch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <!-- Instant theme init — must run before CSS paint to avoid flash -->
@@ -11,59 +11,39 @@
 <style>
 /* --- Reset --------------------------------------------------------------- */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  /* ── Paw Design System ── */
-  --primary:#0F172A;
-  --secondary:#1E293B;
-  --accent:#F59E0B;
-  --accent-blue:#3B82F6;
-  --background:#F8FAFC;
-  --text-main:#111827;
-  --text-muted:#6B7280;
-  --border-color:#E5E7EB;
+:root {
+  /* ── Clutch Studio Design System ── */
+  --clutch-blue: #3b82f6;
+  --clutch-amber: #fbbf24;
+  --clutch-border: rgba(0,0,0,0.1);
+  --clutch-shadow: 0 10px 40px rgba(0,0,0,0.06);
+  --clutch-shadow-bold: 0 20px 60px rgba(0,0,0,0.12);
+  --clutch-dark: #0f172a;
 
   /* Mapped aliases for backward compat */
-  --bg:#F8FAFC;
-  --surface:#ffffff;
-  --surface2:#F1F5F9;
-  --surface3:#E2E8F0;
-  --surface4:#CBD5E1;
-  --surface5:#94A3B8;
-  --sidebar-bg:#0F172A;
-  --sidebar-text:#F1F5F9;
-  --sidebar-sub:#94A3B8;
-  --sidebar-active-bg:rgba(245,158,11,0.12);
-  --border:#E5E7EB;
-  --border2:#CBD5E1;
-  --border3:#94A3B8;
-  --border-ink:#0F172A;
-  --text:#111827;
-  --text2:#374151;
-  --text3:#6B7280;
-  --text4:#9CA3AF;
-  --accent-hover:#D97706;
-  --accent-subtle:rgba(245,158,11,.1);
-  --accent-text:#ffffff;
-  --accent-pink:#F59E0B;
-  --blue-post:#3B82F6;
-  --red-flag:#EF4444;
-  --green:#10B981;
-  --green-subtle:rgba(16,185,129,.1);
-  --red:#EF4444;
-  --red-subtle:rgba(239,68,68,.08);
-  --amber:#F59E0B;
-  --amber-subtle:rgba(245,158,11,.08);
-  --radius-sm:8px;
-  --radius:12px;
-  --radius-lg:16px;
-  --radius-xl:20px;
-  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
-  --shadow:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
-  --shadow-lg:0 10px 30px rgba(0,0,0,.1),0 4px 8px rgba(0,0,0,.06);
-  --shadow-accent:0 4px 16px rgba(245,158,11,.25);
-  --font-display:'Poppins',sans-serif;
-  --font-hand:'Inter',sans-serif;
-  --theme-transition:background 0.25s,color 0.25s;
+  --bg: var(--clutch-bg);
+  --surface: #ffffff;
+  --surface2: #f9f9f9;
+  --surface3: #f1f5f9;
+  --surface4: #e2e8f0;
+  --surface5: #94a3b8;
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #f1f5f9;
+  --sidebar-sub: #94a3b8;
+  --sidebar-active-bg: rgba(59, 130, 246, 0.1);
+  --accent: var(--clutch-blue);
+  --accent-blue: var(--clutch-blue);
+  --border: var(--clutch-border);
+  --border2: #e2e8f0;
+  --text: var(--clutch-text);
+  --text2: #374151;
+  --text3: var(--clutch-text-dim);
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --font-display: 'Inter', sans-serif;
+  --font-hand: 'Inter', sans-serif;
+  --theme-transition: background 0.25s, color 0.25s;
 }
 
 /* ── Dark Mode ── */
@@ -392,12 +372,10 @@ img{display:block;}
 .sheet-close-btn:hover{background:var(--surface3);}
 .sheet-close-btn svg{width:16px;height:16px;}
 .sheet-user{display:flex;align-items:center;gap:.875rem;padding:1.25rem 1.25rem .875rem;}
-.sheet-user-av{
-  width:52px;height:52px;border-radius:14px;
-  background:linear-gradient(135deg,var(--accent),#FBBF24);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1rem;font-weight:700;flex-shrink:0;overflow:hidden;color:#fff;
-}
+.sheet .clutch-dots { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.sheet .dot { width: 6px; height: 6px; border-radius: 1.5px; background: rgba(0,0,0,0.1); }
+.sheet .dot.active { background: var(--clutch-blue); }
+.sheet .side-logo-text { font-weight: 900; letter-spacing: -0.04em; font-size: 1.25rem; color: var(--clutch-text); }
 .sheet-user-av img{width:100%;height:100%;object-fit:cover;border-radius:14px;}
 .sheet-user-info{flex:1;min-width:0;}
 .sheet-user-name{font-size:1rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -555,9 +533,11 @@ img{display:block;}
 <body>
   <!-- ── Global Post FAB ── -->
   {% block fab %}
+  {% if request.resolver_match.url_name != 'feed' %}
   <a href="{% url 'community:post_create' %}" class="nx-global-fab" aria-label="Create Post">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:24px;height:24px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </a>
+  {% endif %}
   <style>
     .nx-global-fab {
       position: fixed !important;
@@ -585,15 +565,17 @@ img{display:block;}
 <div class="shell">
   <!-- -- Sidebar (Mobile Overlay) ------------------------------------------ -->
   <nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="currentColor" stroke="none"/></svg>
-      </div>
-      <div>
-        <div class="sidebar-logo-text">Paw</div>
-        <div class="sidebar-logo-sub">AI Education</div>
-      </div>
-      <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close menu" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);color:var(--sidebar-sub);">
+    <div class="sidebar-header" style="justify-content: flex-start; padding-left: 1.5rem;">
+      <a href="/" class="side-logo-group" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+        <div class="clutch-dots">
+          <div class="dot active"></div>
+          <div class="dot active"></div>
+          <div class="dot"></div>
+          <div class="dot active"></div>
+        </div>
+        <span class="side-logo-text" style="font-weight: 950; letter-spacing: -0.05em; font-size: 1.5rem; color: #fff;">CLUTCH</span>
+      </a>
+      <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close menu" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);color:var(--sidebar-sub); display: none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -640,9 +622,7 @@ img{display:block;}
     <!-- Header (Screenshot 2) -->
     <header class="nx-header">
       <div class="nx-header-left">
-        <button class="mob-menu-btn-nx" onclick="toggleSidebar()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
+
         <div class="nx-search-bar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" placeholder="Search notes, lectures, or tutors">

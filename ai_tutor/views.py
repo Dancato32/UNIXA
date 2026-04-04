@@ -1,50 +1,73 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.utils import timezone
-from .models import Conversation, EssayRequest
+from django.views.decorators.http import require_POST
+from .models import Conversation, EssayRequest, ChatThread
 from .forms import ChatForm, EssayForm
-from .ai_utils import ask_ai, deep_web_essay, generate_essay_with_sources, text_to_speech
+from .ai_utils import ask_ai, deep_web_essay, generate_essay_with_sources, text_to_speech, resolve_model, AVAILABLE_MODELS, DEFAULT_MODEL
 from nexa.rate_limit import ai_rate_limit, chat_rate_limit, essay_rate_limit, upload_rate_limit
 import json
 import os
 
 
+def get_models(request):
+    """Return available LLM models as JSON for the model picker UI."""
+    return JsonResponse({'models': AVAILABLE_MODELS, 'default': DEFAULT_MODEL})
+
+
 @login_required
-def chat_ai(request):
+def chat_ai(request, thread_id=None):
     """AI Chat interface - displays chat with past conversations and input form."""
-    if request.method == 'POST':
-        form = ChatForm(request.POST)
-        if form.is_valid():
-            message = form.cleaned_data['message']
-            
-            # Get AI response
-            response = ask_ai(message, user=request.user, use_rag=True)
-            
-            # Save conversation
-            Conversation.objects.create(
-                user=request.user,
-                message=message,
-                response=response
-            )
-            
-            messages.success(request, 'Response received!')
-            return redirect('ai_chat')
-    else:
-        form = ChatForm()
+    threads = ChatThread.objects.filter(user=request.user).order_by('-updated_at')
     
-    # Get past conversations for this user (reversed to display oldest to newest top-down)
-    recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
-    conversations = list(reversed(recent))
+    current_thread = None
+    conversations = []
+    
+    if thread_id:
+        current_thread = get_object_or_404(ChatThread, id=thread_id, user=request.user)
+        conversations = current_thread.messages.all().order_by('created_at')
     
     return render(request, 'ai_tutor/chat.html', {
-        'form': form,
+        'threads': threads,
+        'current_thread': current_thread,
         'conversations': conversations,
-        'title': 'AI Tutor - Chat'
+        'title': 'AI Tutor - CLUTCH'
     })
+
+@login_required
+@csrf_exempt
+def create_thread(request):
+    """Create a new chat thread and redirect to it."""
+    thread = ChatThread.objects.create(user=request.user, title="New Chat")
+    return JsonResponse({'success': True, 'thread_id': thread.id, 'url': f'/ai/chat/{thread.id}/'})
+
+@login_required
+@csrf_exempt
+def delete_chat_thread(request, thread_id):
+    """Delete a specific chat thread."""
+    thread = get_object_or_404(ChatThread, id=thread_id, user=request.user)
+    thread.delete()
+    return JsonResponse({'success': True})
+
+@login_required
+@csrf_exempt
+def rename_chat_thread(request, thread_id):
+    """Rename a chat thread."""
+    # - [x] Update `chat_stream` history limit to 50 messages (thread-specific)
+    # - [x] Update `web_search_ajax` to use thread-specific history
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        title = data.get('title', 'New Chat').strip()[:100]
+        thread = get_object_or_404(ChatThread, id=thread_id, user=request.user)
+        thread.title = title
+        thread.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=405)
 
 
 @login_required
@@ -55,23 +78,35 @@ def chat_ajax(request):
             data = json.loads(request.body)
             message = data.get('message', '').strip()
             use_rag = data.get('use_rag', True)
+            model = resolve_model(data.get('model'))
             
             if not message:
                 return JsonResponse({'error': 'Message cannot be empty'}, status=400)
             
-            # Fetch last 50 conversations for deep memory context
-            recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
+            thread_id = data.get('thread_id')
+            if thread_id:
+                thread = get_object_or_404(ChatThread, id=thread_id, user=request.user)
+            else:
+                thread = ChatThread.objects.create(user=request.user, title=message[:50])
+
+            # Fetch optimized history for session context (Infinity Memory - Balanced)
+            recent = Conversation.objects.filter(thread=thread).order_by('-created_at')[:20]
             history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
 
             # Get AI response with history
-            response = ask_ai(message, user=request.user, use_rag=use_rag, history=history)
+            response = ask_ai(message, user=request.user, use_rag=use_rag, history=history, model=model)
             
-            # Save conversation
             conversation = Conversation.objects.create(
                 user=request.user,
+                thread=thread,
                 message=message,
                 response=response
             )
+            
+            # Update thread title if it's the first message
+            if thread.messages.count() == 1:
+                thread.title = message[:50]
+                thread.save()
             
             return JsonResponse({
                 'success': True,
@@ -163,6 +198,97 @@ def essay_request(request):
 
 
 @login_required
+@require_POST
+def essay_generate_ajax(request):
+    """
+    Elite Studio AJAX Generation.
+    Handles the high-fidelity multi-step generation process.
+    """
+    try:
+        data = json.loads(request.body)
+        topic = data.get('topic', '').strip()
+        word_count = int(data.get('word_count') or 500)
+        writing_style = data.get('style', 'argumentative')
+        use_research = data.get('research', True)
+        
+        if not topic:
+            return JsonResponse({'ok': False, 'error': 'Topic is required.'})
+
+        # Create a blank database record to hold the streamed text later
+        essay = EssayRequest.objects.create(
+            user=request.user,
+            topic=topic,
+            word_count=word_count,
+            research_done=use_research,
+            essay_text="",  # Empty, will be filled by stream
+            output_format='text'
+        )
+        
+        # Store metadata intended for stream generation in session
+        # so essay_stream_build can use it
+        rich_topic = f"{topic} [Style: {writing_style}] [Professional Structure: Yes] [Humanized: Yes]"
+        request.session[f'essay_build_topic_{essay.id}'] = rich_topic
+        request.session[f'essay_build_wc_{essay.id}'] = word_count
+        request.session[f'essay_build_research_{essay.id}'] = use_research
+        
+        redirect_url = reverse('essay_detail', args=[essay.id]) + '?stream=true'
+
+        return JsonResponse({
+            'ok': True, 
+            'essay_id': essay.id,
+            'redirect_url': redirect_url
+        })
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
+
+
+@login_required
+def essay_stream_build(request, essay_id):
+    """
+    Stream the essay generation directly to the client using SSE.
+    """
+    from django.http import StreamingHttpResponse
+    from .ai_utils import generate_essay_stream
+    
+    essay = get_object_or_404(EssayRequest, id=essay_id, user=request.user)
+    
+    # Retrieve generation parameters from session
+    topic = request.session.get(f'essay_build_topic_{essay.id}', essay.topic)
+    word_count = request.session.get(f'essay_build_wc_{essay.id}', essay.word_count)
+    use_research = request.session.get(f'essay_build_research_{essay.id}', essay.research_done)
+    model = request.GET.get('model', None)
+    
+    def event_stream():
+        full_text = []
+        try:
+            for chunk in generate_essay_stream(topic, request.user, word_count, model=model, use_research=use_research):
+                full_text.append(chunk)
+                # SSE format
+                # Replace newlines with a unique token or just use JSON
+                import json
+                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                
+            # Once stream completes, save to database
+            final_text = "".join(full_text)
+            essay.essay_text = final_text
+            essay.save()
+            
+            # Optionally clean up session keys
+            try:
+                del request.session[f'essay_build_topic_{essay.id}']
+                del request.session[f'essay_build_wc_{essay.id}']
+            except:
+                pass
+                
+            yield "event: done\ndata: {}\n\n"
+        except Exception as e:
+            yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
+            
+    return StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+
+
+
+@login_required
 def essay_edit_chat(request):
     """AJAX: chat with AI to edit/improve the current essay. Returns a reply and optionally an updated essay."""
     if request.method != 'POST':
@@ -174,7 +300,9 @@ def essay_edit_chat(request):
         if not message or not essay_text:
             return JsonResponse({'ok': False, 'error': 'Message and essay required'}, status=400)
 
-        from .ai_utils import get_openai_client
+        model = resolve_model(data.get('model'))
+
+        from .ai_utils import get_openai_client, build_system_prompt
         client = get_openai_client()
 
         system = (
@@ -187,8 +315,9 @@ def essay_edit_chat(request):
             "Return ONLY valid JSON, no extra text."
         )
 
+        model_id = resolve_model(data.get('model'))
         resp = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=model_id,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": f"My essay:\n\n{essay_text}\n\nMy request: {message}"},
@@ -316,8 +445,14 @@ def chat_with_image(request):
         from .ai_utils import get_openai_client, build_system_prompt
         from django.http import StreamingHttpResponse
 
-        # Resolve History
-        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:20]
+        # Resolve History (Session Context)
+        thread_id = request.POST.get('thread_id')
+        if thread_id:
+            thread = get_object_or_404(ChatThread, id=thread_id, user=request.user)
+        else:
+            thread = ChatThread.objects.create(user=request.user, title=message[:50])
+
+        recent = Conversation.objects.filter(thread=thread).order_by('-created_at')[:100]
         # Evaluate QuerySet to avoid any late evaluation issues in the generator
         history_list = list(reversed(recent))
         history = [{'message': c.message, 'response': c.response} for c in history_list]
@@ -328,7 +463,7 @@ def chat_with_image(request):
         mime = image_file.content_type or 'image/jpeg'
 
         client = get_openai_client()
-        system_message = build_system_prompt(use_rag=use_rag, user=request.user, is_vision=True)
+        system_message = build_system_prompt(use_rag=use_rag, user=request.user, is_vision=True, query=message)
         
         messages_list = [{"role": "system", "content": system_message}]
         for h in history:
@@ -493,9 +628,17 @@ def web_search_ajax(request):
 
         system = """You are Nexa, an AI tutor. The user asked a question and web search results are provided below.
 Use the search results to give an accurate, up-to-date answer. Cite facts from the results naturally.
+Maintain consistency with the previous conversation in this thread.
 Format your answer in clear steps or paragraphs as appropriate. Use LaTeX for any math."""
 
-        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
+        thread_id = data.get('thread_id')
+        if thread_id:
+            thread = get_object_or_404(ChatThread, id=thread_id, user=request.user)
+            recent = Conversation.objects.filter(thread=thread).order_by('-created_at')[:50]
+        else:
+            thread = None
+            recent = Conversation.objects.filter(user=request.user, thread__isnull=True).order_by('-created_at')[:50]
+            
         history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
 
         user_content = f"Question: {query}"
@@ -508,8 +651,10 @@ Format your answer in clear steps or paragraphs as appropriate. Use LaTeX for an
             messages_list.append({"role": "assistant", "content": h['response']})
         messages_list.append({"role": "user", "content": user_content})
 
+        model_ws = resolve_model(data.get('model'))
+
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=model_ws,
             messages=messages_list,
             max_tokens=1000,
             temperature=0.7
@@ -518,6 +663,7 @@ Format your answer in clear steps or paragraphs as appropriate. Use LaTeX for an
 
         conversation = Conversation.objects.create(
             user=request.user,
+            thread=thread,
             message=f"[Web Search] {query}",
             response=ai_response
         )
@@ -546,17 +692,26 @@ def chat_stream(request):
         message = data.get('message', '').strip()
         use_rag = data.get('use_rag', True)
 
+        model = resolve_model(data.get('model'))
+
         if not message:
             return JsonResponse({'error': 'Empty message'}, status=400)
 
         from .ai_utils import get_openai_client, get_study_materials_for_rag, build_system_prompt
         from django.http import StreamingHttpResponse
 
-        recent = Conversation.objects.filter(user=request.user).order_by('-created_at')[:50]
+        thread_id = data.get('thread_id')
+        if thread_id:
+            thread = get_object_or_404(ChatThread, id=thread_id, user=request.user)
+        else:
+            thread = ChatThread.objects.create(user=request.user, title=message[:50])
+
+        # Fetch optimized history for session context (Infinity Memory - Balanced)
+        recent = Conversation.objects.filter(thread=thread).order_by('-created_at')[:50]
         history = [{'message': c.message, 'response': c.response} for c in reversed(recent)]
 
         client = get_openai_client()
-        system_message = build_system_prompt(use_rag, request.user)
+        system_message = build_system_prompt(use_rag, request.user, query=message)
 
         messages_list = [{"role": "system", "content": system_message}]
         for h in history:
@@ -568,7 +723,7 @@ def chat_stream(request):
             full_response = []
             try:
                 stream = client.chat.completions.create(
-                    model="openai/gpt-4o-mini",
+                    model=model,
                     messages=messages_list,
                     max_tokens=1000,
                     temperature=0.7,
@@ -582,13 +737,19 @@ def chat_stream(request):
                         yield f"data: {json.dumps({'token': token})}\n\n"
 
                 # Save full response to DB
-                complete = ''.join(full_response)
+                complete = "".join(full_response)
                 Conversation.objects.create(
                     user=request.user,
+                    thread=thread,
                     message=message,
                     response=complete,
                 )
-                yield f"data: {json.dumps({'done': True})}\n\n"
+                
+                # Update title if it's the first message
+                if thread.messages.count() == 1:
+                    thread.title = message[:50]
+                    thread.save()
+                yield f"data: {json.dumps({'done': True, 'thread_id': thread.id})}\n\n"
 
             except Exception as e:
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
@@ -668,12 +829,14 @@ def essay_guidance(request):
             ),
         }
 
+        model_m = resolve_model(data.get('model'))
+
         if action == 'all':
             # Run all three and combine
             results = {}
             for key, prompt in prompts.items():
                 resp = client.chat.completions.create(
-                    model="openai/gpt-4o-mini",
+                    model=model_m,
                     messages=[
                         {"role": "system", "content": "You are an expert academic writing coach helping students plan essays. Be clear, practical, and encouraging."},
                         {"role": "user", "content": prompt}
@@ -685,7 +848,7 @@ def essay_guidance(request):
         else:
             prompt = prompts.get(action, prompts['breakdown'])
             resp = client.chat.completions.create(
-                model="openai/gpt-4o-mini",
+                model=model_m,
                 messages=[
                     {"role": "system", "content": "You are an expert academic writing coach. Be clear, practical, and encouraging."},
                     {"role": "user", "content": prompt}
@@ -728,10 +891,12 @@ def essay_improve(request):
 
         instructions_text = "\n".join(f"- {i}" for i in improvement_instructions)
 
+        model_i = resolve_model(data.get('model'))
+
         from .ai_utils import get_openai_client
         client = get_openai_client()
         resp = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=model_i,
             messages=[
                 {
                     "role": "system",
@@ -753,7 +918,7 @@ def essay_improve(request):
 
         # Also generate a brief feedback summary
         feedback_resp = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=model_i,
             messages=[
                 {"role": "system", "content": "You are a writing coach. Give brief, encouraging feedback."},
                 {
@@ -789,7 +954,7 @@ def essay_restyle(request, essay_id):
         from .ai_utils import get_openai_client
         client = get_openai_client()
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=resolve_model(data.get('model')),
             messages=[
                 {
                     "role": "system",
@@ -1112,12 +1277,13 @@ def ai_material_action(request):
         action = data.get('action', '')
         material_title = data.get('material_title', 'Material')
         extracted_text = data.get('extracted_text', '')
+        selected_model = resolve_model(data.get('model'))
         
         if not extracted_text:
             return JsonResponse({'success': False, 'error': 'No text content available to analyze.'})
         
         prompt = build_material_prompt(action, material_title, extracted_text, data)
-        response = ask_ai(prompt, user=request.user, use_rag=False)
+        response = ask_ai(prompt, user=request.user, use_rag=False, model=selected_model)
         
         return JsonResponse({'success': True, 'response': response})
         
@@ -1149,7 +1315,7 @@ def essay_autocomplete(request):
         from .ai_utils import get_openai_client
         client = get_openai_client()
         resp = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=resolve_model(data.get('model')),
             messages=[
                 {
                     "role": "system",
@@ -1229,7 +1395,7 @@ def essay_copilot(request):
             return JsonResponse({'ok': False, 'error': 'No text to work with'})
 
         resp = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=resolve_model(data.get('model')),
             messages=[
                 {"role": "system", "content": system_msg},
                 {"role": "user", "content": user_content}

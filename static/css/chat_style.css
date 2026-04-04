@@ -1,18 +1,18 @@
 /* 
  * NEXA - AI Tutor Chat Styles
- * Complements the main design system.
+ * Updated for Modern Studio Aesthetic
  */
 
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--header-height) - 4rem); /* Adjust for header and padding */
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    height: calc(100vh - var(--header-height) - 4rem);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 20px;
     overflow: hidden;
     position: relative;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
 }
 
 @media (max-width: 1024px) {
@@ -35,59 +35,59 @@
     width: 100%;
 }
 
-.msg {
-    max-width: 80%;
-    position: relative;
-}
-
 .msg-user {
     margin-left: auto;
-    background: var(--primary);
-    color: white;
-    border-radius: 18px 18px 2px 18px;
-    padding: 1rem 1.25rem;
-    box-shadow: var(--shadow-sm);
+    background: #0F172A;
+    color: #ffffff;
+    border-radius: 20px 20px 4px 20px;
+    padding: 14px 20px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+    font-weight: 400;
 }
 
 .msg-ai {
     margin-right: auto;
-    background: var(--bg);
-    color: var(--text-primary);
-    border-radius: 18px 18px 18px 2px;
-    padding: 1.25rem;
-    border: 1px solid var(--border);
+    background: #ffffff;
+    color: #111827;
+    border-radius: 4px 20px 20px 20px;
+    padding: 20px 24px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
 }
 
 .msg-text {
     font-size: 15px;
     line-height: 1.6;
+    font-family: 'Inter', sans-serif;
 }
 
 .msg-user .msg-text {
-    color: white;
+    color: #fff;
 }
 
 .chat-input-zone {
     padding: 1.5rem;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
+    border-top: 1px solid rgba(0,0,0,0.08);
+    background: #ffffff;
 }
 
 .chat-input-wrapper {
     display: flex;
     align-items: flex-end;
     gap: 0.75rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 0.5rem;
-    transition: all 0.2s ease;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 9999px;
+    padding: 8px 8px 8px 24px;
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.04);
 }
 
 .chat-input-wrapper:focus-within {
-    border-color: var(--secondary);
-    background: white;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+    border-color: rgba(0,0,0,0.3);
 }
 
 .chat-input-textarea {

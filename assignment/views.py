@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import FileResponse, HttpResponse
@@ -14,6 +14,7 @@ from .forms import AssignmentForm
 from .ai_utils import process_assignment_with_ai
 from .doc_generator import generate_word_document, generate_powerpoint_slides, generate_pdf_document
 from materials.models import StudyMaterial
+from django.http import JsonResponse, StreamingHttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -65,75 +66,140 @@ def assignment_list(request):
 
 @login_required
 def assignment_create(request):
-    """Create a new assignment with file upload or text input."""
+    """Create a new assignment with AJAX support and Deep Research capability."""
     if request.method == 'POST':
-        # Handle photo_data before form validation
-        photo_data = request.POST.get('photo_data', '')
-        photo_text = None
-        photo_file = None
+        try:
+            # 1. Handle Photo/OCR logic
+            photo_data = request.POST.get('photo_data', '')
+            image_text = ""
+            
+            if photo_data and photo_data.startswith('data:image'):
+                from .ai_utils import extract_text_from_photo
+                import base64
+                try:
+                    header, encoded = photo_data.split(',', 1)
+                    image_bytes = base64.b64decode(encoded)
+                    image_text = extract_text_from_photo(image_bytes) or ""
+                except Exception as pe:
+                    logger.error(f"Photo processing error: {pe}")
 
-        if photo_data and photo_data.startswith('data:image'):
-            try:
-                # Strip the data URI prefix
-                header, encoded = photo_data.split(',', 1)
-                image_bytes = base64.b64decode(encoded)
-                # Try vision OCR first
-                photo_text = extract_text_from_photo(image_bytes)
-                if not photo_text:
-                    # Fall back to saving as file
-                    photo_file = ContentFile(image_bytes, name='assignment_photo.jpg')
-            except Exception as e:
-                logger.error(f"Photo processing error: {e}")
+            # 2. Process Form
+            form = AssignmentForm(request.POST, request.FILES)
+            if form.is_valid():
+                assignment = form.save(commit=False)
+                assignment.user = request.user
+                
+                # Append OCR text if found
+                if image_text:
+                    existing = assignment.text_content or ""
+                    assignment.text_content = (existing + "\n\n" + image_text).strip()
 
-        form = AssignmentForm(request.POST, request.FILES)
-        if form.is_valid():
-            assignment = form.save(commit=False)
-            assignment.user = request.user
-            assignment.use_rag = request.POST.get('use_rag') == 'on'
+                # Validate content availability
+                if not assignment.file and not assignment.text_content:
+                    msg = "Please upload a file, take a photo, or enter assignment content."
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == 'true':
+                        return JsonResponse({'ok': False, 'errors': msg}, status=400)
+                    form.add_error(None, msg)
+                    user_materials = StudyMaterial.objects.filter(owner=request.user).order_by('-uploaded_at')
+                    return render(request, 'assignment/create.html', {'form': form, 'title': 'New Assignment', 'user_materials': user_materials})
 
-            # Inject photo content
-            if photo_text:
-                existing = assignment.text_content or ''
-                assignment.text_content = (existing + '\n\n' + photo_text).strip()
-            elif photo_file and not assignment.file:
-                assignment.file = photo_file
+                assignment.save()
 
-            # Validate we have some content
-            if not assignment.file and not assignment.text_content:
-                form.add_error(None, "Please upload a file, take a photo, or enter assignment content.")
-                user_materials = StudyMaterial.objects.filter(owner=request.user).order_by('-uploaded_at')
-                return render(request, 'assignment/create.html', {'form': form, 'title': 'New Assignment', 'user_materials': user_materials})
+                # 3. Handle M2M & Session
+                selected_ids = request.POST.getlist('selected_materials')
+                if selected_ids:
+                    materials = StudyMaterial.objects.filter(pk__in=selected_ids, owner=request.user)
+                    assignment.selected_materials.set(materials)
 
-            assignment.save()
+                request.session[f'display_opts_{assignment.id}'] = {
+                    'font_style': request.POST.get('font_style', 'inter'),
+                    'font_size': request.POST.get('font_size', '14'),
+                    'line_spacing': request.POST.get('line_spacing', '1.6'),
+                    'text_align': request.POST.get('text_align', 'left'),
+                }
 
-            # Save selected materials (M2M — must be after save())
-            selected_ids = request.POST.getlist('selected_materials')
-            if selected_ids:
-                materials = StudyMaterial.objects.filter(
-                    pk__in=selected_ids, owner=request.user
-                )
-                assignment.selected_materials.set(materials)
+                # 4. Respond
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == 'true':
+                    return JsonResponse({
+                        'ok': True,
+                        'assignment_id': assignment.id,
+                        'is_research': request.POST.get('deep_research') == 'true',
+                        'title': assignment.title
+                    })
 
-            # Store display options in session
-            request.session[f'display_opts_{assignment.id}'] = {
-                'font_style': request.POST.get('font_style', 'inter'),
-                'font_size': request.POST.get('font_size', '14'),
-                'line_spacing': request.POST.get('line_spacing', '1.6'),
-                'text_align': request.POST.get('text_align', 'left'),
-            }
+                messages.success(request, 'Assignment created! Synthesis starting...')
+                return redirect(reverse('assignment_result', args=[assignment.id]) + '?stream=true')
+            
+            # Handle invalid form
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == 'true':
+                return JsonResponse({'ok': False, 'errors': form.errors.as_text()}, status=400)
 
-            messages.success(request, 'Assignment created! Processing now...')
-            return redirect('process_assignment', assignment_id=assignment.id)
+        except Exception as e:
+            logger.error(f"Critical error in assignment_create: {e}")
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == 'true':
+                return JsonResponse({'ok': False, 'errors': f"Critical Server Error: {str(e)}"}, status=500)
+            raise e
     else:
         form = AssignmentForm()
 
     user_materials = StudyMaterial.objects.filter(owner=request.user).order_by('-uploaded_at')
-
+    recent_assignments = Assignment.objects.filter(user=request.user).order_by('-created_at')[:10]
+    
     return render(request, 'assignment/create.html', {
         'form': form,
-        'title': 'New Assignment',
+        'title': 'Build Your Assignment',
         'user_materials': user_materials,
+        'recent_assignments': recent_assignments
     })
+
+
+@login_required
+def assignment_stream_build(request, assignment_id):
+    """
+    SSE endpoint to stream assignment generation.
+    """
+    from django.http import StreamingHttpResponse
+    import json as _json
+    from .ai_utils import generate_assignment_stream
+    
+    assignment = get_object_or_404(Assignment, id=assignment_id, user=request.user)
+    
+    def event_stream():
+        full_text = []
+        try:
+            # Update status to processing
+            assignment.status = 'processing'
+            assignment.save()
+            
+            for token in generate_assignment_stream(assignment, request.user):
+                full_text.append(token)
+                yield f"data: {_json.dumps({'token': token})}\n\n"
+            
+            # Save final result - clean up internal markers
+            cleaned_text = []
+            for t in full_text:
+                if not t.startswith('[PROGRESS]') and t != "\n\n[PAGE_BREAK]\n\n":
+                    cleaned_text.append(t)
+            
+            final_text = "".join(cleaned_text)
+            result, created = AssignmentResult.objects.get_or_create(assignment=assignment)
+            result.content = final_text
+            result.save()
+            
+            assignment.status = 'completed'
+            assignment.save()
+            yield "event: done\ndata: {}\n\n"
+        except Exception as e:
+            assignment.status = 'failed'
+            assignment.error_message = str(e)
+            assignment.save()
+            logger.error(f"Stream build error: {e}")
+            yield f"event: error\ndata: {_json.dumps({'error': str(e)})}\n\n"
+            
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache, no-transform'
+    response['X-Accel-Buffering'] = 'no'
+    return response
 
 
 @login_required
@@ -172,7 +238,14 @@ def process_assignment(request, assignment_id):
             result.result_file.save(filename, io.BytesIO(buffer.getvalue()))
             
         elif output_format == 'powerpoint':
-            prs = generate_powerpoint_slides(content, assignment.title)
+            content_to_use = content
+            if assignment.task_type != 'presentation':
+                from .ai_utils import transform_to_presentation_json
+                slides_data = transform_to_presentation_json(content, num_slides=7)
+                if slides_data:
+                    content_to_use = slides_data
+
+            prs = generate_powerpoint_slides(content_to_use, assignment.title)
             buffer = io.BytesIO()
             prs.save(buffer)
             buffer.seek(0)
@@ -255,7 +328,14 @@ def download_result(request, assignment_id):
             doc.save(buffer)
             buffer.seek(0)
         elif fmt == 'powerpoint':
-            prs = generate_powerpoint_slides(result.content, assignment.title)
+            content_to_use = result.content
+            if assignment.task_type != 'presentation':
+                from .ai_utils import transform_to_presentation_json
+                slides_data = transform_to_presentation_json(result.content, num_slides=7)
+                if slides_data:
+                    content_to_use = slides_data
+
+            prs = generate_powerpoint_slides(content_to_use, assignment.title)
             prs.save(buffer)
             buffer.seek(0)
         elif fmt == 'pdf':
@@ -285,6 +365,8 @@ def assignment_delete(request, assignment_id):
     
     if request.method == 'POST':
         assignment.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == 'true':
+            return JsonResponse({'ok': True, 'message': 'Assignment deleted'})
         messages.success(request, 'Assignment deleted.')
         return redirect('assignment_list')
     
@@ -336,3 +418,69 @@ def save_assignment_edits(request, assignment_id):
 
     from django.http import JsonResponse
     return JsonResponse({'ok': True})
+
+
+@login_required
+def assignment_deep_research(request, assignment_id):
+    """
+    Agentic Web Research Phase (SSE).
+    Generates queries, searches Tavily, and streams progress.
+    """
+    import json, time
+    from .search_service import generate_research_queries, perform_tavily_search
+
+    assignment = get_object_or_404(Assignment, id=assignment_id, user=request.user)
+
+    def stream():
+        yield f"data: {json.dumps({'log': 'Initializing NEXA Intelligence Agent...'})}\n\n"
+        time.sleep(0.5)
+        
+        prompt = assignment.text_content or assignment.title
+        yield f"data: {json.dumps({'log': f'Mapping research vectors for: \"{prompt[:40]}...\"'})}\n\n"
+        
+        queries = generate_research_queries(prompt)
+        all_findings = []
+        all_sources = []
+        
+        for q in queries:
+            yield f"data: {json.dumps({'log': f'Searching global databases for: \"{q}\"...'})}\n\n"
+            search_data = perform_tavily_search(q)
+            
+            # Stream specific findings as cards
+            for res in search_data.get('results', [])[:2]:
+                yield f"data: {json.dumps({
+                    'finding': {
+                        'title': res['title'],
+                        'url': res['url'],
+                        'snippet': res['content'][:150] + '...'
+                    }
+                })}\n\n"
+                all_sources.append({'title': res['title'], 'url': res['url']})
+                all_findings.append(f"Source: {res['title']} ({res['url']})\nContent: {res['content']}\n")
+            
+            time.sleep(1.0) # For visual pacing
+            
+        # Finalize Research
+        assignment.research_notes = "\n\n".join(all_findings)
+        assignment.research_sources = {'sources': all_sources}
+        assignment.save()
+        
+        yield f"data: {json.dumps({'log': 'Intelligence compiled. Ready for synthesis.', 'done': True})}\n\n"
+
+    return StreamingHttpResponse(stream(), content_type='text/event-stream')
+
+@login_required
+def assignment_json(request, assignment_id):
+    """Retrieve assignment details as JSON."""
+    assignment = get_object_or_404(Assignment, id=assignment_id, user=request.user)
+    content = ""
+    if hasattr(assignment, 'result'):
+        content = assignment.result.content
+    
+    return JsonResponse({
+        'ok': True,
+        'id': assignment.id,
+        'title': assignment.title,
+        'content': content,
+        'status': assignment.status
+    })

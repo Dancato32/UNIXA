@@ -1,1888 +1,705 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{ title }} - Paw</title>
+    <title>AI Tutor Studio - CLUTCH</title>
+    
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
     <style>
-        /* ── Paw Social Studio Overwrite ── */
         :root {
-            --bg: #0F172A;
-            --surface: #1E293B;
-            --sidebar-bg: #0b0f1d;
-            --border: rgba(255,255,255,0.08);
-            --text: #F1F5F9;
-            --text2: #94A3B8;
-            --accent: #F59E0B;
-            --msg-user-bg: #F59E0B;
-            --msg-ai-bg: rgba(30, 41, 59, 0.7);
-            --radius: 20px;
-            --shadow-premium: 0 20px 40px -10px rgba(0,0,0,0.5);
-            --font-display: 'Poppins', sans-serif;
+            /* ── CLUTCH Studio Palette ── */
+            --bg: #030712;
+            --surface: rgba(15, 23, 42, 0.6);
+            --surface-solid: #0F172A;
+            --glass: rgba(15, 23, 42, 0.4);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #3B82F6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --text: #F8FAFC;
+            --text-muted: #94A3B8;
+            --sidebar-w: 280px;
+            --header-h: 70px;
+            --font-display: 'Outfit', sans-serif;
             --font-main: 'Inter', sans-serif;
         }
-        body { font-family: var(--font-main); background: var(--bg); color: var(--text); }
-        .main { background: var(--bg); }
-        .chat-area { background: radial-gradient(circle at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%); }
-        .topbar { background: rgba(15,23,42,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
-        .welcome-hero { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.04em; filter: drop-shadow(0 0 20px rgba(245,158,11,0.2)); }
-        .sug-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .sug-card:hover { transform: translateY(-5px) scale(1.05); background: rgba(245,158,11,0.15); border-color: var(--accent); box-shadow: 0 15px 35px rgba(245,158,11,0.2); }
-        .msg-user .msg-body { background: var(--accent); color: #000; font-weight: 700; box-shadow: 0 8px 25px rgba(245,158,11,0.3); }
-        .msg-ai .msg-body { background: var(--msg-ai-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); box-shadow: var(--shadow-premium); border-radius: 4px 24px 24px 24px; padding: 24px; }
-        .input-box { background: rgba(30,41,59,0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); margin-bottom: 20px; }
-        .input-box:focus-within { border-color: var(--accent); box-shadow: 0 25px 70px rgba(245,158,11,0.1); }
-        
-        @media (max-width: 768px) {
-            .chat-inner { padding: 80px 16px 160px; }
-            .input-zone { bottom: 80px; width: 94%; }
-            .welcome-hero { font-size: 2.5rem; }
-        }
 
-        *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            /* ── Black & White Hand-Drawn Professional ── */
+        [data-theme="light"] {
             --bg: #F8FAFC;
-            --surface: #ffffff;
-            --surface2: #f5f5f3;
-            --sidebar-bg: #0F172A;
-            --main-bg: var(--bg);
-            --border: #E5E7EB;
-            --border-ink: #0F172A;
-            --border-light: rgba(0,0,0,0.05);
-            --text: #111827;
-            --text2: #374151;
-            --text3: #6B7280;
-            --accent: #F59E0B;
-            --accent-hover: #D97706;
-            --card: #ffffff;
-            --card2: #F1F5F9;
-
-            /* Chat structure vars */
-            --sidebar-w: 200px;
-            --header-h: 60px;
-            --input-radius: 12px;
-            --card-hover: #eeeeeb;
-            --msg-user-bg: #0F172A;
-            --msg-ai-bg: transparent;
-            --shadow: 0 4px 12px rgba(0,0,0,.08);
-            --shadow-md: 0 8px 24px rgba(0,0,0,.1);
-            
-            --font-display: 'Poppins', sans-serif;
-            --font-hand: 'Inter', sans-serif;
+            --surface: rgba(255, 255, 255, 0.8);
+            --surface-solid: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.6);
+            --border: rgba(15, 23, 42, 0.08);
+            --accent: #2563EB;
+            --text: #0F172A;
+            --text-muted: #64748B;
         }
 
-        /* Dark Mode Support (Basic) */
-        [data-theme="dark"] {
-            --bg: #0a0a0a;
-            --surface: #141414;
-            --surface2: #1c1c1c;
-            --border: #333333;
-            --border-ink: #f0f0ee;
-            --border-light: rgba(255,255,255,0.05);
-            --text: #f0f0ee;
-            --text2: #c8c8c4;
-            --text3: #6B7280;
-            --accent: #f0f0ee;
-            --card: #141414;
-            --msg-user-bg: #222;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: var(--font-main); background: var(--bg); color: var(--text); 
+            height: 100vh; overflow: hidden; -webkit-tap-highlight-color: transparent;
         }
 
-        body { font-family: var(--font-hand), -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; }
-        .app { display: flex; height: 100vh; background: var(--bg); }
+        /* ── App Layout ── */
+        .app-studio { display: flex; height: 100vh; width: 100vw; position: relative; }
 
-        /* Sidebar (Standardized Redesign) */
+        /* ── Sidebar ── */
         .sidebar {
-          width: var(--sidebar-w); background: var(--sidebar-bg);
-          border-right: none;
-          display: flex; flex-direction: column; flex-shrink: 0;
-          z-index: 1500; height: 100vh; position: relative;
+            width: var(--sidebar-w); background: var(--surface-solid);
+            display: flex; flex-direction: column; z-index: 1000;
+            border-right: 1px solid var(--border); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .sidebar-header { padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,.06); }
-        .sidebar-logo-icon { display:flex; align-items:center; justify-content:center; }
-        .sidebar-logo-text { font-family: 'Poppins', sans-serif; font-size: 1.375rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
-        
-        .sidebar-section-label { font-size: .625rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #64748B; padding: 1rem 1.25rem 0.5rem; }
-        
-        .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.5rem 0; scrollbar-width: none; display:flex; flex-direction:column; }
-        .sidebar-nav::-webkit-scrollbar { display: none; }
-        
-        .nav-item { display: flex; align-items: center; gap: .875rem; padding: .625rem 1rem; margin: 0.125rem 0.75rem; border-radius: 8px; color: #94A3B8; font-size: .875rem; font-weight: 500; transition: all 0.2s ease; text-decoration: none; border: none; background: none; width: calc(100% - 1.5rem); text-align: left; }
-        .nav-item:hover { background: rgba(255,255,255,.06); color: #F1F5F9; }
-        .nav-item.active { background: rgba(245,158,11,.12); color: #F59E0B; font-weight: 600; }
-        .nav-item svg { width: 18px; height: 18px; stroke-width: 2px; flex-shrink: 0; }
-        .nav-item.active svg { stroke-width: 2.5px; }
-        
-        .sidebar-footer { padding: 1rem .75rem; display: flex; align-items: center; gap: .75rem; border-top: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.02); }
-        .sidebar-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg,#F59E0B,#FBBF24); display: flex; align-items: center; justify-content: center; font-size: .875rem; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; }
-        .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .sidebar-footer-info { flex: 1; min-width: 0; }
-        .sidebar-user-name { font-size: .8125rem; font-weight: 600; color: #F1F5F9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
-        .sidebar-user-status { font-size: .65rem; color: #64748B; margin-top: 1px; }
+        .sidebar-header { padding: 2rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        .logo { 
+            font-family: var(--font-display); font-size: 22px; font-weight: 800; 
+            letter-spacing: -0.04em; color: var(--accent); text-decoration: none;
+        }
+        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 1rem 2rem; scrollbar-width: none; }
+        .sidebar-scroll::-webkit-scrollbar { display: none; }
 
-        /* ── MAIN ── */
-        .main { margin-left: var(--sidebar-w); flex: 1; width: calc(100% - var(--sidebar-w)); display: flex; flex-direction: column; height: 100vh; background: var(--main-bg); overflow: hidden; }
-        .topbar { height: var(--header-h); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; background: var(--surface); z-index: 10; position: relative; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-        .topbar-left { display: flex; align-items: center; }
-        .topbar-center { display: flex; flex: 1; justify-content: center; font-size: 15px; font-weight: 600; color: var(--text); }
-        .topbar-right { display: flex; align-items: center; }
-        .tb-btn { display: none; }
-        .tb-icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); cursor: pointer; transition: all 0.15s; }
-        .tb-icon-btn:hover { background: var(--surface3); color: var(--text); }
-        
-        .mode-pills { display: none; }
-        .mode-pill { display: none; }
+        .nav-section { margin-bottom: 2.5rem; }
+        .nav-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 0.5rem 0.75rem; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            color: var(--text-muted); text-decoration: none; border-radius: 12px;
+            font-size: 14px; font-weight: 500; transition: all 0.2s; margin-bottom: 4px;
+        }
+        .nav-item:hover { color: var(--text); background: var(--border); }
+        .nav-item.active { color: var(--text); background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .nav-item svg { width: 18px; height: 18px; stroke-width: 2.5; }
 
-        /* ── CHAT AREA ── */
-        .chat-area { flex: 1; overflow-y: auto; padding: 0; min-height: 0; z-index: 5; background-image: radial-gradient(circle at 10% 20%, rgba(245,158,11,0.03) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(15,23,42,0.02) 0%, transparent 40%); }
-        .chat-inner { max-width: 900px; width: 100%; margin: 0 auto; padding: 32px 24px 160px; }
+        .history-list { display: flex; flex-direction: column; gap: 2px; }
+        .history-item {
+            padding: 10px 14px; font-size: 13.5px; color: var(--text-muted);
+            text-decoration: none; border-radius: 10px; transition: 0.2s;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .history-item:hover { color: var(--text); background: var(--border); }
 
-        @media (max-width: 900px) {
-            .chat-inner { padding: 24px 16px 180px; }
+        .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border); }
+        .logout-btn {
+            width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px;
+            background: rgba(239, 68, 68, 0.05); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.1);
+            border-radius: 12px; font-size: 13px; font-weight: 600; text-decoration: none; justify-content: center;
         }
 
-        /* ── WELCOME ── */
-        .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 160px); text-align: center; padding: 40px 24px; width: 100%; }
-        .welcome-title { font-size: 16px; font-weight: 500; color: var(--text3); margin-bottom: 16px; }
-        .welcome-title strong { font-weight: 700; color: var(--text); }
-        .welcome-hero { font-size: 36px; font-weight: 700; color: var(--text); font-family: 'Poppins', sans-serif; line-height: 1.2; margin-bottom: 32px; letter-spacing: -0.03em; }
+        /* ── Main Canvas ── */
+        .canvas { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
         
-        .suggestion-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 700px; width: 100%; perspective: 1000px; }
-        .sug-card { 
-            display: flex; align-items: center; justify-content: center; 
-            background: var(--surface); color: var(--text); border: 1px solid var(--border); 
-            border-radius: 12px; padding: 12px 24px; cursor: pointer; text-align: center; 
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: var(--shadow); 
-            animation: sugIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        .topbar {
+            height: var(--header-h); padding: 0 1.5rem; display: flex; align-items: center;
+            justify-content: space-between; border-bottom: 1px solid var(--border);
+            background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 100; position: sticky; top: 0;
         }
-        @keyframes sugIn { from { opacity: 0; transform: translateY(10px) rotateX(-5deg); } to { opacity: 1; transform: translateY(0) rotateX(0); } }
-        .sug-card:nth-child(1) { animation-delay: 0.1s; }
-        .sug-card:nth-child(2) { animation-delay: 0.2s; }
-        .sug-card:nth-child(3) { animation-delay: 0.3s; }
-
-        .sug-card:hover { 
-            background: var(--surface); border-color: var(--accent); 
-            transform: translateY(-4px) scale(1.02); box-shadow: 0 10px 25px -5px rgba(245,158,11,0.2); 
+        .burger-btn {
+            display: none; background: transparent; border: none; color: var(--text);
+            cursor: pointer; padding: 8px;
         }
-        .sug-text { font-size: 14px; font-weight: 600; color: var(--text2); transition: color 0.2s; }
-        .sug-card:hover .sug-text { color: var(--text); }
 
-        /* ── MESSAGES ── */
-        .msg-wrap { padding: 18px 0; }
-        .msg { display: flex; gap: 16px; align-items: flex-start; }
-        .msg-avatar { display: none; }
-        .msg-body { min-width: 0; }
+        /* ── Chat Content ── */
+        .chat-area { flex: 1; overflow-y: auto; scrollbar-width: none; }
+        .chat-area::-webkit-scrollbar { display: none; }
+        .chat-bound { max-width: 850px; margin: 0 auto; padding: 4rem 1.5rem 12rem; width: 100%; }
+
+        /* ── Welcome Screen ── */
+        .welcome { text-align: center; padding: 4rem 0; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .welcome-icon { 
+            width: 80px; height: 80px; background: linear-gradient(135deg, var(--accent), #60A5FA);
+            border-radius: 24px; margin: 0 auto 2.5rem; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 36px; font-weight: 900; box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+        }
+        .welcome-title { font-family: var(--font-display); font-size: 36px; font-weight: 800; margin-bottom: 3rem; letter-spacing: -0.04em; }
         
-        .msg-user { justify-content: flex-end; width: 100%; }
-        .msg-user .msg-body { flex: 0 1 auto; background: var(--msg-user-bg); color: #F1F5F9; padding: 14px 20px; max-width: 80%; border-radius: 20px 20px 4px 20px; box-shadow: 0 4px 15px rgba(15,23,42,0.1); }
-        .msg-user .msg-text { color: #F1F5F9; font-size: 15px; line-height: 1.6; font-weight: 500; }
+        .suggestion-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .sug-card {
+            background: var(--surface-solid); border: 1px solid var(--border);
+            padding: 1.5rem; border-radius: 20px; cursor: pointer; text-align: left;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sug-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
+        .sug-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+        .sug-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* ── Message Bubbles ── */
+        .msg-wrap { margin-bottom: 2.5rem; animation: msgIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        .msg-ai { justify-content: flex-start; width: 100%; margin-bottom: 8px; }
-        .msg-ai .msg-body { 
-            flex: 1; min-width: 0; background: var(--msg-ai-bg); 
-            padding: 20px; border-radius: 4px 20px 20px 20px;
-            border: 1px solid var(--border-light); backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+        .msg { display: flex; gap: 1.25rem; }
+        .msg-user { flex-direction: row-reverse; }
+        .msg-avatar .avatar-circle {
+            width: 38px; height: 38px; border-radius: 12px; background: var(--accent);
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            font-weight: 800; font-size: 15px;
         }
-        .msg-text { font-size: 15px; line-height: 1.75; font-family: var(--font-main); word-break: break-word; font-weight: 400; color: var(--text); }
-        .msg-ai .msg-text { color: var(--text); position: relative; }
+        .msg-content { max-width: 80%; }
+        .msg-text { 
+            padding: 1rem 1.5rem; font-size: 15px; line-height: 1.62; 
+            border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .msg-user .msg-text { background: var(--accent); color: #fff; border-radius: 24px 24px 4px 24px; }
+        .msg-ai .msg-text { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 24px 24px 24px 4px; }
+
+        /* ── Input Zone ── */
+        .input-dock {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 2rem 1.5rem 3rem; background: linear-gradient(transparent, var(--bg) 40%);
+            z-index: 110; pointer-events: none;
+        }
+        .input-bar-wrap {
+            max-width: 850px; margin: 0 auto; background: var(--surface-solid);
+            border: 1px solid var(--border); border-radius: 28px; padding: 10px;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); backdrop-filter: blur(30px);
+        }
+        .input-row { display: flex; align-items: flex-end; gap: 8px; }
+        .input-main {
+            flex: 1; background: transparent; border: none; padding: 12px;
+            color: var(--text); font-size: 16px; font-family: inherit; resize: none;
+            max-height: 200px; outline: none;
+        }
+        .input-tools { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 6px; }
+        .tool-btn {
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; color: var(--text-muted); cursor: pointer; transition: 0.2s;
+            background: transparent; border: none;
+        }
+        .tool-btn:hover { background: var(--border); color: var(--text); }
+        .tool-btn.active { color: var(--accent); background: rgba(59,130,246,0.1); }
         
-        /* Shimmer for streaming text */
-        .msg-ai.streaming .msg-text::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.1), transparent);
-            background-size: 200% 100%;
-            animation: streamingFlow 1.5s infinite linear;
-            pointer-events: none;
+        .send-btn-big {
+            width: 42px; height: 42px; background: var(--accent); color: #fff;
+            border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes streamingFlow {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+        .send-btn-big:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--accent-glow); }
+        .send-btn-big:disabled { opacity: 0.5; transform: none; }
+
+        /* ── RAG UI ── */
+        .rag-check { display: none; }
+        .rag-pill {
+            display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--text-muted);
+            cursor: pointer; transition: 0.2s;
         }
-        
-        .msg-time { display: none; }
-        .msg-actions { display: flex; gap: 16px; margin-top: 10px; }
-        .msg-action-btn { display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 4px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
-        .msg-action-btn:hover { color: #fff; transform: translateY(-1px); }
-        .msg-action-btn svg { width: 18px; height: 18px; }
+        .rag-check:checked + .rag-pill { color: var(--accent); border-color: var(--accent); background: rgba(59,130,246,0.1); }
 
-        /* Board render (AI structured output) */
-        .board-render { font-size: 14px; }
-        .stream-cursor { 
-            display: inline-block; 
-            width: 2px; 
-            height: 18px; 
-            background: #F59E0B; 
-            margin-left: 2px; 
-            vertical-align: middle; 
-            animation: chatCursorBlink 0.8s infinite;
-            box-shadow: 0 0 8px rgba(245,158,11,0.5);
+        /* ── Bottom Nav ── */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
+            background: var(--surface); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid var(--border); display: none; align-items: center;
+            justify-content: space-around; z-index: 1000; padding-bottom: env(safe-area-inset-bottom);
         }
-        @keyframes chatCursorBlink {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            color: var(--text-muted); text-decoration: none; padding: 10px; flex: 1;
         }
-        .br-check { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: #22c55e; border-radius: 4px; font-size: 10px; color: #fff; flex-shrink: 0; }
-        
-        /* Smooth Typing & Content Reveal */
-        @keyframes revealText {
-            from { opacity: 0; transform: translateX(-6px); filter: blur(4px); }
-            to { opacity: 1; transform: translateX(0); filter: blur(0); }
-        }
-        .board-render > * { transition: opacity 0.3s ease; }
-        
-        
-        /* Message Entrance */
-        @keyframes msgInLeft {
-            from { opacity: 0; transform: translateX(-20px) scale(0.95); }
-            to { opacity: 1; transform: translateX(0) scale(1); }
-        }
-        @keyframes msgInRight {
-            from { opacity: 0; transform: translateX(20px) scale(0.95); }
-            to { opacity: 1; transform: translateX(0) scale(1); }
-        }
-        .msg-ai { animation: msgInLeft 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; }
-        .msg-user { animation: msgInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; }
-        
-        /* Markdown output styles */
-        .msg-text p { margin: 0 0 8px; line-height: 1.7; color: var(--text2); font-size: 14px; }
-        .msg-text p:last-child { margin-bottom: 0; }
-        .msg-text h1, .msg-text h2, .msg-text h3 { color: var(--text); font-weight: 700; margin: 12px 0 6px; }
-        .msg-text h1 { font-size: 16px; } .msg-text h2 { font-size: 15px; } .msg-text h3 { font-size: 14px; }
-        .msg-text ol, .msg-text ul { padding-left: 22px; margin: 6px 0; color: var(--text2); font-size: 14px; line-height: 1.8; }
-        .msg-text li { margin-bottom: 4px; }
-        .msg-text strong { color: var(--text); font-weight: 600; }
-        .msg-text em { font-style: italic; }
-        .msg-text code { background: var(--border-light); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--text); }
-        .msg-text pre { background: var(--border-light); padding: 10px 14px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
-        .msg-text pre code { background: none; padding: 0; font-size: 13px; }
-        .msg-text blockquote { border-left: 3px solid var(--border); padding-left: 12px; color: var(--text2); margin: 8px 0; font-style: italic; }
-        .katex-display { overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
+        .bottom-nav-item.active { color: var(--accent); }
+        .bottom-nav-item svg { width: 20px; height: 20px; stroke-width: 2.5; }
+        .bottom-nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
 
-        /* Nexa Bird animations */
-        @keyframes birdBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-        @keyframes birdTalk { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.6) translateY(1px)} }
-        @keyframes wingFlap { 0%,100%{transform:rotate(-15deg)} 50%{transform:rotate(-30deg)} }
-        @keyframes wingFlapR { 0%,100%{transform:rotate(15deg)} 50%{transform:rotate(30deg)} }
-        @keyframes birdGlow { 0%,100%{filter:drop-shadow(0 0 18px rgba(129,140,248,0.5))} 50%{filter:drop-shadow(0 0 32px rgba(249,115,22,0.7))} }
-        @keyframes eyeBlink { 0%,90%,100%{transform:scaleY(1)} 95%{transform:scaleY(0.1)} }
-        #nexa-bird-svg.listening { animation: birdBob 1.2s ease-in-out infinite; }
-        #nexa-bird-svg.speaking { animation: birdBob 0.4s ease-in-out infinite, birdGlow 0.4s ease-in-out infinite; }
-        #nexa-bird-svg.speaking #beak-bot { animation: birdTalk 0.18s ease-in-out infinite; transform-origin: 50px 50px; }
-        #nexa-bird-svg.speaking #wing-l { animation: wingFlap 0.4s ease-in-out infinite; transform-origin: 26px 70px; }
-        #nexa-bird-svg.speaking #wing-r { animation: wingFlapR 0.4s ease-in-out infinite; transform-origin: 74px 70px; }
-        #nexa-bird-svg.thinking { animation: birdBob 2s ease-in-out infinite; }
-        #nexa-bird-svg #pupil-l, #nexa-bird-svg #pupil-r { animation: eyeBlink 4s ease-in-out infinite; transform-origin: center; }
-        .loading-indicator { display: none; align-items: center; gap: 6px; padding: 4px 0; margin-left: 4px; }
-        .loading-indicator.active { display: flex; }
-        .loading-dot { width: 8px; height: 8px; background: var(--text3); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
-        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
-
-        /* ── INPUT PILL ── */
-        .input-zone { padding: 12px 24px 32px; background: transparent; position: relative; flex-shrink: 0; z-index: 10; width: 100%; max-width: 860px; margin: 0 auto; }
-        .input-box-wrap { position: relative; width: 100%; }
-        .input-box { 
-            display: flex; 
-            align-items: center; 
-            background: var(--surface); 
-            border: 2px solid var(--border-ink); 
-            border-radius: 12px; 
-            padding: 6px 6px 6px 20px;
-            box-shadow: 4px 4px 0 var(--border-ink);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .input-box:focus-within { 
-            background: var(--surface);
-            box-shadow: 6px 6px 0 var(--border-ink);
-            transform: translate(-2px, -2px);
-        }
-        .input-textarea { 
-            flex: 1; 
-            border: none; 
-            background: transparent; 
-            padding: 12px 4px; 
-            font-family: var(--font-hand); 
-            font-size: 16px; 
-            font-weight: 600;
-            color: var(--text); 
-            resize: none; 
-            min-height: 44px; 
-            max-height: 200px; 
-            outline: none; 
-            line-height: 1.4; 
-        }
-        .input-textarea::placeholder { color: var(--text3); font-weight: 500; }
-
-        .input-bar { display: flex; align-items: center; gap: 8px; }
-        .ibar-btn { 
-            width: 38px; 
-            height: 38px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border-radius: 8px; 
-            border: none; 
-            background: transparent; 
-            color: var(--text3); 
-            cursor: pointer; 
-            transition: all 0.15s; 
-        }
-        .ibar-btn:hover { background: var(--surface2); color: var(--text); }
-        .ibar-btn svg { width: 18px; height: 18px; }
-
-        .send-btn { 
-            width: 42px; 
-            height: 42px; 
-            border-radius: 8px; 
-            background: var(--accent); 
-            border: 2px solid var(--border-ink); 
-            color: var(--surface); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            box-shadow: 2px 2px 0 var(--border-ink);
-        }
-        .send-btn:hover { transform: translate(-2px, -2px); background: var(--accent-hover); box-shadow: 4px 4px 0 var(--border-ink); }
-        .send-btn svg { width: 20px; height: 20px; }
-
-        .input-footer-note { font-family: var(--font-hand); text-align: center; font-size: 12px; font-weight: 600; color: var(--text3); margin-top: 12px; }
-
-        /* Attach menu */
-        .attach-menu { display: none; position: absolute; bottom: calc(100% + 8px); left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 6px; min-width: 190px; z-index: 500; box-shadow: var(--shadow-md); }
-        .attach-menu.open { display: block; }
-        .attach-menu-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; background: none; border: none; border-radius: 7px; color: var(--text); font-size: 13.5px; cursor: pointer; text-align: left; font-family: inherit; }
-        .attach-menu-item:hover { background: var(--card-hover); }
-        .attach-menu-divider { height: 1px; background: var(--border-light); margin: 4px 0; }
-
-        /* RAG toggle */
-        .rag-toggle { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--text2); cursor: pointer; }
-        .rag-toggle input { accent-color: #1a1a1a; width: 13px; height: 13px; }
-
-        /* Image Preview Strip */
-        .image-preview-strip { display: none; align-items: center; gap: 12px; padding: 10px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; width: fit-content; animation: msgInLeft 0.3s ease-out; }
-        .preview-thumb-wrap { position: relative; width: 44px; height: 44px; border-radius: 8px; overflow: hidden; border: 1px solid var(--accent); }
-        #image-preview-thumb { width: 100%; height: 100%; object-fit: cover; }
-        .remove-img-btn { position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; background: #ef4444; color: #fff; border: none; border-radius: 50%; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        .preview-text { font-size: 12px; color: var(--text2); font-weight: 500; }
-        
-        #websearch-badge { display: none; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); border-radius: 50px; color: #60a5fa; font-size: 12px; font-weight: 600; margin-bottom: 12px; width: fit-content; }
-
-        /* Camera modal - Premium Dark Theme */
-        .camera-modal { display: none; position: fixed; inset: 0; background: rgba(9, 9, 12, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .camera-modal.open { display: flex; animation: assistantIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .camera-modal-inner { background: rgba(26, 26, 38, 0.95); border: 1px solid rgba(255,185,129,0.1); border-radius: 28px; overflow: hidden; width: min(500px, 100%); max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
-        .camera-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .camera-modal-title { font-size: 16px; font-weight: 700; color: #fff; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
-        .camera-close-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .camera-close-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
-        .camera-preview-wrap { position: relative; background: #000; min-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #camFeed { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0; }
-        #camCanvas { display: none; }
-        #camCaptured { display: none; width: 100%; height: 100%; object-fit: contain; }
-        .camera-idle-msg { color: rgba(255,255,255,0.3); font-size: 14px; text-align: center; padding: 3rem; }
-        .camera-modal-footer { padding: 20px 24px; display: flex; gap: 12px; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); }
-        .cam-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .cam-btn-ghost { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
-        .cam-btn-ghost:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
-        .cam-btn-primary { background: #10b981; color: #fff; box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
-        .cam-btn-primary:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
-        .cam-btn-send { background: linear-gradient(135deg, #10b981, #3b82f6); color: #fff; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
-        .cam-btn-send:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
-
-        /* ── VOICE ASSISTANT (NEXA ROBOT) ── */
-        .voice-overlay { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: var(--bg);
-            z-index: 2000; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start;
-            padding-top: 5vh;
-            color: var(--text);
-            overflow: hidden;
-        }
-        .voice-overlay.active { display: flex; animation: assistantIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes assistantIn { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
-        
-        .assistant-header { width: 100%; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; position: absolute; top: 0; }
-        .assistant-brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-family: var(--font-display); font-size: 20px; color: var(--text); }
-        .assistant-brand svg { width: 18px; height: 18px; color: var(--text); }
-        .v-close-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); border: 2px solid var(--border-ink); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--border-ink); transition: 0.15s; }
-        .v-close-btn:hover { background: var(--surface2); transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--border-ink); }
-
-        .assistant-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 450px; padding: 0 20px; }
-        
-        /* Nexa Robot Styling */
-        .nexa-robot-wrap { position: relative; width: 220px; height: 220px; margin-bottom: 40px; }
-        .robot-floating { animation: robotFloat 4s ease-in-out infinite; }
-        @keyframes robotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        
-        .robot-glow { display: none; } /* removed neon glow for hand-drawn aesthetic */
-
-        .think-bubble { position: absolute; top: -10px; right: 10px; background: var(--surface); border: 2px solid var(--border-ink); padding: 6px 14px; border-radius: 20px; display: flex; gap: 4px; box-shadow: 4px 4px 0 var(--border-ink); animation: bubbleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .think-dot { width: 5px; height: 5px; background: var(--text); border-radius: 50%; animation: thinkJump 1.4s infinite; }
-        .think-dot:nth-child(2) { animation-delay: 0.2s; }
-        .think-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes thinkJump { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
-        @keyframes bubbleIn { from { opacity: 0; transform: scale(0.5) translate(20px, 20px); } to { opacity: 1; transform: scale(1) translate(0, 0); } }
-
-        .hero-text { text-align: center; margin-bottom: 50px; }
-        .hero-title { font-size: 28px; font-family: var(--font-display); font-weight: 700; color: var(--text); margin-bottom: 8px; }
-        .hero-title span { color: var(--text3); font-weight: 500; }
-        .hero-sub { font-family: var(--font-hand); font-size: 16px; color: var(--text2); font-weight: 600; letter-spacing: 0.01em; }
-
-        /* Mic Control System */
-        .assistant-controls { width: 100%; display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 30px; }
-        .mic-btn-main { width: 84px; height: 84px; border-radius: 50%; background: var(--surface); color: var(--text); border: 2px solid var(--border-ink); cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; transition: all 0.3s; box-shadow: 4px 4px 0 var(--border-ink); }
-        .mic-btn-main:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--border-ink); }
-        .mic-btn-main.listening { background: var(--accent); color: var(--surface); }
-        .mic-ripple { display: none; } /* Hand drawn ignores neon ripples */
-
-        .secondary-v-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--surface); border: 2px solid var(--border-ink); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--border-ink); transition: all 0.2s; }
-        .secondary-v-btn:hover { background: var(--surface2); transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--border-ink); }
-        .secondary-v-btn svg { width: 20px; height: 20px; }
-
-        /* Slide-up Solution Board */
-        .board-sheet { 
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
-            height: 45vh; 
-            background: var(--surface); 
-            border-top: 2px solid var(--border-ink); 
-            border-radius: 20px 20px 0 0; 
-            transform: translateY(100%); 
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            padding: 24px 20px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-        }
-        .board-sheet.open { transform: translateY(0); }
-        .sheet-handle { width: 36px; height: 4px; background: var(--border-ink); border-radius: 10px; margin: 0 auto 20px; }
-        .sheet-title { font-family: var(--font-hand); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 20px; border-bottom: 2px dashed var(--border-ink); padding-bottom: 8px;}
-        .board-scroll { flex: 1; overflow-y: auto; padding-right: 4px; scrollbar-width: none; }
-        .board-scroll::-webkit-scrollbar { display: none; }
-
-        .listening-status { font-family: var(--font-hand); font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.1em; margin-bottom: 20px; opacity: 0; transition: opacity 0.3s; text-transform: uppercase; }
-        .listening-status.active { opacity: 1; }
-
-        .v-text-display { text-align: center; width: 100%; margin-top: 20px; font-family: var(--font-hand); }
-        .v-u-text { font-size: 16px; color: var(--text2); font-style: italic; margin-bottom: 12px; }
-        .v-a-text { font-size: 18px; color: var(--text); font-weight: 600; line-height: 1.5; }
-        
-        .always-listen-opt { display: flex; align-items: center; gap: 8px; font-family: var(--font-hand); font-size: 14px; font-weight: 600; color: var(--text3); margin-top: 10px; cursor: pointer; }
-        .always-listen-opt input { accent-color: var(--accent); }
-
-        /* ── MOBILE ── */
-        .mobile-menu-btn { display: none; }
-        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
-        .bottom-nav { display: none; }
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; transform: translateX(-100%); z-index: 2000; width: 280px; left: 0; top: 0; bottom: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.open { display: block; }
-            .main { margin-left: 0 !important; width: 100% !important; flex: 1; }
-            .mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; border: none; background: var(--card); color: var(--text2); cursor: pointer; }
-            .topbar { padding: 0 16px; height: 60px; border-bottom: 1px solid var(--border-light); }
-            .topbar-center { font-size: 15px; font-weight: 700; }
-            
-            /* Compact mobile chat area */
-            .chat-inner { padding: 12px 16px 20px; }
-            .welcome { min-height: calc(100vh - 220px); padding: 20px 16px; }
-            .welcome-hero { font-size: 28px; margin-bottom: 30px; }
-            .welcome-title { font-size: 18px; margin-bottom: 16px; }
-            .suggestion-grid { flex-direction: column; width: 100%; }
-            .sug-card { width: 100%; padding: 16px; text-align: left; justify-content: flex-start; }
-            
-            .msg-user .msg-body { max-width: 90%; padding: 12px 16px; }
-            .msg-ai .msg-text { font-size: 14.5px; line-height: 1.6; }
-            
-            .desktop-text { display: none; }
-            .ibar-btn { padding: 10px !important; }
-            
-            /* Clever mobile input zone avoiding bottom nav */
-            .input-zone { 
-              padding: 12px 16px env(safe-area-inset-bottom); 
-              background: var(--bg); 
-              border-top: 1px solid var(--border-light);
-              position: fixed;
-              bottom: 64px; /* Above bottom nav */
-              left: 0; right: 0;
-              z-index: 150;
+        /* ── Mobile ── */
+        @media (max-width: 1024px) {
+            .sidebar { position: fixed; transform: translateX(-100%); height: 100vh; }
+            .sidebar.open { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.3); }
+            .burger-btn { display: block; }
+            .sidebar-mask { 
+                position: fixed; inset: 0; background: rgba(0,0,0,0.6); 
+                z-index: 900; opacity: 0; pointer-events: none; transition: 0.3s;
+                backdrop-filter: blur(4px);
             }
-            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(13, 13, 20, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.08); justify-content: space-around; align-items: center; z-index: 1000; }
-            .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text3); font-size: 10px; font-weight: 700; text-decoration: none; padding: 8px 12px; border-radius: 12px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.02em; }
-            .bnav-item.active { color: #fff; }
-            .bnav-item svg { width: 20px; height: 20px; color: var(--text3); transition: transform 0.2s; }
-            .bnav-item.active svg { color: var(--accent); transform: translateY(-2px); }
-            
-            .chat-area { padding-bottom: 180px; } /* Space for input zone + bottom nav */
+            .sidebar-mask.open { opacity: 1; pointer-events: auto; }
+            .chat-bound { padding: 2rem 1rem 14rem; }
+            .suggestion-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .sug-card { padding: 0.85rem; border-radius: 14px; }
+            .sug-card h3 { font-size: 13px; margin-bottom: 3px; }
+            .sug-card p { font-size: 11px; line-height: 1.3; }
+            .input-dock { bottom: 70px; padding-bottom: 1.5rem; }
+            .bottom-nav { display: flex; }
         }
-        @media (max-width: 480px) {
-            .suggestion-grid { grid-template-columns: 1fr; }
-            .welcome-title { font-size: 22px; }
+
+
+        /* ── Loading ── */
+        .loading-wrap { display: none; padding: 0 1.5rem; align-items: center; gap: 8px; margin-top: -1rem; }
+        .loading-wrap.active { display: flex; }
+        .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.4s infinite; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
+
+        /* ── Math Display ── */
+        .br-math-display { overflow-x: auto; margin: 1.5rem 0; padding: 1.5rem; background: rgba(0,0,0,0.15); border-radius: 12px; border-left: 4px solid var(--accent); }
+        .stream-cursor { display: inline-block; width: 8px; height: 18px; background: var(--accent); margin-left: 4px; border-radius: 2px; animation: blink 0.8s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+        /* ── Attach Menu ── */
+        .attach-menu {
+            position: absolute; bottom: 100%; left: 0; margin-bottom: 15px;
+            background: var(--surface-solid); border: 1px solid var(--border);
+            border-radius: 16px; padding: 8px; display: none; flex-direction: column;
+            width: 180px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 200;
+            backdrop-filter: blur(20px);
         }
+        .attach-menu.open { display: flex; animation: menuIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes menuIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .attach-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            color: var(--text-muted); font-size: 13px; font-weight: 600;
+            border-radius: 10px; cursor: pointer; transition: 0.2s; border: none; background: transparent; width: 100%; text-align: left;
+        }
+        .attach-item:hover { background: var(--border); color: var(--text); }
+        .attach-item svg { width: 16px; height: 16px; }
+
+        /* ── Camera UI ── */
+        .camera-modal {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .camera-modal.open { display: flex; }
+        .camera-view { width: 100%; height: 100%; object-fit: cover; }
+        .camera-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 2rem; pointer-events: none; }
+        .cam-controls { display: flex; align-items: center; justify-content: center; gap: 2rem; pointer-events: auto; }
+        .snap-btn {
+            width: 70px; height: 70px; border-radius: 50%; border: 4px solid #fff;
+            background: transparent; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .snap-btn:active { transform: scale(0.9); }
+        .snap-inner { width: 54px; height: 54px; border-radius: 50%; background: #fff; }
+
+        /* ── Web Search UI ── */
+        #websearch-badge {
+            display: none; align-items: center; gap: 6px; padding: 4px 10px;
+            background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px; color: var(--accent); font-size: 11px; font-weight: 700;
+            margin-bottom: 8px; align-self: flex-start;
+        }
+        /* ── Model Picker ── */
+        .model-trigger {
+            display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 20px; cursor: pointer; transition: all 0.2s;
+            font-size: 12px; font-weight: 700; color: var(--text-muted);
+            font-family: var(--font-display);
+        }
+        .model-trigger:hover { border-color: var(--accent); color: var(--text); background: rgba(59,130,246,0.08); }
+        .model-trigger svg { width: 13px; height: 13px; }
+        #model-badge-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .model-picker-overlay {
+            position: fixed; inset: 0; z-index: 500;
+            display: none;
+        }
+        .model-picker-overlay.open { display: block; }
+
+        .model-picker-panel {
+            position: absolute; top: calc(var(--header-h) + 8px); right: 1.5rem;
+            width: 340px; max-height: 520px; overflow-y: auto; scrollbar-width: none;
+            background: var(--surface-solid); border: 1px solid var(--border);
+            border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            backdrop-filter: blur(30px); z-index: 501;
+            animation: pickerIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 12px;
+        }
+        .model-picker-panel::-webkit-scrollbar { display: none; }
+        @keyframes pickerIn { from { opacity:0; transform:translateY(-8px) scale(0.97); } to { opacity:1; transform:none; } }
+
+        .picker-header { padding: 10px 12px 14px; }
+        .picker-header h4 { font-family: var(--font-display); font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+        .picker-header p { font-size: 12px; color: var(--text-muted); }
+
+        .provider-group { margin-bottom: 8px; }
+        .provider-label {
+            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); padding: 6px 12px 4px;
+        }
+        .model-option {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; border-radius: 12px; cursor: pointer;
+            transition: all 0.15s; border: 1px solid transparent;
+        }
+        .model-option:hover { background: var(--border); }
+        .model-option.active {
+            background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.25);
+        }
+        .model-option-left { display: flex; flex-direction: column; gap: 2px; }
+        .model-option-name { font-size: 13.5px; font-weight: 700; }
+        .model-option-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+        .model-badge {
+            font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+            padding: 3px 8px; border-radius: 20px;
+        }
+        .badge-Fast     { background: rgba(16,185,129,0.15); color: #10B981; }
+        .badge-Smart    { background: rgba(59,130,246,0.15);  color: #60A5FA; }
+        .badge-Powerful { background: rgba(139,92,246,0.15);  color: #A78BFA; }
+        .badge-Reasoning{ background: rgba(245,158,11,0.15);  color: #FBBF24; }
+        .badge-Open     { background: rgba(249,115,22,0.15);  color: #FB923C; }
+        .badge-Efficient{ background: rgba(20,184,166,0.15);  color: #2DD4BF; }
+
+        .provider-OpenAI    { color: #74AA9C; }
+        .provider-Anthropic { color: #D97706; }
+        .provider-Google    { color: #4285F4; }
+        .provider-Meta      { color: #0165E1; }
+        .provider-Mistral   { color: #FF7000; }
+        .provider-DeepSeek  { color: #AB5EEB; }
     </style>
 </head>
 <body>
-<div class="app">
 
-<!-- SIDEBAR OVERLAY (mobile) -->
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<div class="app-studio">
+    <div class="sidebar-mask" id="sidebar-mask" onclick="closeSidebar()"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'ai_chat' %}" class="logo">CLUTCH STUDIO</a>
+            <button class="tool-btn" onclick="NexaTheme.toggle()" title="Theme">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+        </div>
 
-<!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-logo-icon" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#FBBF24);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(245,158,11,.3);">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:16px;height:16px;color:#fff;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        <div class="sidebar-scroll">
+            <nav class="nav-section">
+                <div class="nav-label">Platform</div>
+                <a href="{% url 'community:feed' %}" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Feed
+                </a>
+                <a href="{% url 'ai_chat' %}" class="nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    AI Tutor
+                </a>
+                <a href="{% url 'community:workspace_list' %}" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                    Workspace
+                </a>
+            </nav>
+
+            <nav class="nav-section">
+                <div class="nav-label">Recent Chats</div>
+                <div class="history-list">
+                    {% for thread in conversation_history %}
+                    <a href="{% url 'ai_chat' thread_id=thread.id %}" class="history-item {% if thread.id == current_thread.id %}active{% endif %}">
+                        {{ thread.title|default:"New Conversation" }}
+                    </a>
+                    {% empty %}
+                    <div style="padding: 0 14px; font-size: 12px; color: var(--text-muted);">No threads yet</div>
+                    {% endfor %}
+                </div>
+            </nav>
         </div>
-        <div class="sidebar-logo-text">Paw</div>
-    </div>
-    
-    <div class="sidebar-section-label">Main</div>
-    
-    <nav class="sidebar-nav">
-        <a href="{% url 'community:feed' %}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Feed
-        </a>
-        <a href="{% url 'ai_chat' %}" class="nav-item active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            AI Tutor
-        </a>
-        <a href="{% url 'community:workspace_list' %}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Your Workspace
-        </a>
-        <a href="{% url 'community:ai_tools' %}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Your Tools
-        </a>
-        <a href="{% url 'list_materials' %}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
-        </a>
-        
-        {% if conversations %}
-        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding:1.5rem 1.25rem 0.5rem;">
-            <span style="font-size:10px;font-weight:700;color:#4b4b5a;text-transform:uppercase;letter-spacing:0.05em;">History</span>
-            <button onclick="NexaChat.clearChat()" style="color:#4b4b5a;font-size:10px;font-weight:600;">Clear All</button>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout-btn">Sign Out</a>
         </div>
-        {% endif %}
+    </aside>
+
+    <!-- Main Canvas -->
+    <main class="canvas">
+        <header class="topbar">
+            <button class="burger-btn" onclick="openSidebar()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div style="font-size:14px; font-weight:700; letter-spacing:0.02em;">{% if current_thread %}{{ current_thread.title|truncatechars:30 }}{% else %}READY TO LEARN{% endif %}</div>
+            <!-- Model Picker Trigger -->
+            <button class="model-trigger" onclick="ModelPicker.toggle()" title="Switch AI Model">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M20 12a8 8 0 1 1-4.03-6.93"/><polyline points="20 2 20 8 14 8"/></svg>
+                <span id="model-badge-name">GPT-4o Mini</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:10px;height:10px;"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+        </header>
+
+        <div class="chat-area" id="chat-area">
+            <div class="chat-bound">
+                {% if not messages %}
+                <div class="welcome" id="welcome-screen">
+                    <div class="welcome-icon">C</div>
+                    <h1 class="welcome-title">What are we studying?</h1>
+                    <div class="suggestion-grid">
+                        <div class="sug-card" onclick="NexaChat.send('Help me prepare for my finals')">
+                            <h3>Exam Prep</h3>
+                            <p>Generate study guides and practice quizzes.</p>
+                        </div>
+                        <div class="sug-card" onclick="NexaChat.send('Solve this equation step-by-step')">
+                            <h3>Math Solver</h3>
+                            <p>Get clear solutions for complex math.</p>
+                        </div>
+                        <div class="sug-card" onclick="NexaChat.send('Explain thermodynamics simply')">
+                            <h3>Tutor Mode</h3>
+                            <p>Break down difficult concepts into simple terms.</p>
+                        </div>
+                        <div class="sug-card" onclick="NexaChat.send('Create a 1-week study schedule')">
+                            <h3>Study Plan</h3>
+                            <p>Get a personalized roadmap for your goals.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div id="chat-messages">
+                    {% for msg in messages %}
+                    <div class="msg-wrap" data-plain="{{ msg.content }}">
+                        <div class="msg {% if msg.role == 'user' %}msg-user{% else %}msg-ai{% endif %}">
+                            <div class="msg-avatar">
+                                <div class="avatar-circle">{% if msg.role == 'user' %}{{ user.username|slice:":1"|upper }}{% else %}N{% endif %}</div>
+                            </div>
+                            <div class="msg-content">
+                                <div class="msg-text {% if msg.role == 'assistant' %}board-render{% endif %}">
+                                    {% if msg.role == 'user' %}{{ msg.content }}{% else %}{{ msg.content|safe }}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="loading-wrap" id="loading">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Zone -->
+        <div class="input-dock">
+            <div class="input-bar-wrap">
+                <!-- Previews -->
+                <div id="image-preview-strip" style="display:none; padding:10px; border-bottom:1px solid var(--border); align-items:center; gap:12px;">
+                    <img id="image-preview-thumb" src="" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">
+                    <span style="font-size:12px; font-weight:600;">Image attached</span>
+                    <button onclick="NexaChat.clearImage()" style="margin-left:auto; background:none; border:none; color:var(--text-muted); cursor:pointer;">✕</button>
+                </div>
+
+                <div id="websearch-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Web Search Active
+                    <button onclick="NexaChat.clearWebSearch()" style="background:none; border:none; color:inherit; cursor:pointer; margin-left:4px;">✕</button>
+                </div>
+
+                <div class="input-row">
+                    <div style="position:relative;">
+                        <button class="tool-btn" id="attach-btn" onclick="NexaChat.toggleAttachMenu(event)" title="Attach">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                        
+                        <div class="attach-menu" id="attach-menu">
+                            <button class="attach-item" onclick="NexaCamera.open()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Take Photo</button>
+                            <button class="attach-item" onclick="document.getElementById('image-input').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Upload Photo</button>
+                            <button class="attach-item" onclick="NexaChat.sendWebSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Web Search</button>
+                        </div>
+                    </div>
+                    <textarea id="chat-input" class="input-main" placeholder="Ask anything..." rows="1"></textarea>
+                </div>
+
+                <div class="input-tools">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="file" id="image-input" style="display:none" accept="image/*" onchange="NexaChat.handleImageSelected(this)">
+                        
+                        
+                        <label>
+                            <input type="checkbox" id="use-rag" class="rag-check" checked>
+                            <span class="rag-pill">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                RAG Materials
+                            </span>
+                        </label>
+                    </div>
+
+                    <button id="send-btn" class="send-btn-big">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:12px;">CLUTCH Studio AI 4.0 - Optimized for Learning</div>
+        </div>
+    </main>
+
+    <!-- Bottom Nav (Mobile Only) -->
+    <nav class="bottom-nav">
+        <a href="{% url 'community:feed' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="bottom-nav-label">Feed</span>
+        </a>
+        <a href="{% url 'ai_chat' %}" class="bottom-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span class="bottom-nav-label">Tutor</span>
+        </a>
+        <a href="{% url 'community:workspace_list' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            <span class="bottom-nav-label">Workspace</span>
+        </a>
+        <a href="{% url 'list_materials' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <span class="bottom-nav-label">Tools</span>
+        </a>
+        <a href="{% url 'upload_material' %}" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span class="bottom-nav-label">Upload</span>
+        </a>
     </nav>
-    <div class="sidebar-footer">
-        <div class="sidebar-avatar">
-            {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-        </div>
-        <div class="sidebar-footer-info">
-            <div class="sidebar-user-name">{{ user.username }}</div>
-            <div class="sidebar-user-status">Online</div>
-        </div>
+</div>
+
+<!-- Model Picker Overlay -->
+<div class="model-picker-overlay" id="model-picker-overlay" onclick="ModelPicker.close()"></div>
+<div class="model-picker-panel" id="model-picker-panel">
+    <div class="picker-header">
+        <h4>Choose Your AI</h4>
+        <p>Select the model powering this session</p>
     </div>
-</aside>
+    <div id="model-picker-list"><!-- built by JS --></div>
+</div>
 
-<!-- MAIN -->
-<main class="main">
-    <!-- TOPBAR -->
-    <header class="topbar">
-        <div class="topbar-left">
-            <button class="tb-icon-btn" onclick="openSidebar()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-        </div>
-        <div class="topbar-center">AI Chat</div>
-        <div class="topbar-right">
-            <a href="{% url 'community:profile' username=user.username %}" class="sidebar-avatar" style="width:36px;height:36px;border:2px solid rgba(255,255,255,0.1);">
-                {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-            </a>
-        </div>
-    </header>
 
-    <!-- CHAT AREA -->
-    <div class="chat-area" id="chat-container">
-        <div class="chat-inner" id="chat-messages">
-            {% if conversations %}
-                {% for conv in conversations %}
-                <div class="msg-wrap">
-                    <div class="msg msg-user">
-                        <div class="msg-body"><div class="msg-text">{{ conv.message }}</div></div>
-                        <div class="msg-avatar">{{ user.username|slice:":1"|upper }}</div>
-                    </div>
-                </div>
-                <div class="msg-wrap history-wrap" id="history-wrap-{{ forloop.counter0 }}">
-                    <div class="msg msg-ai">
-                        <div class="msg-avatar">N</div>
-                        <div class="msg-body">
-                            <div class="msg-text board-render" id="history-msg-{{ forloop.counter0 }}"></div>
-                            <template class="history-raw">{{ conv.response }}</template>
-                            <div class="msg-actions">
-                                <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.history-wrap').dataset.plain)">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                                    Listen
-                                </button>
-                                <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.history-wrap').dataset.plain)">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                    Copy
-                                </button>
-                            </div>
-                            <div class="msg-time">{{ conv.created_at|date:"H:i" }}</div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-                <script id="nexa-history-data" type="application/json">
-                    [{% for conv in conversations %}"{{ conv.response|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
-                </script>
-            {% else %}
-            <div class="welcome" id="welcome-screen">
-                <div style="background:#10b981;width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 25px rgba(16,185,129,0.4);">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="#fff"><path d="M12 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                </div>
-                <div class="welcome-title">Hello! <strong>{{ user.username|title }}</strong></div>
-                <h1 class="welcome-hero">HOW CAN I ASSIST<br>YOU TODAY?</h1>
-                
-                <div class="suggestion-grid">
-                     <div class="sug-card" style="animation-delay: 0.1s;" onclick="NexaChat.send('Help me summarize my today\'s notes')">
-                        <div class="sug-text">Summarize my notes</div>
-                    </div>
-                    <div class="sug-card" style="animation-delay: 0.2s;" onclick="NexaChat.send('Create a study plan for my exam')">
-                        <div class="sug-text">Create a study plan</div>
-                    </div>
-                    <div class="sug-card" style="animation-delay: 0.3s;" onclick="NexaChat.send('Explain a complex topic simply')">
-                        <div class="sug-text">Explain a topic</div>
-                    </div>
-                    <div class="sug-card" style="animation-delay: 0.4s;" onclick="NexaChat.send('Ask Me For Advice')">
-                        <div class="sug-text">Ask Me For Advice</div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            <div class="loading-indicator" id="loading">
-                <div class="msg-avatar" style="background:#f0f0f4;color:#1a1a1a;border:1px solid var(--border);">N</div>
-                <div class="loading-dot"></div>
-                <div class="loading-dot"></div>
-                <div class="loading-dot"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- INPUT ZONE -->
-    <div class="input-zone">
-        <div class="input-box-wrap">
-            <input type="file" id="image-input" accept="image/*" style="display:none" onchange="NexaChat.handleImageSelected(this)">
-            
-            <div id="websearch-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                Web Search Active
-                <button onclick="NexaChat.clearWebSearch()" style="background:none; border:none; color:inherit; cursor:pointer; margin-left:4px; font-weight:900;">✕</button>
-            </div>
-
-            <div class="image-preview-strip" id="image-preview-strip">
-                <div class="preview-thumb-wrap">
-                    <img id="image-preview-thumb" src="" alt="preview">
-                    <button class="remove-img-btn" onclick="NexaChat.clearImage()">✕</button>
-                </div>
-                <span class="preview-text">Image ready to send</span>
-            </div>
-            
-            <div class="input-box">
-                <button class="ibar-btn" id="attach-btn" onclick="NexaChat.toggleAttachMenu(event)" title="Attach">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                </button>
-
-                <textarea class="input-textarea" id="chat-input" placeholder="Feel free to ask anything..." rows="1"></textarea>
-                
-                <div class="input-bar">
-                    <button class="ibar-btn" id="voice-btn" onclick="NexaVoice.toggleInput()" title="Voice">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                    </button>
-                    
-                    <button class="send-btn" id="send-btn" onclick="NexaChat.send()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 20V4M5 11l7-7 7 7"/></svg>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Floating Attach menu -->
-            <div class="attach-menu" id="attach-menu" style="bottom: 100px; left: 24px;">
-                <button class="attach-menu-item" onclick="NexaCamera.open();NexaChat.closeAttachMenu()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    Take Photo
-                </button>
-                <div class="attach-menu-divider"></div>
-                <button class="attach-menu-item" onclick="document.getElementById('image-input').click();NexaChat.closeAttachMenu()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    Upload photo
-                </button>
-                <div class="attach-menu-divider"></div>
-                <button class="attach-menu-item" onclick="NexaChat.sendWebSearch();NexaChat.closeAttachMenu()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    Web search
-                </button>
-            </div>
-            
-            <div class="input-footer-note">Nexa may make mistakes. Verify important information.</div>
-        </div>
-    </div>
-</main>
-
-<!-- BOTTOM NAV (mobile) -->
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: #0b0b0f !important;
-  border-top: 1px solid #1e1e2c !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 100 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0.375rem 0.5rem;
-  color: #8a8a93;
-  border-radius: 12px;
-  text-decoration: none;
-  flex: 1;
-  transition: color 0.15s;
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
-.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
-.bn-unified-item:active svg { transform: scale(1.05); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #8a8a93);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
-.bn-unified-item:active svg { transform: scale(0.9); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
-</nav>
-
-<!-- CAMERA MODAL -->
+<!-- Camera Modal -->
 <div class="camera-modal" id="camera-modal">
-    <div class="camera-modal-inner">
-        <div class="camera-modal-header">
-            <span class="camera-modal-title">Take a Photo</span>
-            <button class="camera-close-btn" onclick="NexaCamera.close()">✕</button>
+    <video id="camFeed" class="camera-view" autoplay playsinline muted></video>
+    <canvas id="camCanvas" style="display:none"></canvas>
+    <img id="camCaptured" style="display:none; width:100%; height:100%; object-fit:contain;">
+    
+    <div class="camera-overlay">
+        <div style="display:flex; justify-content:flex-end;">
+            <button onclick="NexaCamera.close()" style="background:none; border:none; color:#fff; cursor:pointer; padding:10px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
-        <div class="camera-preview-wrap">
-            <video id="camFeed" autoplay playsinline muted></video>
-            <canvas id="camCanvas"></canvas>
-            <img id="camCaptured" alt="Captured photo">
-            <div class="camera-idle-msg" id="camIdleMsg">Camera will appear here</div>
-        </div>
-        <div class="camera-modal-footer">
-            <button class="cam-btn cam-btn-ghost" id="camStartBtn" onclick="NexaCamera.start()">Open Camera</button>
-            <button class="cam-btn cam-btn-primary" id="camSnapBtn" onclick="NexaCamera.snap()" style="display:none">Capture</button>
-            <button class="cam-btn cam-btn-ghost" id="camRetakeBtn" onclick="NexaCamera.retake()" style="display:none">Retake</button>
-            <button class="cam-btn cam-btn-send" id="camSendBtn" onclick="NexaCamera.usePhoto()" style="display:none">Use Photo</button>
-        </div>
-    </div>
-</div>
-
-<!-- Hidden audio element — iOS/Android require a DOM <audio> for reliable playback -->
-<audio id="nexa-tts-audio" playsinline preload="none" style="display:none"></audio>
-
-<!-- VOICE ASSISTANT OVERLAY -->
-<div class="voice-overlay" id="voice-overlay">
-    <header class="assistant-header">
-        <div class="assistant-brand">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            Nexa
-        </div>
-        <button class="v-close-btn" onclick="NexaVoice.close()">✕</button>
-    </header>
-
-    <div class="assistant-content">
-        <div class="listening-status" id="voice-status">Listening...</div>
         
-        <div class="nexa-robot-wrap robot-floating">
-            <div class="robot-glow"></div>
-            <!-- Nexa Robot (Premium SVG) -->
-            <svg viewBox="0 0 200 200" width="220" height="220" id="nexa-robot-svg">
-                <!-- Body -->
-                <rect x="60" y="80" width="80" height="70" rx="40" fill="#f0f0f5" />
-                <!-- Head -->
-                <rect x="50" y="45" width="100" height="85" rx="45" fill="#fff" style="stroke:rgba(0,0,0,0.05);stroke-width:1;" />
-                <!-- Faceplate -->
-                <rect x="62" y="58" width="76" height="50" rx="25" fill="#1e1b4b" />
-                <!-- Eyes (dots that blink) -->
-                <g id="eyes-group">
-                    <circle id="eye-l" cx="85" cy="83" r="4" fill="#a5b4fc">
-                        <animate attributeName="ry" values="4;0.5;4" dur="4s" repeatCount="indefinite" />
-                    </circle>
-                    <circle id="eye-r" cx="115" cy="83" r="4" fill="#a5b4fc">
-                        <animate attributeName="ry" values="4;0.5;4" dur="4s" repeatCount="indefinite" />
-                    </circle>
-                </g>
-                <!-- Hands -->
-                <rect id="hand-l" x="35" y="100" width="18" height="35" rx="9" fill="#f0f0f5" />
-                <rect id="hand-r" x="147" y="100" width="18" height="35" rx="9" fill="#f0f0f5" />
-            </svg>
-            <!-- Processing Bubble -->
-            <div class="think-bubble" id="assistant-thinking" style="display:none;">
-                <div class="think-dot"></div><div class="think-dot"></div><div class="think-dot"></div>
-            </div>
-        </div>
-
-        <div class="hero-text">
-            <div class="hero-title">Your <span>AI Sidekick.</span></div>
-            <div class="hero-sub">Always On. Always Smart.</div>
-        </div>
-
-        <div class="assistant-controls">
-            <button class="secondary-v-btn" onclick="NexaVoice.stopSpeaking()" title="Stop Speaking">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        <div class="cam-controls">
+            <button id="cam-snap" onclick="NexaCamera.snap()" class="snap-btn">
+                <div class="snap-inner"></div>
             </button>
-            <button class="mic-btn-main" id="voice-start-btn" onclick="NexaVoice.toggleListening()">
-                <div class="mic-ripple"></div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:32px;height:32px;">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-                </svg>
-            </button>
-            <button class="secondary-v-btn" onclick="document.getElementById('solution-board-sheet').classList.toggle('open')" title="View Steps">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </button>
-        </div>
-
-        <div class="v-text-display">
-            <div class="v-u-text" id="voice-user-text"></div>
-            <div class="v-a-text" id="voice-ai-text">Tap the mic to talk...</div>
-        </div>
-
-        <label class="always-listen-opt">
-            <input type="checkbox" id="always-listen" onchange="NexaVoice.toggleAlwaysListen(this.checked)">
-            Stay active for "Nexa"
-        </label>
-    </div>
-
-    <!-- Slide-up Board Sheet -->
-    <div class="board-sheet" id="solution-board-sheet">
-        <div class="sheet-handle" onclick="document.getElementById('solution-board-sheet').classList.remove('open')"></div>
-        <div class="sheet-title">Solution Steps</div>
-        <div class="board-scroll" id="board-content">
-            <p style="color:rgba(255,255,255,0.4);text-align:center;padding-top:40px;">Detailed work will appear here as I solve your request.</p>
+            <button id="cam-use" onclick="NexaCamera.usePhoto()" style="display:none; background:var(--accent); color:#fff; border:none; border-radius:12px; padding:12px 24px; font-weight:700; cursor:pointer;">Use Photo</button>
+            <button id="cam-retake" onclick="NexaCamera.retake()" style="display:none; background:rgba(255,255,255,0.2); color:#fff; border:none; border-radius:12px; padding:12px 24px; font-weight:700; cursor:pointer;">Retake</button>
         </div>
     </div>
 </div>
 
+<audio id="nexa-tts-audio" style="display:none"></audio>
+
+<!-- JS Logic -->
 <script>
-// ── Mobile sidebar helpers ──
-function openSidebar() {
-    document.getElementById('sidebar').classList.add('open');
-    document.getElementById('sidebar-overlay').classList.add('open');
-}
-function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.remove('open');
-}
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    const AJAX_URL = '{% url "ai_chat_ajax" %}';
+    const STREAM_URL = '{% url "ai_chat_stream" %}';
+    const CHAT_IMAGE_URL = '{% url "ai_chat_image" %}';
+    const WEB_SEARCH_URL = '{% url "ai_web_search" %}';
+    const MODELS_URL = '{% url "ai_get_models" %}';
+    const CREATE_THREAD_URL = '{% url "create_chat_thread" %}';
+    const CURRENT_THREAD_ID = '{% if current_thread %}{{ current_thread.id }}{% else %}{% endif %}';
+    const USER_NAME = '{{ user.username }}';
 
-// Global data initialization
-const NEXA_HISTORY_RAW = document.getElementById('nexa-history-data');
-const NEXA_HISTORY = NEXA_HISTORY_RAW ? JSON.parse(NEXA_HISTORY_RAW.textContent) : [];
-const USER_NAME = "{{ user.username|escapejs }}";
-
-// ── NexaUI ──
-const NexaUI = {
-    elements: {},
-    init() {
-        this.elements = {
-            chatInput: document.getElementById('chat-input'),
-            sendBtn: document.getElementById('send-btn'),
-            chatMessages: document.getElementById('chat-messages'),
-            chatContainer: document.getElementById('chat-container'),
-            loading: document.getElementById('loading'),
-            welcomeScreen: document.getElementById('welcome-screen'),
-            useRag: document.getElementById('use-rag'),
-        };
-        this.bindEvents();
-    },
-    bindEvents() {
-        const { chatInput, sendBtn } = this.elements;
-        if (!chatInput || !sendBtn) return;
-        sendBtn.addEventListener('click', e => { e.preventDefault(); NexaChat.send(); });
-        chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); NexaChat.send(); } });
-        chatInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 180) + 'px';
-            const cc = document.getElementById('char-count');
-            if (cc) cc.textContent = this.value.length + ' / 3,000';
-        });
-    },
-    showLoading() { if (this.elements.loading) this.elements.loading.classList.add('active'); },
-    hideLoading() { if (this.elements.loading) this.elements.loading.classList.remove('active'); },
-    hideWelcome() { if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'none'; },
-    showWelcome() { if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex'; },
-    scrollToBottom() { if (this.elements.chatContainer) this.elements.chatContainer.scrollTop = this.elements.chatContainer.scrollHeight; },
-    escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; },
-    copyText(text) { navigator.clipboard.writeText(text).then(() => alert('Copied!')); }
-};
-
-// ── NexaAI ──
-const NexaAI = {
-    csrfToken: '{{ csrf_token }}',
-    ajaxUrl: '{% url "ai_chat_ajax" %}',
-    streamUrl: '{% url "ai_chat_stream" %}',
-    async sendToAI(message, useRag = true) {
-        const response = await fetch(this.ajaxUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.csrfToken },
-            body: JSON.stringify({ message, use_rag: useRag })
-        });
-        return response.json();
+    function openSidebar() {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('sidebar-mask').classList.add('open');
     }
-};
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-mask').classList.remove('open');
+    }
 
-// ── NexaChat ──
-const NexaChat = {
-    isSending: false,
-    pendingImage: null,
-    webSearchMode: false,
-    typeQueue: [],
-    typingInterval: null,
-    currentStreamText: '',
-    currentStreamUI: null,
-
-    toggleAttachMenu(e) {
-        e.stopPropagation();
-        document.getElementById('attach-menu').classList.toggle('open');
-    },
-    closeAttachMenu() { document.getElementById('attach-menu').classList.remove('open'); },
-
-    handleImageSelected(input) {
-        if (!input.files || !input.files[0]) return;
-        this.pendingImage = input.files[0];
-        const thumb = document.getElementById('image-preview-thumb');
-        const strip = document.getElementById('image-preview-strip');
-        if (thumb) thumb.src = URL.createObjectURL(this.pendingImage);
-        if (strip) strip.style.display = 'flex';
-    },
-    clearImage() {
-        this.pendingImage = null;
-        const strip = document.getElementById('image-preview-strip');
-        if (strip) strip.style.display = 'none';
-        const input = document.getElementById('image-input');
-        if (input) input.value = '';
-    },
-    sendWebSearch() {
-        this.webSearchMode = true;
-        const badge = document.getElementById('websearch-badge');
-        if (badge) badge.style.display = 'flex';
-    },
-    clearWebSearch() {
-        this.webSearchMode = false;
-        const badge = document.getElementById('websearch-badge');
-        if (badge) badge.style.display = 'none';
-    },
-
-    newChat() {
-        const container = NexaUI.elements.chatMessages;
-        if (container) { container.querySelectorAll('.msg-wrap').forEach(w => w.remove()); NexaUI.showWelcome(); }
-        if (NexaUI.elements.chatInput) { NexaUI.elements.chatInput.value = ''; NexaUI.elements.chatInput.style.height = 'auto'; }
-    },
-
-    async clearChat() {
-        if (!confirm('Clear all chat history? This cannot be undone.')) return;
-        try {
-            const res = await fetch('{% url "clear_conversations" %}', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } });
-            if (res.ok || res.redirected) {
-                const container = NexaUI.elements.chatMessages;
-                if (container) { container.querySelectorAll('.msg-wrap').forEach(w => w.remove()); NexaUI.showWelcome(); }
-            }
-        } catch(e) { console.error(e); }
-    },
-
-    startTypingSystem(el) {
-        this.currentStreamUI = el;
-        this.currentStreamText = '';
-        this.typeQueue = [];
-        if (this.typingInterval) clearInterval(this.typingInterval);
-        
-        this.typingInterval = setInterval(() => {
-            if (this.typeQueue.length > 0) {
-                // Take 1 character (or a small chunk to keep up if queue is huge)
-                const take = this.typeQueue.length > 30 ? 3 : 1;
-                for(let i=0; i<take && this.typeQueue.length > 0; i++){
-                    this.currentStreamText += this.typeQueue.shift();
-                }
-                
-                if (this.currentStreamUI) {
-                    this.currentStreamUI.innerHTML = NexaChat.renderBoardHTML(this.currentStreamText) + '<span class="stream-cursor"></span>';
-                    NexaUI.scrollToBottom();
-                }
-            }
-        }, 30); // 30ms per character - very natural "live" feel
-    },
-
-    stopTypingSystem() {
-        if (this.typingInterval) clearInterval(this.typingInterval);
-        this.typingInterval = null;
-        if (this.currentStreamUI && this.typeQueue.length > 0) {
-            this.currentStreamText += this.typeQueue.join('');
-            this.currentStreamUI.innerHTML = NexaChat.renderBoardHTML(this.currentStreamText);
-            this.typeQueue = [];
+    const NexaTheme = {
+        toggle() {
+            const html = document.documentElement;
+            const target = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', target);
         }
-    },
+    };
 
-    async send(message) {
-        if (this.isSending) return;
-        const msg = message || NexaUI.elements.chatInput.value.trim();
-        if (!msg && !this.pendingImage) return;
-        this.isSending = true;
-        NexaUI.hideWelcome();
-        NexaUI.showLoading();
-        if (NexaUI.elements.sendBtn) NexaUI.elements.sendBtn.disabled = true;
-        if (!message && NexaUI.elements.chatInput) { NexaUI.elements.chatInput.value = ''; NexaUI.elements.chatInput.style.height = 'auto'; }
-        document.getElementById('attach-menu').classList.remove('open');
-        try {
-            if (this.pendingImage) {
-                const useRag = NexaUI.elements.useRag?.checked ?? true;
-                this.addUserMessage(msg, this.pendingImage);
-                await this.sendImageStreaming(msg, this.pendingImage, useRag);
-                this.clearImage();
-            } else if (this.webSearchMode) {
-                this.addUserMessage('🌐 ' + msg);
-                const data = await this.sendToWebSearch(msg);
-                if (data.success) await this.addAIMessage(data.response, data.timestamp);
-                else alert('Error: ' + (data.error || 'Web search failed'));
-                this.clearWebSearch();
-            } else {
-                this.addUserMessage(msg);
-                await NexaChat.sendStreaming(msg, NexaUI.elements.useRag?.checked ?? true);
-            }
-        } catch(error) {
-            console.error(error);
-            alert('Failed to connect to server.');
-        } finally {
-            this.isSending = false;
-            NexaUI.hideLoading();
-            if (NexaUI.elements.sendBtn) NexaUI.elements.sendBtn.disabled = false;
-            NexaUI.scrollToBottom();
+    // Pre-load models silently on page load
+    setTimeout(() => ModelPicker.load(MODELS_URL), 600);
+
+    const NexaCamera = {
+        stream: null,
+        capturedBlob: null,
+        open() { 
+            NexaChat.closeAttachMenu();
+            document.getElementById('camera-modal').classList.add('open');
+            this.start();
+        },
+        close() {
+            this.stop();
+            document.getElementById('camera-modal').classList.remove('open');
+            this.retake();
+        },
+        async start() {
+            try {
+                this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                document.getElementById('camFeed').srcObject = this.stream;
+            } catch(e) { alert('Camera access denied: ' + e.message); this.close(); }
+        },
+        snap() {
+            const video = document.getElementById('camFeed');
+            const canvas = document.getElementById('camCanvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            canvas.toBlob(blob => {
+                this.capturedBlob = blob;
+                const img = document.getElementById('camCaptured');
+                img.src = URL.createObjectURL(blob);
+                img.style.display = 'block';
+                video.style.display = 'none';
+                document.getElementById('cam-snap').style.display = 'none';
+                document.getElementById('cam-use').style.display = 'block';
+                document.getElementById('cam-retake').style.display = 'block';
+            }, 'image/jpeg', 0.9);
+        },
+        retake() {
+            document.getElementById('camCaptured').style.display = 'none';
+            document.getElementById('camFeed').style.display = 'block';
+            document.getElementById('cam-snap').style.display = 'flex';
+            document.getElementById('cam-use').style.display = 'none';
+            document.getElementById('cam-retake').style.display = 'none';
+            this.capturedBlob = null;
+        },
+        usePhoto() {
+            if (!this.capturedBlob) return;
+            const file = new File([this.capturedBlob], 'capture.jpg', { type: 'image/jpeg' });
+            NexaChat.handleImageSelected({ files: [file] });
+            this.close();
+        },
+        stop() {
+            if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
         }
-    },
+    };
 
-    async sendImageStreaming(message, imageFile, useRag = true) {
-        const msgId = 'ai-msg-' + Date.now();
-        const html = `
-            <div class="msg-wrap" id="wrap-${msgId}">
-                <div class="msg msg-ai">
-                    <div class="msg-body">
-                        <div class="msg-text board-render" id="${msgId}">
-                            <div class="loading-indicator active">
-                                <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
-                            </div>
-                        </div>
-                        <div class="msg-actions" id="actions-${msgId}" style="display:none">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                            </button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-        NexaUI.scrollToBottom();
-        const el = document.getElementById(msgId);
-        const wrap = document.getElementById('wrap-' + msgId);
-        let fullText = '';
-        
-        try {
-            wrap.querySelector('.msg-ai').classList.add('streaming');
-            const formData = new FormData();
-            formData.append('message', message || 'Analyze this image');
-            formData.append('image', imageFile);
-            formData.append('use_rag', useRag);
-            formData.append('csrfmiddlewaretoken', NexaAI.csrfToken);
-
-            const res = await fetch('{% url "ai_chat_image" %}', {
+    const NexaVoice = {
+        speak(text) {
+            if (!text) return;
+            const audio = document.getElementById('nexa-tts-audio');
+            fetch('{% url "ai_tts" %}', {
                 method: 'POST',
-                headers: { 'X-CSRFToken': NexaAI.csrfToken },
-                body: formData
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                body: JSON.stringify({ text: text.substring(0, 1000) })
+            }).then(r => r.json()).then(data => {
+                if (data.audio_url) {
+                    audio.src = data.audio_url;
+                    audio.play().catch(e => console.log('Autoplay blocked'));
+                } else if (window.speechSynthesis) {
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.rate = 0.9;
+                    window.speechSynthesis.speak(u);
+                }
             });
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                el.innerHTML = '<span style="color:#ef4444">Server Error: ' + (errData.error || res.statusText) + '</span>';
-                wrap.querySelector('.msg-ai').classList.remove('streaming');
-                this.isSending = false;
-                NexaUI.hideLoading();
-                return;
-            }
-
-            this.startTypingSystem(el);
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n\n');
-                buffer = lines.pop();
-                for (const line of lines) {
-                    if (!line.startsWith('data: ')) continue;
-                    try {
-                        const payload = JSON.parse(line.slice(6));
-                        if (payload.error) { el.innerHTML = '<span style="color:#ef4444">Error: ' + payload.error + '</span>'; return; }
-                        if (payload.done) break;
-                        if (payload.token) {
-                            // Queue characters for natural typing
-                            for(const char of payload.token) this.typeQueue.push(char);
-                        }
-                    } catch(e) {}
-                }
-            }
-            // Give queue a moment to finish or force finish
-            setTimeout(() => {
-                this.stopTypingSystem();
-                wrap.querySelector('.msg-ai').classList.remove('streaming');
-                if (wrap) wrap.dataset.plain = this.currentStreamText;
-                document.getElementById('actions-' + msgId).style.display = '';
-            }, 500);
-        } catch(e) {
-            wrap.querySelector('.msg-ai').classList.remove('streaming');
-            el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
         }
-    },
+    };
 
-    async sendToWebSearch(message) {
-        const response = await fetch('{% url "ai_web_search" %}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-            body: JSON.stringify({ message })
-        });
-        return response.json();
-    },
-
-    async sendStreaming(message, useRag = true) {
-        const msgId = 'ai-msg-' + Date.now();
-        const html = `
-            <div class="msg-wrap" id="wrap-${msgId}">
-                <div class="msg msg-ai">
-                    <div class="msg-body">
-                        <div class="msg-text board-render" id="${msgId}">
-                            <div class="loading-indicator active">
-                                <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
-                            </div>
-                        </div>
-                        <div class="msg-actions" id="actions-${msgId}" style="display:none">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                            </button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-        NexaUI.scrollToBottom();
-        const el = document.getElementById(msgId);
-        const wrap = document.getElementById('wrap-' + msgId);
-        let fullText = '';
-        try {
-            wrap.querySelector('.msg-ai').classList.add('streaming');
-            const res = await fetch(NexaAI.streamUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                body: JSON.stringify({ message, use_rag: useRag })
-            });
-            this.startTypingSystem(el);
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n\n');
-                buffer = lines.pop();
-                for (const line of lines) {
-                    if (!line.startsWith('data: ')) continue;
-                    try {
-                        const payload = JSON.parse(line.slice(6));
-                        if (payload.error) { el.innerHTML = '<span style="color:#ef4444">Error: ' + payload.error + '</span>'; return; }
-                        if (payload.done) break;
-                        if (payload.token) {
-                            for(const char of payload.token) this.typeQueue.push(char);
-                        }
-                    } catch(e) {}
-                }
-            }
-            setTimeout(() => {
-                this.stopTypingSystem();
-                if (wrap) wrap.dataset.plain = this.currentStreamText;
-                document.getElementById('actions-' + msgId).style.display = '';
-                wrap.querySelector('.msg-ai').classList.remove('streaming');
-                NexaUI.scrollToBottom();
-            }, 500);
-            wrap.querySelector('.msg-ai').classList.remove('streaming');
-        } catch(e) {
-            wrap.querySelector('.msg-ai').classList.remove('streaming');
-            console.warn('Streaming failed, falling back to AJAX:', e);
-            // Fallback to regular AJAX if streaming fails
-            try {
-                const res2 = await fetch(NexaAI.ajaxUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                    body: JSON.stringify({ message, use_rag: useRag })
-                });
-                const data = await res2.json();
-                if (data.success) {
-                    fullText = data.response;
-                } else {
-                    el.innerHTML = '<span style="color:#ef4444">Error: ' + (data.error || 'Request failed') + '</span>';
-                    return;
-                }
-            } catch(e2) {
-                el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
-                return;
-            }
-        }
-        // If streaming produced no text (proxy buffering), fall back to AJAX
-        if (!fullText) {
-            try {
-                const res3 = await fetch(NexaAI.ajaxUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                    body: JSON.stringify({ message, use_rag: useRag })
-                });
-                const data = await res3.json();
-                fullText = data.success ? data.response : ('Error: ' + (data.error || 'No response'));
-            } catch(e3) {
-                fullText = 'Connection error. Please try again.';
-            }
-        }
-        el.innerHTML = NexaChat.renderBoardHTML(fullText);
-        if (wrap) wrap.dataset.plain = fullText;
-        document.getElementById('actions-' + msgId).style.display = '';
-        NexaUI.scrollToBottom();
-    },
-
-    addUserMessage(text, imageFile) {
-        const imgHtml = imageFile ? `<img src="${URL.createObjectURL(imageFile)}" style="max-width:180px;border-radius:8px;margin-top:6px;display:block;">` : '';
-        const html = `
-            <div class="msg-wrap">
-                <div class="msg msg-user">
-                    <div class="msg-body"><div class="msg-text">${NexaUI.escapeHtml(text)}${imgHtml}</div></div>
-                </div>
-            </div>`;
-        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-    },
-
-    async addAIMessage(text, timestamp) {
-        const msgId = 'ai-msg-' + Date.now();
-        const html = `
-            <div class="msg-wrap" id="wrap-${msgId}">
-                <div class="msg msg-ai">
-                    <div class="msg-body">
-                        <div class="msg-text board-render" id="${msgId}"></div>
-                        <div class="msg-actions">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                            </button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-        const el = document.getElementById(msgId);
-        const wrap = document.getElementById('wrap-' + msgId);
-        el.innerHTML = NexaChat.renderBoardHTML(text);
-        if (wrap) wrap.dataset.plain = text;
-        NexaUI.scrollToBottom();
-    },
-
-    renderBoardHTML(raw) {
-        if (!raw) return '';
-
-        var text = raw;
-
-        // Normalise \( \) -> $  and  \[ \] -> $$
-        text = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
-        text = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
-
-        // Promote lone $...$ on its own line to display $$...$$
-        // This handles AI output that uses $ for both inline and display
-        text = text.replace(/(^|\n)\$([^$\n]+)\$(\n|$)/g, function(_, pre, m, post) {
-            return (pre || '\n') + '$$' + m + '$$' + (post || '\n');
-        });
-
-        // Extract math BEFORE markdown parsing
-        var mathStore = [];
-
-        // Display math $$...$$ (multiline safe)
-        text = text.replace(/\$\$([\s\S]+?)\$\$/g, function(_, m) {
-            var i = mathStore.length;
-            mathStore.push({ display: true, src: m.trim() });
-            return '\n\nNEXAMATH_D_' + i + '_END\n\n';
-        });
-
-        // Inline math $...$ (single line only)
-        text = text.replace(/\$([^$\n]+?)\$/g, function(_, m) {
-            var i = mathStore.length;
-            mathStore.push({ display: false, src: m.trim() });
-            return 'NEXAMATH_I_' + i + '_END';
-        });
-
-        // Render markdown
-        var html = '';
-        if (typeof marked !== 'undefined') {
-            marked.setOptions({ breaks: true, gfm: true });
-            html = marked.parse(text);
-        } else {
-            html = '<p>' + text.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
-        }
-
-        // Restore display math (marked may wrap in <p>)
-        html = html.replace(/<p>\s*NEXAMATH_D_(\d+)_END\s*<\/p>/g, function(_, i) {
-            return NexaChat._katex(mathStore[parseInt(i)]);
-        });
-        html = html.replace(/NEXAMATH_D_(\d+)_END/g, function(_, i) {
-            return NexaChat._katex(mathStore[parseInt(i)]);
-        });
-
-        // Restore inline math
-        html = html.replace(/NEXAMATH_I_(\d+)_END/g, function(_, i) {
-            return NexaChat._katex(mathStore[parseInt(i)]);
-        });
-
-        return html;
-    },
-
-    _katex(m) {
-        if (typeof katex === 'undefined') {
-            return m.display
-                ? '<div class="br-math-display">$$' + m.src + '$$</div>'
-                : '$' + m.src + '$';
-        }
-        try {
-            var out = katex.renderToString(m.src, { displayMode: m.display, throwOnError: false });
-            return m.display ? '<div class="br-math-display">' + out + '</div>' : out;
-        } catch(e) {
-            return m.display ? '<div class="br-math-display">$$' + m.src + '$$</div>' : '$' + m.src + '$';
-        }
-    },
-
-    renderLines(lines) {
-        return this.renderBoardHTML(lines.join('\n'));
-    }
-};
-
-// ── NexaVoice ──
-const NexaVoice = {
-    overlay: null, bubble: null, status: null, userText: null, aiText: null, waves: null,
-    recognition: null, interruptRecognition: null,
-    synthesis: window.speechSynthesis, currentAudio: null,
-    isListening: false, isProcessing: false, isActive: false, alwaysListen: false,
-    isSpeaking: false,
-
-    // Keywords that trigger web search
-    webSearchTriggers: /\b(search|look up|google|find out|what is happening|latest|current|today|news|who is|where is|when did|wikipedia|weather|price|stock|score)\b/i,
-
-    init() {
-        this.overlay = document.getElementById('voice-overlay');
-        this.status = document.getElementById('voice-status');
-        this.userText = document.getElementById('voice-user-text');
-        this.aiText = document.getElementById('voice-ai-text');
-        this.micBtn = document.getElementById('voice-start-btn');
-        this.thinkingBubble = document.getElementById('assistant-thinking');
-        this.boardSheet = document.getElementById('solution-board-sheet');
-        this.setupRecognition();
-        this.setupInterruptRecognition();
-    },
-
-    setupRecognition() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) return;
-        this.recognition = new SR();
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        this.recognition.lang = 'en-US';
-        this.recognition.onstart = () => { this.isListening = true; this.updateStatus('Listening...', 'listening'); };
-        this.recognition.onresult = (event) => {
-            let final = '', interim = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i].isFinal) final += event.results[i][0].transcript;
-                else interim += event.results[i][0].transcript;
-            }
-            if (interim && this.userText) this.userText.textContent = interim;
-            if (final) { if (this.userText) this.userText.textContent = final; this.handleTranscript(final); }
-        };
-        this.recognition.onerror = (event) => { this.isListening = false; if (event.error === 'not-allowed') this.updateStatus('Mic blocked', ''); };
-        this.recognition.onend = () => { this.isListening = false; if (this.isActive && !this.isProcessing && !this.isSpeaking) setTimeout(() => this.startListening(), 500); };
-    },
-
-    // Separate always-on recognition used ONLY while AI is speaking — detects interruptions
-    setupInterruptRecognition() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) return;
-        this.interruptRecognition = new SR();
-        this.interruptRecognition.continuous = true;
-        this.interruptRecognition.interimResults = true;
-        this.interruptRecognition.lang = 'en-US';
-        this.interruptRecognition.onresult = (event) => {
-            // Any speech detected while AI is talking = interrupt
-            if (!this.isSpeaking) return;
-            let hasResult = false;
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i][0].transcript.trim().length > 1) { hasResult = true; break; }
-            }
-            if (hasResult) this._handleInterrupt();
-        };
-        this.interruptRecognition.onerror = () => {};
-        this.interruptRecognition.onend = () => {
-            // Restart if still speaking (continuous mode can drop)
-            if (this.isSpeaking && this.isActive) {
-                try { this.interruptRecognition.start(); } catch(e) {}
-            }
-        };
-    },
-
-    _handleInterrupt() {
-        if (!this.isSpeaking) return;
-        this.stopSpeaking();
-        try { this.interruptRecognition.stop(); } catch(e) {}
-        this.updateStatus('Interrupted — listening...', 'listening');
-        if (this.userText) this.userText.textContent = '';
-        // Small delay then start main recognition to capture what they say
-        setTimeout(() => { if (this.isActive) this.startListening(); }, 300);
-    },
-    handleTranscript(text) {
-        if (this.isActive) this.processMessage(text);
-    },
-    startListening() { if (!this.recognition || this.isListening || this.isProcessing) return; try { this.recognition.start(); } catch(e) {} },
-    stopListening() { if (!this.recognition) return; try { this.recognition.stop(); } catch(e) {} this.isListening = false; },
-    open() {
-        if (!this.overlay) this.init();
-        this.isActive = true; this.isProcessing = false;
-        this.overlay.classList.add('active');
-        if (this.userText) this.userText.textContent = '';
-        if (this.aiText) this.aiText.textContent = '';
-        this.updateStatus('Starting...', '');
-        const audioEl = document.getElementById('nexa-tts-audio');
-        if (audioEl) {
-            audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
-            audioEl.play().catch(() => {});
-            audioEl.pause();
-            audioEl.src = '';
-        }
-        setTimeout(() => { this.updateStatus('Listening...', 'listening'); this.startListening(); }, 300);
-    },
-    close() {
-        this.isActive = false; this.stopListening(); this.stopSpeaking();
-        try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {}
-        if (this.overlay) this.overlay.classList.remove('active');
-    },
-    updateStatus(text, state) {
-        if (this.status) {
-            this.status.textContent = text;
-            this.status.classList.toggle('active', !!text);
-        }
-        if (this.micBtn) {
-            this.micBtn.classList.toggle('listening', state === 'listening');
-        }
-        if (this.thinkingBubble) {
-            this.thinkingBubble.style.display = (state === 'thinking') ? 'flex' : 'none';
-        }
-    },
-    async processMessage(message) {
-        if (this.isProcessing || !message.trim()) return;
-        this.isProcessing = true; this.stopListening(); this.updateStatus('Thinking...', 'thinking');
-        try {
-            let data;
-            // Route to web search if question matches triggers
-            if (this.webSearchTriggers.test(message)) {
-                this.updateStatus('Searching web...', 'thinking');
-                const res = await fetch('{% url "ai_web_search" %}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                    body: JSON.stringify({ message })
-                });
-                data = await res.json();
-            } else {
-                data = await NexaAI.sendToAI(message, true);
-            }
-            if (data.success) {
-                this.updateStatus('Speaking...', 'speaking');
-                if (this.aiText) this.aiText.textContent = '';
-                this.displayOnBoard(message, data.response);
-                await this.speak(data.response);
-            } else { this.updateStatus('Error', 'thinking'); if (this.aiText) this.aiText.textContent = 'Error: ' + (data.error || 'Failed'); }
-        } catch(error) { this.updateStatus('Error', 'thinking'); if (this.aiText) this.aiText.textContent = 'Error: ' + error.message; }
-        finally { this.isProcessing = false; if (this.isActive) { this.updateStatus('Listening...', 'listening'); setTimeout(() => this.startListening(), 500); } }
-    },
-    speak(text) {
-        return new Promise(async (resolve) => {
-            if (!text) { resolve(); return; }
-            const audioEl = document.getElementById('nexa-tts-audio');
-            if (audioEl) { audioEl.pause(); audioEl.src = ''; }
-            this.currentAudio = null;
-            this.isSpeaking = true;
-
-            // Start interrupt listener — any voice input will stop playback
-            if (this.interruptRecognition) {
-                try { this.interruptRecognition.start(); } catch(e) {}
-            }
-
-            const onDone = () => {
-                this.isSpeaking = false;
-                try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {}
-                resolve();
-            };
-
-            try {
-                const response = await fetch('{% url "ai_tts" %}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                    body: JSON.stringify({ text: text.substring(0, 2000) })
-                });
-                if (!response.ok) { await this.speakWithBrowserTTS(text); onDone(); return; }
-
-                const data = await response.json();
-                if (data.use_browser_tts || !data.audio_url) { await this.speakWithBrowserTTS(text); onDone(); return; }
-
-                if (audioEl) {
-                    audioEl.src = data.audio_url;
-                    this.currentAudio = audioEl;
-                    audioEl.onended = () => { audioEl.src = ''; this.currentAudio = null; onDone(); };
-                    audioEl.onerror = () => { audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); };
-                    audioEl.play().catch(() => { audioEl.src = ''; this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); });
-                } else {
-                    const audio = new Audio(data.audio_url);
-                    audio.setAttribute('playsinline', '');
-                    this.currentAudio = audio;
-                    audio.onended = () => { this.currentAudio = null; onDone(); };
-                    audio.onerror = () => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); };
-                    audio.play().catch(() => { this.currentAudio = null; this.speakWithBrowserTTS(text).then(onDone); });
-                }
-            } catch(error) {
-                await this.speakWithBrowserTTS(text); onDone();
-            }
-        });
-    },
-    speakWithBrowserTTS(text) {
-        return new Promise((resolve) => {
-            if (!text || !this.synthesis) { resolve(); return; }
-            this.synthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9; utterance.pitch = 1;
-            utterance.onend = () => { this.isSpeaking = false; resolve(); };
-            utterance.onerror = () => { this.isSpeaking = false; resolve(); };
-            this.synthesis.speak(utterance);
-        });
-    },
-    stopSpeaking() {
-        this.isSpeaking = false;
-        if (this.synthesis) this.synthesis.cancel();
-        const audioEl = document.getElementById('nexa-tts-audio');
-        if (audioEl) { audioEl.pause(); audioEl.src = ''; }
-        if (this.currentAudio && this.currentAudio !== audioEl) { this.currentAudio.pause(); }
-        this.currentAudio = null;
-        try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {}
-    },
-    toggleInput() { NexaVoice.open(); },
-    toggleListening() { if (this.isListening) this.stopListening(); else this.startListening(); },
-    toggleAlwaysListen(enabled) { this.alwaysListen = enabled; },
-    escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; },
-    renderInlineMath(text) { return text; },
-    parseBoard(answer) {
-        const lines = answer.split('\n');
-        const sections = [];
-        let current = null;
-        for (const line of lines) {
-            const t = line.trim();
-            if (!t) continue;
-            const stepMatch = t.match(/^(step\s*\d+[\s:\-]*|problem[\s:\-]*|final\s*answer[\s:\-]*)/i);
-            if (stepMatch) {
-                if (current) sections.push(current);
-                const isFinal = /^final/i.test(t);
-                current = { type: isFinal ? 'final' : 'step', title: t, subtitle: '', content: '' };
-            } else if (current) {
-                current.content += (current.content ? '\n' : '') + t;
-            }
-        }
-        if (current) sections.push(current);
-        return sections;
-    },
-    displayOnBoard(question, answer) {
-        const content = document.getElementById('board-content');
-        if (!content) return;
-        
-        // Auto-open board sheet if hidden
-        if (this.boardSheet) this.boardSheet.classList.add('open');
-
-        let html = `<div class="board-step" style="animation-delay:0s">
-            <div class="board-step-title">Question</div>
-            <div class="board-step-subtitle">${this.escapeHtml(question)}</div>
-        </div>
-        <div class="board-step" style="animation-delay:0.15s">
-            ${NexaChat.renderBoardHTML(answer)}
-        </div>`;
-        content.innerHTML = html;
-        content.scrollTop = 0;
-    }
-};
-
-// ── NexaCamera ──
-const NexaCamera = {
-    stream: null,
-    capturedBlob: null,
-    open() { document.getElementById('camera-modal').classList.add('open'); },
-    close() {
-        this.stop();
-        document.getElementById('camera-modal').classList.remove('open');
-        document.getElementById('camIdleMsg').style.display = 'block';
-        document.getElementById('camFeed').style.display = 'none';
-        document.getElementById('camCaptured').style.display = 'none';
-        document.getElementById('camStartBtn').style.display = '';
-        document.getElementById('camSnapBtn').style.display = 'none';
-        document.getElementById('camRetakeBtn').style.display = 'none';
-        document.getElementById('camSendBtn').style.display = 'none';
-        this.capturedBlob = null;
-    },
-    async start() {
-        try {
-            this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-            const feed = document.getElementById('camFeed');
-            feed.srcObject = this.stream;
-            feed.style.display = 'block';
-            document.getElementById('camIdleMsg').style.display = 'none';
-            document.getElementById('camStartBtn').style.display = 'none';
-            document.getElementById('camSnapBtn').style.display = '';
-        } catch(e) { alert('Camera access denied: ' + e.message); }
-    },
-    snap() {
-        const feed = document.getElementById('camFeed');
-        const canvas = document.getElementById('camCanvas');
-        canvas.width = feed.videoWidth;
-        canvas.height = feed.videoHeight;
-        canvas.getContext('2d').drawImage(feed, 0, 0);
-        canvas.toBlob(blob => {
-            this.capturedBlob = blob;
-            const captured = document.getElementById('camCaptured');
-            captured.src = URL.createObjectURL(blob);
-            captured.style.display = 'block';
-            feed.style.display = 'none';
-            document.getElementById('camSnapBtn').style.display = 'none';
-            document.getElementById('camRetakeBtn').style.display = '';
-            document.getElementById('camSendBtn').style.display = '';
-        }, 'image/jpeg', 0.9);
-        this.stop();
-    },
-    retake() {
-        document.getElementById('camCaptured').style.display = 'none';
-        document.getElementById('camRetakeBtn').style.display = 'none';
-        document.getElementById('camSendBtn').style.display = 'none';
-        this.capturedBlob = null;
-        this.start();
-    },
-    usePhoto() {
-        if (!this.capturedBlob) return;
-        const file = new File([this.capturedBlob], 'camera-photo.jpg', { type: 'image/jpeg' });
-        NexaChat.pendingImage = file;
-        const thumb = document.getElementById('image-preview-thumb');
-        const strip = document.getElementById('image-preview-strip');
-        if (thumb) thumb.src = URL.createObjectURL(file);
-        if (strip) strip.style.display = 'flex';
-        this.close();
-    },
-    stop() {
-        if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
-    }
-};
-
-// ── Init ──
-document.addEventListener('DOMContentLoaded', () => {
-    NexaUI.init();
-    NexaVoice.init();
-
-    // Render history messages using <template> tags as raw text source
-    // <template> content is never parsed as HTML, so text is preserved exactly
-    document.querySelectorAll('.history-wrap').forEach(function(wrap) {
-        var tmpl = wrap.querySelector('template.history-raw');
-        var el = wrap.querySelector('.board-render');
-        if (!tmpl || !el) return;
-        var raw = tmpl.innerHTML;
-        el.innerHTML = NexaChat.renderBoardHTML(raw);
-        wrap.dataset.plain = raw;
-    });
-
-    NexaUI.scrollToBottom();
-    // Close attach menu on outside click
+    // Global outside click listeners
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#attach-menu') && !e.target.closest('#attach-btn')) {
-            document.getElementById('attach-menu').classList.remove('open');
+            NexaChat.closeAttachMenu();
         }
     });
-});
 </script>
-    <!-- BOTTOM NAV (mobile) -->
-    <style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #8a8a93);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
-.bn-unified-item:active svg { transform: scale(0.9); }
 
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
-</nav>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="/static/js/nexa_models.js"></script>
+<script src="/static/js/nexa_chat.js"></script>
+
 </body>
 </html>

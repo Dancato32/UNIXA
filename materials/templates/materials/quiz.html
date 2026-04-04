@@ -191,6 +191,71 @@ button{font-family:inherit;cursor:pointer;}
   .screen{min-height:calc(100vh - 48px);}
   body{padding-bottom:0;}
 }
+
+    @media (max-width: 900px) {
+        body { padding: 1rem; padding-bottom: 5rem; }
+        .bottom-nav { display: flex; }
+        h1 { font-size: 1rem; }
+        .card-body { padding: 1rem; }
+    }
+
+    /* ── Model Picker ── */
+    .model-trigger {
+        display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+        background: rgba(255,255,255,0.05); border: 1px solid #2a2a2a;
+        border-radius: 16px; cursor: pointer; transition: all 0.2s;
+        font-size: 11px; font-weight: 700; color: #a0a0a0;
+        font-family: inherit; margin-left: auto;
+    }
+    .model-trigger:hover { border-color: #3b82f6; color: #e8e8e8; background: rgba(59,130,246,0.08); }
+    .model-trigger svg { width: 12px; height: 12px; }
+    #model-badge-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .model-picker-overlay {
+        position: fixed; inset: 0; z-index: 5000;
+        display: none;
+    }
+    .model-picker-overlay.open { display: block; }
+
+    .model-picker-panel {
+        position: absolute; top: 70px; right: 24px;
+        width: 320px; max-height: 480px; overflow-y: auto; scrollbar-width: none;
+        background: #161616; border: 1px solid #2a2a2a;
+        border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        backdrop-filter: blur(20px); z-index: 5001;
+        display: none;
+        padding: 8px;
+    }
+    .model-picker-panel::-webkit-scrollbar { display: none; }
+    
+    .picker-header { padding: 8px 10px 12px; }
+    .picker-header h4 { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+    .picker-header p { font-size: 11px; color: #555; }
+
+    .provider-group { margin-bottom: 6px; }
+    .provider-label {
+        font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+        color: #444; padding: 6px 10px 2px;
+    }
+    .model-option {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 10px; border-radius: 10px; cursor: pointer;
+        transition: all 0.15s; border: 1px solid transparent;
+    }
+    .model-option:hover { background: #222; }
+    .model-option.active {
+        background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2);
+    }
+    .model-option-left { display: flex; flex-direction: column; }
+    .model-option-name { font-size: 12px; font-weight: 700; color: #eee; }
+    .model-option-id { font-size: 11px; color: #555; font-family: monospace; }
+    .model-badge {
+        font-size: 8px; font-weight: 800; text-transform: uppercase;
+        padding: 2px 6px; border-radius: 10px;
+    }
+    .badge-Fast     { background: rgba(16,185,129,0.1); color: #10B981; }
+    .badge-Smart    { background: rgba(59,130,246,0.1);  color: #60A5FA; }
+    .badge-Powerful { background: rgba(139,92,246,0.1);  color: #A78BFA; }
 </style>
 </head>
 <body style="display:flex;flex-direction:column;height:100vh;">
@@ -205,6 +270,10 @@ button{font-family:inherit;cursor:pointer;}
   <div class="topbar-right">
     <span class="score-chip" id="scoreChip"></span>
     <span class="progress-counter" id="progressCounter"></span>
+    <button class="model-trigger" onclick="ModelPicker.toggle()" title="Switch AI Model">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M20 12a8 8 0 1 1-4.03-6.93"/><polyline points="20 2 20 8 14 8"/></svg>
+        <span id="model-badge-name">GPT-4o Mini</span>
+    </button>
   </div>
 </div>
 
@@ -310,6 +379,7 @@ button{font-family:inherit;cursor:pointer;}
 <script>
 const AJAX_URL = '{% url "quiz_ajax" material.pk %}';
 const WIKI_URL = '{% url "wiki_image_ajax" %}';
+const MODELS_URL = '{% url "ai_get_models" %}';
 const CSRF     = '{{ csrf_token }}';
 const MAT_TEXT = `{{ material.extracted_text|default:""|escapejs }}`;
 
@@ -327,7 +397,8 @@ async function generate() {
   try {
     const res = await fetch(AJAX_URL, {
       method: 'POST',
-      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' }
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: NexaModel.current })
     });
     const data = await res.json();
     if (data.success && data.questions && data.questions.length > 0) {
@@ -500,6 +571,9 @@ async function fetchWikiImage(questionText) {
 }
 
 generate();
+// Preload models
+setTimeout(() => ModelPicker.load(MODELS_URL), 600);
 </script>
+<script src="/static/js/nexa_models.js"></script>
 </body>
 </html>

@@ -1,24 +1,27 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import threading
 
 User = get_user_model()
 
 
 def landing_view(request):
-    """Landing page view - redirect to community home if logged in."""
+    """Landing page view - redirect to feed if logged in."""
     if request.user.is_authenticated:
-        return redirect('community:community_home') 
-    return render(request, 'users/landing_final.html')
+        return redirect('community:feed')
+    return render(request, 'users/landing_new.html')
 
 
 def login_view(request):
-    """User login view - redirects to community home after login."""
+    """User login view - redirects to dashboard after login."""
     if request.user.is_authenticated:
-        return redirect('community:community_home') 
+        return redirect('community:feed')
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -28,7 +31,10 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('community:community_home')
+                if getattr(user, 'onboarding_complete', False):
+                    return redirect('community:feed')
+                else:
+                    return redirect('/onboarding/')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -112,8 +118,12 @@ def register_view(request):
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
 
-            # Redirect to community home (with onboarding) after signup
-            return redirect('community:community_home')
+            # Redirect according to onboarding status
+            if getattr(auth_user, 'onboarding_complete', False):
+                return redirect('/dashboard/')
+            else:
+                # Always route to onboarding via absolute path to avoid namespace issues
+                return redirect('/onboarding/')
 
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')
@@ -126,3 +136,45 @@ def logout_view(request):
     """User logout view - redirects to landing page."""
     logout(request)
     return redirect('landing')
+def onboarding_view(request):
+    """One-time onboarding flow for new users."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Safely get community_profile if it exists
+        if hasattr(request.user, 'community_profile'):
+            profile = request.user.community_profile
+            # Save any fields from the form
+            display_name = request.POST.get('display_name')
+            bio = request.POST.get('bio')
+            major = request.POST.get('major')
+            interests = request.POST.get('interests')
+            match_prefs = request.POST.get('match_prefs')
+            
+            if display_name:
+                profile.display_name = display_name
+            if bio:
+                profile.bio = bio
+            if major:
+                profile.major = major
+            if interests:
+                profile.interests = interests
+            if match_prefs:
+                profile.match_prefs = match_prefs
+            profile.save()
+        
+        # Mark onboarding complete and go to feed with ?welcome=1 for splash/tutorial
+        u = request.user
+        u.onboarding_complete = True
+        u.save(update_fields=['onboarding_complete'])
+        return redirect('/community/?welcome=1')
+    return render(request, 'users/onboarding.html')
+
+@csrf_exempt
+def mark_tutorial_complete(request):
+    """Mark the community tour as complete for the current user."""
+    if request.user.is_authenticated:
+        request.user.tutorial_complete = True
+        request.user.save(update_fields=['tutorial_complete'])
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'error', 'message': 'Not authenticated'}, status=401)

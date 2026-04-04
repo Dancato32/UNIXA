@@ -6,8 +6,11 @@ urlpatterns = [
     path('new/', views.assignment_create, name='assignment_create'),
     path('<int:assignment_id>/process/', views.process_assignment, name='process_assignment'),
     path('<int:assignment_id>/result/', views.assignment_result, name='assignment_result'),
+    path('<int:assignment_id>/stream-build/', views.assignment_stream_build, name='assignment_stream_build'),
+    path('<int:assignment_id>/research-stream/', views.assignment_deep_research, name='assignment_deep_research'),
     path('<int:assignment_id>/download/', views.download_result, name='download_result'),
     path('<int:assignment_id>/delete/', views.assignment_delete, name='assignment_delete'),
     path('<int:assignment_id>/retry/', views.retry_assignment, name='retry_assignment'),
     path('<int:assignment_id>/save-edits/', views.save_assignment_edits, name='save_assignment_edits'),
+    path('<int:assignment_id>/json/', views.assignment_json, name='assignment_json'),
 ]

@@ -123,20 +123,12 @@ class StartupTeamMember(models.Model):
 
 class AIOpportunity(models.Model):
     """Detected opportunity from community posts."""
-    TYPE_INTERNSHIP = 'internship'
-    TYPE_SCHOLARSHIP = 'scholarship'
-    TYPE_JOB = 'job'
-    TYPE_COMPETITION = 'competition'
-    TYPE_RESEARCH = 'research'
     TYPE_GRANT = 'grant'
+    TYPE_FREELANCE = 'freelance'
     TYPE_OTHER = 'other'
     TYPE_CHOICES = [
-        (TYPE_INTERNSHIP, 'Internship'),
-        (TYPE_SCHOLARSHIP, 'Scholarship'),
-        (TYPE_JOB, 'Job'),
-        (TYPE_COMPETITION, 'Competition'),
-        (TYPE_RESEARCH, 'Research'),
         (TYPE_GRANT, 'Grant'),
+        (TYPE_FREELANCE, 'Freelance Gig'),
         (TYPE_OTHER, 'Other'),
     ]
     id = models.UUIDField(primary_key=True, default=_uuid, editable=False)

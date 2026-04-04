@@ -121,51 +121,150 @@ def get_task_prompt(task_type, assignment_content, instructions):
     """Build the AI prompt based on task type."""
     
     base_prompts = {
-        'essay': f"""Write a comprehensive essay based on the following assignment. 
-Include introduction, main body with key points, and conclusion.
-{instructions}
-
-Assignment/Content:
-{assignment_content}
-
-Write a well-structured, academic essay.""",
+        'essay': f"""Write a comprehensive academic essay or research report. 
+Include a compelling introduction, thematic body paragraphs with evidentiary support, and a definitive conclusion.
+Instructions: {instructions}
+Content: {assignment_content}""",
         
-        'summarize': f"""Provide a clear and concise summary of the following assignment or content.
-{instructions}
-
-Content:
-{assignment_content}
-
-Create a summary that captures the main points.""",
+        'research': f"""Conduct a deep research investigation into this topic. 
+Include literature review, methodology, data analysis, and cited findings.
+Instructions: {instructions}
+Content: {assignment_content}""",
         
-        'answer': f"""Answer the questions in the following assignment.
-{instructions}
-
-Assignment:
-{assignment_content}
-
-Provide clear, detailed answers to each question.""",
+        'coding': f"""You are a Senior Software Engineer. Build a high-quality technical solution.
+Include: 
+1. System Architecture & Tech Stack rationale.
+2. Complete, well-commented code implementation.
+3. Unit testing strategy.
+4. Technical README.md.
+Instructions: {instructions}
+Content: {assignment_content}""",
         
-        'slides': f"""Create slide content for a presentation based on the assignment.
-{instructions}
-
-Assignment:
-{assignment_content}
-
-Format the content as slide sections with bullet points.
-Use ## for slide titles and - for bullet points.""",
+        'lab_report': f"""Generate a professional Scientific/Engineering Lab Report.
+Structure: Title, Aim, Apparatus, Methodology, Results (use table structure if needed), Discussion, and Conclusion.
+Instructions: {instructions}
+Content: {assignment_content}""",
         
-        'structured': f"""Provide structured answers to the following assignment.
-{instructions}
-
-Assignment:
-{assignment_content}
-
-Use clear headings and organized structure.""",
+        'presentation': f"""Draft comprehensive content for a high-impact presentation.
+Format as Slide Sections (Slide 1, Slide 2, etc.) with Speaker Notes and Bullet Points.
+Wait! Do not use slides formatting if user wants a script. Focus on visual communication.
+Instructions: {instructions}
+Content: {assignment_content}""",
+        
+        'problem_set': f"""Solve the mathematical or analytical problem set provided.
+Show step-by-step calculations, explain the logic for each formula used, and provide the final answer clearly.
+Instructions: {instructions}
+Content: {assignment_content}""",
+        
+        'group': f"""Develop a collaborative Group Project or Startup System.
+Include: Team roles, Project Scope, System Modules, and a Collaborative Implementation Strategy.
+Instructions: {instructions}
+Content: {assignment_content}""",
+        
+        'case_study': f"""Perform a detailed Case Study analysis.
+Structure: Situation Overview, Problem Identification, Root Cause Analysis, Proposed Solutions, and Implementation Roadmap.
+Instructions: {instructions}
+Content: {assignment_content}""",
+        
+        'capstone': f"""This is a FINAL YEAR CAPSTONE project. You are the Lead Architect.
+Draft a massive, high-level project vision. 
+Include: Abstract, Requirement Specification, Full Tech Stack (Django/React/AI), Database Schema, Component Architecture, and a 12-week Development Roadmap.
+Instructions: {instructions}
+Content: {assignment_content}""",
     }
     
     return base_prompts.get(task_type, base_prompts['essay'])
 
+
+def generate_assignment_stream(assignment, user):
+    """
+    Paged Sectional Builder:
+    1. Generate an 8-section outline.
+    2. Iterate through each section to generate deep, detailed content (~800 words/section).
+    3. Yield tokens continuously for the SPA.
+    """
+    try:
+        assignment_content = ""
+        if assignment.file:
+            from .doc_generator import extract_text_from_file
+            assignment.file.seek(0)
+            assignment_content = extract_text_from_file(assignment.file)
+            assignment.file.seek(0)
+        
+        if assignment.text_content:
+            assignment_content += "\n" + assignment.text_content
+            
+        if not assignment_content.strip():
+            yield "Error: No assignment content provided."
+            return
+
+        # RAG Context
+        materials = []
+        rag_context = ""
+        if assignment.use_rag:
+            selected = assignment.selected_materials.all()
+            if selected.exists():
+                materials = [{'title': m.title, 'text': m.extracted_text[:3000]} for m in selected if m.extracted_text]
+            else:
+                materials = get_user_study_materials_for_rag(user)
+            rag_context = build_rag_context(materials)
+            
+        task_prompt = get_task_prompt(assignment.task_type, assignment_content, assignment.instructions)
+        base_prompt = f"{rag_context}\n\n{task_prompt}"
+        if getattr(assignment, 'research_notes', None):
+            base_prompt = f"DEEP RESEARCH INTELLIGENCE:\n{assignment.research_notes}\n\n{base_prompt}"
+
+        client = get_openai_client()
+
+        # PHASE 1: GENERATE OUTLINE
+        yield "[PROGRESS] Planning Paper Structure (7-Stage Logic)..."
+        outline_resp = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Create a detailed 7-section outline for this assignment. Return ONLY the titles of the 7 sections, one per line."},
+                {"role": "user", "content": base_prompt}
+            ]
+        )
+        outline = [line.strip() for line in outline_resp.choices[0].message.content.strip().split('\n') if line.strip()][:7]
+        
+        # PHASE 2: GENERATE SECTIONS
+        full_text_history = []
+        
+        for i, section_title in enumerate(outline):
+            yield f"[PROGRESS] Drafting {section_title}..."
+            yield f"\n\n# {section_title}\n\n" # Visual Header
+            
+            # Context for the current section
+            section_prompt = f"""
+Previous Sections Summary: {' '.join(full_text_history[-500:]) if full_text_history else 'None'}
+NOW, write the section '{section_title}' in extreme detail (aim for 800+ words). 
+Be exhaustive. Do not use markdown ## or ** symbols. Use only plain-text structure.
+Original Assignment Context: {base_prompt[:1000]}
+"""
+            stream = client.chat.completions.create(
+                model="openai/gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a professional academic writer focusing on depth and length. You write 800-1000 words per section."},
+                    {"role": "user", "content": section_prompt}
+                ],
+                max_tokens=2000,
+                temperature=0.7,
+                stream=True
+            )
+            
+            section_content = []
+            for chunk in stream:
+                token = chunk.choices[0].delta.content or ""
+                if token:
+                    section_content.append(token)
+                    yield token
+            
+            full_text_history.append("".join(section_content))
+            yield "\n\n[PAGE_BREAK]\n\n" # Page break signal for frontend
+
+    except Exception as e:
+        logger.error(f"Streaming error: {e}")
+        yield f"Error: {str(e)}"
 
 def process_assignment_with_ai(assignment, user, use_rag=True):
     """
@@ -231,6 +330,9 @@ Cite specific information from the materials when applicable.
             full_prompt = f"""Note: Generating response based on general knowledge only (RAG disabled).
 
 {task_prompt}"""
+        
+        if getattr(assignment, 'research_notes', None):
+            full_prompt = f"DEEP RESEARCH FINDINGS (EXTERNAL):\n{assignment.research_notes}\n\n{full_prompt}"
         
         try:
             client = get_openai_client()
@@ -384,3 +486,53 @@ Key findings and summary.
     }
     
     return demo_responses.get(assignment.task_type, demo_responses['essay'])
+
+
+def transform_to_presentation_json(content, num_slides=7):
+    """
+    Transforms dense text (e.g. an essay) into a structured JSON array for PowerPoint slides.
+    Returns a list of dictionaries.
+    """
+    import json
+    try:
+        client = get_openai_client()
+        prompt = f"""You are an expert presentation designer. Convert the following academic/professional text into exactly {num_slides} highly detailed, professional presentation slides.
+For each slide, extract the core ideas as detailed bullet points, keep the full explanation for speaker notes, and write a specific, descriptive English prompt for an AI image generator that perfectly matches the slide's specific topic.
+
+Format the output strictly as a JSON array of objects. Do not use markdown blocks outside the JSON.
+Example structure:
+[
+  {{
+    "title": "Slide Title",
+    "bullets": ["Detailed comprehensive bullet point 1", "Detailed comprehensive bullet point 2", "Detailed comprehensive bullet point 3"],
+    "notes": "Full speaker notes containing the extensive details...",
+    "image_prompt": "high resolution photograph of a modern server room with glowing blue lights"
+  }}
+]
+
+Content to transform:
+{content[:15000]}
+"""
+        response = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4000,
+            temperature=0.7
+        )
+        result_text = response.choices[0].message.content.strip()
+        
+        # Clean up possible markdown json block
+        if result_text.startswith("```json"):
+            result_text = result_text[7:]
+        if result_text.startswith("```"):
+            result_text = result_text[3:]
+        if result_text.endswith("```"):
+            result_text = result_text[:-3]
+            
+        slides_data = json.loads(result_text.strip())
+        if isinstance(slides_data, list):
+            return slides_data
+        return []
+    except Exception as e:
+        logger.error(f"Error transforming presentation JSON: {e}")
+        return []

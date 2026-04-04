@@ -1,363 +1,227 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Assignments â€” NEXA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>My Assignments — NEXA STUDIO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --bg: #ffffff;
-  --white: #ffffff;
-  --text: #000000;
-  --text2: #222222;
-  --text3: #666666;
-  --border: #000000;
-  --surface: #fafafa;
-  --surface2: #f0f0f0;
-  --sketch-radius: 4px 12px 6px 14px;
-  --radius: 8px;
-  --shadow-sm: 2px 2px 0px #000;
-  --shadow: 4px 4px 0px #000;
+  --studio-bg: #05070a;
+  --studio-surface: #10141d;
+  --studio-border: rgba(255, 255, 255, 0.06);
+  --studio-accent: #3b82f6;
+  --studio-accent-glow: rgba(59, 130, 246, 0.25);
+  --studio-text: #ffffff;
+  --studio-text-dim: #8b949e;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --radius-lg: 28px;
+  --radius-md: 18px;
 }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-/* â”€â”€ Sidebar â”€â”€ */
-.sidebar {
-  width: 260px; background: var(--white); border-right: 2.5px solid var(--border);
-  position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
-  display: flex; flex-direction: column; transition: transform 0.2s;
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-body); background: var(--studio-bg); color: var(--studio-text);
+  min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; -webkit-font-smoothing: antialiased;
 }
-.sidebar-logo { padding: 1.5rem; border-bottom: 2.5px solid var(--border); }
-.sidebar-logo a { font-size: 1.25rem; font-weight: 900; color: var(--text); text-decoration: none; letter-spacing: 0.05em; text-transform: uppercase; }
-.sidebar-nav { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-.nav-link {
-  display: flex; align-items: center; gap: 0.875rem;
-  padding: 0.75rem 1rem; color: var(--text); text-decoration: none;
-  font-size: 0.8125rem; font-weight: 800; border: 2px solid transparent; border-radius: var(--radius); transition: all 0.15s;
-  text-transform: uppercase; letter-spacing: 0.04em;
+
+/* 🌀 Background */
+.mesh-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: #050508; }
+.mesh-circle { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.1; animation: float 20s infinite alternate; }
+.c1 { width: 600px; height: 600px; background: #3b82f6; top: -10%; left: -10%; }
+.c2 { width: 500px; height: 500px; background: #6366f1; bottom: -10%; right: -10%; animation-delay: -5s; }
+@keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(100px, 50px); } }
+
+/* ── HEADER ── */
+.studio-header {
+  height: 80px; padding: 0 4rem; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--studio-border); background: rgba(5, 7, 10, 0.6); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100;
 }
-.nav-link:hover { background: var(--surface2); border-color: var(--border); }
-.nav-link.active { background: var(--text); color: var(--white); border-color: var(--border); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-.nav-link svg { width: 18px; height: 18px; stroke-width: 2.5px; }
-.nav-divider { height: 2px; background: var(--border); margin: 0.75rem 0; opacity: 0.1; }
+.studio-header > div { display: flex; align-items: center; gap: 2rem; }
+.studio-back-btn { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--studio-accent); font-size: 0.75rem; font-weight: 950; text-transform: uppercase; letter-spacing: 0.15em; }
+.studio-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1rem; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 100px; color: var(--studio-accent); font-size: 0.65rem; font-weight: 950; text-transform: uppercase; letter-spacing: 0.1em; }
 
-/* â”€â”€ Layout â”€â”€ */
-.layout { display: flex; min-height: 100vh; }
-.main { flex: 1; margin-left: var(--sidebar); display: flex; flex-direction: column; min-height: 100vh; }
+/* ── MAIN CONTENT ── */
+.studio-viewport { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 4rem 2rem 8rem; }
+.list-container { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 2.5rem; }
 
-/* â”€â”€ Topbar â”€â”€ */
-.topbar {
-  height: 64px; background: var(--white); border-bottom: 2.5px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 1.5rem; position: sticky; top: 0; z-index: 150; flex-shrink: 0;
+/* Heading */
+.list-head { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+.list-title { font-family: var(--font-display); font-size: 2.25rem; font-weight: 950; letter-spacing: -0.04em; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.875rem 1.5rem;
+  border-radius: 16px; border: none; font-family: var(--font-display); font-size: 0.8125rem; font-weight: 950;
+  text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.3s; text-decoration: none;
 }
-.topbar-left { display: flex; align-items: center; gap: 1rem; }
-.topbar-title { font-size: 1rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em; }
-.avatar { width: 36px; height: 36px; background: var(--white); border: 2.5px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 900; color: var(--text); box-shadow: 2px 2px 0 #000; }
+.btn-primary { background: var(--studio-accent); color: #fff; box-shadow: 0 10px 20px var(--studio-accent-glow); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px var(--studio-accent-glow); }
+.btn-ghost { background: var(--studio-surface); border: 1px solid var(--studio-border); color: var(--studio-text-dim); }
+.btn-ghost:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
 
-/* â”€â”€ Page â”€â”€ */
-.page { padding: 1.75rem 2rem; max-width: 860px; }
-.page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
-.page-title { font-size: 1.375rem; font-weight: 700; }
-
-/* â”€â”€ Buttons â”€â”€ */
-.btn { 
-  display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.125rem; 
-  font-size: 0.8125rem; font-weight: 900; border-radius: var(--radius); text-decoration: none; 
-  cursor: pointer; border: 2.5px solid var(--border); transition: all 0.1s; font-family: inherit;
-  text-transform: uppercase; letter-spacing: 0.04em;
-}
-.btn-primary { background: var(--text); color: var(--white); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-.btn-primary:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #000; }
-.btn-ghost { background: var(--white); color: var(--text); box-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
-.btn-ghost:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #000; }
-.btn-danger { background: var(--white); color: var(--text); border-style: dashed; }
-.btn-danger:hover { background: var(--text); color: var(--white); border-style: solid; }
-.btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
-
-/* â”€â”€ Empty â”€â”€ */
-.empty { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 4rem 2rem; text-align: center; }
-.empty-icon { width: 56px; height: 56px; background: var(--surface2); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
-.empty-icon svg { width: 26px; height: 26px; color: var(--text3); }
-.empty-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.375rem; }
-.empty-sub { font-size: 0.875rem; color: var(--text2); margin-bottom: 1.5rem; }
-
-/* â”€â”€ Assignment list â”€â”€ */
-.a-list { display: flex; flex-direction: column; gap: 1rem; }
+/* ── ASSIGNMENT CARDS ── */
+.a-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 .a-card {
-  background: var(--white); border: 2.5px solid var(--border); border-radius: var(--sketch-radius);
-  padding: 1.25rem; display: flex; align-items: center; gap: 1.25rem;
-  transition: all 0.15s; box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; gap: 1.5rem; padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.02); border: 1px solid var(--studio-border);
+  border-radius: var(--radius-md); transition: all 0.3s; text-decoration: none; color: inherit;
 }
-.a-card:hover { transform: translateX(4px); box-shadow: var(--shadow); }
-.a-icon { width: 44px; height: 44px; border-radius: var(--radius); background: var(--white); border: 2.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.a-icon svg { width: 22px; height: 22px; color: var(--text); stroke-width: 2.5px; }
-.a-info { flex: 1; min-width: 0; }
-.a-title { font-size: 1rem; font-weight: 900; margin-bottom: 0.375rem; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; }
-.a-meta { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.75rem; color: var(--text2); align-items: center; font-weight: 800; text-transform: uppercase; }
-.badge { padding: 0.25rem 0.625rem; border-radius: 4px; font-size: 0.65rem; font-weight: 900; border: 2px solid var(--border); text-transform: uppercase; }
-.badge-pending { background: var(--white); color: var(--text); }
-.badge-processing{ background: var(--text); color: var(--white); }
-.badge-completed { background: var(--white); border-style: dashed; }
-.badge-failed { background: var(--white); color: var(--text3); opacity: 0.6; }
-.a-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+.a-card:hover { border-color: var(--studio-accent); background: rgba(59, 130, 246, 0.05); transform: translateX(8px); }
 
-/* â”€â”€ Pagination â”€â”€ */
-.pagination { display: flex; justify-content: center; gap: 0.375rem; margin-top: 1.5rem; }
-.pagination a, .pagination span { padding: 0.375rem 0.75rem; font-size: 0.8125rem; border: 1px solid var(--border2); border-radius: 6px; text-decoration: none; color: var(--text2); background: var(--surface); }
-.pagination .current { background: var(--accent); color: #fff; border-color: var(--accent); }
-.pagination a:hover { background: var(--surface2); color: var(--text); }
-
-/* â”€â”€ Overlay â”€â”€ */
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 199; }
-.overlay.open { display: block; }
-
-/* â”€â”€ Bottom nav â”€â”€ */
-.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 0.5rem; z-index: 100; justify-content: space-around; }
-.bn-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.4rem 0.75rem; color: var(--text3); text-decoration: none; font-size: 0.6rem; border-radius: 6px; }
-.bn-item svg { width: 20px; height: 20px; }
-.bn-item.active { color: var(--accent); }
-
-@media (max-width: 900px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .main { margin-left: 0; }
-  .menu-btn { display: flex; }
-  .bottom-nav { display: flex; }
-  .page { padding-bottom: 5rem; }
+.a-icon-box {
+  width: 52px; height: 52px; border-radius: 14px; background: var(--studio-surface);
+  border: 1px solid var(--studio-border); display: flex; align-items: center; justify-content: center;
+  color: var(--studio-accent); flex-shrink: 0;
 }
-@media (max-width: 700px) {
-  .page { padding: 1rem; padding-bottom: 5rem; }
-  .a-card { flex-wrap: wrap; }
-  .a-actions { width: 100%; }
-  .a-title { white-space: normal; }
-  .topbar { padding: 0 1rem; }
+.a-icon-box svg { width: 24px; height: 24px; stroke-width: 2.5px; }
+
+.a-main { flex: 1; min-width: 0; }
+.a-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.a-meta { display: flex; align-items: center; gap: 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--studio-text-dim); letter-spacing: 0.05em; }
+
+/* Status Badges */
+.status-tag { padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 950; letter-spacing: 0.05em; }
+.status-completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.status-processing { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-failed { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+.a-action-btn {
+  width: 44px; height: 44px; border-radius: 12px; background: var(--studio-surface); border: 1px solid var(--studio-border);
+  display: flex; align-items: center; justify-content: center; color: var(--studio-text-dim); transition: all 0.2s;
+}
+.a-card:hover .a-action-btn { color: var(--studio-accent); border-color: var(--studio-accent); }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 6rem 2rem; background: rgba(255,255,255,0.01); border: 1px solid var(--studio-border); border-radius: var(--radius-lg); }
+.empty-icon { font-size: 3rem; margin-bottom: 1.5rem; display: block; opacity: 0.5; }
+.empty-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 950; margin-bottom: 0.5rem; }
+.empty-subtitle { font-size: 0.875rem; color: var(--studio-text-dim); margin-bottom: 2rem; }
+
+/* ── RESPONSIVENESS ── */
+@media (max-width: 768px) {
+  .studio-header { height: 72px; padding: 0 1.5rem; }
+  .studio-header > div { gap: 1rem; }
+  .studio-back-btn span { display: none; }
+  .studio-badge { display: none; }
+  
+  .studio-viewport { padding: 3rem 1.5rem 6rem; }
+  .list-head { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+  .list-title { font-size: 1.85rem; }
+  
+  .a-card { padding: 1rem; gap: 1rem; }
+  .a-icon-box { width: 44px; height: 44px; }
+  .a-icon-box svg { width: 20px; height: 20px; }
+  .a-title { font-size: 0.95rem; }
+  .a-meta { gap: 0.75rem; }
+  .a-action-btn { width: 40px; height: 40px; }
+}
+
+/* Pagination */
+.pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem; }
+.page-link {
+  width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: var(--studio-surface); border: 1px solid var(--studio-border);
+  color: var(--studio-text-dim); text-decoration: none; font-weight: 800; font-size: 0.8rem;transition: all 0.2s;
+}
+.page-link:hover { border-color: var(--studio-accent); color: #fff; }
+.page-link.current { background: var(--studio-accent); color: #fff; border-color: var(--studio-accent); }
+
+/* Mobile Tuning */
+@media (max-width: 850px) {
+  .studio-header { padding: 0 1.5rem; height: 70px; }
+  .list-container { gap: 1.5rem; }
+  .list-title { font-size: 1.75rem; }
+  .a-meta span:not(.status-tag) { display: none; }
+}
+
+@media (max-width: 600px) {
+  .studio-header > div { gap: 1rem !important; }
+  .studio-back-btn { font-size: 0.6rem !important; gap: 0.4rem !important; }
+  .studio-back-btn svg { width: 14px !important; height: 14px !important; }
+  .studio-badge { scale: 0.85; transform-origin: left center; }
+  .studio-badge span { display: none; }
 }
 </style>
 </head>
 <body>
-<div class="layout">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><a href="{% url 'community:community_home' %}">NEXA</a></div>
-    <nav class="sidebar-nav">
-      <a href="{% url 'community:feed' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Feed
-      </a>
-      <a href="{% url 'ai_chat' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-        AI Tutor
-      </a>
-      <a href="{% url 'community:workspace_list' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-        Your Workspace
-      </a>
-      <a href="{% url 'community:ai_tools' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        Your Tools
-      </a>
-      <a href="{% url 'list_materials' %}" class="nav-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Upload
-      </a>
-      <div class="nav-divider"></div>
-      <a href="{% url 'logout' %}" class="nav-link" style="color:var(--text3)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Log out
-      </a>
-    </nav>
-  </aside>
-  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-  <main class="main">
-    <div class="topbar">
-      <div class="topbar-left">
-        <button class="menu-btn" onclick="toggleMenu()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-        <span class="topbar-title">Assignments</span>
-      </div>
-      <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
-    </div>
-
-    <div class="page">
-      <div class="page-head">
-        <h1 class="page-title">My Assignments</h1>
-        <a href="{% url 'assignment_create' %}" class="btn btn-primary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New Assignment
-        </a>
-      </div>
-
-      {% if assignments %}
-      <div class="a-list">
-        {% for a in assignments %}
-        <div class="a-card">
-          <div class="a-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          </div>
-          <div class="a-info">
-            <div class="a-title">{{ a.title }}</div>
-            <div class="a-meta">
-              <span>{{ a.get_task_type_display }}</span>
-              <span>{{ a.get_output_format_display }}</span>
-              <span>{{ a.created_at|date:"M d, Y" }}</span>
-              <span class="badge badge-{{ a.status }}">{{ a.get_status_display }}</span>
-            </div>
-          </div>
-          <div class="a-actions">
-            {% if a.status == 'completed' %}
-              <a href="{% url 'assignment_result' a.id %}" class="btn btn-ghost btn-sm">View</a>
-            {% elif a.status == 'failed' %}
-              <a href="{% url 'retry_assignment' a.id %}" class="btn btn-ghost btn-sm">Retry</a>
-            {% elif a.status == 'pending' %}
-              <a href="{% url 'process_assignment' a.id %}" class="btn btn-primary btn-sm">Process</a>
-            {% else %}
-              <span class="btn btn-ghost btn-sm" style="opacity:.4;cursor:default">Processingâ€¦</span>
-            {% endif %}
-            <a href="{% url 'assignment_delete' a.id %}" class="btn btn-danger btn-sm">Delete</a>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-
-      {% if assignments.has_other_pages %}
-      <div class="pagination">
-        {% if assignments.has_previous %}<a href="?page={{ assignments.previous_page_number }}">&laquo;</a>{% endif %}
-        <span class="current">{{ assignments.number }} / {{ assignments.paginator.num_pages }}</span>
-        {% if assignments.has_next %}<a href="?page={{ assignments.next_page_number }}">&raquo;</a>{% endif %}
-      </div>
-      {% endif %}
-
-      {% else %}
-      <div class="empty">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </div>
-        <div class="empty-title">No assignments yet</div>
-        <div class="empty-sub">Upload an assignment and let AI complete it using your study materials.</div>
-        <a href="{% url 'assignment_create' %}" class="btn btn-primary">Create First Assignment</a>
-      </div>
-      {% endif %}
-    </div>
-  </main>
+<div class="mesh-bg">
+  <div class="mesh-circle c1"></div>
+  <div class="mesh-circle c2"></div>
 </div>
 
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: #0b0b0f !important;
-  border-top: 1px solid #1e1e2c !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 100 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0.375rem 0.5rem;
-  color: #8a8a93;
-  border-radius: 12px;
-  text-decoration: none;
-  flex: 1;
-  transition: color 0.15s;
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
-.bn-unified-label { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item:active { color: #7c83ff; }
-.bn-unified-item:active svg { transform: scale(1.05); }
+<header class="studio-header">
+  <div>
+    <a href="{% url 'community:ai_tools' %}" class="studio-back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:18px; height:18px;"><path d="M15 18l-6-6 6-6"/></svg>
+      Back to Tools
+    </a>
+    <div class="studio-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+      <span>STUDIO</span> · REPOSITORY
+    </div>
+  </div>
+</header>
 
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #8a8a93);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
-.bn-unified-item:active svg { transform: scale(0.9); }
+<main class="studio-viewport">
+  <div class="list-container">
+    <div class="list-head">
+      <h1 class="list-title">My Assignments</h1>
+      <a href="{% url 'assignment_create' %}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Session
+      </a>
+    </div>
 
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
-</nav>
+    {% if assignments %}
+    <div class="a-grid">
+      {% for a in assignments %}
+      <a href="{% if a.status == 'completed' %}{% url 'assignment_result' a.id %}{% elif a.status == 'pending' %}{% url 'process_assignment' a.id %}{% else %}#{% endif %}" class="a-card">
+        <div class="a-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="a-main">
+          <div class="a-title">{{ a.title }}</div>
+          <div class="a-meta">
+            <span>{{ a.get_task_type_display }}</span>
+            <span>·</span>
+            <span>{{ a.created_at|date:"M d" }}</span>
+            <span class="status-tag status-{{ a.status }}">{{ a.get_status_display }}</span>
+          </div>
+        </div>
+        <div class="a-action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="18" height="18"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if assignments.has_other_pages %}
+    <div class="pagination">
+      {% if assignments.has_previous %}<a href="?page={{ assignments.previous_page_number }}" class="page-link">&laquo;</a>{% endif %}
+      <span class="page-link current">{{ assignments.number }}</span>
+      {% if assignments.has_next %}<a href="?page={{ assignments.next_page_number }}" class="page-link">&raquo;</a>{% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">📝</span>
+      <h2 class="state-title">No Active Sessions</h2>
+      <p class="state-subtitle" style="margin-bottom:2rem;">Start a new assignment session to experience the power of Nexa Studio.</p>
+      <a href="{% url 'assignment_create' %}" class="btn btn-primary">Start First Session</a>
+    </div>
+    {% endif %}
+  </div>
+</main>
 
 <script>
+// Toggle Sidebar (if needed for bottom nav compatibility)
 function toggleMenu() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('open');
+  // Logic here if sidebar exists
 }
 </script>
 </body>

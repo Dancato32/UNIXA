@@ -2,542 +2,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AI Tools Suite — Paw</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --bg:#F8FAFC;--sb:#ffffff;--card:#ffffff;--card2:#F1F5F9;
-  --bdr:#E5E7EB;--t1:#111827;--t2:#374151;--t3:#6B7280;
-  --acc:#F59E0B;--acc2:#FBBF24;
-  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
-  --shadow:0 4px 12px rgba(0,0,0,.08);
-  --shadow-lg:0 10px 30px rgba(0,0,0,.1);
-  --radius:12px;--radius-sm:8px;
-}
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased;}
-a{color:inherit;text-decoration:none;}button{font-family:inherit;cursor:pointer;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Tools Suite — CLUTCH Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --studio-bg: #0b0e14;
+            --studio-surface: #161b22;
+            --studio-border: rgba(255, 255, 255, 0.05);
+            --studio-accent: #3b82f6;
+            --studio-accent-glow: rgba(59, 130, 246, 0.2);
+            --studio-text: #ffffff;
+            --studio-text-dim: #8b949e;
+            --sidebar-w: 280px;
+            --radius: 32px; /* Key tactile radius from vibe */
+            --shadow: 0 10px 40px rgba(0,0,0,0.5);
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
 
-/* ── Shell ───────────────────────────────────────────────────────── */
-.shell{display:flex;height:100vh;}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: var(--font-body); background: var(--studio-bg); color: var(--studio-text); 
+            height: 100vh; overflow: hidden; -webkit-tap-highlight-color: transparent;
+            display: flex;
+        }
 
-/* ── Sidebar ─────────────────────────────────────────────────────── */
-.sidebar {
-  width: 256px; background: #0F172A;
-  border-right: none;
-  display: flex; flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1500;
-}
-.sidebar-header {
-  padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-}
-.sidebar-logo-icon { 
-  width:34px;height:34px;border-radius:10px;
-  background:linear-gradient(135deg,#F59E0B,#FBBF24);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 8px rgba(245,158,11,.3);
-}
-.sidebar-logo-icon svg{width:18px;height:18px;color:#fff;}
-.sidebar-logo-text {
-  font-family: 'Poppins', sans-serif; font-size: 1.375rem; font-weight: 700;
-  color: #fff; letter-spacing: -0.02em;
-}
+        /* ── MESH BACKGROUND ── */
+        .mesh-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: #050508; }
+        .mesh-circle { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15; }
+        .c1 { width: 500px; height: 500px; background: #3b82f6; top: -10%; left: -10%; animation: float 20s infinite alternate; }
+        .c2 { width: 600px; height: 600px; background: #8b5cf6; bottom: -10%; right: -10%; animation: float 25s infinite alternate-reverse; }
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(100px, 50px); } }
 
-.sidebar-section-label {
-  font-size: .625rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .1em; color: #64748B;
-  padding: 1rem 1.25rem 0.5rem;
-}
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-w); background: rgba(11, 14, 20, 0.85); backdrop-filter: blur(30px);
+            display: flex; flex-direction: column; z-index: 1000;
+            border-right: 1px solid var(--studio-border);
+        }
+        .sidebar-header { padding: 2.5rem 1.5rem; }
+        .sidebar-logo-group { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: #fff; }
+        .sidebar-logo-icon { width: 36px; height: 36px; background: var(--studio-accent); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900; box-shadow: 0 0 20px var(--studio-accent-glow); }
+        .sidebar-logo-text { font-family: var(--font-display); font-weight: 950; font-size: 1.25rem; letter-spacing: -0.02em; }
+        
+        .sidebar-nav { flex: 1; padding: 1rem; overflow-y: auto; scrollbar-width: none; }
+        .sidebar-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: var(--studio-text-dim); letter-spacing: 0.2em; padding: 1.5rem 1.25rem 0.75rem; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 0.875rem 1.25rem;
+            color: var(--studio-text-dim); text-decoration: none; border-radius: 12px;
+            font-size: 14px; font-weight: 600; transition: all 0.2s; margin-bottom: 4px;
+        }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.03); }
+        .nav-item.active { 
+            color: var(--studio-accent); background: rgba(59, 130, 246, 0.1); 
+            border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.05);
+        }
+        .nav-item svg { width: 18px; height: 18px; stroke-width: 2.5; }
 
-.sidebar-nav { flex: 1; overflow-y: auto; padding: 0.5rem 0; scrollbar-width: none; }
-.sidebar-nav::-webkit-scrollbar { display: none; }
+        .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--studio-border); display: flex; align-items: center; gap: 12px; }
+        .sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.7rem; color: var(--studio-accent); }
+        .sidebar-user { flex: 1; min-width: 0; }
+        .sidebar-user h4 { font-size: 13px; font-weight: 750; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user p { font-size: 11px; color: var(--studio-text-dim); }
 
-.nav-item {
-  display: flex; align-items: center; gap: 0.875rem;
-  padding: .625rem 1rem; margin: 0.125rem 0.75rem;
-  border-radius: 8px; color: #94A3B8;
-  font-size: .875rem; font-weight: 500;
-  transition: all 0.2s ease; text-decoration: none;
-  border: none; background: none;
-}
-.nav-item:hover { background: rgba(255,255,255,.06); color: #F1F5F9; }
-.nav-item.active {
-  background: rgba(245,158,11,.12); color: #F59E0B;
-  font-weight: 600;
-}
-.nav-item svg { width: 18px; height: 18px; stroke-width: 2px; flex-shrink: 0; }
-.nav-item.active svg { stroke-width: 2.5px; }
+        /* ── Main Canvas ── */
+        .canvas { flex: 1; display: flex; flex-direction: column; position: relative; overflow-y: auto; scrollbar-width: none; }
+        .canvas::-webkit-scrollbar { display: none; }
+        
+        .studio-content { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem 10rem; width: 100%; }
+        
+        .hero { text-align: center; margin-bottom: 5rem; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .hero-label { display: inline-block; padding: 6px 14px; background: rgba(59, 130, 246, 0.1); color: var(--studio-accent); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 20px; font-size: 11px; font-weight: 950; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 2rem; box-shadow: 0 0 15px var(--studio-accent-glow); }
+        .hero h1 { font-family: var(--font-display); font-size: 48px; font-weight: 950; letter-spacing: -0.05em; margin-bottom: 1.25rem; color: #fff; }
+        .hero p { font-size: 18px; color: var(--studio-text-dim); max-width: 550px; margin: 0 auto; line-height: 1.6; }
 
-.sidebar-footer {
-  padding: 1rem .75rem; display: flex; align-items: center; gap: .75rem;
-  border-top: 1px solid rgba(255,255,255,.06);
-  background: rgba(255,255,255,.02);
-}
-.sidebar-avatar {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: linear-gradient(135deg,#F59E0B,#FBBF24);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .875rem; font-weight: 700; color: #fff;
-  flex-shrink: 0; overflow: hidden;
-}
-.sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.sidebar-footer-info { flex: 1; min-width: 0; }
-.sidebar-user-name {
-  font-size: .8125rem; font-weight: 600; color: #F1F5F9;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2;
-}
-.sidebar-user-status { font-size: .65rem; font-weight: 500; color: #64748B; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
 
-/* ── Main ────────────────────────────────────────────────────────── */
-.main{flex:1;overflow-y:auto;padding:2.5rem 2.5rem 3rem;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent;}
-.main::-webkit-scrollbar{width:4px;}
-.main::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px;}
+        .tool-card {
+            background: var(--studio-surface); border: 1px solid var(--studio-border);
+            border-radius: var(--radius); padding: 2.5rem; position: relative;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; gap: 1.5rem;
+            text-decoration: none; color: inherit;
+        }
+        .tool-card:hover { transform: translateY(-8px); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
 
-/* ── Page Hero ───────────────────────────────────────────────────── */
-.page-hero{text-align:center;margin-bottom:2.5rem;padding-top:1rem;}
-.page-hero h1{
-  font-family:'Poppins',sans-serif;
-  font-size:2rem;font-weight:700;color:var(--t1);letter-spacing:-0.03em;
-}
-.page-hero p{font-size:.9375rem;color:var(--t3);margin-top:.5rem;}
+        .tool-icon {
+            width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--studio-border);
+            transition: all 0.4s ease;
+        }
+        .tool-card:hover .tool-icon { transform: scale(1.1) rotate(-5deg); border-color: var(--studio-accent); background: rgba(59,130,246,0.1); }
+        .tool-icon svg { width: 28px; height: 28px; }
 
-/* ── Tools Grid ──────────────────────────────────────────────────── */
-.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;max-width:1100px;margin:0 auto;}
+        .tool-name { font-family: var(--font-display); font-size: 20px; font-weight: 900; margin-bottom: 10px; color: #fff; letter-spacing: -0.02em; }
+        .tool-desc { font-size: 14.5px; color: var(--studio-text-dim); line-height: 1.6; }
 
-/* ── Tool Card ───────────────────────────────────────────────────── */
-.tool-card{
-  background:var(--card);border:1px solid var(--bdr);
-  border-radius:16px;padding:1.375rem;
-  display:flex;flex-direction:column;gap:.875rem;
-  transition:transform .2s, box-shadow .2s;
-  position:relative;overflow:hidden;
-  box-shadow:var(--shadow-sm);
-}
-.tool-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
-.tool-card-icons{display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem;}
-.tool-icon{
-  width:44px;height:44px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  border:none;
-}
-.tool-icon svg{width:22px;height:22px;}
-.tool-bg-icon{opacity:.04;position:absolute;top:.75rem;right:.75rem;}
-.tool-bg-icon svg{width:52px;height:52px;}
-.tool-name{font-size:.9375rem;font-weight:700;color:var(--t1);}
-.tool-desc{font-size:.8125rem;color:var(--t3);line-height:1.55;}
-.tool-launch{
-  display:inline-flex;align-items:center;gap:.375rem;
-  font-size:.8125rem;font-weight:600;
-  text-decoration:none;transition:all .2s;margin-top:auto;
-  padding:.5rem .875rem;border-radius:8px;
-  background:rgba(245,158,11,.1);color:#D97706;
-}
-.tool-launch:hover{background:rgba(245,158,11,.18);}
+        .launch-btn {
+            margin-top: auto; padding: 14px; border-radius: 12px; 
+            border: 1.5px solid rgba(59, 130, 246, 0.2); color: var(--studio-accent);
+            font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;
+            text-align: center; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .tool-card:hover .launch-btn { background: var(--studio-accent); color: #fff; border-color: var(--studio-accent); box-shadow: 0 0 20px var(--studio-accent-glow); }
+        .launch-btn svg { width: 14px; height: 14px; }
 
-/* ── Top Bar Mobile ──────────────────────────────────────────────── */
-.top-bar-mobile{
-  display:none;align-items:center;justify-content:space-between;
-  padding:0.75rem 1rem;background:var(--sb);
-  border-bottom:1px solid var(--bdr);
-  position:sticky;top:0;z-index:1000;
-  box-shadow:0 1px 4px rgba(0,0,0,.06);
-}
-.mobile-menu-btn{
-  background:var(--card2);border:1px solid var(--bdr);color:var(--t1);
-  width:40px;height:40px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s;
-}
-.mobile-menu-btn:hover{background:var(--bdr);}
-.mobile-page-title{
-  font-family:'Poppins',sans-serif;font-size:1.125rem;font-weight:700;letter-spacing:-0.02em;color:var(--t1);
-}
-
-/* ── Sidebar Overlay ─────────────────────────────────────────────── */
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1900;backdrop-filter:blur(4px);}
-.sidebar-overlay.open{display:block;}
-
-/* ── Bottom Nav ──────────────────────────────────────────────────── */
-.bottom-nav { display: none; }
-@media(max-width:900px){
-  .shell{flex-direction:column;}
-  .sidebar{
-    position:fixed;transform:translateX(-100%);width:280px;
-    z-index:2000;top:0;bottom:0;left:0;
-    transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0;
-  }
-  .sidebar.open{transform:translateX(0);}
-  .main{padding:1rem 1rem 100px;}
-  .tools-grid{grid-template-columns:1fr 1fr; gap: 0.75rem;}
-  .top-bar-mobile{display:flex;}
-}
-@media(max-width:600px){
-  .tools-grid{grid-template-columns:1fr;}
-  .page-hero h1{font-size:2rem;}
-  .page-hero p{font-size:0.875rem;}
-}
-
-/* ── Bottom nav unified ──────────────────────────────────────────── */
-.bottom-nav-unified {
-  display: flex !important; position: fixed !important;
-  bottom: 0 !important; left: 0 !important; right: 0 !important;
-  background: var(--bg) !important; border-top: 2.5px solid var(--bdr) !important;
-  padding: 0 0.5rem !important; padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 100 !important; justify-content: space-around !important;
-  align-items: center !important; height: 60px !important;
-  box-shadow: 0 -2px 0 var(--bdr) !important;
-}
-.bn-unified-item {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 3px; padding: 0.375rem 0.5rem;
-  color: var(--t3); border-radius: 5px; text-decoration: none;
-  flex: 1; transition: color 0.15s; min-width: 0;
-  background: none; border: none; cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.15s; }
-.bn-unified-label { font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
-.bn-unified-item.active { color: var(--t1); }
-.bn-unified-item:hover { color: var(--t2); }
-.bn-unified-item:active svg { transform: scale(1.05); }
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .studio-content { padding: 4rem 1.5rem 12rem; }
+            .hero h1 { font-size: 36px; }
+            .tools-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div class="shell">
-  <div class="top-bar-mobile">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <div style="font-family:'Caveat',cursive;font-weight:700;font-size:1.25rem;letter-spacing:0.02em;">AI TOOLS</div>
-    <div style="width:40px;"></div>
-  </div>
-  <nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo-icon">
-        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-      </div>
-      <div class="sidebar-logo-text">Paw</div>
+    <div class="mesh-bg">
+        <div class="mesh-circle c1"></div>
+        <div class="mesh-circle c2"></div>
     </div>
     
-    <div class="sidebar-section-label">Main</div>
-    
-    <div class="sidebar-nav">
-      <a href="{% url 'community:feed' %}" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Feed</a>
-      <a href="{% url 'ai_chat' %}" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>AI Tutor</a>
-      <a href="{% url 'community:workspace_list' %}" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Your Workspace</a>
-      <a href="{% url 'community:ai_tools' %}" class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Your Tools</a>
-      <a href="{% url 'list_materials' %}" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</a>
-    </div>
-
-    <div class="sidebar-footer">
-      <div class="sidebar-avatar">
-        {% if user.community_profile.avatar %}<img src="{{ user.community_profile.avatar.url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
-      </div>
-      <div class="sidebar-footer-info">
-        <div class="sidebar-user-name">{{ user.username }}</div>
-        <div class="sidebar-user-status">Online</div>
-      </div>
-    </div>
-  </nav>
-
-  <div class="main">
-    <div class="page-hero">
-      <h1>AI Tools Suite</h1>
-      <p>Supercharge your learning with our specialized AI generators.</p>
-    </div>
-
-    <div class="tools-grid">
-
-      <!-- Essay Generator -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(99,102,241,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="sidebar-logo-group">
+                <div class="sidebar-logo-icon">C</div>
+                <div class="sidebar-logo-text">CLUTCH STUDIO</div>
+            </a>
         </div>
-        <div class="tool-name">Essay Generator</div>
-        <div class="tool-desc">Draft structured essays with citations instantly.</div>
-        <a href="{% url 'essay_request' %}" class="tool-launch" style="color:#818cf8;">LAUNCH TOOL →</a>
-      </div>
 
-      <!-- Assignment Helper -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(236,72,153,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="1"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="sidebar-nav">
+            <div class="sidebar-label">Platform</div>
+            <a href="{% url 'community:feed' %}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Feed
+            </a>
+            <a href="{% url 'ai_chat' %}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                AI Tutor
+            </a>
+            <a href="{% url 'community:workspace_list' %}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                Workspace
+            </a>
+            <a href="{% url 'community:ai_tools' %}" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                Your Tools
+            </a>
+            <a href="{% url 'list_materials' %}" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload
+            </a>
         </div>
-        <div class="tool-name">Assignment Helper</div>
-        <div class="tool-desc">Break down complex problems into steps.</div>
-        <a href="{% url 'assignment_create' %}" class="tool-launch" style="color:#f472b6;">LAUNCH TOOL →</a>
-      </div>
 
-      <!-- Citation Writer -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(124,106,247,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></div>
+        <div class="sidebar-footer">
+            <div class="sidebar-avatar">{{ user.username|slice:":1"|upper }}</div>
+            <div class="sidebar-user">
+                <h4>{{ user.username }}</h4>
+                <p>Standard Instance</p>
+            </div>
         </div>
-        <div class="tool-name">Citation Writer</div>
-        <div class="tool-desc">Format references in APA, MLA, Chicago.</div>
-        <a href="{% url 'community:citation_page' %}" class="tool-launch" style="color:#a78bfa;">LAUNCH TOOL →</a>
-      </div>
+    </aside>
 
-      <!-- Paraphraser -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(20,184,166,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+    <main class="canvas">
+        <div class="studio-content">
+            <div class="hero">
+                <span class="hero-label">Production Ready</span>
+                <h1>AI Tools Suite</h1>
+                <p>Supercharge your learning with specialized AI generators built for the modern student.</p>
+            </div>
+
+            <div class="tools-grid">
+                <!-- Essay Generator -->
+                <a href="{% url 'essay_request' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Essay Generator</div>
+                        <div class="tool-desc">Draft structured essays with citations instantly and effortlessly.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+
+                <!-- Assignment Helper -->
+                <a href="{% url 'assignment_create' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Assignment Helper</div>
+                        <div class="tool-desc">Break down complex problems into manageable, easy steps.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+
+                <!-- Citation Writer -->
+                <a href="{% url 'community:citation_page' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Citation Writer</div>
+                        <div class="tool-desc">Format references perfectly in APA, MLA, or Chicago styles.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+
+                <!-- Paraphraser -->
+                <a href="{% url 'community:paraphraser_page' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Paraphraser</div>
+                        <div class="tool-desc">Rewrite text to improve clarity, tone, and professional flow.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+
+                <!-- AI Tutor -->
+                <a href="{% url 'ai_chat' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">AI Tutor Studio</div>
+                        <div class="tool-desc">Your personal study companion for math, science, and history.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+
+                <!-- Quiz Generator -->
+                <a href="{% url 'select_material_for_action' 'quiz' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Quiz Generator</div>
+                        <div class="tool-desc">Turn your study notes into structured practice quizzes.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+                
+                <!-- Flashcards -->
+                <a href="{% url 'select_material_for_action' 'flashcards' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Flashcards</div>
+                        <div class="tool-desc">Create smart decks using AI to memorize concepts faster.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+
+                <!-- Podcast -->
+                <a href="{% url 'select_material_for_action' 'podcast' %}" class="tool-card">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Podcast Prep</div>
+                        <div class="tool-desc">Convert complex notes into an engaging audio lesson format.</div>
+                    </div>
+                    <div class="launch-btn">LAUNCH TOOL →</div>
+                </a>
+            </div>
         </div>
-        <div class="tool-name">Paraphraser</div>
-        <div class="tool-desc">Rewrite text to improve clarity and tone.</div>
-        <a href="{% url 'community:paraphraser_page' %}" class="tool-launch" style="color:#2dd4bf;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- AI Tutor Chat -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(0,212,255,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="1"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg></div>
-        </div>
-        <div class="tool-name">AI Tutor Chat</div>
-        <div class="tool-desc">Ask anything — math, science, coding, history.</div>
-        <a href="{% url 'ai_chat' %}" class="tool-launch" style="color:#00d4ff;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- Quiz Generator -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(245,158,11,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-        </div>
-        <div class="tool-name">Quiz Generator</div>
-        <div class="tool-desc">Generate quizzes from your study materials.</div>
-        <a href="{% url 'select_material_for_action' 'quiz' %}" class="tool-launch" style="color:#fbbf24;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- Flashcards -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(34,197,94,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1"><rect x="2" y="5" width="20" height="14" rx="2"/></svg></div>
-        </div>
-        <div class="tool-name">Flashcards</div>
-        <div class="tool-desc">Create smart flashcard decks from any material.</div>
-        <a href="{% url 'select_material_for_action' 'flashcards' %}" class="tool-launch" style="color:#4ade80;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- Podcast Generator -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(251,113,133,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="1"><circle cx="12" cy="12" r="10"/></svg></div>
-        </div>
-        <div class="tool-name">Podcast Generator</div>
-        <div class="tool-desc">Turn your notes into an audio lesson.</div>
-        <a href="{% url 'select_material_for_action' 'podcast' %}" class="tool-launch" style="color:#fb7185;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- Summarizer -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(99,102,241,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
-        </div>
-        <div class="tool-name">Summarizer</div>
-        <div class="tool-desc">Get key points from any document instantly.</div>
-        <a href="{% url 'select_material_for_action' 'summarize' %}" class="tool-launch" style="color:#818cf8;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- Chat with PDF -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(0,212,255,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        </div>
-        <div class="tool-name">Chat with PDF</div>
-        <div class="tool-desc">Upload a file and ask questions about it.</div>
-        <a href="{% url 'list_materials' %}" class="tool-launch" style="color:#00d4ff;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- AI Hub -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(124,106,247,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h1a2 2 0 0 1 2 2v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-1a2 2 0 0 1 2-2h1V9.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1"><circle cx="12" cy="12" r="10"/></svg></div>
-        </div>
-        <div class="tool-name">AI Community Hub</div>
-        <div class="tool-desc">Find study partners, groups, and opportunities.</div>
-        <a href="{% url 'ai_community:hub' %}" class="tool-launch" style="color:#a78bfa;">LAUNCH TOOL →</a>
-      </div>
-
-      <!-- Library -->
-      <div class="tool-card">
-        <div class="tool-card-icons">
-          <div class="tool-icon" style="background:rgba(245,158,11,.15);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          </div>
-          <div class="tool-bg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg></div>
-        </div>
-        <div class="tool-name">Library</div>
-        <div class="tool-desc">Research and review academic sources with AI.</div>
-        <a href="{% url 'library_home' %}" class="tool-launch" style="color:#fbbf24;">LAUNCH TOOL →</a>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Bottom Nav -->
-  <style>
-/* Unified Bottom Nav Styles */
-.bottom-nav-unified {
-  display: flex !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: var(--surface, #ffffff) !important;
-  border-top: 1px solid var(--border-ink, #e5e5e5) !important;
-  padding: 0 0.5rem !important;
-  padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  height: 60px !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03) !important;
-}
-.bn-unified-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0.35rem 0.25rem;
-  color: var(--text3, #8a8a93);
-  text-decoration: none;
-  flex: 1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; transition: transform 0.2s; stroke-width: 2.2px; }
-.bn-unified-label { font-size: 0.65rem; font-weight: 700; font-family: var(--font-hand, 'Inter', sans-serif); letter-spacing: 0.02em; white-space: nowrap; text-transform: uppercase; }
-.bn-unified-item:hover, .bn-unified-item:focus, .bn-unified-item.active { color: var(--text, #111111); }
-.bn-unified-item:active svg { transform: scale(0.9); }
-
-@media (min-width: 900px) {
-  .bottom-nav-unified { display: none !important; }
-}
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
-</nav>
-
-</div>
-
-<script>
-function toggleSidebar() {
-  const sb = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  sb.classList.toggle('open');
-  overlay.classList.toggle('open');
-}
-</script>
-
-<style>
-.bottom-nav-unified {
-  display: flex !important; position: fixed !important;
-  bottom: 0 !important; left: 0 !important; right: 0 !important;
-  background: #ffffff !important; border-top: 1px solid #E5E7EB !important;
-  padding: 0 0.5rem !important; padding-bottom: env(safe-area-inset-bottom, 0) !important;
-  z-index: 2000 !important; justify-content: space-around !important;
-  align-items: center !important; height: 60px !important;
-  box-shadow: 0 -4px 16px rgba(0,0,0,.06) !important;
-}
-.bn-unified-item {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 3px; padding: 0.375rem 0.5rem;
-  color: #6B7280; text-decoration: none; flex: 1;
-  transition: color 0.2s; min-width: 0; background: none; border: none; cursor: pointer;
-}
-.bn-unified-item svg { width: 22px; height: 22px; stroke-width: 2px; }
-.bn-unified-label { font-size: 0.625rem; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; }
-.bn-unified-item.active, .bn-unified-item:hover { color: #D97706; }
-@media (min-width: 900px) { .bottom-nav-unified { display: none !important; } }
-</style>
-<nav class="bottom-nav bottom-nav-unified" id="bottom-nav">
-  <a href="{% url 'community:feed' %}" class="bn-unified-item" aria-label="Feed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span class="bn-unified-label">Feed</span>
-  </a>
-  <a href="{% url 'ai_chat' %}" class="bn-unified-item" aria-label="Tutor">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    <span class="bn-unified-label">Tutor</span>
-  </a>
-  <a href="{% url 'community:workspace_list' %}" class="bn-unified-item" aria-label="Workspace">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span class="bn-unified-label">Workspace</span>
-  </a>
-  <a href="{% url 'community:ai_tools' %}" class="bn-unified-item" aria-label="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-    <span class="bn-unified-label">Tools</span>
-  </a>
-  <a href="{% url 'list_materials' %}" class="bn-unified-item" aria-label="Upload">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span class="bn-unified-label">Upload</span>
-  </a>
-</nav>
+    </main>
 </body>
 </html>

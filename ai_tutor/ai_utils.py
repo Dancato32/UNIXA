@@ -4,11 +4,47 @@ Handles OpenRouter API calls and RAG (Retrieval-Augmented Generation) integratio
 """
 import os
 import json
+from materials.models import StudyMaterial
+
+# ── Model Catalog ────────────────────────────────────────────────────────────
+DEFAULT_MODEL = "openai/gpt-4o-mini"
+
+AVAILABLE_MODELS = [
+    # ── OpenAI ──
+    {"id": "openai/gpt-4o-mini",       "name": "GPT-4o Mini",        "provider": "OpenAI",    "badge": "Fast"},
+    {"id": "openai/gpt-4o",            "name": "GPT-4o",             "provider": "OpenAI",    "badge": "Smart"},
+    {"id": "openai/o3-mini",           "name": "o3 Mini",            "provider": "OpenAI",    "badge": "Reasoning"},
+    # ── Anthropic ──
+    {"id": "anthropic/claude-3.5-haiku",  "name": "Claude 3.5 Haiku", "provider": "Anthropic", "badge": "Fast"},
+    {"id": "anthropic/claude-3.5-sonnet", "name": "Claude 3.5 Sonnet","provider": "Anthropic", "badge": "Smart"},
+    {"id": "anthropic/claude-3-opus",     "name": "Claude 3 Opus",    "provider": "Anthropic", "badge": "Powerful"},
+    # ── Google ──
+    {"id": "google/gemini-2.0-flash-001", "name": "Gemini 2.0 Flash", "provider": "Google",    "badge": "Fast"},
+    {"id": "google/gemini-pro-1.5",       "name": "Gemini 1.5 Pro",   "provider": "Google",    "badge": "Smart"},
+    # ── Meta ──
+    {"id": "meta-llama/llama-3.3-70b-instruct", "name": "Llama 3.3 70B", "provider": "Meta", "badge": "Open"},
+    {"id": "meta-llama/llama-3.1-8b-instruct",  "name": "Llama 3.1 8B",  "provider": "Meta", "badge": "Fast"},
+    # ── Mistral ──
+    {"id": "mistralai/mistral-nemo",      "name": "Mistral Nemo",     "provider": "Mistral",   "badge": "Efficient"},
+    {"id": "mistralai/mixtral-8x7b-instruct", "name": "Mixtral 8x7B","provider": "Mistral",   "badge": "Open"},
+    # ── DeepSeek ──
+    {"id": "deepseek/deepseek-r1",        "name": "DeepSeek R1",      "provider": "DeepSeek",  "badge": "Reasoning"},
+    {"id": "deepseek/deepseek-chat",      "name": "DeepSeek V3",      "provider": "DeepSeek",  "badge": "Smart"},
+]
+
+VALID_MODEL_IDS = {m["id"] for m in AVAILABLE_MODELS}
 
 
-def build_system_prompt(use_rag=False, user=None, is_vision=False):
+def resolve_model(model_id):
+    """Return model_id if valid, else fall back to default."""
+    if model_id and model_id in VALID_MODEL_IDS:
+        return model_id
+    return DEFAULT_MODEL
+
+
+def build_system_prompt(use_rag=False, user=None, is_vision=False, query=None):
     """Build the full system prompt for a simplified tutor experience."""
-    system_message = """You are Nexa, an advanced AI Tutor designed to help students learn deeply while maintaining full awareness of the entire conversation.
+    system_message = """You are clutch , an advanced AI Tutor designed to help students learn deeply while maintaining full awareness of the entire conversation.
 
 MEMORY AND CONTEXT RULES:
 - Always read and consider the entire conversation history before answering
@@ -23,6 +59,7 @@ TEACHING BEHAVIOR:
 - Ask questions that help the student reason through problems
 - If the student makes a mistake, gently correct them and explain why
 - Adjust explanations based on the student's apparent level of understanding
+- EFFICIENCY & SPEED: Prioritize concise, direct, and high-impact information to ensure the fastest possible response time. 
 
 CODE ASSISTANCE RULES:
 - If the student provides code and asks for changes, improvements, fixes, or optimizations, modify the code directly
@@ -109,7 +146,7 @@ VISION ANALYSIS ENABLED (NEXA EYES ON):
 
 
     if use_rag and user:
-        rag_context = get_study_materials_for_rag(user)
+        rag_context = get_study_materials_for_rag(user, query=query)
         if rag_context:
             system_message += f"\n\nRelevant study materials from the student's uploads:\n{rag_context}"
 
@@ -139,29 +176,29 @@ def get_openai_client():
         raise ImportError("OpenAI package not installed. Install with: pip install openai")
 
 
-def get_study_materials_for_rag(user):
-    """
-    Retrieve uploaded study materials for RAG context.
-    Returns concatenated text from user's materials.
-    """
     try:
         from materials.models import StudyMaterial
         materials = StudyMaterial.objects.filter(owner=user)
         
         context = ""
+        total_chars = 0
+        MAX_TOTAL_RAG = 6000 # Compact context for 3s response speed
+        
         for material in materials:
             if material.extracted_text:
-                context += f"\n\n--- From {material.title} ---\n"
-                # Increased RAG limit significantly for 'unlimited' feel
-                context += material.extracted_text[:40000]
+                remaining = MAX_TOTAL_RAG - total_chars
+                if remaining <= 0: break
+                
+                snippet = material.extracted_text[:remaining]
+                context += f"\n\n--- From {material.title} ---\n{snippet}"
+                total_chars += len(snippet)
         
         return context
     except Exception:
-        # If materials app doesn't exist or has issues, return empty context
         return ""
 
 
-def ask_ai(message, user=None, use_rag=True, history=None):
+def ask_ai(message, user=None, use_rag=True, history=None, model=None):
     """
     Send a message to AI and get a response.
 
@@ -182,7 +219,7 @@ def ask_ai(message, user=None, use_rag=True, history=None):
         logger.info("OpenAI client created successfully")
 
         # Build comprehensive Nexa system prompt with adaptive mode switching
-        system_message = """You are Nexa, an advanced AI Tutor designed to help students learn deeply while maintaining full awareness of the entire conversation.
+        system_message = """You are clutch , an advanced AI Tutor designed to help students learn deeply while maintaining full awareness of the entire conversation.
 
 MEMORY AND CONTEXT RULES:
 - Always read and consider the entire conversation history before answering
@@ -287,11 +324,11 @@ Teach concepts clearly using board-style formatting. Break ideas into steps, use
                 messages_list.append({"role": "assistant", "content": h['response']})
         messages_list.append({"role": "user", "content": message})
 
-        # Make API call with increased output limit
+        # Make API call with moderate output limit to avoid credit errors
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=resolve_model(model),
             messages=messages_list,
-            max_tokens=4000, 
+            max_tokens=2000,
             temperature=0.7
         )
 
@@ -317,7 +354,7 @@ Teach concepts clearly using board-style formatting. Break ideas into steps, use
 
 
 
-def deep_web_essay(topic, user=None, word_count=500):
+def deep_web_essay(topic, user=None, word_count=500, model=None):
     """
     Generate an essay on a given topic using AI.
     Optionally performs 'deep web search' simulation and uses RAG.
@@ -336,58 +373,55 @@ def deep_web_essay(topic, user=None, word_count=500):
     try:
         client = get_openai_client()
         
-        # Build research context with natural paragraph instructions
-        research_context = f"""Write a comprehensive essay of approximately {word_count} words on: {topic}
+        # Build research context with professional structural instructions
+        research_context = f"""Write a professional, academic-grade essay of approximately {word_count} words on: {topic}
 
-STRICT FORMATTING RULES - FOLLOW EXACTLY:
-1. NO MARKDOWN WHATSOEVER - Zero asterisks, hashes, underscores
-2. NO HEADINGS - Not "Introduction", not "Conclusion", nothing with ##
-3. NO BULLETS OR LISTS - No -, *, or numbered lists
-4. PURE PARAGRAPHS ONLY - Write exactly like a newspaper article or textbook
-5. Every paragraph should be 3-5 sentences flowing into the next
-6. Write as if typing plain text in an email
+ESTABLISH A THESIS-FIRST STRUCTURE:
+- OPENING: A compelling hook followed by a clear, sophisticated thesis statement.
+- SYNTHESIS: Each paragraph must synthesize information rather than just listing facts.
+- TRANSITIONS: Use logical, high-level transitions (e.g., 'Furthermore,' 'Conversely,' 'This underscores...') but avoid robotic AI templates.
+- CONCLUSION: Summarize key arguments and provide a nuanced final thought.
 
-BAD (do not do): **bold**, *italics*, ## Heading, - bullet, 1. list
-GOOD (do this): Just normal paragraphs with complete sentences."""
-        
+STRICT FORMATTING RULES:
+1. USE CLEAN PARAGRAPHS ONLY.
+2. NO MARKDOWN LISTS OR BULLETS.
+3. Use blank lines between paragraphs for readability.
+4. Professional tone: Academic but accessible, avoiding overly repetitive vocabulary."""
+
         # Add RAG context if available
         if user:
             rag_context = get_study_materials_for_rag(user)
             if rag_context:
-                research_context += f"\n\nRelevant study materials to reference:\n{rag_context}"
-        
+                research_context += f"\n\nContextual research from student materials:\n{rag_context}"
+
         # Make API call
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=resolve_model(model),
             messages=[
                 {
-                    "role": "system", 
-                    "content": """You are an expert academic writer. Your ONLY job is to write essays as PLAIN TEXT paragraphs.
-
-CRITICAL: Output ZERO markdown. No asterisks. No hashes. No underscores. No headings. No bullets. No lists.
-Just write paragraphs like you would in a college essay or newspaper.
-
-The user wants to copy-paste this directly. Any formatting characters will ruin their experience.
-Write purely in paragraphs."""
+                    "role": "system",
+                    "content": """You are an elite academic essayist. Your writing style is characterized by:
+- Sophisticated sentence variety (combination of complex and simple sentences).
+- Precise, high-level vocabulary.
+- Strong logical arguments.
+- ZERO AI CLUTTER: Do not use phrases like 'In conclusion,' 'It is important to consider,' 'Firstly, secondly, thirdly.'
+- Use narrative-style transitions that flow naturally."""
                 },
                 {
-                    "role": "user", 
+                    "role": "user",
                     "content": research_context
                 }
             ],
             max_tokens=max_tokens,
-            temperature=0.7
+            temperature=0.75
         )
-        
+
         essay_text = response.choices[0].message.content or ""
-        
-        # Clean any markdown that slipped through
+
+        # Clean any accidental markdown artifacts while preserving logic
         import re
-        essay_text = re.sub(r'\*\*([^*]+)\*\*', r'\1', essay_text)  # Remove **bold**
-        essay_text = re.sub(r'\*([^*]+)\*', r'\1', essay_text)      # Remove *italics*
-        essay_text = re.sub(r'##+\s*', '', essay_text)               # Remove ## headings
-        essay_text = re.sub(r'^#+\s*', '', essay_text, flags=re.MULTILINE)  # Remove # headings
-        essay_text = re.sub(r'^[-*]\s+', '', essay_text, flags=re.MULTILINE)  # Remove bullets
+        essay_text = re.sub(r'\*\*([^*]+)\*\*', r'\1', essay_text)
+        essay_text = re.sub(r'#+\s*', '', essay_text)
         essay_text = re.sub(r'^\d+\.\s+', '', essay_text, flags=re.MULTILINE)  # Remove numbered lists
         essay_text = re.sub(r'__([^\s]+)__', r'\1', essay_text)    # Remove __underline__
         
@@ -482,42 +516,39 @@ def search_web(query):
     return simulated_results
 
 
-def humanize_essay(essay_text, user=None):
+def humanize_essay(essay_text, user=None, model=None):
     """
     Rewrite an AI-generated essay to sound naturally human-written.
     """
     try:
         client = get_openai_client()
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=resolve_model(model),
             messages=[
                 {
                     "role": "system",
                     "content": (
-                        "You are an expert editor who rewrites AI-generated essays to sound "
-                        "naturally written by a human student. You preserve all ideas and arguments "
-                        "but vary sentence structure, use natural transitions, and avoid robotic phrasing."
+                        "You are an elite academic ghostwriter who excels at humanizing text. "
+                        "Your goal is to make the essay indistinguishable from high-quality human writing. "
+                        "ELIMINATE ALL ROBOTIC PATTERNS: 'In conclusion', 'Moreover', 'Furthermore', 'This highlights that'. "
+                        "Use varied rhythm, internal transitions, and sophisticated vocabulary that feels earned, not forced."
                     )
                 },
                 {
                     "role": "user",
                     "content": (
-                        "Rewrite the following essay so it sounds like it was written naturally by a human student.\n\n"
-                        "Guidelines:\n"
-                        "- Keep the same ideas and arguments.\n"
-                        "- Use varied sentence lengths and structures.\n"
-                        "- Avoid repetitive patterns or robotic phrasing.\n"
-                        "- Use natural transitions and logical flow.\n"
-                        "- Make the tone thoughtful and slightly personal when appropriate.\n"
-                        "- Avoid overly perfect or formulaic writing.\n"
-                        "- Maintain clarity and academic quality.\n"
-                        "- Do not add new facts or remove important points.\n\n"
-                        "Output only the improved essay.\n\n"
-                        f"Essay:\n{essay_text}"
+                        "HUMANIZE the following essay while maintaining its professional academic structure.\n\n"
+                        "STRICT REQUIREMENTS:\n"
+                        "- Vary cadence: Use a mix of short, punchy sentences and complex, flowing ones.\n"
+                        "- Natural vocabulary: Replace common AI filler words with context-specific terminology.\n"
+                        "- Logic flow: Connect ideas through context (e.g., 'Given this shift, the next logical step...') instead of list-based transitions ('Secondly,').\n"
+                        "- Professional Tone: Maintain high-level insight and authority.\n"
+                        "- Zero AI Cliches: Do not start the last paragraph with 'In conclusion'. Just wrap up the thought.\n\n"
+                        f"Essay to Humanize:\n{essay_text}"
                     )
                 }
             ],
-            temperature=0.85
+            temperature=0.82
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -525,7 +556,7 @@ def humanize_essay(essay_text, user=None):
         return essay_text  # fall back to original if humanization fails
 
 
-def generate_essay_with_sources(topic, user=None, word_count=500):
+def generate_essay_with_sources(topic, user=None, word_count=500, model=None):
     """
     Generate essay with citations from web search.
     
@@ -553,27 +584,132 @@ def generate_essay_with_sources(topic, user=None, word_count=500):
         client = get_openai_client()
         
         response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
+            model=resolve_model(model),
             messages=[
                 {
                     "role": "system",
-                    "content": "Write a well-structured essay with proper citations based on the provided research."
+                    "content": "You are a professional academic researcher and essayist. Synthesize the provided research into a cohesive, thesis-driven essay. Use natural internal citations."
                 },
                 {
                     "role": "user",
-                    "content": f"Topic: {topic}\n\n{source_context}\n\nPlease write an essay of approximately {word_count} words incorporating these sources. Include introduction, body paragraphs, and conclusion."
+                    "content": f"Topic: {topic}\n\n{source_context}\n\nDraft a {word_count}-word professional essay. Start with a clear thesis, synthesize these sources deeply into the body paragraphs, and close with a forward-looking conclusion. Do not use generic headings or lists."
                 }
             ],
             max_tokens=max_tokens,
-            temperature=0.7
+            temperature=0.72
         )
         
-        essay = response.choices[0].message.content
+        essay_text = response.choices[0].message.content or ""
+        return essay_text, sources
+    except Exception as e:
+        return f"Error: {str(e)}", sources
+
+
+def generate_essay_stream(topic, user=None, word_count=500, model=None, use_research=True):
+    """
+    Generate essay with conditionally injected citations from web search and stream the response back.
+    
+    Args:
+        topic: Essay topic
+        user: Django User object
+        word_count: Target word count for the essay
+        model: Optional model identifier
+        use_research: Whether to poll deep web contexts before generation
+    
+    Yields:
+        Chunks of text as they stream in from OpenAI.
+    """
+    source_context = ""
+    if use_research:
+        sources = search_web(topic)
+        source_context += "Search results:\n"
+        for i, result in enumerate(sources, 1):
+            source_context += f"{i}. {result['title']}: {result['snippet']}\n"
+    
+    max_tokens = int(word_count * 1.5)
+    
+    try:
+        client = get_openai_client()
         
-    except Exception:
-        essay = deep_web_essay(topic, user, word_count)
+        response = client.chat.completions.create(
+            model=resolve_model(model),
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a professional academic researcher and essayist. Synthesize the provided research into a cohesive, thesis-driven essay. Use natural internal citations if sources are provided."
+                },
+                {
+                    "role": "user",
+                    "content": f"Topic: {topic}\n\n{source_context}\n\nDraft a {word_count}-word professional essay. Start with a clear thesis, synthesize any provided sources deeply into the body paragraphs, and close with a forward-looking conclusion. Do not use generic headings or lists."
+                }
+            ],
+            max_tokens=max_tokens,
+            temperature=0.72,
+            stream=True
+        )
+        
+        for chunk in response:
+            if chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+                
+    except Exception as e:
+        yield f"\n\nError during stream: {str(e)}"
 
-    # Humanize the essay so it reads naturally
-    essay = humanize_essay(essay, user)
 
-    return essay, sources
+def get_study_materials_for_rag(user, query=None):
+    """
+    Fetch and sanitize study materials for the current user to provide context to the AI.
+    Features:
+    - [x] Add `query` parameter to `get_study_materials_for_rag` in `ai_utils.py`
+    - [x] Implement intent detection (greetings vs. study questions)
+    - [x] Build keyword-based snippet search logic
+    - [x] Update `build_system_prompt` signature and RAG call in `ai_utils.py`
+    """
+    if not user:
+        return ""
+        
+    # 1. Intent Detection: if it's a greeting, don't bother
+    if query:
+        q_low = query.lower().strip()
+        greetings = ["hi", "hello", "hey", "how are you", "good morning", "good afternoon", "can you help me"]
+        if any(g in q_low for g in greetings) and len(q_low) < 20:
+            return ""
+
+    # 2. Extract keywords for snippet search
+    keywords = []
+    if query:
+        # Simple extraction: words > 3 chars
+        keywords = [w.lower().strip(",.?!") for w in query.split() if len(w) > 3]
+
+    materials = StudyMaterial.objects.filter(owner=user).order_by('-uploaded_at')[:10]
+    if not materials.exists():
+        return ""
+        
+    context = []
+    for m in materials:
+        text = m.extracted_text or ""
+        snippet = ""
+        
+        # 3. Contextual Search: find keywords in the material
+        if keywords:
+            found_idx = -1
+            for k in keywords:
+                idx = text.lower().find(k)
+                if idx != -1:
+                    found_idx = idx
+                    break
+            
+            if found_idx != -1:
+                # Extract snippet around the first keyword match
+                start = max(0, found_idx - 400)
+                end = min(len(text), found_idx + 600)
+                snippet = text[start:end]
+                
+        # 4. Fallback to start of file if no keyword match
+        if not snippet:
+            snippet = text[:1000]
+            
+        m_text = f"Title: {m.title}\nContent: {snippet}"
+        context.append(m_text)
+        
+    return "\n---\n".join(context)

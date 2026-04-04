@@ -1,0 +1,211 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Welcome to Nexa</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .onboard-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 2rem; overflow: hidden; }
+        
+        /* Floating background elements */
+        .bg-glow { position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(15,23,42,0) 70%); top: -200px; left: -200px; border-radius: 50%; pointer-events: none; z-index: 0; }
+        .bg-glow-2 { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, rgba(15,23,42,0) 70%); bottom: -150px; right: -150px; border-radius: 50%; pointer-events: none; z-index: 0; }
+        
+        /* Progress Bar */
+        .progress-wrap { width: 100%; max-width: 500px; height: 4px; background: var(--surface); border-radius: 2px; margin-bottom: 2.5rem; position: relative; z-index: 10; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); width: 25%; border-radius: 2px; transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+        /* Step Card */
+        .step-card { width: 100%; max-width: 500px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 2.5rem; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; z-index: 10;
+            opacity: 0; transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease; display: none; }
+        .step-card.active { opacity: 1; transform: translateY(0); display: block; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .step-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; line-height: 1.2; }
+        .step-desc { font-size: 0.9375rem; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.5; }
+
+        .input-group { margin-bottom: 1.25rem; }
+        .input-label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-control { width: 100%; background: #0f172a; border: 1.5px solid var(--border); border-radius: 12px; padding: 1rem; color: #fff; font-size: 1rem; transition: all 0.2s; outline: none; }
+        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+        .form-control::placeholder { color: #64748b; }
+        textarea.form-control { resize: none; height: 100px; }
+
+        /* Pills select */
+        .pill-group { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .pill-btn { padding: 0.75rem 1.25rem; background: #0f172a; border: 1.5px solid var(--border); border-radius: 100px; color: var(--text-muted); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; user-select: none; }
+        .pill-btn:hover { background: var(--surface-hover); color: #fff; }
+        .pill-btn.selected { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--accent); }
+
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 2.5rem; gap: 1rem; }
+        .btn { padding: 0.875rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; border: none; text-align: center; }
+        .btn-prev { background: transparent; color: var(--text-muted); }
+        .btn-prev:hover { background: var(--surface-hover); color: #fff; }
+        .btn-next { flex: 1; background: var(--accent); color: #fff; }
+        .btn-next:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 10px 20px rgba(59,130,246,0.3); }
+
+        /* Checkbox custom */
+        .pref-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #0f172a; border: 1.5px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s; margin-bottom: 0.75rem; }
+        .pref-item:hover { border-color: var(--text-muted); }
+        .pref-item.selected { border-color: var(--accent); background: rgba(59,130,246,0.05); }
+        .pref-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        .pref-text { flex: 1; }
+        .pref-title { font-weight: 700; font-size: 0.9375rem; color: #fff; }
+        .pref-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem;}
+        
+        .logo-top { display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; position: relative; z-index: 10; }
+        .logo-top svg { width: 32px; height: 32px; fill: var(--accent); margin-right: 8px; }
+        .logo-top span { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.05em; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="onboard-container">
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="logo-top">
+        <svg viewBox="0 0 24 24"><path d="M12 14.5c2.485 0 4.5-2.015 4.5-4.5s-2.015-4.5-4.5-4.5-4.5 2.015-4.5 4.5 2.015 4.5 4.5 4.5z"/><path d="M7 5.5c.828 0 1.5-.672 1.5-1.5S7.828 2.5 7 2.5 5.5 3.172 5.5 4 6.172 5.5 7 5.5zM11 4c.828 0 1.5-.672 1.5-1.5S11.828 1 11 1 9.5 1.672 9.5 2.5 10.172 4 11 4zM17 5.5c.828 0 1.5-.672 1.5-1.5S17.828 2.5 17 2.5s-1.5.672-1.5 1.5.672 1.5 1.5 1.5zM21 10.5c.828 0 1.5-.672 1.5-1.5S21.828 7.5 21 7.5s-1.5.672-1.5 1.5.672 1.5 1.5 1.5zM3 10.5c.828 0 1.5-.672 1.5-1.5S3.828 7.5 3 7.5 1.5 8.172 1.5 9s.672 1.5 1.5 1.5z"/></svg>
+        <span>NEXA</span>
+    </div>
+
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+    <form method="post" id="onboardForm">
+        {% csrf_token %}
+        <input type="hidden" name="interests" id="interestsData" value="">
+        <input type="hidden" name="match_prefs" id="matchPrefsData" value="">
+
+        <!-- Step 1: Profile -->
+        <div class="step-card active" id="step1">
+            <h2 class="step-title">Welcome to Nexa. Let's get you set up.</h2>
+            <p class="step-desc">First, how should others see you? This helps people connect with you.</p>
+            
+            <div class="input-group">
+                <label class="input-label">Display Name</label>
+                <input type="text" name="display_name" class="form-control" placeholder="E.g., Alex O." required>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Your Major or Role</label>
+                <input type="text" name="major" class="form-control" placeholder="E.g., Computer Science, Founder, Design Student">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">A Short Bio</label>
+                <textarea name="bio" class="form-control" placeholder="What are you passionate about? What are you building?"></textarea>
+            </div>
+
+            <div class="nav-buttons">
+                <div style="flex:1"></div>
+                <button type="button" class="btn btn-next" onclick="nextStep(2)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Interests -->
+        <div class="step-card" id="step2">
+            <h2 class="step-title">What are you passionate about?</h2>
+            <p class="step-desc">Pick a few topics. AI will use these to tailor your dashboard.</p>
+            
+            <div class="pill-group" id="interestPills">
+                <div class="pill-btn" onclick="togglePill(this)">Technology</div>
+                <div class="pill-btn" onclick="togglePill(this)">Startups</div>
+                <div class="pill-btn" onclick="togglePill(this)">Design</div>
+                <div class="pill-btn" onclick="togglePill(this)">Finance</div>
+                <div class="pill-btn" onclick="togglePill(this)">Marketing</div>
+                <div class="pill-btn" onclick="togglePill(this)">Healthcare</div>
+                <div class="pill-btn" onclick="togglePill(this)">Engineering</div>
+                <div class="pill-btn" onclick="togglePill(this)">Music & Art</div>
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-prev" onclick="prevStep(1)">Back</button>
+                <button type="button" class="btn btn-next" onclick="nextStep(3)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Networking & Matching -->
+        <div class="step-card" id="step3">
+            <h2 class="step-title">How can the community help you?</h2>
+            <p class="step-desc">Our AI will connect you with the right people for friendship and collaboration.</p>
+            
+            <div class="pref-item" onclick="togglePref(this)">
+                <div class="pref-icon">☕</div>
+                <div class="pref-text">
+                    <div class="pref-title">Meet New Friends</div>
+                    <div class="pref-sub">Looking to socialize and expand my circle.</div>
+                </div>
+            </div>
+            
+            <div class="pref-item" onclick="togglePref(this)">
+                <div class="pref-icon">💼</div>
+                <div class="pref-text">
+                    <div class="pref-title">Start a Startup</div>
+                    <div class="pref-sub">Looking for co-founders or team members.</div>
+                </div>
+            </div>
+
+            <div class="pref-item" onclick="togglePref(this)">
+                <div class="pref-icon">📚</div>
+                <div class="pref-text">
+                    <div class="pref-title">Study Partners</div>
+                    <div class="pref-sub">Need accountable peers for academics.</div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-prev" onclick="prevStep(2)">Back</button>
+                <button type="submit" class="btn btn-next" style="background:#10b981;">Complete Setup</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function nextStep(step) {
+        document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+        document.getElementById('progressBar').style.width = (step * 33) + '%';
+    }
+    
+    function prevStep(step) {
+        document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+        document.getElementById('progressBar').style.width = (step * 33) + '%';
+    }
+
+    function togglePill(el) {
+        el.classList.toggle('selected');
+        updateDataFields();
+    }
+    
+    function togglePref(el) {
+        el.classList.toggle('selected');
+        updateDataFields();
+    }
+
+    function updateDataFields() {
+        const interests = Array.from(document.querySelectorAll('#interestPills .selected')).map(el => el.innerText);
+        document.getElementById('interestsData').value = interests.join(',');
+        
+        const prefs = Array.from(document.querySelectorAll('.pref-item.selected .pref-title')).map(el => el.innerText);
+        document.getElementById('matchPrefsData').value = prefs.join(',');
+    }
+</script>
+</body>
+</html>

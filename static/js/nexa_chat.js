@@ -1,14 +1,9 @@
 /**
- * NEXA AI Tutor - Main Chat Logic
+ * NEXA AI Tutor - Modernized Main Chat Logic
  */
 
-// Global data initialization (expects these to be set in the template)
-// const NEXA_HISTORY_RAW = ...
-// const NEXA_HISTORY = ...
-// const USER_NAME = ...
-// const CSRF_TOKEN = ...
-// const AJAX_URL = ...
-// const STREAM_URL = ...
+// Global constants expected from the template:
+// CSRF_TOKEN, AJAX_URL, STREAM_URL, CHAT_IMAGE_URL, WEB_SEARCH_URL, CREATE_THREAD_URL, CURRENT_THREAD_ID
 
 // ── NexaUI ──
 const NexaUI = {
@@ -18,7 +13,7 @@ const NexaUI = {
             chatInput: document.getElementById('chat-input'),
             sendBtn: document.getElementById('send-btn'),
             chatMessages: document.getElementById('chat-messages'),
-            chatContainer: document.getElementById('chat-container'),
+            chatContainer: document.getElementById('chat-area'), // The scrollable area
             loading: document.getElementById('loading'),
             welcomeScreen: document.getElementById('welcome-screen'),
             useRag: document.getElementById('use-rag'),
@@ -28,23 +23,61 @@ const NexaUI = {
     bindEvents() {
         const { chatInput, sendBtn } = this.elements;
         if (!chatInput || !sendBtn) return;
-        sendBtn.addEventListener('click', e => { e.preventDefault(); NexaChat.send(); });
-        chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); NexaChat.send(); } });
+        
+        sendBtn.addEventListener('click', e => { 
+            e.preventDefault(); 
+            NexaChat.send(); 
+        });
+        
+        chatInput.addEventListener('keydown', e => { 
+            if (e.key === 'Enter' && !e.shiftKey) { 
+                e.preventDefault(); 
+                NexaChat.send(); 
+            } 
+        });
+        
         chatInput.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 180) + 'px';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
         });
     },
-    showLoading() { if (this.elements.loading) this.elements.loading.classList.add('active'); },
-    hideLoading() { if (this.elements.loading) this.elements.loading.classList.remove('active'); },
-    hideWelcome() { if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'none'; },
-    showWelcome() { if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex'; },
-    scrollToBottom() { if (this.elements.chatContainer) this.elements.chatContainer.scrollTop = this.elements.chatContainer.scrollHeight; },
-    escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; },
-    copyText(text) { navigator.clipboard.writeText(text).then(() => {
-        // Optional: Show a toast or feedback
-        console.log('Copied to clipboard');
-    }); }
+    showLoading() { 
+        if (this.elements.loading) {
+            this.elements.loading.classList.add('active'); 
+            this.scrollToBottom();
+        }
+    },
+    hideLoading() { 
+        if (this.elements.loading) {
+            this.elements.loading.classList.remove('active'); 
+        }
+    },
+    hideWelcome() { 
+        if (this.elements.welcomeScreen) {
+            this.elements.welcomeScreen.style.display = 'none'; 
+        }
+    },
+    showWelcome() { 
+        if (this.elements.welcomeScreen) {
+            this.elements.welcomeScreen.style.display = 'flex'; 
+        }
+    },
+    scrollToBottom() { 
+        const c = this.elements.chatContainer;
+        if (c) {
+            c.scrollTop = c.scrollHeight;
+        }
+    },
+    escapeHtml(text) { 
+        const d = document.createElement('div'); 
+        d.textContent = text; 
+        return d.innerHTML; 
+    },
+    copyText(text) { 
+        navigator.clipboard.writeText(text).then(() => {
+            // Toast notification could be added here
+        }); 
+    }
 };
 
 // ── NexaAI ──
@@ -56,17 +89,25 @@ const NexaAI = {
         const response = await fetch(this.ajaxUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.csrfToken },
-            body: JSON.stringify({ message, use_rag: useRag })
+            body: JSON.stringify({ message, use_rag: useRag, thread_id: CURRENT_THREAD_ID, model: NexaModel.current })
         });
         return response.json();
     }
 };
+
+// NexaModel is now defined globally in nexa_models.js
+
 
 // ── NexaChat ──
 const NexaChat = {
     isSending: false,
     pendingImage: null,
     webSearchMode: false,
+    typeQueue: [],
+    typingInterval: null,
+    currentStreamText: '',
+    currentStreamUI: null,
+    currentThreadId: typeof CURRENT_THREAD_ID !== 'undefined' ? CURRENT_THREAD_ID : null,
 
     toggleAttachMenu(e) {
         e.stopPropagation();
@@ -104,51 +145,76 @@ const NexaChat = {
         if (badge) badge.style.display = 'none';
     },
 
-    newChat() {
-        const container = NexaUI.elements.chatMessages;
-        if (container) { container.querySelectorAll('.msg-wrap').forEach(w => w.remove()); NexaUI.showWelcome(); }
-        if (NexaUI.elements.chatInput) { NexaUI.elements.chatInput.value = ''; NexaUI.elements.chatInput.style.height = 'auto'; }
+    startTypingSystem(el) {
+        this.currentStreamUI = el;
+        this.currentStreamText = '';
+        this.typeQueue = [];
+        if (this.typingInterval) clearInterval(this.typingInterval);
+        
+        this.typingInterval = setInterval(() => {
+            if (this.typeQueue.length > 0) {
+                // Determine chunk size for higher speed
+                const take = this.typeQueue.length > 50 ? 10 : (this.typeQueue.length > 20 ? 5 : 3);
+                for(let i=0; i<take && this.typeQueue.length > 0; i++){
+                    this.currentStreamText += this.typeQueue.shift();
+                }
+                
+                if (this.currentStreamUI) {
+                    this.currentStreamUI.innerHTML = this.renderBoardHTML(this.currentStreamText) + '<span class="stream-cursor"></span>';
+                    NexaUI.scrollToBottom();
+                }
+            }
+        }, 15);
     },
 
-    async clearChat() {
-        if (!confirm('Clear all chat history? This cannot be undone.')) return;
-        try {
-            const res = await fetch(CLEAR_CONVERSATIONS_URL, { method: 'POST', headers: { 'X-CSRFToken': CSRF_TOKEN } });
-            if (res.ok || res.redirected) {
-                const container = NexaUI.elements.chatMessages;
-                if (container) { container.querySelectorAll('.msg-wrap').forEach(w => w.remove()); NexaUI.showWelcome(); }
-            }
-        } catch(e) { console.error(e); }
+    stopTypingSystem() {
+        if (this.typingInterval) clearInterval(this.typingInterval);
+        this.typingInterval = null;
+        if (this.currentStreamUI && this.typeQueue.length > 0) {
+            this.currentStreamText += this.typeQueue.join('');
+            this.currentStreamUI.innerHTML = this.renderBoardHTML(this.currentStreamText);
+            this.typeQueue = [];
+        } else if (this.currentStreamUI) {
+            this.currentStreamUI.innerHTML = this.renderBoardHTML(this.currentStreamText);
+        }
     },
 
     async send(message) {
         if (this.isSending) return;
         const msg = message || NexaUI.elements.chatInput.value.trim();
         if (!msg && !this.pendingImage) return;
+        
         this.isSending = true;
         NexaUI.hideWelcome();
-        NexaUI.showLoading();
         if (NexaUI.elements.sendBtn) NexaUI.elements.sendBtn.disabled = true;
-        if (!message && NexaUI.elements.chatInput) { NexaUI.elements.chatInput.value = ''; NexaUI.elements.chatInput.style.height = 'auto'; }
+        if (!message && NexaUI.elements.chatInput) { 
+            NexaUI.elements.chatInput.value = ''; 
+            NexaUI.elements.chatInput.style.height = 'auto'; 
+        }
         this.closeAttachMenu();
+        
         try {
+            const useRag = NexaUI.elements.useRag?.checked ?? true;
             if (this.pendingImage) {
                 this.addUserMessage(msg, this.pendingImage);
-                await this.sendImageStreaming(msg, this.pendingImage);
+                await this.sendImageStreaming(msg, this.pendingImage, useRag);
                 this.clearImage();
             } else if (this.webSearchMode) {
                 this.addUserMessage('🌐 ' + msg);
                 const data = await this.sendToWebSearch(msg);
-                if (data.success) await this.addAIMessage(data.response, data.timestamp);
-                else alert('Error: ' + (data.error || 'Web search failed'));
+                if (data.success) {
+                    await this.addAIMessage(data.response);
+                } else {
+                    alert('Error: ' + (data.error || 'Web search failed'));
+                }
                 this.clearWebSearch();
             } else {
                 this.addUserMessage(msg);
-                await NexaChat.sendStreaming(msg, NexaUI.elements.useRag?.checked ?? true);
+                await this.sendStreaming(msg, useRag);
             }
         } catch(error) {
             console.error(error);
-            alert('Failed to connect to server.');
+            // Optional: add error message to UI
         } finally {
             this.isSending = false;
             NexaUI.hideLoading();
@@ -157,40 +223,90 @@ const NexaChat = {
         }
     },
 
-    async sendImageStreaming(message, imageFile) {
+    async sendStreaming(message, useRag = true) {
         const msgId = 'ai-msg-' + Date.now();
-        const html = `
-            <div class="msg-wrap" id="wrap-${msgId}">
-                <div class="msg msg-ai">
-                    <div class="msg-body">
-                        <div class="msg-text board-render" id="${msgId}">
-                            <div class="loading-indicator active">
-                                <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
-                            </div>
-                        </div>
-                        <div class="msg-actions" id="actions-${msgId}" style="display:none">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
-                                <i data-feather="volume-2" style="width:14px;height:14px"></i>
-                            </button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
-                                <i data-feather="copy" style="width:14px;height:14px"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-        if (window.feather) feather.replace();
-        NexaUI.scrollToBottom();
+        this.createAIMessageContainer(msgId);
+        
         const el = document.getElementById(msgId);
         const wrap = document.getElementById('wrap-' + msgId);
-        let fullText = '';
         
+        try {
+            wrap.querySelector('.msg-ai').classList.add('streaming');
+            const res = await fetch(NexaAI.streamUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
+                body: JSON.stringify({ message, use_rag: useRag, thread_id: this.currentThreadId, model: NexaModel.current })
+            });
+
+            if (!res.ok) throw new Error('Stream failed');
+
+            this.startTypingSystem(el);
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    try {
+                        const payload = JSON.parse(line.slice(6));
+                        if (payload.error) throw new Error(payload.error);
+                        if (payload.done) break;
+                        if (payload.token) {
+                            for(const char of payload.token) this.typeQueue.push(char);
+                        }
+                        if (payload.thread_id && !this.currentThreadId) {
+                            this.currentThreadId = payload.thread_id;
+                        }
+                    } catch(e) {}
+                }
+            }
+            
+            setTimeout(() => {
+                this.stopTypingSystem();
+                wrap.querySelector('.msg-ai').classList.remove('streaming');
+                if (wrap) wrap.dataset.plain = this.currentStreamText;
+                const actions = document.getElementById('actions-' + msgId);
+                if (actions) actions.style.display = 'flex';
+                NexaUI.scrollToBottom();
+            }, 500);
+
+        } catch(e) {
+            wrap.querySelector('.msg-ai').classList.remove('streaming');
+            el.innerHTML = `<span style="color:var(--text-muted); opacity:0.7; font-size:13px;">AI is thinking...</span>`;
+            // Fallback to AJAX
+            const data = await NexaAI.sendToAI(message, useRag);
+            if (data.success) {
+                el.innerHTML = this.renderBoardHTML(data.response);
+                wrap.dataset.plain = data.response;
+                const actions = document.getElementById('actions-' + msgId);
+                if (actions) actions.style.display = 'flex';
+            } else {
+                el.innerHTML = `<span style="color:#ef4444">Error: ${data.error || 'Failed to get response'}</span>`;
+            }
+        }
+    },
+
+    async sendImageStreaming(message, imageFile, useRag = true) {
+        const msgId = 'ai-msg-' + Date.now();
+        this.createAIMessageContainer(msgId);
+        const el = document.getElementById(msgId);
+        const wrap = document.getElementById('wrap-' + msgId);
+
         try {
             wrap.querySelector('.msg-ai').classList.add('streaming');
             const formData = new FormData();
             formData.append('message', message || 'Analyze this image');
             formData.append('image', imageFile);
+            formData.append('use_rag', useRag);
+            formData.append('model', NexaModel.current);
+            if (this.currentThreadId) formData.append('thread_id', this.currentThreadId);
             formData.append('csrfmiddlewaretoken', NexaAI.csrfToken);
 
             const res = await fetch(CHAT_IMAGE_URL, {
@@ -198,36 +314,39 @@ const NexaChat = {
                 body: formData
             });
 
+            if (!res.ok) throw new Error('Image analysis failed');
+
+            this.startTypingSystem(el);
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-            let buffer = '';
+            
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n\n');
-                buffer = lines.pop();
+                let chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n\n');
                 for (const line of lines) {
                     if (!line.startsWith('data: ')) continue;
                     try {
                         const payload = JSON.parse(line.slice(6));
-                        if (payload.error) { el.innerHTML = '<span style="color:#ef4444">Error: ' + payload.error + '</span>'; return; }
-                        if (payload.done) break;
                         if (payload.token) {
-                            fullText += payload.token;
-                            el.innerHTML = NexaChat.renderBoardHTML(fullText) + '<span class="stream-cursor"></span>';
-                            NexaUI.scrollToBottom();
+                            for(const char of payload.token) this.typeQueue.push(char);
                         }
                     } catch(e) {}
                 }
             }
-            wrap.querySelector('.msg-ai').classList.remove('streaming');
-            el.innerHTML = NexaChat.renderBoardHTML(fullText);
-            if (wrap) wrap.dataset.plain = fullText;
-            document.getElementById('actions-' + msgId).style.display = '';
+            
+            setTimeout(() => {
+                this.stopTypingSystem();
+                wrap.querySelector('.msg-ai').classList.remove('streaming');
+                wrap.dataset.plain = this.currentStreamText;
+                const actions = document.getElementById('actions-' + msgId);
+                if (actions) actions.style.display = 'flex';
+            }, 500);
+
         } catch(e) {
-            if(wrap) wrap.querySelector('.msg-ai').classList.remove('streaming');
-            if(el) el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
+            wrap.querySelector('.msg-ai').classList.remove('streaming');
+            el.innerHTML = `<span style="color:var(--text-muted); opacity:0.7; font-size:13px;">AI is thinking...</span>`;
         }
     },
 
@@ -235,418 +354,129 @@ const NexaChat = {
         const response = await fetch(WEB_SEARCH_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ message, thread_id: this.currentThreadId, model: NexaModel.current })
         });
         return response.json();
     },
 
-    async sendStreaming(message, useRag = true) {
-        const msgId = 'ai-msg-' + Date.now();
+    createAIMessageContainer(msgId) {
         const html = `
             <div class="msg-wrap" id="wrap-${msgId}">
                 <div class="msg msg-ai">
+                    <div class="msg-avatar"><div class="avatar-circle">N</div></div>
                     <div class="msg-body">
-                        <div class="msg-text board-render" id="${msgId}">
-                            <div class="loading-indicator active">
-                                <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+                        <div class="msg-content">
+                            <div class="msg-text board-render" id="${msgId}"></div>
+                            <div class="msg-actions" id="actions-${msgId}" style="display:none; margin-top:8px; gap:8px;">
+                                <button class="input-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                                </button>
+                                <button class="input-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                </button>
                             </div>
-                        </div>
-                        <div class="msg-actions" id="actions-${msgId}" style="display:none">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
-                                <i data-feather="volume-2" style="width:14px;height:14px"></i>
-                            </button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
-                                <i data-feather="copy" style="width:14px;height:14px"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>`;
         NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-        if (window.feather) feather.replace();
-        NexaUI.scrollToBottom();
-        const el = document.getElementById(msgId);
-        const wrap = document.getElementById('wrap-' + msgId);
-        let fullText = '';
-        try {
-            wrap.querySelector('.msg-ai').classList.add('streaming');
-            const res = await fetch(NexaAI.streamUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                body: JSON.stringify({ message, use_rag: useRag })
-            });
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n\n');
-                buffer = lines.pop();
-                for (const line of lines) {
-                    if (!line.startsWith('data: ')) continue;
-                    try {
-                        const payload = JSON.parse(line.slice(6));
-                        if (payload.error) { el.innerHTML = '<span style="color:#ef4444">Error: ' + payload.error + '</span>'; return; }
-                        if (payload.done) break;
-                        if (payload.token) {
-                            fullText += payload.token;
-                            el.innerHTML = NexaChat.renderBoardHTML(fullText) + '<span class="stream-cursor"></span>';
-                            NexaUI.scrollToBottom();
-                        }
-                    } catch(e) {}
-                }
-            }
-            wrap.querySelector('.msg-ai').classList.remove('streaming');
-        } catch(e) {
-            wrap.querySelector('.msg-ai').classList.remove('streaming');
-            console.warn('Streaming failed, falling back to AJAX:', e);
-            try {
-                const res2 = await fetch(NexaAI.ajaxUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                    body: JSON.stringify({ message, use_rag: useRag })
-                });
-                const data = await res2.json();
-                if (data.success) {
-                    fullText = data.response;
-                } else {
-                    el.innerHTML = '<span style="color:#ef4444">Error: ' + (data.error || 'Request failed') + '</span>';
-                    return;
-                }
-            } catch(e2) {
-                el.innerHTML = '<span style="color:#ef4444">Connection error. Please try again.</span>';
-                return;
-            }
-        }
-        if (!fullText) {
-            try {
-                const res3 = await fetch(NexaAI.ajaxUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NexaAI.csrfToken },
-                    body: JSON.stringify({ message, use_rag: useRag })
-                });
-                const data = await res3.json();
-                fullText = data.success ? data.response : ('Error: ' + (data.error || 'No response'));
-            } catch(e3) {
-                fullText = 'Connection error. Please try again.';
-            }
-        }
-        el.innerHTML = NexaChat.renderBoardHTML(fullText);
-        if (wrap) wrap.dataset.plain = fullText;
-        document.getElementById('actions-' + msgId).style.display = '';
         NexaUI.scrollToBottom();
     },
 
     addUserMessage(text, imageFile) {
-        const imgHtml = imageFile ? `<img src="${URL.createObjectURL(imageFile)}" style="max-width:180px;border-radius:8px;margin-top:6px;display:block;">` : '';
+        const imgHtml = imageFile ? `<img src="${URL.createObjectURL(imageFile)}" style="max-width:240px; border-radius:12px; margin-top:8px; display:block; border:1px solid var(--border);">` : '';
         const html = `
             <div class="msg-wrap">
                 <div class="msg msg-user">
-                    <div class="msg-body"><div class="msg-text">${NexaUI.escapeHtml(text)}${imgHtml}</div></div>
-                </div>
-            </div>`;
-        NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-    },
-
-    async addAIMessage(text, timestamp) {
-        const msgId = 'ai-msg-' + Date.now();
-        const html = `
-            <div class="msg-wrap" id="wrap-${msgId}">
-                <div class="msg msg-ai">
+                    <div class="msg-avatar"><div class="avatar-circle">${USER_NAME.charAt(0).toUpperCase()}</div></div>
                     <div class="msg-body">
-                        <div class="msg-text board-render" id="${msgId}"></div>
-                        <div class="msg-actions">
-                            <button class="msg-action-btn" onclick="NexaVoice.speak(this.closest('.msg-wrap').dataset.plain)" title="Listen">
-                                <i data-feather="volume-2" style="width:14px;height:14px"></i>
-                            </button>
-                            <button class="msg-action-btn" onclick="NexaUI.copyText(this.closest('.msg-wrap').dataset.plain)" title="Copy">
-                                <i data-feather="copy" style="width:14px;height:14px"></i>
-                            </button>
+                        <div class="msg-content">
+                            <div class="msg-text">${NexaUI.escapeHtml(text)}${imgHtml}</div>
                         </div>
                     </div>
                 </div>
             </div>`;
         NexaUI.elements.chatMessages.insertAdjacentHTML('beforeend', html);
-        if (window.feather) feather.replace();
+        NexaUI.showLoading();
+        NexaUI.scrollToBottom();
+    },
+
+    async addAIMessage(text) {
+        const msgId = 'ai-msg-' + Date.now();
+        this.createAIMessageContainer(msgId);
         const el = document.getElementById(msgId);
         const wrap = document.getElementById('wrap-' + msgId);
-        el.innerHTML = NexaChat.renderBoardHTML(text);
-        if (wrap) wrap.dataset.plain = text;
+        el.innerHTML = this.renderBoardHTML(text);
+        wrap.dataset.plain = text;
+        const actions = document.getElementById('actions-' + msgId);
+        if (actions) actions.style.display = 'flex';
         NexaUI.scrollToBottom();
     },
 
     renderBoardHTML(raw) {
         if (!raw) return '';
-        var text = raw;
+        let text = raw;
+
+        // Normalise LaTeX
         text = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
         text = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
-        text = text.replace(/(^|\n)\$([^$\n]+)\$(\n|$)/g, function(_, pre, m, post) {
-            return (pre || '\n') + '$$' + m + '$$' + (post || '\n');
-        });
-        var mathStore = [];
-        text = text.replace(/\$\$([\s\S]+?)\$\$/g, function(_, m) {
-            var i = mathStore.length;
+
+        // Extract math
+        const mathStore = [];
+        text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => {
+            const i = mathStore.length;
             mathStore.push({ display: true, src: m.trim() });
-            return '\n\nNEXAMATH_D_' + i + '_END\n\n';
+            return `\n\nNEXAMATH_D_${i}_END\n\n`;
         });
-        text = text.replace(/\$([^$\n]+?)\$/g, function(_, m) {
-            var i = mathStore.length;
+        text = text.replace(/\$([^$\n]+?)\$/g, (_, m) => {
+            const i = mathStore.length;
             mathStore.push({ display: false, src: m.trim() });
-            return 'NEXAMATH_I_' + i + '_END';
+            return `NEXAMATH_I_${i}_END`;
         });
-        var html = '';
+
+        // Markdown
+        let html = '';
         if (typeof marked !== 'undefined') {
             marked.setOptions({ breaks: true, gfm: true });
             html = marked.parse(text);
         } else {
-            html = '<p>' + text.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+            html = `<p>${text.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
         }
-        html = html.replace(/<p>\s*NEXAMATH_D_(\d+)_END\s*<\/p>/g, function(_, i) {
-            return NexaChat._katex(mathStore[parseInt(i)]);
-        });
-        html = html.replace(/NEXAMATH_D_(\d+)_END/g, function(_, i) {
-            return NexaChat._katex(mathStore[parseInt(i)]);
-        });
-        html = html.replace(/NEXAMATH_I_(\d+)_END/g, function(_, i) {
-            return NexaChat._katex(mathStore[parseInt(i)]);
-        });
+
+        // Restore math
+        html = html.replace(/<p>\s*NEXAMATH_D_(\d+)_END\s*<\/p>/g, (_, i) => this._katex(mathStore[i]));
+        html = html.replace(/NEXAMATH_D_(\d+)_END/g, (_, i) => this._katex(mathStore[i]));
+        html = html.replace(/NEXAMATH_I_(\d+)_END/g, (_, i) => this._katex(mathStore[i]));
+
         return html;
     },
 
     _katex(m) {
-        if (typeof katex === 'undefined') {
-            return m.display ? '<div class="br-math-display">$$' + m.src + '$$</div>' : '$' + m.src + '$';
-        }
+        if (typeof katex === 'undefined') return m.display ? `$$${m.src}$$` : `$${m.src}$`;
         try {
-            var out = katex.renderToString(m.src, { displayMode: m.display, throwOnError: false });
-            return m.display ? '<div class="br-math-display">' + out + '</div>' : out;
+            const out = katex.renderToString(m.src, { displayMode: m.display, throwOnError: false });
+            return m.display ? `<div class="br-math-display">${out}</div>` : out;
         } catch(e) {
-            return m.display ? '<div class="br-math-display">$$' + m.src + '$$</div>' : '$' + m.src + '$';
+            return m.display ? `$$${m.src}$$` : `$${m.src}$`;
         }
     }
 };
 
-// ── NexaVoice ──
-const NexaVoice = {
-    overlay: null, status: null, userText: null, aiText: null,
-    recognition: null, interruptRecognition: null,
-    synthesis: window.speechSynthesis, currentAudio: null,
-    isListening: false, isProcessing: false, isActive: false,
-    isSpeaking: false,
-    webSearchTriggers: /\b(search|look up|google|find out|what is happening|latest|current|today|news|who is|where is|when did|wikipedia|weather|price|stock|score)\b/i,
-
-    init() {
-        this.overlay = document.getElementById('voice-overlay');
-        this.status = document.getElementById('voice-status');
-        this.userText = document.getElementById('voice-user-text');
-        this.aiText = document.getElementById('voice-ai-text');
-        this.micBtn = document.getElementById('voice-start-btn');
-        this.setupRecognition();
-        this.setupInterruptRecognition();
-    },
-
-    setupRecognition() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) return;
-        this.recognition = new SR();
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        this.recognition.lang = 'en-US';
-        this.recognition.onstart = () => { this.isListening = true; this.updateStatus('Listening...', 'listening'); };
-        this.recognition.onresult = (event) => {
-            let final = '', interim = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i].isFinal) final += event.results[i][0].transcript;
-                else interim += event.results[i][0].transcript;
-            }
-            if (interim && this.userText) this.userText.textContent = interim;
-            if (final) { if (this.userText) this.userText.textContent = final; this.handleTranscript(final); }
-        };
-        this.recognition.onerror = (event) => { this.isListening = false; };
-        this.recognition.onend = () => { this.isListening = false; if (this.isActive && !this.isProcessing && !this.isSpeaking) setTimeout(() => this.startListening(), 500); };
-    },
-
-    setupInterruptRecognition() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) return;
-        this.interruptRecognition = new SR();
-        this.interruptRecognition.continuous = true;
-        this.interruptRecognition.interimResults = true;
-        this.interruptRecognition.lang = 'en-US';
-        this.interruptRecognition.onresult = (event) => {
-            if (!this.isSpeaking) return;
-            let hasResult = false;
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i][0].transcript.trim().length > 1) { hasResult = true; break; }
-            }
-            if (hasResult) this._handleInterrupt();
-        };
-        this.interruptRecognition.onend = () => { if (this.isSpeaking && this.isActive) { try { this.interruptRecognition.start(); } catch(e) {} } };
-    },
-
-    _handleInterrupt() {
-        if (!this.isSpeaking) return;
-        this.stopSpeaking();
-        this.updateStatus('Interrupted — listening...', 'listening');
-        setTimeout(() => { if (this.isActive) this.startListening(); }, 300);
-    },
-
-    startListening() { if (!this.recognition || this.isListening || this.isProcessing) return; try { this.recognition.start(); } catch(e) {} },
-    stopListening() { if (!this.recognition) return; try { this.recognition.stop(); } catch(e) {} this.isListening = false; },
-    open() {
-        if (!this.overlay) this.init();
-        this.isActive = true; this.overlay.classList.add('active');
-        if (this.userText) this.userText.textContent = '';
-        if (this.aiText) this.aiText.textContent = '';
-        this.updateStatus('Listening...', 'listening');
-        this.startListening();
-    },
-    close() {
-        this.isActive = false; this.stopListening(); this.stopSpeaking();
-        if (this.overlay) this.overlay.classList.remove('active');
-    },
-    updateStatus(text, state) {
-        if (this.status) this.status.textContent = text;
-        if (this.micBtn) this.micBtn.classList.toggle('listening', state === 'listening');
-    },
-
-    async processMessage(message) {
-        if (this.isProcessing || !message.trim()) return;
-        this.isProcessing = true; this.stopListening(); this.updateStatus('Thinking...', 'thinking');
-        try {
-            let data;
-            if (this.webSearchTriggers.test(message)) {
-                const res = await fetch(WEB_SEARCH_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-                    body: JSON.stringify({ message })
-                });
-                data = await res.json();
-            } else {
-                data = await NexaAI.sendToAI(message, true);
-            }
-            if (data.success) {
-                this.updateStatus('Speaking...', 'speaking');
-                if (this.aiText) this.aiText.textContent = '';
-                await this.speak(data.response);
-            }
-        } finally { this.isProcessing = false; if (this.isActive) { this.updateStatus('Listening...', 'listening'); setTimeout(() => this.startListening(), 500); } }
-    },
-
-    speak(text) {
-        return new Promise(async (resolve) => {
-            if (!text) { resolve(); return; }
-            this.isSpeaking = true;
-            if (this.interruptRecognition) { try { this.interruptRecognition.start(); } catch(e) {} }
-            const onDone = () => { this.isSpeaking = false; try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {} resolve(); };
-            try {
-                const response = await fetch(TTS_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-                    body: JSON.stringify({ text: text.substring(0, 2000) })
-                });
-                const data = await response.json();
-                if (data.audio_url) {
-                    const audio = new Audio(data.audio_url);
-                    this.currentAudio = audio;
-                    audio.onended = onDone;
-                    audio.onerror = onDone;
-                    audio.play().catch(onDone);
-                } else { await this.speakWithBrowserTTS(text); onDone(); }
-            } catch(e) { await this.speakWithBrowserTTS(text); onDone(); }
-        });
-    },
-
-    speakWithBrowserTTS(text) {
-        return new Promise((resolve) => {
-            if (!text || !this.synthesis) { resolve(); return; }
-            this.synthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.onend = resolve;
-            utterance.onerror = resolve;
-            this.synthesis.speak(utterance);
-        });
-    },
-
-    stopSpeaking() {
-        this.isSpeaking = false;
-        if (this.synthesis) this.synthesis.cancel();
-        if (this.currentAudio) this.currentAudio.pause();
-        try { if (this.interruptRecognition) this.interruptRecognition.stop(); } catch(e) {}
-    },
-    toggleInput() { NexaVoice.open(); }
-};
-
-// ── NexaCamera ──
-const NexaCamera = {
-    stream: null,
-    capturedBlob: null,
-    open() { document.getElementById('camera-modal').classList.add('open'); },
-    close() {
-        this.stop();
-        document.getElementById('camera-modal').classList.remove('open');
-        this.capturedBlob = null;
-    },
-    async start() {
-        try {
-            this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-            const feed = document.getElementById('camFeed');
-            feed.srcObject = this.stream;
-            feed.style.display = 'block';
-            document.getElementById('camIdleMsg').style.display = 'none';
-            document.getElementById('camStartBtn').style.display = 'none';
-            document.getElementById('camSnapBtn').style.display = '';
-        } catch(e) { alert('Camera access denied'); }
-    },
-    snap() {
-        const feed = document.getElementById('camFeed');
-        const canvas = document.getElementById('camCanvas');
-        canvas.width = feed.videoWidth; canvas.height = feed.videoHeight;
-        canvas.getContext('2d').drawImage(feed, 0, 0);
-        canvas.toBlob(blob => {
-            this.capturedBlob = blob;
-            const captured = document.getElementById('camCaptured');
-            captured.src = URL.createObjectURL(blob);
-            captured.style.display = 'block';
-            feed.style.display = 'none';
-            document.getElementById('camSnapBtn').style.display = 'none';
-            document.getElementById('camRetakeBtn').style.display = '';
-            document.getElementById('camSendBtn').style.display = '';
-        }, 'image/jpeg', 0.9);
-        this.stop();
-    },
-    retake() {
-        this.capturedBlob = null;
-        document.getElementById('camCaptured').style.display = 'none';
-        this.start();
-    },
-    usePhoto() {
-        if (!this.capturedBlob) return;
-        const file = new File([this.capturedBlob], 'camera-photo.jpg', { type: 'image/jpeg' });
-        NexaChat.pendingImage = file;
-        const thumb = document.getElementById('image-preview-thumb');
-        const strip = document.getElementById('image-preview-strip');
-        if (thumb) thumb.src = URL.createObjectURL(file);
-        if (strip) strip.style.display = 'flex';
-        this.close();
-    },
-    stop() { if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; } }
-};
-
-// Init
+// Start UI
 document.addEventListener('DOMContentLoaded', () => {
     NexaUI.init();
-    NexaVoice.init();
-    document.querySelectorAll('.history-wrap').forEach(wrap => {
-        const tmpl = wrap.querySelector('template.history-raw');
-        const el = wrap.querySelector('.board-render');
-        if (tmpl && el) {
-            const raw = tmpl.innerHTML;
-            el.innerHTML = NexaChat.renderBoardHTML(raw);
-            wrap.dataset.plain = raw;
+    
+    // Initial Render of history
+    document.querySelectorAll('.board-render').forEach(el => {
+        const wrap = el.closest('.msg-wrap');
+        if (wrap && wrap.dataset.plain) {
+            el.innerHTML = NexaChat.renderBoardHTML(wrap.dataset.plain);
         }
     });
+
     NexaUI.scrollToBottom();
+
+    // Restore selected model UI state
+    NexaModel.updateUI(NexaModel.current);
 });
+

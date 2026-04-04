@@ -157,7 +157,8 @@ def generate_podcast_segments(script_text, material_id, fixed_voice=None, use_pr
 
         # 4. Final cleanup (stars, directions, and the cues themselves)
         clean_text = raw_text.replace('**', '').strip()
-        clean_text = re.sub(r'\[(Excited|Fast|Slower|Thoughtful|Whisper|Serious|Laughter|Sigh|Note)\]', '', clean_text, flags=re.I).strip()
+        # Aggressively strip ANY bracketed text like [Laughter] or [Stage Direction]
+        clean_text = re.sub(r'\[.*?\]', '', clean_text).strip()
         # Recursive cleaning of speaker tags again
         while True:
             new_text = re.sub(r'^(Naruto|Sasuke|Kojo|Afia|Alex|Sam|Host \d|Host|Vocal|Lyric|Verse \d?|Chorus|Intro|Outro|Bridge|Hook):\s*', '', clean_text, flags=re.I).strip()

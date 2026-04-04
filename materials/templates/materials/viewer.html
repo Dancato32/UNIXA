@@ -7,6 +7,7 @@
 <title>{{ material.title }} — NEXA Study</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Patrick+Hand&family=Gochi+Hand&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="{% static 'js/nexa_models.js' %}"></script>
 <style>
 :root {
   --primary: #6366f1;
@@ -44,6 +45,45 @@ body {
 }
 .topbar-left, .topbar-right { display: flex; align-items: center; gap: 1rem; flex: 1; }
 .topbar-center { flex: 1.5; display: flex; justify-content: center; }
+
+/* --- Model Selector Badge --- */
+.model-trigger {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 100px;
+  cursor: pointer; transition: all 0.2s;
+}
+.model-trigger:hover { background: rgba(99, 102, 241, 0.12); transform: translateY(-1px); }
+.model-trigger .model-dot { width: 8px; height: 8px; background: #6366f1; border-radius: 50%; box-shadow: 0 0 8px #6366f1; }
+.model-trigger .model-name { font-size: 0.75rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* --- Glass Model Picker Panel --- */
+.model-picker-panel {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px); z-index: 10000;
+  display: none; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.3s;
+}
+.model-picker-panel.active { display: flex; opacity: 1; }
+.model-picker-content {
+  background: rgba(255, 255, 255, 0.95); width: 100%; max-width: 500px;
+  border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2rem; transform: scale(0.9); transition: transform 0.3s;
+}
+.model-picker-panel.active .model-picker-content { transform: scale(1); }
+.model-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem; margin-top: 1.5rem; }
+.model-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;
+  cursor: pointer; transition: all 0.2s; background: #fff;
+}
+.model-item:hover { border-color: #6366f1; background: #f8fafc; }
+.model-item.active { border-color: #6366f1; background: rgba(99, 102, 241, 0.05); box-shadow: 0 0 0 2px #6366f1; }
+.model-item-info { display: flex; flex-direction: column; gap: 0.25rem; }
+.model-item-title { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+.model-item-provider { font-size: 0.75rem; color: #64748b; }
+.model-item-badge { font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
 
 .sketchy-search { position: relative; width: 100%; max-width: 440px; }
 .sketchy-search input {
@@ -652,7 +692,11 @@ body.focus-active .top-icon-btn.focus-exit { display: flex; position: fixed; top
       </div>
     </div>
 
-    <div class="topbar-right" style="justify-content: flex-end;">
+    <div class="topbar-right">
+      <div class="model-trigger" onclick="ModelPicker.open()">
+        <div class="model-dot"></div>
+        <span class="model-name" id="current-model-display">GPT-4o Mini</span>
+      </div>
       <div class="presence-cluster">
         <div class="avatar-presence" id="samPresence" title="Sam (AI Mentor)">
           <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&backgroundColor=b6e3f4" alt="Sam">
@@ -668,6 +712,22 @@ body.focus-active .top-icon-btn.focus-exit { display: flex; position: fixed; top
       </button>
     </div>
   </header>
+
+  <!-- Model Picker Overlay -->
+  <div id="modelPicker" class="model-picker-panel" onclick="if(event.target==this)ModelPicker.close()">
+    <div class="model-picker-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-family:'Poppins',sans-serif;font-size:1.25rem;font-weight:800;">Select AI Intelligence</h3>
+        <button onclick="ModelPicker.close()" style="background:none;border:none;cursor:pointer;color:#64748b;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <p style="color:#64748b;font-size:0.875rem;margin-bottom:1.5rem;">Choose the core model to power your study studio features.</p>
+      <div id="modelGrid" class="model-grid">
+        <!-- Loaded via nexa_models.js -->
+      </div>
+    </div>
+  </div>
 
   <div class="main-shell">
     
@@ -807,6 +867,19 @@ const CSRF = CONFIG.csrf;
 let currentPage = 0;
 let isLoaded = !ASYNC_LOAD;
 
+// Memory Tracking
+window.currentThreadId = null;
+
+// Initialize Model Selection
+document.addEventListener('DOMContentLoaded', () => {
+  ModelPicker.load();
+  // Listen for model changes to update UI
+  window.addEventListener('nexaModelChanged', (e) => {
+    const display = document.getElementById('current-model-display');
+    if (display) display.innerText = e.detail.name;
+  });
+});
+
 function toggleSidebar() {
     const sidebar = document.getElementById('aiSidebar');
     sidebar.classList.toggle('open');
@@ -843,12 +916,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setPresenceState('samBadge', 'online');
     setPresenceState('alexBadge', 'online');
 });
-
-function setPresenceState(id, state) {
-    const badge = document.getElementById(id);
-    if (!badge) return;
-    badge.className = 'pres-badge ' + state;
-}
 
 function initSwipeSupport() {
     let touchStartX = 0;
@@ -965,11 +1032,6 @@ function changePage(dir) {
     if (next >= 0 && next < TOTAL) renderPage(next);
 }
 
-function toggleSidebar() { 
-    const sidebar = document.getElementById('aiSidebar');
-    sidebar.classList.toggle('open');
-}
-
 /* ---------------------------------
    PENCIL & CANVAS ENGINE
    --------------------------------- */
@@ -1055,8 +1117,13 @@ async function loadMarginalia(pageIdx) {
     try {
         const resp = await fetch(AJAX_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'marginalia', page_text: pageData.text, page_label: pageData.chapter_title }),
-            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+            body: JSON.stringify({ 
+                action: 'marginalia', 
+                page_text: pageData.text, 
+                page_label: pageData.chapter_title,
+                model: NexaModel.current
+            }),
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' }
         });
         const data = await resp.json();
         if (data.success && data.hints) {
@@ -1087,10 +1154,11 @@ async function handleChat() {
     const input = document.getElementById('sideChatInput');
     const msg = input.value.trim();
     if (!msg) return;
+    
     input.value = '';
     const container = document.getElementById('panelBody');
-    
-    // User message
+    if (!container) return;
+
     container.innerHTML += `
         <div style="margin-bottom:1.5rem; text-align:right; animation:sketchyFade .3s;">
             <div style="display:inline-block; background:var(--primary); color:#fff; padding:0.8rem 1.2rem; border-radius:18px 18px 0 18px; font-weight:600; box-shadow:0 4px 10px rgba(99,102,241,0.2);">${esc(msg)}</div>
@@ -1111,14 +1179,29 @@ async function handleChat() {
         const res = await fetch(AJAX_URL, {
             method: "POST",
             headers: { "X-CSRFToken": CSRF, "Content-Type": "application/json" },
-            body: JSON.stringify({ action: 'chat', message: msg, page_text: pg.text || pg, images: pg.images || [] })
+            body: JSON.stringify({ 
+                action: 'chat', 
+                message: msg, 
+                page_text: pg.text || pg, 
+                images: pg.images || [],
+                model: NexaModel.current,
+                thread_id: window.currentThreadId
+            })
         });
         const data = await res.json();
         const display = document.getElementById(botId).querySelector('div');
         display.style.fontWeight = '500';
-        display.innerHTML = data.success ? formatResult(data.result) : "Sorry, I hit a snag!";
+        if (data.success) {
+            display.innerHTML = formatResult(data.result);
+            if (data.thread_id) window.currentThreadId = data.thread_id;
+        } else {
+            display.innerHTML = "Sorry, I hit a snag!";
+        }
         container.scrollTop = container.scrollHeight;
-    } catch(e) { showToast("Connection failed."); }
+    } catch(e) { 
+        const display = document.getElementById(botId).querySelector('div');
+        if (display) display.innerHTML = "Connection failed.";
+    }
 }
 
 // ═══════════════════════════════════════════
@@ -1172,11 +1255,21 @@ async function runTool(action) {
         const res = await fetch(AJAX_URL, {
             method:  'POST',
             headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action, page_text, page_label })
+            body:    JSON.stringify({ 
+                action, 
+                page_text, 
+                page_label,
+                model: NexaModel.current,
+                thread_id: window.currentThreadId
+            })
         });
         if (!res.ok) throw new Error('Server returned ' + res.status);
         const json = await res.json();
         hideLoader();
+
+        if (json.success && json.thread_id) {
+            window.currentThreadId = json.thread_id;
+        }
 
         if (!json.success) { showToast(json.error || 'Tool failed. Try again.'); return; }
 
@@ -1390,37 +1483,55 @@ function buildPodcast(script) {
 
     const renderPodcastStudio = () => {
         const line = lines[window._PC_INDEX];
-        const isSasuke = line.speaker.toLowerCase().includes('sasuke');
+        const isSam = line.speaker.toLowerCase().includes('sam');
+        const progressPct = ((window._PC_INDEX + 1) / lines.length) * 100;
         
         openOverlay(`
         <div style="max-width:800px;margin:1rem auto;font-family:'Inter',sans-serif;animation:sketchyFade .5s forwards">
-            <!-- Now Playing Stage -->
-            <div style="background:linear-gradient(180deg,#1e293b,#0f172a);border-radius:32px;padding:3rem 2rem;text-align:center;position:relative;margin-bottom:2rem;box-shadow:var(--deep-shadow);overflow:hidden">
-                <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at center, rgba(99,102,241,0.1) 0%, transparent 70%);"></div>
+            <!-- Premium Masterclass Stage -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e1b4b);border-radius:32px;padding:3rem 2rem;text-align:center;position:relative;margin-bottom:2rem;box-shadow:var(--deep-shadow);overflow:hidden;border: 1px solid rgba(255,255,255,0.05)">
+                <div style="position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at center, rgba(99,102,241,0.05) 0%, transparent 50%);animation: pulse 10s infinite linear;"></div>
                 
-                <div id="visualizer" style="display:flex;justify-content:center;gap:4px;height:40px;align-items:flex-end;margin-bottom:2rem">
-                    ${Array(15).fill().map(()=>`<div style="width:4px;height:10px;background:#6366f1;border-radius:10px;animation:visualize 1.2s ease-in-out infinite"></div>`).join('')}
+                <div id="visualizer" style="display:flex;justify-content:center;gap:4px;height:40px;align-items:flex-end;margin-bottom:2rem;position:relative;z-index:2">
+                    ${Array(15).fill().map(()=>`<div style="width:4px;height:10px;background:${isSam?'#10b981':'#6366f1'};border-radius:10px;animation:visualize 1.2s ease-in-out infinite"></div>`).join('')}
                 </div>
 
-                <div style="width:140px;height:140px;border-radius:32px;background:#fff;margin:0 auto 1.5rem auto;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 20px 40px rgba(0,0,0,0.3);position:relative;z-index:2">
-                    👨
-                    <div style="position:absolute;bottom:-10px;right:-10px;background:${isSasuke?'#6366f1':'#f59e0b'};color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;font-weight:800">${isSasuke?'COOL':'HYPER'}</div>
+                <div style="width:140px;height:140px;border-radius:50%;background:#ffffff;margin:0 auto 1.5rem auto;display:flex;align-items:center;justify-content:center;font-size:5rem;box-shadow:0 0 40px ${isSam?'rgba(16,185,129,0.3)':'rgba(99,102,241,0.3)'};position:relative;z-index:2;border: 4px solid ${isSam?'#10b981':'#6366f1'};transition:all 0.3s ease;">
+                    ${isSam?'👩':'👨'}
+                    <div style="position:absolute;bottom:-5px;background:${isSam?'#10b981':'#6366f1'};color:#fff;padding:4px 12px;border-radius:12px;font-size:0.75rem;font-weight:800;letter-spacing:1px;box-shadow:0 4px 6px rgba(0,0,0,0.3)">ON AIR</div>
                 </div>
 
-                <h2 style="color:#fff;font-family:'Poppins',sans-serif;font-weight:900;font-size:1.75rem;margin-bottom:4px">${isSasuke?'Sasuke':'Naruto'} Speaking</h2>
-                <p style="color:#94a3b8;font-weight:600;font-size:0.9rem;text-transform:uppercase;letter-spacing:2px">The Shinobi Study Session</p>
+                <h2 style="color:#f8fafc;font-family:'Poppins',sans-serif;font-weight:900;font-size:2rem;margin-bottom:0;position:relative;z-index:2">${isSam?'Sam':'Alex'}</h2>
+                <p style="color:#94a3b8;font-weight:600;font-size:0.9rem;text-transform:uppercase;letter-spacing:3px;margin-bottom:2rem;position:relative;z-index:2">Nexa Masterclass</p>
                 
-                <div style="margin-top:2rem;padding:1.5rem;background:rgba(255,255,255,0.05);border-radius:16px;border:1px solid rgba(255,255,255,0.1);color:#cbd5e1;font-size:1.1rem;line-height:1.6;font-style:italic">
+                <!-- Premium Progress Bar -->
+                <div style="width:90%;margin:0 auto 1rem auto;position:relative;z-index:2">
+                    <div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden">
+                        <div style="width:${progressPct}%;height:100%;background:linear-gradient(90deg, #6366f1, #8b5cf6);border-radius:10px;transition:width 0.4s ease"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;color:#64748b;font-size:0.75rem;margin-top:8px;font-weight:600">
+                        <span>Segment ${window._PC_INDEX + 1}</span>
+                        <span>Total ${lines.length}</span>
+                    </div>
+                </div>
+
+                <div style="position:relative;z-index:2;margin-top:1.5rem;padding:1.5rem;background:rgba(0,0,0,0.2);border-radius:24px;border:1px solid rgba(255,255,255,0.05);color:#cbd5e1;font-size:1.15rem;line-height:1.7;font-style:italic;backdrop-filter:blur(10px)">
                     "${line.text}"
                 </div>
 
                 <!-- Controls -->
                 <div style="display:flex;justify-content:center;align-items:center;gap:2rem;margin-top:2.5rem">
-                    <button onclick="changePC(-1)" style="background:none;border:none;color:#94a3b8;cursor:pointer"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 20L9 12L19 4V20Z"/><path d="M5 19V5"/></svg></button>
-                    <button id="pcToggle" onclick="togglePC()" style="width:72px;height:72px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 10px 20px rgba(0,0,0,0.2)">
-                        <svg id="pcPlayIcon" width="32" height="32" viewBox="0 0 24 24" fill="#0f172a"><path d="M6 4L18 12L6 20V4Z"/></svg>
+                    <button onclick="changePC(-1)" style="background:rgba(255,255,255,0.05);border:none;color:#cbd5e1;cursor:pointer;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s ease"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 20L9 12L19 4V20Z"/><path d="M5 19V5"/></svg></button>
+                    
+                    <button id="pcToggle" onclick="togglePC()" style="width:84px;height:84px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 10px 25px rgba(0,0,0,0.3);transition:transform 0.1s ease">
+                        <svg id="pcPlayIcon" width="36" height="36" viewBox="0 0 24 24" fill="#0f172a">
+                            ${window._PC_PLAYING 
+                                ? '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>' 
+                                : '<path d="M5 3l14 9-14 9V3z"/>'}
+                        </svg>
                     </button>
-                    <button onclick="changePC(1)" style="background:none;border:none;color:#94a3b8;cursor:pointer"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4L15 12L5 20V4Z"/><path d="M19 5V19"/></svg></button>
+                    
+                    <button onclick="changePC(1)" style="background:rgba(255,255,255,0.05);border:none;color:#cbd5e1;cursor:pointer;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s ease"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 4L15 12L5 20V4Z"/><path d="M19 5V19"/></svg></button>
                 </div>
                 
                 <div style="margin-top:1.5rem;color:#64748b;font-size:0.8rem;font-weight:700">Part ${window._PC_INDEX+1} of ${lines.length}</div>
@@ -1428,6 +1539,7 @@ function buildPodcast(script) {
 
             <div style="display:flex;gap:1rem">
                 <button onclick="closeOverlay()" style="flex:1;padding:1.1rem;background:#fff;color:#64748b;border:2.5px solid #e2e8f0;border-radius:100px;font-weight:800;cursor:pointer">End Show</button>
+                <button onclick="callStudio()" style="flex:1;padding:1.1rem;background:#10b981;color:#fff;border:none;border-radius:100px;font-weight:800;cursor:pointer;box-shadow:0 10px 20px rgba(16,185,129,0.2)">☎️ Call In</button>
                 <button onclick="showToast('Session saved!')" style="flex:1.5;padding:1.1rem;background:#6366f1;color:#fff;border:none;border-radius:100px;font-weight:800;cursor:pointer;box-shadow:0 10px 20px rgba(99,102,241,0.2)">Save Full Transcript</button>
             </div>
         </div>
@@ -1440,6 +1552,67 @@ function buildPodcast(script) {
         speakPC(line);
     };
 
+    window.callStudio = () => {
+        window._PC_PLAYING = false;
+        if (window._nexaAudio) window._nexaAudio.pause();
+        if (window._PC_VOICE_MODE) window.speechSynthesis.cancel();
+        
+        openOverlay(`
+        <div style="max-width:500px;margin:2rem auto;background:#fff;padding:2rem;border-radius:32px;text-align:center;box-shadow:var(--deep-shadow);animation:sketchyFade .3s forwards">
+            <h2 style="font-family:'Poppins',sans-serif;font-weight:900;font-size:2rem;color:#0f172a;margin-bottom:0.5rem">Call the Studio ☎️</h2>
+            <p style="color:#64748b;margin-bottom:2rem">Alex and Sam are live. What do you want to ask them?</p>
+            
+            <textarea id="callInput" rows="3" placeholder="e.g. Can you explain that last part again?" style="width:100%;padding:1rem;border:2px solid #e2e8f0;border-radius:16px;font-family:'Inter',sans-serif;font-size:1rem;resize:none;margin-bottom:1.5rem"></textarea>
+            
+            <button id="dialBtn" onclick="submitCall()" style="width:100%;padding:1.2rem;background:#10b981;color:#fff;border:none;border-radius:100px;font-weight:800;font-family:'Poppins',sans-serif;font-size:1.1rem;cursor:pointer;box-shadow:0 10px 20px rgba(16,185,129,0.3)">
+                Dial Now
+            </button>
+        </div>`);
+    };
+
+    window.submitCall = () => {
+        const q = document.getElementById('callInput').value;
+        if (!q.trim()) return;
+        
+        const btn = document.getElementById('dialBtn');
+        btn.innerHTML = 'Ringing... Please hold 🎧';
+        btn.style.opacity = '0.7';
+        btn.disabled = true;
+        
+        fetch(AJAX_URL, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': CSRF,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'podcast_call', 
+                question: q, 
+                page_text: (PAGES[currentPage] ? (PAGES[currentPage].text || PAGES[currentPage]) : ''),
+                page_label: (PAGES[currentPage] ? (PAGES[currentPage].label || PAGES[currentPage].chapter_title) : 'Section'),
+                model: NexaModel.current,
+                thread_id: window.currentThreadId
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.script_json) {
+                // Inject the new caller segment directly sequence
+                lines.splice(window._PC_INDEX + 1, 0, ...data.script_json);
+                window._PC_INDEX++;
+                window._PC_PLAYING = true;
+                if (data.thread_id) window.currentThreadId = data.thread_id;
+                renderPodcastStudio();
+            } else {
+                alert("The line was busy! " + (data.error || ""));
+                renderPodcastStudio();
+            }
+        }).catch(e => {
+            alert("Connection lost");
+            renderPodcastStudio();
+        });
+    };
+
     window.changePC = (dir) => {
         window._PC_INDEX = Math.max(0, Math.min(lines.length-1, window._PC_INDEX + dir));
         window.speechSynthesis.cancel();
@@ -1448,9 +1621,25 @@ function buildPodcast(script) {
 
     window.togglePC = () => {
         window._PC_PLAYING = !window._PC_PLAYING;
-        if (window._PC_PLAYING) renderPodcastStudio();
-        else window.speechSynthesis.cancel();
-        document.getElementById('pcPlayIcon').setAttribute('fill', window._PC_PLAYING ? '#0f172a' : '#6366f1');
+        if (!window._PC_PLAYING) {
+            // PAUSE
+            if (window._PC_VOICE_MODE) window.speechSynthesis.cancel();
+            if (window._nexaAudio) window._nexaAudio.pause();
+            
+            const btn = document.getElementById('pcPlayIcon');
+            if (btn) btn.innerHTML = '<path d="M5 3l14 9-14 9V3z"/>'; // Play Button
+        } else {
+            // PLAY
+            const btn = document.getElementById('pcPlayIcon');
+            if (btn) btn.innerHTML = '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>'; // Pause Button
+            
+            if (window._nexaAudio && window._nexaAudio.paused) {
+                // Instantly resume exactly where we left off
+                window._nexaAudio.play().catch(e => renderPodcastStudio());
+            } else {
+                renderPodcastStudio();
+            }
+        }
     };
 
     window.speakPC = (line) => {
@@ -1458,56 +1647,56 @@ function buildPodcast(script) {
         if (window._nexaAudio) { window._nexaAudio.pause(); window._nexaAudio = null; }
 
         const text = line.text;
-        const isGirl = line.speaker.toLowerCase().includes('afia');
+        const isGirl = line.speaker.toLowerCase().includes('sam');
+
+        // Zero-Latency Prefetching Logic
+        if (window._nextNexaAudio && window._nextNexaAudio.src.includes(line.audio_url)) {
+            window._nexaAudio = window._nextNexaAudio;
+            window._nextNexaAudio = null; // Consume it
+        } else if (line.audio_url) {
+            window._nexaAudio = new Audio(line.audio_url);
+        }
 
         // PREFERRED: Use high-quality neural audio rendered on server
-        if (line.audio_url) {
-            window._nexaAudio = new Audio(line.audio_url);
+        if (window._nexaAudio) {
+            
+            // Background pre-fetch the next track while this one plays
+            if (window._PC_INDEX < lines.length - 1 && lines[window._PC_INDEX + 1].audio_url) {
+                window._nextNexaAudio = new Audio(lines[window._PC_INDEX + 1].audio_url);
+                window._nextNexaAudio.preload = 'auto'; // Force browser to cache immediately
+            }
+
             window._nexaAudio.onended = () => {
                 if (window._PC_PLAYING && window._PC_INDEX < lines.length - 1) {
-                    setTimeout(() => { window._PC_INDEX++; renderPodcastStudio(); }, 1200);
+                    // Minimal natural delay (200ms) for snappy conversation
+                    setTimeout(() => { window._PC_INDEX++; renderPodcastStudio(); }, 200);
                 }
             };
             window._nexaAudio.play().catch(err => {
-                console.error("Neural playback failed, falling back:", err);
-                window._PC_VOICE_MODE = true;
-                fallbackVoice(text, isGirl);
+                console.error("Neural playback failed:", err);
+                
+                // If it's an AbortError due to skipping, do nothing.
+                // Otherwise, skip to the next track smoothly without robotic voice.
+                if (err.name !== 'AbortError') {
+                    const waitTime = Math.max(1500, text.length * 50);
+                    setTimeout(() => {
+                        if (window._PC_PLAYING && window._PC_INDEX < lines.length - 1) {
+                            window._PC_INDEX++; renderPodcastStudio();
+                        }
+                    }, waitTime);
+                }
             });
             return;
         }
 
-        // FALLBACK: Browser Synthesis
-        window._PC_VOICE_MODE = true;
-        fallbackVoice(text, isGirl);
-    };
-
-    function fallbackVoice(text, isGirl) {
-        const cleanText = text.replace(/[*#_]/g, '').replace(/\[.*?\]/g, ''); 
-        if (!cleanText.trim()) { 
-            setTimeout(() => { if(window._PC_INDEX < lines.length-1){ window._PC_INDEX++; renderPodcastStudio(); } }, 1500);
-            return;
-        }
-        const msg = new SpeechSynthesisUtterance(cleanText);
-        const voices = window.speechSynthesis.getVoices();
-        let selected = voices.find(v => (v.name.includes('Neural') || v.name.includes('Natural')) && v.name.includes(isGirl ? 'Female' : 'Male'));
-        if (isGirl) {
-            if (!selected) selected = voices.find(v => v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US English'));
-            msg.pitch = 1.15;
-            msg.rate = 0.95;
-        } else {
-            if (!selected) selected = voices.find(v => v.name.includes('Male') || v.name.includes('David') || v.name.includes('Google UK English Male'));
-            msg.pitch = 0.85;
-            msg.rate = 1.0;
-        }
-        if (!selected) selected = voices.find(v => v.lang.startsWith('en'));
-        msg.voice = selected;
-        msg.onend = () => {
+        // If no audio url was generated at all, just skip it gracefully
+        const waitTime = Math.max(1500, text.length * 50);
+        setTimeout(() => {
             if (window._PC_PLAYING && window._PC_INDEX < lines.length - 1) {
-                setTimeout(() => { window._PC_INDEX++; renderPodcastStudio(); }, 1200); 
+                window._PC_INDEX++; renderPodcastStudio();
             }
-        };
-        window.speechSynthesis.speak(msg);
-    }
+        }, waitTime);
+    };
 
     renderPodcastStudio();
 }

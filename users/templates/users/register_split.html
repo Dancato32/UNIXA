@@ -2,254 +2,228 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if request.path == '/login/' %}Sign In{% else %}Create Account{% endif %} – Paw AI</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% if request.path == '/login/' %}Login{% else %}Sign Up{% endif %} - Clutch Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
-            /* ── Paw Amber & Indigo Palette ── */
-            --bg: #0A0F1E;
-            --surface: #131A2D;
-            --border: rgba(255,255,255,0.08);
-            --text: #F8FAFC;
-            --text-muted: #94A3B8;
-            --accent: #F59E0B;
-            --accent-glow: rgba(245, 158, 11, 0.3);
-            --white: #ffffff;
+            --clutch-blue: #3b82f6;
+            --clutch-bg: #fcfcfc;
+            --clutch-text: #1a1a1a;
+            --clutch-text-dim: #666666;
+            --clutch-surface: #ffffff;
+            --clutch-border: rgba(0,0,0,0.06);
+            --clutch-shadow: 0 40px 100px rgba(0,0,0,0.12), 0 10px 25px rgba(0,0,0,0.06);
+            --clutch-dark: #0f172a;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
-            position: relative;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--clutch-bg); color: var(--clutch-text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
 
-        /* ── Floating Background ── */
-        .moving-background {
-            position: fixed;
-            inset: 0;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 0;
-            background-color: var(--bg);
-        }
-        .paw-pattern {
-            position: absolute;
-            inset: 0;
-            opacity: 0.05;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%23F59E0B'%3E%3Cpath d='M30,35c3.3,0,6-3.1,6-7s-2.7-7-6-7s-6,3.1-6,7S26.7,35,30,35z'/%3E%3Cpath d='M44,25c3.3,0,6-3.1,6-7s-2.7-7-6-7c-3.3,0-6,3.1-6,7S40.7,25,44,25z'/%3E%3Cpath d='M58,25c3.3,0,6-3.1,6-7s-2.7-7-6-7c-3.3,0-6,3.1-6,7S54.7,25,58,25z'/%3E%3Cpath d='M72,35c3.3,0,6-3.1,6-7s-2.7-7-6-7s-6,3.1-6,7S68.7,35,72,35z'/%3E%3Cpath d='M51.1,42c-10,0-18,6.1-18,13.7c0,5.6,3.8,10.6,9.5,12.7c1.4,4.2,5.2,7,8.5,7c3.3,0,7.1-2.8,8.5-7c5.8-2.1,9.5-7.1,9.5-12.7C69.1,48.1,61.1,42,51.1,42z'/%3E%3C/svg%3E");
-            background-size: 100px 100px;
-            animation: pattern-drift 120s linear infinite;
-        }
-        @keyframes pattern-drift {
-            from { background-position: 0 0; }
-            to { background-position: 1000px 1000px; }
-        }
-        .orb {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.15;
-            animation: move linear infinite 25s;
-        }
-        .orb-1 { top: -100px; left: -100px; }
-        .orb-2 { bottom: -100px; right: -100px; animation-direction: reverse; }
-        @keyframes move { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(50px, 80px); } }
+        /* Architecture Backdrop */
+        .bg-mesh { position: fixed; inset: 0; z-index: -1; background: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.04) 0px, transparent 50%); }
+        .bg-grid { position: absolute; inset: 0; background-image: radial-gradient(rgba(0,0,0,0.1) 0.5px, transparent 0.5px); background-size: 32px 32px; opacity: 0.4; z-index: -1; }
 
-        /* ── Form Section ── */
-        .form-side {
-            width: 100%;
-            max-width: 380px;
-            padding: 1.75rem 2rem;
-            position: relative;
+        /* Auth Studio Card */
+        .auth-studio-card { 
+            width: 100%; 
+            max-width: 440px; 
+            background: var(--clutch-surface); 
+            border-radius: 32px; 
+            padding: 3.5rem; 
+            box-shadow: var(--clutch-shadow); 
+            border: 1px solid var(--clutch-border); 
+            position: relative; 
+            animation: cardIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            opacity: 0; 
             z-index: 10;
-            background: rgba(10, 15, 30, 0.7);
-            backdrop-filter: blur(25px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            box-shadow: 0 40px 120px rgba(0,0,0,0.6);
-            margin: 1.5rem;
-            animation: fadeIn 0.6s ease-out;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .clutch-logo { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 900; font-size: 1.5rem; letter-spacing: -0.04em; text-decoration: none; color: var(--clutch-text); margin-bottom: 2.5rem; }
+        .logo-dots { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+        .logo-dot { width: 8px; height: 8px; border-radius: 2px; background: #ddd; }
+        .logo-dot.active { background: var(--clutch-blue); }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 1.25rem;
+        .auth-header { text-align: center; margin-bottom: 2.5rem; }
+        .auth-header h1 { font-size: 2.25rem; font-weight: 950; letter-spacing: -0.05em; line-height: 1; margin-bottom: 0.75rem; text-transform: uppercase; }
+        .auth-header p { font-size: 0.9375rem; color: var(--clutch-text-dim); line-height: 1.4; font-weight: 600; }
+
+        /* Form Systems */
+        .form-group { margin-bottom: 1.5rem; position: relative; }
+        .form-label { display: block; font-size: 0.75rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.12em; color: var(--clutch-text-dim); margin-bottom: 0.75rem; }
+        
+        .form-input { 
+            width: 100%; 
+            background: #fcfcfc; 
+            border: 1.5px solid var(--clutch-border); 
+            border-radius: 14px; 
+            padding: 1rem 1.25rem; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            color: var(--clutch-text); 
+            transition: all 0.2s cubic-bezier(0.2, 1, 0.2, 1);
+            outline: none;
+        }
+        .form-input:focus { 
+            background: #fff; 
+            border-color: var(--clutch-blue); 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08); 
+            transform: translateY(-1px);
+        }
+
+        /* Black-Out Button (Premium) */
+        .clutch-btn { 
+            width: 100%; 
+            background: #000; 
+            color: #fff; 
+            padding: 1.25rem; 
+            border: none; 
+            border-radius: 100px; 
+            font-size: 1.0625rem; 
+            font-weight: 950; 
+            text-transform: uppercase; 
+            letter-spacing: 0.1em; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 1.5rem;
             text-decoration: none;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent), #FBBF24);
-            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 1rem;
-            box-shadow: 0 4px 15px var(--accent-glow);
         }
-
-        .logo-text {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--white);
-            letter-spacing: -0.04em;
+        .clutch-btn:hover { 
+            transform: translateY(-4px) scale(1.01); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); 
         }
+        .clutch-btn:active { transform: translateY(-1px); }
 
-        .form-content { width: 100%; }
-        .form-header { text-align: center; margin-bottom: 1.25rem; }
-        .form-header h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; color: #fff; }
-        .form-header p { color: var(--text-muted); font-size: 0.8125rem; }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-        }
-
-        /* ── Action Buttons ── */
-        .btn-google {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            background: var(--surface);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 600;
+        .btn-google { 
+            width: 100%; 
+            padding: 1rem; 
+            border-radius: 14px; 
+            border: 1.5px solid var(--clutch-border); 
+            background: #fff; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+            font-weight: 800; 
+            font-size: 0.9375rem; 
+            color: var(--clutch-text); 
+            text-decoration: none; 
+            transition: all 0.2s; 
             cursor: pointer;
-            text-decoration: none;
-            transition: 0.2s;
         }
-        .btn-google:hover { border-color: var(--accent); background: #1E293B; transform: translateY(-2px); }
+        .btn-google:hover { background: #f9f9f9; transform: translateY(-2px); border-color: #ddd; }
 
-        .divider { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; }
-        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        .divider span { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+        .divider { display: flex; align-items: center; gap: 15px; margin: 2rem 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1.5px; background: var(--clutch-border); }
+        .divider span { font-size: 0.7rem; color: var(--clutch-text-dim); font-weight: 850; text-transform: uppercase; letter-spacing: 0.15em; }
 
-        .form-group { margin-bottom: 1rem; }
-        .form-label { display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.375rem; text-transform: uppercase; letter-spacing: 0.12em; }
-        .form-input {
-            width: 100%;
-            padding: 0.625rem 0.875rem;
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 0.875rem;
-            transition: 0.2s;
-        }
-        .form-input:focus { outline: none; border-color: var(--accent); background: #1E293B; }
+        .auth-footer { text-align: center; margin-top: 2.5rem; font-size: 0.875rem; color: var(--clutch-text-dim); font-weight: 700; }
+        .auth-footer a { color: var(--clutch-blue); text-decoration: none; font-weight: 900; transition: color 0.2s; }
+        .auth-footer a:hover { color: var(--clutch-dark); }
 
-        .btn-primary {
-            width: 100%;
-            padding: 0.875rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.9375rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.25s;
-            margin-top: 0.5rem;
-            box-shadow: 0 4px 15px var(--accent-glow);
-        }
-        .btn-primary:hover { background: #D97706; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245, 158, 11, 0.4); }
+        .alert { list-style: none; color: #ef4444; font-size: 0.8125rem; font-weight: 800; margin-bottom: 2rem; background: #fee2e2; padding: 1.25rem; border-radius: 14px; border: 1px solid #fecaca; }
 
-        .switch-link { text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem; }
-        .switch-link a { color: var(--accent); text-decoration: none; font-weight: 700; }
+        @keyframes cardIn { 0% { opacity: 0; transform: translateY(80px) scale(0.94); filter: blur(20px); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); } }
 
-        @media (max-width: 480px) {
-            .form-side { padding: 2rem; margin: 1rem; border: none; background: transparent; box-shadow: none; }
+        @media (max-width: 500px) {
+            .auth-studio-card { padding: 3rem 1.5rem; border-radius: 2rem; border: none; background: transparent; box-shadow: none; margin: 1rem; }
+            .auth-header h1 { font-size: 1.75rem; }
         }
     </style>
 </head>
 <body>
-    <div class="moving-background">
-        <div class="paw-pattern"></div>
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-    </div>
+    <div class="bg-mesh"></div>
+    <div class="bg-grid"></div>
 
-    <div class="form-side">
-        <a href="/" class="logo-section">
-            <div class="logo-icon">P</div>
-            <span class="logo-text">PAW</span>
+    <div class="auth-studio-card">
+        <a href="/" class="clutch-logo">
+            <div class="logo-dots">
+                <div class="logo-dot active"></div>
+                <div class="logo-dot active"></div>
+                <div class="logo-dot"></div>
+                <div class="logo-dot active"></div>
+            </div>
+            CLUTCH
         </a>
 
-        <div class="form-content">
+        <div class="auth-header">
             {% if request.path == '/login/' %}
-            <div class="form-header">
-                <h1>Welcome back</h1>
-                <p>Access your Paw Workspace</p>
-            </div>
-            {% if messages %}<div class="alert">{% for m in messages %}{{ m }}{% endfor %}</div>{% endif %}
-            
+                <h1>STUDIO LOGIN</h1>
+                <p>Welcome back, Architect. Your vault is ready.</p>
+            {% else %}
+                <h1>CREATE STUDIO</h1>
+                <p>Initiate your student blueprint. Architect your intelligence.</p>
+            {% endif %}
+        </div>
+
+        {% if messages %}
+        <div class="alert">
+            {% for m in messages %}{{ m }}{% endfor %}
+        </div>
+        {% endif %}
+
+        {% if request.path == '/login/' %}
+            <!-- Sign Up with Google -->
             <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn-google">
                 <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Continue with Google
             </a>
+
             <div class="divider"><span>or details</span></div>
+
             <form method="POST" action="{% url 'login' %}">
                 {% csrf_token %}
-                <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" name="username" required autofocus></div>
-                <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" name="password" required></div>
-                <button type="submit" class="btn-primary">Signed In to Paw</button>
+                <div class="form-group">
+                    <label class="form-label">Architect ID</label>
+                    <input type="text" name="username" class="form-input" placeholder="Your Username" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vault Key</label>
+                    <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="clutch-btn">ENTER STUDIO</button>
             </form>
-            <div class="switch-link">New? <a href="{% url 'register' %}">Create account</a></div>
-            {% else %}
-            <div class="form-header">
-                <h1>Intelligence starts here</h1>
-                <p>Create your Paw account today</p>
+
+            <div class="auth-footer">
+                New Architect? <a href="{% url 'register' %}">Create Account</a>
             </div>
-            {% if messages %}<div class="alert">{% for m in messages %}{{ m }}{% endfor %}</div>{% endif %}
-            
+        {% else %}
+            <!-- Register logic -->
             <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn-google">
                 <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Sign up with Google
             </a>
+
             <div class="divider"><span>or details</span></div>
+
             <form method="POST" action="{% url 'register' %}">
                 {% csrf_token %}
-                <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" name="username" required></div>
-                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" name="email" required></div>
-                <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" name="password" required></div>
-                <div class="form-group"><label class="form-label">Confirm</label><input type="password" class="form-input" name="confirm_password" required></div>
-                <button type="submit" class="btn-primary">Join the Paw Community</button>
+                <div class="form-group">
+                    <label class="form-label">Set Architect ID</label>
+                    <input type="text" name="username" class="form-input" placeholder="Choose username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-input" placeholder="name@university.edu" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Secure Vault Key</label>
+                    <input type="password" name="password" class="form-input" placeholder="Min. 8 characters" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Vault Key</label>
+                    <input type="password" name="confirm_password" class="form-input" placeholder="Repeat key" required>
+                </div>
+                <button type="submit" class="clutch-btn">INITIATE STUDIO</button>
             </form>
-            <div class="switch-link">Member? <a href="{% url 'login' %}">Sign in</a></div>
-            {% endif %}
-        </div>
+
+            <div class="auth-footer">
+                Already Architect? <a href="{% url 'login' %}">Enter Vault</a>
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>
