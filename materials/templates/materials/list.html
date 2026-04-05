@@ -9,13 +9,14 @@
 
 {% block extra_css %}
 <style>
-/* ── Paw Materials Hand-Drawn Transformation ── */
+/* ── Paw Materials Modern Refined Style ── */
 :root {
-  --mat-bg: #fff;
+  --mat-bg: #fcfcfd;
   --mat-surface: #fff;
-  --mat-ink: #000;
-  --mat-sub: #666;
-  --mat-border-width: 2.5px;
+  --mat-ink: #1e293b;
+  --mat-sub: #64748b;
+  --mat-border-width: 1.5px;
+  --mat-radius: 16px;
 }
 
 .materials-page { 
@@ -26,30 +27,30 @@
   background: var(--mat-bg);
 }
 
-/* Page Header - Hand Drawn */
+/* Page Header - Refined */
 .mat-header {
   display: flex; align-items: flex-end; justify-content: space-between;
-  margin-bottom: 3rem; padding-bottom: 1.5rem;
-  border-bottom: var(--mat-border-width) solid var(--mat-ink);
+  margin-bottom: 3.5rem; padding-bottom: 2rem;
+  border-bottom: 1px solid var(--mat-border-color, rgba(0,0,0,0.06));
 }
 
-.mat-title-group { display: flex; flex-direction: column; gap: 0.25rem; }
+.mat-title-group { display: flex; flex-direction: column; gap: 0.375rem; }
 .mat-title-main {
   font-family: 'Poppins', sans-serif;
-  font-size: 2.25rem; font-weight: 800; color: var(--mat-ink);
+  font-size: 2.5rem; font-weight: 800; color: var(--mat-ink);
   letter-spacing: -0.04em; line-height: 1; text-transform: uppercase;
 }
-.mat-subtitle { font-size: 0.9375rem; font-weight: 600; color: var(--mat-sub); }
+.mat-subtitle { font-size: 0.9375rem; font-weight: 500; color: var(--mat-sub); }
 
 .mat-upload-btn {
   background: var(--mat-ink); color: #fff;
-  font-weight: 800; font-size: 0.875rem; text-transform: uppercase;
-  padding: 0.75rem 1.5rem; border-radius: 12px; border: var(--mat-border-width) solid var(--mat-ink);
-  display: flex; align-items: center; gap: 0.625rem; transition: all 0.2s;
-  box-shadow: 4px 4px 0px rgba(0,0,0,1);
+  font-weight: 700; font-size: 0.8125rem; text-transform: uppercase;
+  padding: 0.75rem 1.75rem; border-radius: 12px; border: none;
+  display: flex; align-items: center; gap: 0.625rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.25);
 }
-.mat-upload-btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0px rgba(0,0,0,1); }
-.mat-upload-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px rgba(0,0,0,1); }
+.mat-upload-btn:hover { background: #334155; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30, 41, 59, 0.3); }
+.mat-upload-btn:active { transform: translateY(0); }
 
 /* Section Title */
 .section-title-wrap { margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
@@ -57,26 +58,26 @@
   font-family: 'Poppins', sans-serif;
   font-size: 1.125rem; font-weight: 800; color: var(--mat-ink);
   text-transform: uppercase; letter-spacing: 0.05em;
-  padding-bottom: 4px; border-bottom: 3px solid #F59E0B;
+  padding-bottom: 4px; border-bottom: 2px solid #F59E0B;
 }
-.section-count { font-size: 0.8125rem; font-weight: 700; color: #fff; background: var(--mat-ink); padding: 2px 8px; border-radius: 6px; }
+.section-count { font-size: 0.8125rem; font-weight: 700; color: #fff; background: var(--mat-ink); padding: 2px 8px; border-radius: 8px; }
 
-/* Hand-Drawn Material Card */
+/* Refined Material Card */
 .mat-card {
-  background: #fff; border: var(--mat-border-width) solid var(--mat-ink); border-radius: 20px;
-  padding: 1.5rem; margin-bottom: 1.5rem; position: relative;
-  box-shadow: 6px 6px 0px rgba(0,0,0,0.05);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: var(--mat-radius);
+  padding: 1.75rem; margin-bottom: 1.5rem; position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.mat-card:hover { transform: translateY(-4px); box-shadow: 10px 10px 0px rgba(0,0,0,0.08); }
+.mat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.12); }
 
 .mat-card-top { display: flex; align-items: center; gap: 1.25rem; }
 .mat-icon-box {
-  width: 60px; height: 60px; border-radius: 16px;
+  width: 60px; height: 60px; border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.75rem; flex-shrink: 0;
-  border: var(--mat-border-width) solid var(--mat-ink);
-  background: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+  background: #f8fafc;
 }
 .mat-icon-box.mat-icon-pdf { background: #fee2e2; }
 .mat-icon-box.mat-icon-word { background: #e0f2fe; }
@@ -96,20 +97,32 @@
 
 /* Actions */
 .mat-card-actions {
-  display: flex; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.25rem;
-  border-top: 1.5px dashed #ddd;
+  display: flex; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.5rem;
+  border-top: 1px solid rgba(0,0,0,0.04);
 }
 .mat-pill-btn {
   display: flex; align-items: center; gap: 0.5rem;
-  padding: 0.5rem 1rem; border-radius: 10px;
-  font-size: 0.8125rem; font-weight: 700; text-transform: uppercase;
-  border: var(--mat-border-width) solid var(--mat-ink);
+  padding: 0.625rem 1.25rem; border-radius: 10px;
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em;
+  border: 1px solid var(--mat-border-color, rgba(0,0,0,0.1));
   background: #fff; color: var(--mat-ink);
   transition: all 0.2s; cursor: pointer;
 }
-.mat-pill-btn:hover { background: var(--mat-ink); color: #fff; }
-.mat-pill-btn.del { border-color: #EF4444; color: #EF4444; }
-.mat-pill-btn.del:hover { background: #EF4444; color: #fff; }
+.mat-pill-btn:hover { background: var(--mat-ink); color: #fff; border-color: var(--mat-ink); }
+.mat-pill-btn.del { border-color: rgba(239, 68, 68, 0.2); color: #EF4444; background: rgba(239, 68, 68, 0.02); }
+.mat-pill-btn.del:hover { background: #EF4444; color: #fff; border-color: #EF4444; }
+.mat-pill-btn.teach {
+  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  color: #fff !important;
+  border: none;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+.mat-pill-btn.teach:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
+}
+.mat-pill-btn.teach svg { stroke: #fff; }
 
 /* ── Upload Overlay ── */
 .upload-overlay {
@@ -212,6 +225,10 @@
       </div>
 
       <div class="mat-card-actions">
+        <a href="{% url 'cloud_teach_material' m.id %}" class="mat-pill-btn teach">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px;"><path d="M17.5 19L9 13l8.5-6"/><path d="M22 12H15"/></svg>
+          Cloud Teach
+        </a>
         <a href="{% url 'learn_material' m.id %}" class="mat-pill-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           Study Studio

@@ -1,0 +1,718 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Teach v2 — {{ material.title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Gochi+Hand&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --accent: #6366f1;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --header-h: 70px;
+            --sidebar-w: 280px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: var(--header-h) 1fr;
+            grid-template-columns: var(--sidebar-w) 1fr;
+        }
+
+        /* ── Binder Metal Rings ── */
+        .binder-wrapper {
+            position: absolute; left: -25px; top: 60px; bottom: 60px;
+            width: 50px; display: flex; flex-direction: column; justify-content: space-around;
+            z-index: 100; pointer-events: none;
+        }
+        .ring {
+            width: 50px; height: 12px; background: linear-gradient(to right, #94a3b8, #cbd5e1, #94a3b8);
+            border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+            position: relative;
+        }
+        .ring::after {
+            content: ''; position: absolute; left: 10px; top: 50%; width: 30px; height: 4px;
+            background: rgba(0,0,0,0.1); border-radius: 2px; transform: translateY(-50%);
+        }
+
+        /* ── Header ── */
+        .header {
+            grid-column: 1 / -1; background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem; position: sticky; top: 0; z-index: 200;
+            box-shadow: var(--shadow-sm);
+        }
+        .header-l { display: flex; align-items: center; gap: 1.5rem; flex: 1; }
+        .back-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; }
+        .back-btn:hover { background: #f8fafc; color: var(--primary); border-color: var(--primary); }
+        
+        .xp-pill {
+            background: #f1f5f9; padding: 0.5rem 1.25rem; border-radius: 100px;
+            display: flex; align-items: center; gap: 1rem; border: 1px solid var(--border);
+            position: absolute; left: 50%; transform: translateX(-50%);
+        }
+        .xp-label { font-weight: 800; font-size: 0.75rem; color: var(--primary); text-transform: uppercase; }
+        .xp-track { width: 120px; height: 6px; background: #e2e8f0; border-radius: 100px; overflow: hidden; }
+        .xp-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        /* ── Sidebar (Modules) ── */
+        .sidebar {
+            background: #f8fafc; border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 2rem 1rem;
+            overflow-y: auto; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-title { font-family: 'Poppins'; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; margin-bottom: 1.5rem; padding-left: 1rem; }
+        .mod-item {
+            padding: 1rem 1.25rem; border-radius: 16px; margin-bottom: 0.5rem;
+            cursor: pointer; transition: 0.2s; border: 2px solid transparent;
+        }
+        .mod-item:hover:not(.locked) { background: #fff; transform: translateX(5px); box-shadow: var(--shadow-md); }
+        .mod-item.active { background: #fff; border-color: rgba(79, 70, 229, 0.1); box-shadow: var(--shadow-md); }
+        .mod-item.locked { opacity: 0.4; cursor: not-allowed; }
+        .mod-item.done .mod-check { background: var(--success) !important; border-color: var(--success) !important; }
+        
+        .mod-info { display: flex; align-items: center; gap: 0.8rem; }
+        .mod-check { width: 14px; height: 14px; border: 2px solid #cbd5e1; border-radius: 50%; flex-shrink: 0; }
+        .mod-item.active .mod-check { border-color: var(--primary); background: #fff; box-shadow: 0 0 8px rgba(79, 70, 229, 0.4); }
+        .mod-name { font-weight: 700; font-size: 0.85rem; color: var(--text-main); }
+        
+        /* ── Main Area ── */
+        .main {
+            padding: 2.5rem; overflow-y: auto; background: #f8fafc;
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+        .paper {
+            background: #fff; border-radius: 32px; 
+            width: 100%; max-width: 1000px; padding: 4rem 5rem; 
+            position: relative; box-shadow: var(--shadow-md);
+            margin-bottom: 5rem;
+        }
+        
+        .watermark {
+            position: absolute; top: 2rem; right: 3rem; font-family: 'Poppins';
+            font-weight: 800; font-size: 0.75rem; color: #e2e8f0; letter-spacing: 0.1em;
+            pointer-events: none;
+        }
+
+        /* ── Phase Tabs (Nexa Style) ── */
+        .tabs {
+            display: flex; gap: 3rem; margin-bottom: 3.5rem; border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem; position: relative;
+        }
+        .tab {
+            display: flex; align-items: center; gap: 0.6rem; 
+            font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
+            cursor: pointer; transition: 0.2s;
+        }
+        .tab.active { color: var(--primary); }
+        .tab.active::after {
+            content: ''; position: absolute; bottom: -1rem; left: 0; width: 100%;
+            height: 3px; background: var(--primary); border-radius: 10px;
+        }
+        .tab.locked { opacity: 0.3; cursor: not-allowed; }
+        .tab-icon { font-size: 1.1rem; }
+
+        /* ── Typography (Hand-drawn hints) ── */
+        .title-hand { font-family: 'Gochi Hand', cursive; font-size: 4rem; color: var(--text-main); margin-bottom: 2rem; line-height: 1.1; }
+        .body-text { font-size: 1.35rem; line-height: 1.8; color: var(--text-main); font-weight: 500; }
+        .body-text p { margin-bottom: 2.5rem; }
+        
+        /* ── Visual Insight Layer ── */
+        .img-card {
+            margin: 2rem 0 3.5rem 0; border-radius: 32px; overflow: hidden;
+            background: #000; box-shadow: var(--shadow-lg); position: relative;
+            aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;
+        }
+        .img-card img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s; opacity: 0; }
+        .img-card.loaded img { opacity: 1; }
+        .img-loader { position: absolute; color: #fff; text-align: center; font-family: 'Poppins'; font-weight: 700; font-size: 0.9rem; }
+
+        /* ── Concept Pills ── */
+        .pills { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 3rem 0; }
+        .pill {
+            background: #fff; border: 2px solid #f1f5f9;
+            padding: 0.75rem 1.75rem; border-radius: 100px; font-weight: 700;
+            font-size: 0.85rem; color: var(--text-main); cursor: pointer; transition: 0.2s;
+            position: relative; box-shadow: var(--shadow-sm);
+        }
+        .pill:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .pill-tip {
+            position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+            background: var(--text-main); color: #fff; padding: 1rem; border-radius: 14px;
+            width: 220px; font-size: 0.8rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            pointer-events: none; opacity: 0; transition: 0.2s; visibility: hidden;
+            line-height: 1.5; font-weight: 500; z-index: 300;
+        }
+        .pill:active .pill-tip, .pill:hover .pill-tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+        /* ── Socratic Interaction ── */
+        .soc-card {
+            background: #f8fafc; border: 1px solid var(--border);
+            padding: 2.5rem; border-radius: 24px; margin-bottom: 2rem;
+        }
+        .soc-q { font-weight: 800; font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--text-main); }
+        .soc-input-wrap { display: flex; gap: 0.8rem; }
+        .soc-input {
+            flex: 1; border: 2px solid var(--border); border-radius: 14px;
+            padding: 1rem 1.25rem; font-family: 'Inter'; font-size: 1rem;
+            outline: none; transition: 0.2s;
+        }
+        .soc-input:focus { border-color: var(--primary); }
+        .soc-send {
+            width: 50px; height: 50px; background: var(--primary); color: #fff;
+            border: none; border-radius: 12px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .soc-send:hover { background: var(--accent); transform: scale(1.05); }
+
+        /* ── Quiz Interaction ── */
+        .quiz-card { margin-bottom: 3rem; }
+        .quiz-opt {
+            background: #fff; border: 2px solid var(--border);
+            padding: 1.25rem 1.5rem; border-radius: 16px; margin-bottom: 0.8rem;
+            font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s;
+        }
+        .quiz-opt:hover { border-color: var(--primary); color: var(--primary); }
+        .quiz-opt.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.05); color: var(--success); }
+        .quiz-opt.wrong { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); color: var(--danger); }
+
+        /* ── YouTube Section ── */
+        .yt-card {
+            margin: 2rem 0; padding: 1.5rem; border-radius: 20px;
+            background: #fff5f5; border: 1px solid #fee2e2;
+            display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+        }
+        .yt-info { display: flex; align-items: center; gap: 1rem; }
+        .yt-btn {
+            background: #ef4444; color: #fff; border: none; padding: 0.75rem 1.5rem;
+            border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer;
+            transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .yt-btn:hover { background: #dc2626; transform: scale(1.05); }
+
+        .v-wrap { width: 90%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 24px; overflow: hidden; position: relative; }
+        .mobile-nav {
+            display: none; position: fixed; bottom: 20px; left: 20px; right: 20px;
+            background: #fff; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 0.75rem; border: 1px solid var(--border); z-index: 1000;
+            justify-content: space-around;
+        }
+        .mn-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+        .mn-item.active { color: var(--primary); }
+        .mn-item svg { width: 20px; height: 20px; }
+
+        @media (max-width: 1024px) {
+            body { grid-template-columns: 1fr; }
+            .sidebar {
+                position: fixed; left: 0; top: var(--header-h); bottom: 0;
+                width: 300px; transform: translateX(-100%); z-index: 500;
+            }
+            .sidebar.active { transform: translateX(0); }
+            .main { padding: 1.5rem; }
+            .paper { padding: 3rem 2rem; border-radius: 20px; border-left: 10px solid #e2e8f0; }
+            .paper::before { left: 40px; }
+            .binder-rings { display: none; }
+            .mobile-nav { display: flex; }
+            .tabs { display: none; }
+            .title-hand { font-size: 2.2rem; }
+            .top-bar-mobile { display: flex !important; }
+            .main { padding-bottom: 100px; }
+        }
+
+        /* ── Discovery Screen ── */
+        .discovery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.50rem; margin-top: 2rem; }
+        .topic-card {
+            background: #fff; border: 2px solid #f1f5f9; border-radius: 24px; padding: 2rem;
+            transition: 0.3s; cursor: pointer; position: relative; overflow: hidden;
+            box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1rem;
+        }
+        .topic-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .topic-card h3 { font-family: 'Poppins'; font-weight: 800; font-size: 1.1rem; color: var(--text-main); margin: 0; }
+        .subtopic-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+        .subtopic-tag {
+            background: #f8fafc; padding: 0.4rem 0.8rem; border-radius: 8px;
+            font-size: 0.75rem; font-weight: 700; color: var(--primary);
+            border: 1px solid rgba(79, 70, 229, 0.1); transition: 0.2s;
+        }
+        .topic-card:hover .subtopic-tag { background: rgba(79, 70, 229, 0.05); }
+
+        /* Loading UI */
+        .loader {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 5000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .load-ball { 
+            width: 50px; height: 50px; background: var(--primary); border-radius: 16px; 
+            animation: premium-pulse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            box-shadow: 0 0 0 rgba(79, 70, 229, 0.4);
+            display: flex; align-items: center; justify-content: center;
+        }
+        @keyframes premium-pulse {
+            0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            50% { transform: scale(1.2) rotate(180deg); box-shadow: 0 0 0 25px rgba(79, 70, 229, 0); }
+            100% { transform: scale(1) rotate(360deg); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+
+        /* Navigation Buttons */
+        .btn-group { margin-top: 4rem; display: flex; gap: 1rem; }
+        .btn-next {
+            background: var(--primary); color: #fff; border: none; padding: 1rem 2.5rem;
+            border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 8px 15px rgba(79, 70, 229, 0.2);
+        }
+        .btn-next:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(79, 70, 229, 0.3); }
+        .btn-next:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <header class="header">
+        <div class="header-l">
+            <div class="back-btn" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div style="font-weight:800; font-family:'Poppins'; color:var(--text-main); font-size:1rem; letter-spacing: -0.02em;">NEXA ACADEMY</div>
+        </div>
+        <div class="xp-pill">
+            <span class="xp-label" id="rankLabel">NOVICE</span>
+            <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+            <span style="font-weight:900; font-size:0.8rem; color:var(--text-main);" id="xpText">0 XP</span>
+        </div>
+        <div style="flex:1; display:flex; justify-content:flex-end;">
+            <div class="material-badge" style="background:#f1f5f9; padding:0.5rem 1rem; border-radius:10px; font-weight:700; font-size:0.75rem; color:var(--text-muted);">{{ material.title|truncatechars:25 }}</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-title">CURRICULUM FLOW</div>
+        <div id="modList"></div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" id="mainScroll">
+        <div class="paper">
+            <div class="watermark">PROPERTY OF NEXA STUDIO</div>
+            
+            <div id="welcomeScreen">
+                <div style="font-size:3rem; margin-bottom:2rem;">👋</div>
+                <h1 class="title-hand">Ready for Academy?</h1>
+                <p class="body-text">I've transformed <b>{{ material.title }}</b> into a premium learning session. Tap "Start" to scan for topics or jump straight into a general session.</p>
+                <div style="display:flex; gap:1rem;">
+                    <button onclick="startDiscovery()" class="btn-next" style="margin-top:2rem;">Start Topic Discovery</button>
+                    <button onclick="startSession('General Overview')" class="btn-next" style="margin-top:2rem; background:var(--text-muted);">Quick Start</button>
+                </div>
+            </div>
+
+            <div id="discoveryScreen" style="display:none;">
+                <h1 class="title-hand">What's the focus?</h1>
+                <p class="body-text" style="font-size:1.1rem; color:var(--text-muted);">I've scanned your material. Select a chapter or subtopic below to begin a focused learning session.</p>
+                <div id="topicMap" class="discovery-grid"></div>
+                <div style="margin-top:3rem; text-align:center;">
+                    <button onclick="location.reload()" style="background:none; border:none; color:var(--text-muted); font-weight:700; cursor:pointer;">← Back</button>
+                </div>
+            </div>
+
+            <div id="academyScreen" style="display:none;">
+                <nav class="tabs">
+                    <div class="tab active" id="tab-learn" onclick="switchPhase('learn')">
+                        <span class="tab-icon">📖</span> LEARN
+                    </div>
+                    <div class="tab locked" id="tab-discuss" onclick="switchPhase('discuss')">
+                        <span class="tab-icon">💬</span> DISCUSS
+                    </div>
+                    <div class="tab locked" id="tab-challenge" onclick="switchPhase('challenge')">
+                        <span class="tab-icon">🏆</span> CHALLENGE
+                    </div>
+                </nav>
+
+                <div id="phase-content">
+                    <!-- Phases inject here -->
+                </div>
+
+                <div class="btn-group" id="navBtns"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav">
+        <div class="mn-item active" onclick="switchPhase('learn')" id="mn-learn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Learn
+        </div>
+        <div class="mn-item" onclick="switchPhase('discuss')" id="mn-discuss">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Discuss
+        </div>
+        <div class="mn-item" onclick="switchPhase('challenge')" id="mn-challenge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            Challenge
+        </div>
+        <div class="mn-item" onclick="document.getElementById('sidebar').classList.toggle('active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            Flow
+        </div>
+    </nav>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="load-ball"></div>
+        <p style="margin-top:2rem; font-weight:800; font-family:'Poppins'; color:var(--primary);">Fast Loading Academy...</p>
+    </div>
+
+    <script>
+        const API_CUR = "{% url 'cloud_teach_curriculum' material.pk %}";
+        const API_CONTENT = "{% url 'cloud_teach_module_content' material.pk %}";
+        const API_EVAL = "{% url 'cloud_teach_evaluate_answer' material.pk %}";
+        const CSRF = "{{ csrf_token }}";
+
+        let curriculum = [];
+        let curModId = null;
+        let curPhase = 'learn';
+        let xp = 0;
+        let cache = {};
+        let states = {};
+
+        async function startDiscovery() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            showLoader("Scanning Material Structure...");
+            try {
+                const res = await fetch("{% url 'cloud_teach_discovery' material.id %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': CSRF }
+                });
+                const data = await res.json();
+                hideLoader();
+                if (data.success) {
+                    renderDiscovery(data.topic_map.topics);
+                } else {
+                    alert("Discovery Error: " + data.error);
+                }
+            } catch (e) {
+                hideLoader();
+                alert("Discovery Failure: " + e);
+            }
+        }
+
+        function renderDiscovery(topics) {
+            document.getElementById('discoveryScreen').style.display = 'block';
+            const container = document.getElementById('topicMap');
+            container.innerHTML = topics.map(t => `
+                <div class="topic-card" onclick="startSession('${t.title}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>${t.title}</h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                    <div class="subtopic-list">
+                        ${t.subtopics.map(s => `<span class="subtopic-tag" onclick="event.stopPropagation(); startSession('${s}')">${s}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function startSession(focusTopic = "General Overview") {
+            document.getElementById('discoveryScreen').style.display = 'none';
+            document.getElementById('welcomeScreen').style.display = 'none';
+            showLoader(`Designing Academy for ${focusTopic}...`);
+            try {
+                const res = await fetch("{% url 'cloud_teach_curriculum' material.id %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': CSRF },
+                    body: new URLSearchParams({ 'focus_topic': focusTopic })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    curriculum = data.curriculum;
+                    curriculum.forEach(m => {
+                        states[m.module_id] = { learnDone: false, discussDone: false, challengeDone: false, socraticIdx: 0, quizDone: false };
+                    });
+                    await loadModule(curriculum[0].module_id);
+                    document.getElementById('academyScreen').style.display = 'block';
+                    hideLoader();
+                } else {
+                    hideLoader();
+                    alert("Academy Error: " + data.error);
+                }
+            } catch (e) {
+                hideLoader();
+                alert("I'm having trouble initializing the teacher. Please try again or refresh.");
+            }
+        }
+
+        function showLoader(msg) {
+            const l = document.createElement('div');
+            l.className = 'loader';
+            l.id = 'fullLoader';
+            l.innerHTML = `
+                <div class="load-ball"></div>
+                <div style="margin-top:2rem; font-weight:800; color:var(--text-main); font-family:'Poppins'; text-align:center;">${msg}</div>
+                <div style="margin-top:0.5rem; font-size:0.75rem; font-weight:600; color:var(--text-muted); font-family:'Inter'; text-align:center;">This may take a moment for larger documents...</div>
+            `;
+            document.body.appendChild(l);
+        }
+
+        function hideLoader() {
+            const l = document.getElementById('fullLoader');
+            if (l) l.remove();
+        }
+
+        async function loadModule(id) {
+            curModId = id;
+            if (!cache[id]) {
+                const mod = curriculum.find(m => m.module_id === id);
+                if (!mod) {
+                    console.error("Module not found:", id);
+                    return;
+                }
+                showLoader(`Generating Lesson for ${mod.title}...`);
+                try {
+                    const res = await fetch(API_CONTENT, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: mod.title })
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.error);
+                    cache[id] = data.data;
+                    hideLoader();
+                } catch (e) {
+                    hideLoader();
+                    throw e;
+                }
+            }
+            renderSidebar();
+            switchPhase('learn');
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('modList');
+            list.innerHTML = curriculum.map(m => `
+                <div class="mod-item ${m.module_id === curModId ? 'active' : ''} ${states[m.module_id].challengeDone ? 'done' : ''} ${m.module_id > 1 && !states[m.module_id-1].challengeDone ? 'locked' : ''}" 
+                     onclick="if(this.classList.contains('locked'))return; loadModule(${m.module_id}); document.getElementById('sidebar').classList.remove('active')">
+                    <div class="mod-info">
+                        <div class="mod-check"></div>
+                        <div class="mod-name">${m.title}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchPhase(phase) {
+            const s = states[curModId];
+            if (phase === 'discuss' && !s.learnDone) return;
+            if (phase === 'challenge' && !s.discussDone) return;
+
+            curPhase = phase;
+            const scrollArea = document.getElementById('mainScroll');
+            if (scrollArea) scrollArea.scrollTop = 0;
+            
+            // Sync Tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            const tab = document.getElementById(`tab-${phase}`);
+            if (tab) tab.classList.add('active');
+            
+            // Sync Mobile Nav
+            document.querySelectorAll('.mn-item').forEach(i => i.classList.remove('active'));
+            const mn = document.getElementById(`mn-${phase}`);
+            if (mn) mn.classList.add('active');
+
+            renderPhase();
+        }
+
+        function renderPhase() {
+            const content = cache[curModId];
+            if (!content || !content.paragraphs) {
+                console.error("No content for module", curModId);
+                return;
+            }
+            const mod = curriculum.find(m => m.module_id === curModId);
+            const container = document.getElementById('phase-content');
+            const btns = document.getElementById('navBtns');
+            
+            if (curPhase === 'learn') {
+                container.innerHTML = `
+                    <h1 class="title-hand">${mod.title}</h1>
+                    
+                    ${content.visual_prompt ? `
+                        <div class="img-card" id="img-${curModId}">
+                            <div class="img-loader">Generative Visual Insight...</div>
+                            <img src="https://image.pollinations.ai/prompt/${encodeURIComponent(content.visual_prompt)}?width=1280&height=720&nologo=true&model=flux" 
+                                 onload="this.parentElement.classList.add('loaded'); this.previousElementSibling.style.display='none';">
+                        </div>
+                    ` : ''}
+
+                    <div class="body-text">${content.paragraphs.map(p => `<p>${p}</p>`).join('')}</div>
+                    <div class="pills" style="margin-bottom:2rem;">${mod.concept_pills.map(p => `
+                        <div class="pill">${p}<div class="pill-tip">${mod.pill_definitions[p]}</div></div>
+                    `).join('')}</div>
+                    
+                    <div class="yt-card" style="margin:0 0 3rem 0; flex-direction:column; align-items:stretch;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <div class="yt-info">
+                                <div style="color:#ef4444;"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122-2.136c1.871.505 9.377.505 9.377.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div>
+                                <div style="font-weight:800; font-size:0.9rem;">Integrated Video Lesson</div>
+                            </div>
+                        </div>
+                        ${content.youtube_video_id ? `
+                            <div style="background:#000; border-radius:16px; overflow:hidden; aspect-ratio:16/9; box-shadow:var(--shadow-sm);">
+                                <iframe src="https://www.youtube.com/embed/${content.youtube_video_id}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        ` : `
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">I've found a specialized search insight. Tap below to watch the explanation.</p>
+                            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(content.youtube_query)}" target="_blank" class="yt-btn" style="text-decoration:none; justify-content:center; width:100%;">
+                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                               Watch on YouTube
+                            </a>
+                        `}
+                    </div>
+
+                    <div style="background:rgba(79, 70, 229, 0.05); padding:2rem; border-radius:24px; border-left:4px solid var(--primary);">
+                        <b style="color:var(--primary); text-transform:uppercase; font-size:0.75rem; letter-spacing:0.1em; display:block; margin-bottom:0.5rem;">Key Takeaway</b>
+                        <p style="font-weight:700; font-size:1.1rem;">${content.takeaway}</p>
+                    </div>
+                `;
+                btns.innerHTML = `<button class="btn-next" onclick="finishPhase('learn')">Complete Discovery</button>`;
+            } 
+            else if (curPhase === 'discuss') {
+                const sIdx = states[curModId].socraticIdx;
+                container.innerHTML = `
+                    <h1 class="title-hand">Socratic Dialogue</h1>
+                    <div id="socTasks">
+                        ${content.socratic_questions.map((q, i) => `
+                            <div class="soc-card" style="opacity:${i <= sIdx ? '1' : '0.2'}; margin-bottom:1rem;">
+                                <div class="soc-q">${q}</div>
+                                ${i === sIdx ? `
+                                    <div class="soc-input-wrap">
+                                        <input type="text" class="soc-input" id="socIn" placeholder="Type your observation here...">
+                                        <button class="soc-send" onclick="submitSoc(${i})">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                        </button>
+                                    </div>
+                                ` : (i < sIdx ? `<p style="color:var(--success); font-weight:700;">✓ Contribution accepted.</p>` : '')}
+                                <div id="socFb-${i}" style="margin-top:1rem; font-weight:600; font-size:0.9rem;"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                btns.innerHTML = states[curModId].discussDone ? `<button class="btn-next" onclick="switchPhase('challenge')">Start Challenge</button>` : '';
+            }
+            else if (curPhase === 'challenge') {
+                container.innerHTML = `
+                    <h1 class="title-hand">Final Challenge</h1>
+                    ${content.quiz.map((q, i) => `
+                        <div class="quiz-card">
+                            <div class="soc-q">${q.question}</div>
+                            <div class="quiz-opts" id="opts-${i}">
+                                ${q.options.map((opt, j) => `
+                                    <div class="quiz-opt" onclick="checkQuiz(${i}, '${opt[0]}')">${opt}</div>
+                                `).join('')}
+                            </div>
+                            <div id="bridge-${i}" style="display:none; padding:1.5rem; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-top:1rem;">
+                                <b style="color:var(--primary);">Bridge Recall:</b> ${q.bridge}
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+                btns.innerHTML = states[curModId].challengeDone ? `<button class="btn-next" onclick="finishModule()">Finish Module</button>` : '';
+            }
+        }
+
+        function finishPhase(p) {
+            states[curModId][`${p}Done`] = true;
+            document.getElementById(`tab-${p === 'learn' ? 'discuss' : 'challenge'}`).classList.remove('locked');
+            switchPhase(p === 'learn' ? 'discuss' : 'challenge');
+        }
+
+        async function submitSoc(idx) {
+            const input = document.getElementById('socIn');
+            const answer = input.value;
+            if (!answer) return;
+            
+            const btn = document.querySelector('.soc-send');
+            btn.disabled = true;
+            
+            const res = await fetch(API_EVAL, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: cache[curModId].socratic_questions[idx], answer })
+            });
+            const data = await res.json();
+            const { verdict, reply } = data.evaluation;
+
+            const fb = document.getElementById(`socFb-${idx}`);
+            fb.innerText = reply;
+            fb.style.color = verdict === 'off_track' ? 'var(--danger)' : 'var(--success)';
+
+            if (verdict !== 'off_track') {
+                gainXP(20);
+                setTimeout(() => {
+                    states[curModId].socraticIdx++;
+                    if (states[curModId].socraticIdx === 3) states[curModId].discussDone = true;
+                    renderPhase();
+                }, 1500);
+            } else {
+                btn.disabled = false;
+            }
+        }
+
+        function checkQuiz(qIdx, letter) {
+            const q = cache[curModId].quiz[qIdx];
+            const opts = document.getElementById(`opts-${qIdx}`).querySelectorAll('.quiz-opt');
+            let correct = letter === q.answer;
+
+            opts.forEach(o => {
+                if (o.innerText.startsWith(letter)) o.classList.add(correct ? 'correct' : 'wrong');
+                if (o.innerText.startsWith(q.answer)) o.classList.add('correct');
+            });
+
+            if (correct) gainXP(30);
+            else document.getElementById(`bridge-${qIdx}`).style.display = 'block';
+
+            // Check if both quiz done
+            const allDone = Array.from(document.querySelectorAll('.quiz-card')).every(c => c.querySelector('.correct'));
+            if (allDone) {
+                states[curModId].challengeDone = true;
+                gainXP(50);
+                renderPhase();
+            }
+        }
+
+        function finishModule() {
+            if (curModId < curriculum.length) {
+                loadModule(curModId + 1);
+            } else {
+                alert("Mission Complete! Total Academy XP: " + xp);
+                window.location.href = "{% url 'list_materials' %}";
+            }
+        }
+
+        function gainXP(amt) {
+            xp += amt;
+            document.getElementById('xpText').innerText = xp + " XP";
+            document.getElementById('xpFill').style.width = Math.min((xp/500)*100, 100) + "%";
+            if (xp > 100) document.getElementById('rankLabel').innerText = "Scholar";
+            if (xp > 300) document.getElementById('rankLabel').innerText = "Expert";
+        }
+    </script>
+</body>
+</html>

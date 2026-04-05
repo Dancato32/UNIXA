@@ -3,8 +3,7 @@
  * Inspired by Notion, Linear, and Stripe.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 :root {
     /* Color Palette - Light Mode */
@@ -129,11 +128,10 @@ a:hover {
     gap: 0.75rem;
     padding: 0.625rem 0.75rem;
     color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 700;
-    font-family: 'Gochi Hand', cursive;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
     border-radius: var(--radius);
     margin-bottom: 0.25rem;
     transition: all 0.2s ease;
@@ -384,18 +382,16 @@ a:hover {
 }
 
 .nav-item {
-    font-family: 'Gochi Hand', cursive;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 800;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
+    font-weight: 600;
 }
 
 .bn-label {
     font-size: 10px;
-    font-weight: 800;
-    font-family: 'Gochi Hand', cursive;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.02em;
 }
 
 /* Theme Toggle Button */

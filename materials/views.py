@@ -2107,3 +2107,163 @@ def grade_concept_recall_ajax(request):
     except Exception as e:
         import traceback
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def cloud_teach_view(request, pk):
+    """Standalone page: AI Cloud Teach Academy v2."""
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    return render(request, 'materials/cloud_teach.html', {
+        'material': material,
+        'title': f'Cloud Teach: {material.title}'
+    })
+
+
+@login_required
+def ajax_discovery(request, pk):
+    """Scan the full material for a hierarchical Topic Map (Chapters & Subtopics)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+        
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    try:
+        full_text = material.extracted_text or ""
+        length = len(full_text)
+        # Ultra-Fast Sampling for huge documents (Start, Middle, End)
+        if length > 4500:
+            samples = [
+                full_text[:1500],
+                full_text[length//2 - 750 : length//2 + 750],
+                full_text[-1500:]
+            ]
+            text = "\n[-- DOCUMENT JUMP --]\n".join(samples)
+        else:
+            text = full_text
+            
+        prompt = f"""You are a world-class Academy Registrar. Fast-scan this study material: "{material.title}".
+        
+        Material Sampling: {text}
+        
+        Return a JSON object with a list of "topics". Focus only on major chapters and core subjects.
+        Each topic:
+        - "id": unique integer
+        - "title": Major Chapter Title
+        - "subtopics": List of 3-5 core concepts within this chapter.
+        
+        Return ONLY clean JSON.
+        """
+        raw = ask_ai(prompt, user=request.user, use_rag=False)
+        import re
+        raw = re.sub(r'```json\s*|\s*```', '', raw).strip()
+        data = json.loads(raw[raw.find('{'):raw.rfind('}')+1])
+        return JsonResponse({'success': True, 'topic_map': data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def ajax_curriculum(request, pk):
+    """Call 1: Generate the course curriculum (Modules + Concept Pills)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+        
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    try:
+        focus_topic = request.POST.get('focus_topic', 'General Overview')
+        text = (material.extracted_text or "")[:4000]
+        prompt = f"""You are a world-class Academy Director. Create a logical curriculum focusing on "{focus_topic}" within the material "{material.title}".
+        
+        Material Content: {text}
+        
+        Return a JSON list of modules (min 3, max 6). Each module must have:
+        - "module_id": unique integer (1, 2, 3...)
+        - "title": engaging module title
+        - "description": 1-sentence summary
+        - "concept_pills": List of 5 technical terms/key concepts introduced in this module
+        - "pill_definitions": JSON object mapping each pill to a 1-2 sentence definition
+        
+        Return ONLY clean JSON.
+        """
+        
+        raw = ask_ai(prompt, user=request.user, use_rag=False)
+        import re
+        raw = re.sub(r'```json\s*|\s*```', '', raw).strip()
+        data = json.loads(raw[raw.find('['):raw.rfind(']')+1])
+        
+        return JsonResponse({'success': True, 'curriculum': data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def ajax_module_content(request, pk):
+    """Call 2: Generate content for specific module (Learn text, Socratic questions, Quiz)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+        
+    material = get_object_or_404(StudyMaterial, pk=pk, owner=request.user)
+    try:
+        req_data = json.loads(request.body)
+        module_title = req_data.get('title')
+        
+        text = (material.extracted_text or "")[:6000]
+        prompt = f"""You are a world-class AI Teacher. Teach the module "{module_title}" from the material "{material.title}".
+        
+        Context: {text}
+        
+        Return a JSON object with:
+        - "paragraphs": List of 2-3 deep, pedagogical paragraphs for Phase 1 (Learn).
+        - "takeaway": One highlighted key takeaway sentence.
+        - "visual_prompt": A detailed, high-quality descriptive prompt for an AI image generator on this subject (e.g., "A hyper-realistic, cinematic 3D macro-photography view of [Topic], 8k, highly detailed").
+        - "youtube_video_id": Find a specific, high-quality educational YouTube Video ID (e.g. from CrashCourse, Khan Academy, Amoeba Sisters) for this topic. Return just the 11 character ID.
+        - "youtube_query": A backup search query if a specific ID isn't known.
+        - "socratic_questions": List of 3 chained Socratic questions for Phase 2 (Discuss).
+        - "quiz": List of 2 MCQs for Phase 3 (Challenge). Each MCQ has:
+            - "question": "..."
+            - "options": ["A. ...", "B. ...", "C. ...", "D. ..."]
+            - "answer": "A" (or B, C, D)
+            - "bridge": 2-sentence remediation explanation for wrong answers.
+            
+        Return ONLY clean JSON.
+        """
+        
+        raw = ask_ai(prompt, user=request.user, use_rag=False, model='gpt-4o-mini')
+        import re
+        raw = re.sub(r'```json\s*|\s*```', '', raw).strip()
+        data = json.loads(raw[raw.find('{'):raw.rfind('}')+1])
+        
+        return JsonResponse({'success': True, 'data': data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def ajax_evaluate_answer(request, pk):
+    """Call 3: AI Socratic Evaluation."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+        
+    try:
+        req_data = json.loads(request.body)
+        question = req_data.get('question')
+        answer = req_data.get('answer')
+        
+        prompt = f"""You are a Socratic AI Teacher. Evaluate the student's answer to this question: "{question}"
+        Student Answer: "{answer}"
+        
+        Return JSON object:
+        - "verdict": "correct", "partial", or "off_track"
+        - "reply": A 1-2 sentence encouraging response that addresses their answer.
+        
+        Strictness: Be conceptual and encouraging (lenient). Look for understanding of the core point.
+        Return ONLY clean JSON.
+        """
+        
+        raw = ask_ai(prompt, user=request.user, use_rag=False)
+        import re
+        raw = re.sub(r'```json\s*|\s*```', '', raw).strip()
+        data = json.loads(raw[raw.find('{'):raw.rfind('}')+1])
+        
+        return JsonResponse({'success': True, 'evaluation': data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

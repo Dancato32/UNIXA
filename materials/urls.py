@@ -33,5 +33,10 @@ urlpatterns = [
     path('learn/<int:pk>/ajax/', views.learn_ajax, name='learn_ajax'),
     path('concept-graph/<int:pk>/', views.generate_concept_graph_ajax, name='generate_concept_graph_ajax'),
     path('grade-recall/', views.grade_concept_recall_ajax, name='grade_concept_recall_ajax'),
+    path('cloud-teach/<int:pk>/', views.cloud_teach_view, name='cloud_teach_material'),
+    path('cloud-teach/<int:pk>/curriculum/', views.ajax_curriculum, name='cloud_teach_curriculum'),
+    path('cloud-teach/<int:pk>/discovery/', views.ajax_discovery, name='cloud_teach_discovery'),
+    path('cloud-teach/<int:pk>/module-content/', views.ajax_module_content, name='cloud_teach_module_content'),
+    path('cloud-teach/<int:pk>/evaluate-answer/', views.ajax_evaluate_answer, name='cloud_teach_evaluate_answer'),
 ]
 
